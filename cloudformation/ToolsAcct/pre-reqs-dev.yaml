@@ -3,13 +3,7 @@ Description: Creates a CMK in KMS and grants access to other accounts
 Parameters:
   DevAccount:
     Description: AWS AccountNumber for dev
-    Type: Number
-  StageAccount:
-    Description: AWS AccountNumber for Stage
-    Type: Number
-  ProductionAccount:
-    Description: AWS AccountNumber for production
-    Type: Number  
+    Type: Number 
   ProjectName:
     Description: Name of the Project
     Type: String
@@ -55,8 +49,6 @@ Resources:
             Effect: Allow
             Principal:
               AWS:
-                - !Sub arn:aws:iam::${ProductionAccount}:root
-                - !Sub arn:aws:iam::${StageAccount}:root
                 - !Sub arn:aws:iam::${DevAccount}:root
                 - !If
                   - AddCodeBuildResource

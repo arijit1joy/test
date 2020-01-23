@@ -1,0 +1,354 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CodePipeline for the DA EDGE J1939 Environment Deploy
+Parameters:
+  ProjectName:
+    Description: Name of the Project
+    Type: String
+    Default: da-edge-j1939-services
+  RepositoryName: # Leave blank to autogenerate a repository.
+    Type: String
+    Default: da_edge_j1939_service
+  S3BucketStage:
+    Description: S3 Bucket, which will hold the artifacts
+    Type: String
+  S3Bucket:
+    Description: S3 Bucket, which will hold the artifacts
+    Type: String
+  StageAccount:
+    Description: AWS AccountNumber for dev
+    Type: Number
+  CMKARNStage:
+    Description: ARN of the KMS CMK creates in Tools account
+    Type: String
+  CMKARN:
+    Description: ARN of the KMS CMK creates in Tools account
+    Type: String
+  CrossAccountCondition:
+    Description: Conditionally creates the resources for cross account access
+    Type: String
+    Default: false
+
+Conditions:
+  AddCodeBuildResource: !Equals [ !Ref CrossAccountCondition, true ]
+
+Resources:
+
+  BuildProjectRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${ProjectName}-CodeBuildRole-stage
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          -
+            Effect: Allow
+            Principal:
+              Service:
+                - codebuild.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+  BuildProjectPolicy:
+    Type: AWS::IAM::Policy
+    DependsOn: S3BucketPolicy
+    Properties:
+      PolicyName: !Sub ${ProjectName}-CodeBuildPolicy-stage
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          -
+            Effect: Allow
+            Action:
+              - "s3:*"
+            Resource:
+             - !Join ['',['arn:aws:s3:::',!Ref S3BucketStage, '/*']]
+             - !Join ['',['arn:aws:s3:::',!Ref S3BucketStage]]
+          -
+            Effect: Allow
+            Action:
+              - kms:*
+            Resource: !Ref CMKARN
+          -
+            Effect: Allow
+            Action:
+              - kms:*
+            Resource: !Ref CMKARNStage
+          -
+            Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Resource: arn:aws:logs:*:*:*
+      Roles:
+        -
+          !Ref BuildProjectRole
+
+  BuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub ${ProjectName}-BuildProject-stage
+      Description: !Sub ${ProjectName}-BuildProject
+      EncryptionKey: !Ref CMKARN
+      ServiceRole: !GetAtt BuildProjectRole.Arn
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        Type: linuxContainer
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/java:openjdk-8
+        EnvironmentVariables:
+          - Name: S3Bucket
+            Value: !Ref S3BucketStage
+          - Name: KMSKey
+            Value: !Ref CMKARN
+          - Name: KMSKeyStage
+            Value: !Ref CMKARNStage
+      Source:
+        Type: CODEPIPELINE
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName}-BuildProject-Stage
+
+  PipeLineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${ProjectName}-codepipeline-stage-role
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          -
+            Effect: Allow
+            Principal:
+              Service:
+                - codepipeline.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+  PipelinePolicy:
+    Type: AWS::IAM::Policy
+    DependsOn: S3BucketPolicy
+    Properties:
+      PolicyName: !Sub ${ProjectName}-codepipeline-stage-policy
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          -
+            Effect: Allow
+            Action:
+              - codepipeline:*
+              - iam:ListRoles
+              - cloudformation:Describe*
+              - cloudFormation:List*
+              - codecommit:List*
+              - codecommit:Get*
+              - codecommit:GitPull
+              - codecommit:UploadArchive
+              - codecommit:CancelUploadArchive
+              - codebuild:BatchGetBuilds
+              - codebuild:StartBuild
+              - cloudformation:CreateStack
+              - cloudformation:DeleteStack
+              - cloudformation:DescribeStacks
+              - cloudformation:UpdateStack
+              - cloudformation:CreateChangeSet
+              - cloudformation:DeleteChangeSet
+              - cloudformation:DescribeChangeSet
+              - cloudformation:ExecuteChangeSet
+              - cloudformation:SetStackPolicy
+              - cloudformation:ValidateTemplate
+              - iam:PassRole
+              - s3:ListAllMyBuckets
+              - s3:GetBucketLocation
+              - lambda:Invoke*
+            Resource:
+              - "*"
+          -
+            Effect: Allow
+            Action:
+              - kms:*
+            Resource: !Ref CMKARNStage
+          -
+            Effect: Allow
+            Action:
+              - kms:*
+            Resource: !Ref CMKARN
+          -
+            Effect: Allow
+            Action:
+              - codecommit:BatchGetRepositories
+              - codecommit:Get*
+              - codecommit:GitPull
+              - codecommit:List*
+              - codecommit:CancelUploadArchive
+              - codecommit:UploadArchive
+              - s3:*
+            Resource: "*"
+          -
+            Effect: Allow
+            Action:
+              - s3:PutObject
+              - s3:GetBucketPolicy
+              - s3:GetObject
+              - s3:ListBucket
+            Resource:
+             - !Join ['',['arn:aws:s3:::',!Ref S3BucketStage, '/*']]
+             - !Join ['',['arn:aws:s3:::',!Ref S3BucketStage]]
+          -
+            Effect: Allow
+            Action:
+              - sts:AssumeRole
+            Resource:
+              - !Sub arn:aws:iam::${StageAccount}:role/${ProjectName}-CodePipelineCloudFormationRole-stage
+      Roles:
+        -
+          !Ref PipeLineRole
+
+  Pipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      RoleArn: !GetAtt PipeLineRole.Arn
+      Name: !Sub ${ProjectName}-pipeline-stage
+      Stages:
+        - 
+          Name: Source
+          Actions:
+            - Name: !Sub ${ProjectName}-stage
+              ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Version: 1
+                Provider: CodeCommit
+              Configuration:
+                RepositoryName: !Ref RepositoryName
+                BranchName: stage
+              OutputArtifacts:
+                - Name: SCCheckoutArtifact
+              RunOrder: 1
+        -
+          Name: Build
+          Actions:
+          -
+            Name: Build-stage
+            ActionTypeId:
+              Category: Build
+              Owner: AWS
+              Version: 1
+              Provider: CodeBuild
+            Configuration:
+              ProjectName: !Ref BuildProject
+            RunOrder: 1
+            InputArtifacts:
+              - Name: SCCheckoutArtifact
+            OutputArtifacts:
+              - Name: BuildOutput
+        - 
+          Name: DeployToDev
+          Actions:
+            - 
+              Name: CreateChangeSetDev
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: 1
+                Provider: CloudFormation
+              Configuration:
+                ChangeSetName: !Sub ${ProjectName}-changeset-stage
+                ActionMode: CHANGE_SET_REPLACE
+                StackName: !Sub ${ProjectName}-stage-deploy
+                Capabilities: CAPABILITY_NAMED_IAM
+                TemplatePath: BuildOutput::transformed-template.yml
+                TemplateConfiguration: BuildOutput::Parameters-stage.json
+                RoleArn:
+                  Fn::If:
+                  - AddCodeBuildResource
+                  - !Sub arn:aws:iam::${StageAccount}:role/${ProjectName}-cloudformationdeployer-stage-role
+                  - !Ref AWS::NoValue
+              InputArtifacts:
+                - Name: BuildOutput
+              RunOrder: 1
+              RoleArn:
+                  Fn::If:
+                  - AddCodeBuildResource
+                  - !Sub arn:aws:iam::${StageAccount}:role/${ProjectName}-CodePipelineCloudFormationRole-stage
+                  - !Ref AWS::NoValue
+            - 
+              Name: DeployChangeSetDev
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: 1
+                Provider: CloudFormation
+              Configuration:
+                ChangeSetName: !Sub ${ProjectName}-changeset-stage
+                ActionMode: CHANGE_SET_EXECUTE
+                StackName: !Sub ${ProjectName}-stage-deploy
+                RoleArn:
+                  Fn::If:
+                  - AddCodeBuildResource
+                  - !Sub arn:aws:iam::${StageAccount}:role/${ProjectName}-cloudformationdeployer-stage-role
+                  - !Ref AWS::NoValue
+              InputArtifacts:
+                - Name: BuildOutput
+              RunOrder: 2
+              RoleArn:
+                  Fn::If:
+                  - AddCodeBuildResource
+                  - !Sub arn:aws:iam::${StageAccount}:role/${ProjectName}-CodePipelineCloudFormationRole-stage
+                  - !Ref AWS::NoValue
+        # - 
+        #   Name: BDDTestExecution
+        #   Actions:
+        #   - 
+        #     Name: ExecuteBDDScripts
+        #     ActionTypeId:
+        #       Category: Invoke
+        #       Owner: AWS
+        #       Provider: Lambda
+        #       Version: '1'
+        #     InputArtifacts:
+        #       - Name: BuildOutput
+        #     Configuration:
+        #       FunctionName: EDGE_732927748536_DEV_COMMON_BDD-EXECUTION-PYTHON
+        #       UserParameters: !Sub |
+        #       {
+        #         "Parameter":"Is a parameter"
+        #       } 
+        #     RunOrder: '1'
+        #     Region: us-east-1
+      ArtifactStores:
+        -
+          Region: us-east-2
+          ArtifactStore:
+            Type: S3
+            Location: !Ref S3BucketStage
+            EncryptionKey:
+              Id: !Ref CMKARNStage
+              Type: KMS
+        -
+          Region: us-east-1
+          ArtifactStore:
+            Type: S3
+            Location: !Ref S3Bucket
+            EncryptionKey:
+              Id: !Ref CMKARN
+              Type: KMS
+
+  S3BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref S3BucketStage
+      PolicyDocument:
+        Statement:
+          -
+            Action:
+              - s3:*
+            Effect: Allow
+            Resource:
+              - !Sub arn:aws:s3:::${S3BucketStage}
+              - !Sub arn:aws:s3:::${S3BucketStage}/*
+            Principal:
+              AWS:
+                - !Sub arn:aws:iam::${StageAccount}:role/${ProjectName}-CodePipelineCloudFormationRole-stage
+                - !Sub arn:aws:iam::${StageAccount}:role/${ProjectName}-cloudformationdeployer-stage-role
+                - !GetAtt [BuildProjectRole,Arn]

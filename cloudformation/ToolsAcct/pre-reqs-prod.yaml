@@ -1,15 +1,12 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Creates a CMK in KMS and grants access to other accounts
 Parameters:
-  DevAccount:
+  ProdAccount:
     Description: AWS AccountNumber for dev
     Type: Number
-  StageAccount:
-    Description: AWS AccountNumber for Stage
+  TestAccount:
+    Description: AWS AccountNumber for dev
     Type: Number
-  ProductionAccount:
-    Description: AWS AccountNumber for production
-    Type: Number  
   ProjectName:
     Description: Name of the Project
     Type: String
@@ -55,9 +52,8 @@ Resources:
             Effect: Allow
             Principal:
               AWS:
-                - !Sub arn:aws:iam::${ProductionAccount}:root
-                - !Sub arn:aws:iam::${StageAccount}:root
-                - !Sub arn:aws:iam::${DevAccount}:root
+                - !Sub arn:aws:iam::${ProdAccount}:root
+                - !Sub arn:aws:iam::${TestAccount}:root
                 - !If
                   - AddCodeBuildResource
                   - !Sub arn:aws:iam::${AWS::AccountId}:role/${ProjectName}-CodeBuildRole
@@ -72,7 +68,7 @@ Resources:
   KMSAlias:
     Type: AWS::KMS::Alias
     Properties:
-      AliasName: !Sub alias/${ProjectName}-codepipeline
+      AliasName: !Sub alias/${ProjectName}-codepipeline-prod
       TargetKeyId: !Ref KMSKey
       
   ArtifactBucket:

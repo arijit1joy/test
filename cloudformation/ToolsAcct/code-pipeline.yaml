@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: CodePipeline for the DA EDGE Environment Deploy
+Description: CodePipeline for the DA EDGE J1939 Environment Deploy
 Parameters:
   ProjectName:
     Description: Name of the Project
@@ -7,16 +7,13 @@ Parameters:
     Default: da-edge-j1939-services
   RepositoryName: # Leave blank to autogenerate a repository.
     Type: String
-    Default: da_edge_j1939_services
+    Default: da_edge_j1939_service
   S3Bucket:
     Description: S3 Bucket, which will hold the artifacts
     Type: String
   S3BucketProd:
     Description: S3 Bucket, which will hold the Prod artifacts
     Type: String
-  # S3BucketIndia:
-  #   Description: S3 Bucket, which will hold the India artifacts
-  #   Type: String
   DevAccount:
     Description: AWS AccountNumber for dev
     Type: Number
@@ -29,9 +26,6 @@ Parameters:
   CMKARN:
     Description: ARN of the KMS CMK creates in Tools account
     Type: String
-  # CMKARNIndia:
-  #   Description: ARN of the KMS CMK creates in India region
-  #   Type: String
   CMKARNPROD:
     Description: ARN of the KMS CMK creates in Prod account
     Type: String
@@ -222,7 +216,7 @@ Resources:
             Action:
               - sts:AssumeRole
             Resource:
-              # - !Sub arn:aws:iam::${ProductionAccount}:role/${ProjectName}-CodePipelineCloudFormationRole
+              #- !Sub arn:aws:iam::${ProductionAccount}:role/${ProjectName}-CodePipelineCloudFormationRole
               - !Sub arn:aws:iam::${StageAccount}:role/${ProjectName}-CodePipelineCloudFormationRole
               - !Sub arn:aws:iam::${DevAccount}:role/${ProjectName}-CodePipelineCloudFormationRole
       Roles:
@@ -561,8 +555,8 @@ Resources:
                 - !Sub arn:aws:iam::${DevAccount}:role/${ProjectName}-cloudformationdeployer-role
                 - !Sub arn:aws:iam::${StageAccount}:role/${ProjectName}-CodePipelineCloudFormationRole
                 - !Sub arn:aws:iam::${StageAccount}:role/${ProjectName}-cloudformationdeployer-role
-                # - !Sub arn:aws:iam::${ProductionAccount}:role/${ProjectName}-CodePipelineCloudFormationRole
-                # - !Sub arn:aws:iam::${ProductionAccount}:role/${ProjectName}-cloudformationdeployer-role
+                #- !Sub arn:aws:iam::${ProductionAccount}:role/${ProjectName}-CodePipelineCloudFormationRole
+                #- !Sub arn:aws:iam::${ProductionAccount}:role/${ProjectName}-cloudformationdeployer-role
                 - !GetAtt [BuildProjectRole,Arn]
 
   # S3BucketProdPolicy:
@@ -584,25 +578,4 @@ Resources:
   #               - !Sub arn:aws:iam::${DevAccount}:role/${ProjectName}-cloudformationdeployer-role
   #               - !Sub arn:aws:iam::${ProductionAccount}:role/${ProjectName}-CodePipelineCloudFormationRole
   #               - !Sub arn:aws:iam::${ProductionAccount}:role/${ProjectName}-cloudformationdeployer-role
-  #               - !GetAtt [BuildProjectRole,Arn]
-  
-  # S3BucketIndiaPolicy:
-  #   Type: AWS::S3::BucketPolicy
-  #   Properties:
-  #     Bucket: !Ref S3BucketIndia
-  #     PolicyDocument:
-  #       Statement:
-  #         -
-  #           Action:
-  #             - s3:*
-  #           Effect: Allow
-  #           Resource:
-  #             - !Sub arn:aws:s3:::${S3BucketIndia}
-  #             - !Sub arn:aws:s3:::${S3BucketIndia}/*
-  #           Principal:
-  #             AWS:
-  #               - !Sub arn:aws:iam::${DevAccount}:role/${ProjectName}-CodePipelineCloudFormationRole
-  #               - !Sub arn:aws:iam::${DevAccount}:role/${ProjectName}-cloudformationdeployer-role
-  #               - !Sub arn:aws:iam::${StageAccount}:role/${ProjectName}-CodePipelineCloudFormationRole
-  #               - !Sub arn:aws:iam::${StageAccount}:role/${ProjectName}-cloudformationdeployer-role
   #               - !GetAtt [BuildProjectRole,Arn]

@@ -4,30 +4,23 @@ Parameters:
   ProjectName:
     Description: Name of the Project
     Type: String
-    Default: da-edge-j1939-service
+    Default: da-edge-j1939-services
   ToolsAccount:
     Description: AWS AccountNumber for Tools
     Type: Number
-  S3Bucket:
+  S3BucketTest:
     Description: S3 Bucket in Tools Account, which holds the artifacts built by codebuild
     Type: String
-  CMKARN:
+  CMKARNTest:
     Description: ARN of the KMS CMK creates in Tools account
     Type: String
-  # CMKARNIndia:
-  #   Description: ARN of the KMS CMK creates in Tools account for India region
-  #   Type: String
-  #   Default: ''
-
-# Conditions:
-#   AddIndiaRegion: !Not [!Equals [!Ref S3BucketIndia, '']]
 
 Resources:
 
   CFRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${ProjectName}-CodePipelineCloudFormationRole
+      RoleName: !Sub ${ProjectName}-CodePipelineCloudFormationRole-test
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -42,7 +35,7 @@ Resources:
   CFPolicy:
     Type: AWS::IAM::Policy
     Properties:
-      PolicyName: !Sub ${ProjectName}-CodePipelineCloudFormationPolicy
+      PolicyName: !Sub ${ProjectName}-CodePipelineCloudFormationPolicy-test
       PolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -57,15 +50,7 @@ Resources:
             Effect: Allow
             Action:
               - kms:*
-            Resource: !Ref CMKARN
-          # - 
-          #   Fn::If:
-          #   - AddIndiaRegion
-          #   - Effect: Allow
-          #     Action:
-          #       - kms:*
-          #     Resource: !Ref CMKARNIndia
-          #   - !Ref AWS::NoValue
+            Resource: !Ref CMKARNTest
       Roles:
         -
           !Ref CFRole
@@ -73,7 +58,7 @@ Resources:
   CFDeployerRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${ProjectName}-cloudformationdeployer-role
+      RoleName: !Sub ${ProjectName}-cloudformationdeployer-test-role
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -88,7 +73,7 @@ Resources:
   CFDeployerPolicy:
     Type: AWS::IAM::Policy
     Properties:
-      PolicyName: !Sub ${ProjectName}-cloudformationdeployer-policy
+      PolicyName: !Sub ${ProjectName}-cloudformationdeployer-test-policy
       PolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -104,8 +89,8 @@ Resources:
               - s3:GetObject
               - s3:ListBucket
             Resource:
-              - !Join ['',['arn:aws:s3:::',!Ref S3Bucket, '/*']]
-              - !Join ['',['arn:aws:s3:::',!Ref S3Bucket]]
+              - !Join ['',['arn:aws:s3:::',!Ref S3BucketTest, '/*']]
+              - !Join ['',['arn:aws:s3:::',!Ref S3BucketTest]]
       Roles:
         -
           !Ref CFDeployerRole

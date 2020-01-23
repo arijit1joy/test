@@ -4,7 +4,7 @@ Parameters:
   ProjectName:
     Description: Name of the Project
     Type: String
-    Default: da-edge-j1939-service
+    Default: da-edge-j1939-services
   ToolsAccount:
     Description: AWS AccountNumber for Tools
     Type: Number
@@ -14,20 +14,13 @@ Parameters:
   CMKARN:
     Description: ARN of the KMS CMK creates in Tools account
     Type: String
-  # CMKARNIndia:
-  #   Description: ARN of the KMS CMK creates in Tools account for India region
-  #   Type: String
-  #   Default: ''
-
-# Conditions:
-#   AddIndiaRegion: !Not [!Equals [!Ref S3BucketIndia, '']]
 
 Resources:
 
   CFRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${ProjectName}-CodePipelineCloudFormationRole
+      RoleName: !Sub ${ProjectName}-CodePipelineCloudFormationRole-dev
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -42,7 +35,7 @@ Resources:
   CFPolicy:
     Type: AWS::IAM::Policy
     Properties:
-      PolicyName: !Sub ${ProjectName}-CodePipelineCloudFormationPolicy
+      PolicyName: !Sub ${ProjectName}-CodePipelineCloudFormationPolicy-dev
       PolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -58,14 +51,6 @@ Resources:
             Action:
               - kms:*
             Resource: !Ref CMKARN
-          # - 
-          #   Fn::If:
-          #   - AddIndiaRegion
-          #   - Effect: Allow
-          #     Action:
-          #       - kms:*
-          #     Resource: !Ref CMKARNIndia
-          #   - !Ref AWS::NoValue
       Roles:
         -
           !Ref CFRole
@@ -73,7 +58,7 @@ Resources:
   CFDeployerRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${ProjectName}-cloudformationdeployer-role
+      RoleName: !Sub ${ProjectName}-cloudformationdeployer-dev-role
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -88,7 +73,7 @@ Resources:
   CFDeployerPolicy:
     Type: AWS::IAM::Policy
     Properties:
-      PolicyName: !Sub ${ProjectName}-cloudformationdeployer-policy
+      PolicyName: !Sub ${ProjectName}-cloudformationdeployer-dev-policy
       PolicyDocument:
         Version: 2012-10-17
         Statement:
