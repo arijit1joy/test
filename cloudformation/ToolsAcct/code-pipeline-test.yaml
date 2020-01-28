@@ -7,7 +7,7 @@ Parameters:
     Default: da-edge-j1939-services
   RepositoryName: # Leave blank to autogenerate a repository.
     Type: String
-    Default: da_edge_j1939_service
+    Default: da_edge_j1939_services
   S3BucketTest:
     Description: S3 Bucket, which will hold the artifacts
     Type: String
