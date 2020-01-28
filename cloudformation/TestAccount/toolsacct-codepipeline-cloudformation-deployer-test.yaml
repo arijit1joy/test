@@ -11,6 +11,9 @@ Parameters:
   S3BucketTest:
     Description: S3 Bucket in Tools Account, which holds the artifacts built by codebuild
     Type: String
+  S3Bucket:
+    Description: S3 Bucket in Tools Account, which holds the artifacts built by codebuild
+    Type: String
   CMKARNTest:
     Description: ARN of the KMS CMK creates in Tools account
     Type: String
@@ -91,6 +94,8 @@ Resources:
             Resource:
               - !Join ['',['arn:aws:s3:::',!Ref S3BucketTest, '/*']]
               - !Join ['',['arn:aws:s3:::',!Ref S3BucketTest]]
+              - !Join ['',['arn:aws:s3:::',!Ref S3Bucket, '/*']]
+              - !Join ['',['arn:aws:s3:::',!Ref S3Bucket]]
       Roles:
         -
           !Ref CFDeployerRole

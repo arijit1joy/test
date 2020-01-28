@@ -15,7 +15,7 @@ Parameters:
     Description: S3 Bucket, which will hold the artifacts
     Type: String
   ProdAccount:
-    Description: AWS AccountNumber for dev
+    Description: AWS AccountNumber for prod
     Type: Number
   CMKARNProd:
     Description: ARN of the KMS CMK creates in Tools account
@@ -63,6 +63,8 @@ Resources:
             Resource:
              - !Join ['',['arn:aws:s3:::',!Ref S3BucketProd, '/*']]
              - !Join ['',['arn:aws:s3:::',!Ref S3BucketProd]]
+             - !Join ['',['arn:aws:s3:::',!Ref S3Bucket, '/*']]
+             - !Join ['',['arn:aws:s3:::',!Ref S3Bucket]]
           -
             Effect: Allow
             Action:
@@ -221,7 +223,7 @@ Resources:
                 Provider: CodeCommit
               Configuration:
                 RepositoryName: !Ref RepositoryName
-                BranchName: prod
+                BranchName: master
               OutputArtifacts:
                 - Name: SCCheckoutArtifact
               RunOrder: 1
@@ -243,10 +245,10 @@ Resources:
             OutputArtifacts:
               - Name: BuildOutput
         - 
-          Name: DeployToDev
+          Name: DeployToProd
           Actions:
             - 
-              Name: CreateChangeSetDev
+              Name: CreateChangeSetProd
               ActionTypeId:
                 Category: Deploy
                 Owner: AWS
@@ -272,8 +274,9 @@ Resources:
                   - AddCodeBuildResource
                   - !Sub arn:aws:iam::${ProdAccount}:role/${ProjectName}-CodePipelineCloudFormationRole-prod
                   - !Ref AWS::NoValue
+              Region: "us-east-2"
             - 
-              Name: DeployChangeSetDev
+              Name: DeployChangeSetProd
               ActionTypeId:
                 Category: Deploy
                 Owner: AWS
@@ -296,26 +299,7 @@ Resources:
                   - AddCodeBuildResource
                   - !Sub arn:aws:iam::${ProdAccount}:role/${ProjectName}-CodePipelineCloudFormationRole-prod
                   - !Ref AWS::NoValue
-        # - 
-        #   Name: BDDTestExecution
-        #   Actions:
-        #   - 
-        #     Name: ExecuteBDDScripts
-        #     ActionTypeId:
-        #       Category: Invoke
-        #       Owner: AWS
-        #       Provider: Lambda
-        #       Version: '1'
-        #     InputArtifacts:
-        #       - Name: BuildOutput
-        #     Configuration:
-        #       FunctionName: EDGE_732927748536_DEV_COMMON_BDD-EXECUTION-PYTHON
-        #       UserParameters: !Sub |
-        #       {
-        #         "Parameter":"Is a parameter"
-        #       } 
-        #     RunOrder: '1'
-        #     Region: us-east-1
+              Region: "us-east-2"
       ArtifactStores:
         -
           Region: us-east-2

@@ -17,6 +17,9 @@ Parameters:
   StageAccount:
     Description: AWS AccountNumber for dev
     Type: Number
+  TestAccount:
+    Description: AWS AccountNumber for dev
+    Type: Number
   CMKARNStage:
     Description: ARN of the KMS CMK creates in Tools account
     Type: String
@@ -63,6 +66,8 @@ Resources:
             Resource:
              - !Join ['',['arn:aws:s3:::',!Ref S3BucketStage, '/*']]
              - !Join ['',['arn:aws:s3:::',!Ref S3BucketStage]]
+             - !Join ['',['arn:aws:s3:::',!Ref S3Bucket, '/*']]
+             - !Join ['',['arn:aws:s3:::',!Ref S3Bucket]]
           -
             Effect: Allow
             Action:
@@ -101,7 +106,7 @@ Resources:
           - Name: S3Bucket
             Value: !Ref S3BucketStage
           - Name: KMSKey
-            Value: !Ref CMKARN
+            Value: !Ref CMKARNStage
           - Name: KMSKeyStage
             Value: !Ref CMKARNStage
       Source:
@@ -243,10 +248,10 @@ Resources:
             OutputArtifacts:
               - Name: BuildOutput
         - 
-          Name: DeployToDev
+          Name: DeployToStage
           Actions:
             - 
-              Name: CreateChangeSetDev
+              Name: CreateChangeSetStage
               ActionTypeId:
                 Category: Deploy
                 Owner: AWS
@@ -272,8 +277,9 @@ Resources:
                   - AddCodeBuildResource
                   - !Sub arn:aws:iam::${StageAccount}:role/${ProjectName}-CodePipelineCloudFormationRole-stage
                   - !Ref AWS::NoValue
+              Region: "us-east-2"
             - 
-              Name: DeployChangeSetDev
+              Name: DeployChangeSetStage
               ActionTypeId:
                 Category: Deploy
                 Owner: AWS
@@ -296,6 +302,7 @@ Resources:
                   - AddCodeBuildResource
                   - !Sub arn:aws:iam::${StageAccount}:role/${ProjectName}-CodePipelineCloudFormationRole-stage
                   - !Ref AWS::NoValue
+              Region: "us-east-2"
         # - 
         #   Name: BDDTestExecution
         #   Actions:
@@ -351,4 +358,6 @@ Resources:
               AWS:
                 - !Sub arn:aws:iam::${StageAccount}:role/${ProjectName}-CodePipelineCloudFormationRole-stage
                 - !Sub arn:aws:iam::${StageAccount}:role/${ProjectName}-cloudformationdeployer-stage-role
+                - !Sub arn:aws:iam::${TestAccount}:role/${ProjectName}-CodePipelineCloudFormationRole-test
+                - !Sub arn:aws:iam::${TestAccount}:role/${ProjectName}-cloudformationdeployer-test-role
                 - !GetAtt [BuildProjectRole,Arn]

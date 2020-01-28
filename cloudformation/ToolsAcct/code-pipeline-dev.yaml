@@ -190,7 +190,7 @@ Resources:
     Type: AWS::CodePipeline::Pipeline
     Properties:
       RoleArn: !GetAtt PipeLineRole.Arn
-      Name: !Sub ${ProjectName}-pipeline
+      Name: !Sub ${ProjectName}-pipeline-dev
       Stages:
         - 
           Name: Source

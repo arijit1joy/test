@@ -63,6 +63,8 @@ Resources:
             Resource:
              - !Join ['',['arn:aws:s3:::',!Ref S3BucketTest, '/*']]
              - !Join ['',['arn:aws:s3:::',!Ref S3BucketTest]]
+             - !Join ['',['arn:aws:s3:::',!Ref S3Bucket, '/*']]
+             - !Join ['',['arn:aws:s3:::',!Ref S3Bucket]]
           -
             Effect: Allow
             Action:
@@ -100,8 +102,10 @@ Resources:
         EnvironmentVariables:
           - Name: S3Bucket
             Value: !Ref S3BucketTest
+          # - Name: S3Bucket
+          #   Value: !Ref S3Bucket
           - Name: KMSKey
-            Value: !Ref CMKARN
+            Value: !Ref CMKARNTest
           - Name: KMSKeyTest
             Value: !Ref CMKARNTest
           
@@ -244,7 +248,7 @@ Resources:
             OutputArtifacts:
               - Name: BuildOutput
         - 
-          Name: DeployToDev
+          Name: DeployToTest
           Actions:
             - 
               Name: CreateChangeSetDev
@@ -273,8 +277,10 @@ Resources:
                   - AddCodeBuildResource
                   - !Sub arn:aws:iam::${TestAccount}:role/${ProjectName}-CodePipelineCloudFormationRole-test
                   - !Ref AWS::NoValue
+              Region: "us-east-2"
             - 
               Name: DeployChangeSetDev
+              Region: us-east-2
               ActionTypeId:
                 Category: Deploy
                 Owner: AWS
@@ -297,6 +303,7 @@ Resources:
                   - AddCodeBuildResource
                   - !Sub arn:aws:iam::${TestAccount}:role/${ProjectName}-CodePipelineCloudFormationRole-test
                   - !Ref AWS::NoValue
+              Region: "us-east-2"
         # - 
         #   Name: BDDTestExecution
         #   Actions:
@@ -351,6 +358,8 @@ Resources:
               - !Sub arn:aws:s3:::${S3BucketTest}/*
             Principal:
               AWS:
+                - !Sub arn:aws:iam::${TestAccount}:role/${ProjectName}-CodePipelineCloudFormationRole-dev
+                - !Sub arn:aws:iam::${TestAccount}:role/${ProjectName}-cloudformationdeployer-dev-role
                 - !Sub arn:aws:iam::${TestAccount}:role/${ProjectName}-CodePipelineCloudFormationRole-test
                 - !Sub arn:aws:iam::${TestAccount}:role/${ProjectName}-cloudformationdeployer-test-role
                 - !GetAtt [BuildProjectRole,Arn]

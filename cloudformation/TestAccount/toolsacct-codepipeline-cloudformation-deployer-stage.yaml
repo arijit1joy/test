@@ -5,15 +5,18 @@ Parameters:
     Description: Name of the Project
     Type: String
     Default: da-edge-j1939-services
-  ToolsAccount:
-    Description: AWS AccountNumber for Tools
-    Type: Number
   StageAccount:
     Description: AWS AccountNumber for Tools
     Type: Number
   S3BucketStage:
     Description: S3 Bucket in Tools Account, which holds the artifacts built by codebuild
     Type: String
+  S3Bucket:
+    Description: S3 Bucket in Tools Account, which holds the artifacts built by codebuild
+    Type: String
+  ToolsAccount:
+    Description: AWS AccountNumber for Tools
+    Type: Number
   CMKARNStage:
     Description: ARN of the KMS CMK creates in Tools account
     Type: String
@@ -94,6 +97,8 @@ Resources:
             Resource:
               - !Join ['',['arn:aws:s3:::',!Ref S3BucketStage, '/*']]
               - !Join ['',['arn:aws:s3:::',!Ref S3BucketStage]]
+              - !Join ['',['arn:aws:s3:::',!Ref S3Bucket, '/*']]
+              - !Join ['',['arn:aws:s3:::',!Ref S3Bucket]]
       Roles:
         -
           !Ref CFDeployerRole
