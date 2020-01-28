@@ -211,6 +211,7 @@ Resources:
 
   Pipeline:
     Type: AWS::CodePipeline::Pipeline
+    DependsOn: PipelinePolicy
     Properties:
       RoleArn: !GetAtt PipeLineRole.Arn
       Name: !Sub ${ProjectName}-pipeline-stage
