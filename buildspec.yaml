@@ -1,11 +1,5 @@
 version:      0.2 
  
-env:
-  variables:
-    DEV_BUCKET: "da-edge-732927748536-deviceconfigmanagement-dev"
-    TEST_BUCKET: "da-edge-732927748536-deviceconfigmanagement-test"
-    STAGE_BUCKET: "da-edge-170736887717-deviceconfigmanagement-stage"
-    PROD_BUCKET: "da-edge-902121398960-deviceconfigmanagement-prod"
 
 phases: 
  
@@ -104,8 +98,6 @@ phases:
         done || exit 1 
       - ls -lrt "$curr_dir/target" 
       - aws s3 cp "$curr_dir/target" s3://${S3Bucket}/$versionId --recursive 
-      # - aws s3 cp "$curr_dir/target" s3://${S3BucketIndia}/$versionId --recursive 
-      - aws s3 cp "$curr_dir/target" s3://${S3BucketProd}/$versionId --recursive 
       - pwd 
       - ls -lrt 
       - cd $curr_dir 
@@ -115,18 +107,7 @@ phases:
         --s3-prefix builds 
         --kms-key-id ${KMSKey} 
         --output-template-file transformed-template.yml 
-      # - aws cloudformation package 
-      #   --template-file cloudformation/environment.yml 
-      #   --s3-bucket ${S3BucketIndia} 
-      #   --s3-prefix builds 
-      #   --kms-key-id ${KMSKeyIndia} 
-      #   --output-template-file transformed-template-ap-south-1.yml 
-      - aws cloudformation package 
-        --template-file cloudformation/environment.yml 
-        --s3-bucket ${S3BucketProd} 
-        --s3-prefix builds 
-        --kms-key-id ${KMSKeyProd} 
-        --output-template-file transformed-template-us-east-2.yml 
+
  
   post_build: 
     commands: 
@@ -136,8 +117,6 @@ phases:
 artifacts: 
   files:  
   - transformed-template.yml 
-  - transformed-template-us-east-2.yml 
-  # - transformed-template-ap-south-1.yml 
   - Parameters-dev.json 
   - Parameters-test.json 
   - Parameters-stage.json 
