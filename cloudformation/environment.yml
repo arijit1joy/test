@@ -463,7 +463,7 @@ Resources:
   EdgePublicDataIoTTopicRule:
     Type: AWS::IoT::TopicRule
     Properties:
-      RuleName: !Sub "EdgeIotRulePublicDataDataLogger-j1939-${ApplicationEnvironmentTag}"
+      RuleName: !Sub "EdgeIotRulePublicDataDataLogger_j1939_${ApplicationEnvironmentTag}"
       TopicRulePayload:
         RuleDisabled: "false"
         AwsIotSqlVersion: "2016-03-23"
