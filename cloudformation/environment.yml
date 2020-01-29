@@ -391,7 +391,7 @@ Resources:
     Type: 'AWS::Serverless::Function'
     Properties:
       Handler: conversion.lambda_handler
-      FunctionName: !Sub 'EdgeNGDI2CDSDKConversion-${ApplicationEnvironmentTag}'
+      FunctionName: !Sub 'EdgeNGDI2CDSDKConversion-j1939-${ApplicationEnvironmentTag}'
       Runtime: python3.7
       CodeUri:
         Bucket: !Ref ArtifactsBucket
