@@ -217,6 +217,20 @@ Resources:
         -
           Key: Name
           Value: Edge
+    
+  EdgeJ1939DataLogBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'da-edge-j1939-datalog-files-${ApplicationEnvironmentTag}'
+      AccessControl: BucketOwnerFullControl
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      Tags:
+        -
+          Key: Name
+          Value: Edge
   
   Spnlistbucket:
     Type: AWS::S3::Bucket
