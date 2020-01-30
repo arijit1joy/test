@@ -169,7 +169,7 @@ Resources:
       - LambdaInvokePermissionJ1939ProcessingBucket
       - LambdaInvokeNGDI2CDSDKPermission
     Properties:
-      BucketName: !Sub '${ApplicationName}-j1939-processing-${ApplicationEnvironmentTag}'
+      BucketName: !Sub '${ApplicationName}-processing-${ApplicationEnvironmentTag}'
       AccessControl: BucketOwnerFullControl
       BucketEncryption:
         ServerSideEncryptionConfiguration:
@@ -207,21 +207,7 @@ Resources:
   EndpointBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub '${ApplicationName}--j1939-endpoint-bucket-${ApplicationEnvironmentTag}'
-      AccessControl: BucketOwnerFullControl
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              SSEAlgorithm: AES256
-      Tags:
-        -
-          Key: Name
-          Value: Edge
-    
-  EdgeJ1939DataLogBucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !Sub 'da-edge-j1939-datalog-files-${ApplicationEnvironmentTag}'
+      BucketName: !Sub '${ApplicationName}-endpoint-bucket-${ApplicationEnvironmentTag}'
       AccessControl: BucketOwnerFullControl
       BucketEncryption:
         ServerSideEncryptionConfiguration:
@@ -235,7 +221,7 @@ Resources:
   Spnlistbucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub '${ApplicationName}-j1939-spn-list-${ApplicationEnvironmentTag}'
+      BucketName: !Sub '${ApplicationName}-spn-list-${ApplicationEnvironmentTag}'
       AccessControl: BucketOwnerFullControl
       BucketEncryption:
         ServerSideEncryptionConfiguration:
@@ -282,7 +268,7 @@ Resources:
       SourceArn: !Join
         - ''
         - - 'arn:aws:s3:::'
-          - !Sub '${ApplicationName}-j1939-processing-${ApplicationEnvironmentTag}'
+          - !Sub '${ApplicationName}-processing-${ApplicationEnvironmentTag}'
 
   LambdaInvokePermissionJ1939Bucket:
     Type: 'AWS::Lambda::Permission'
@@ -310,7 +296,7 @@ Resources:
       SourceArn: !Join
         - ''
         - - 'arn:aws:s3:::'
-          - !Sub '${ApplicationName}-j1939-processing-${ApplicationEnvironmentTag}'
+          - !Sub '${ApplicationName}-processing-${ApplicationEnvironmentTag}'
 
   #Functions
 
@@ -354,7 +340,7 @@ Resources:
       Environment:
         Variables:
           NGDIBody: "{\"messageFormatVersion\": \"\", \"telematicsPartnerName\": \"\", \"customerReference\": \"\", \"componentSerialNumber\": \"\", \"equipmentId\": \"\", \"vin\": \"\", \"telematicsDeviceId\": \"\", \"dataSamplingConfigId\": \"\", \"dataEncryptionSchemeId\": \"\", \"numberOfSamples\": \"\", \"samples\": []}"
-          CPPostBucket: !Sub '${ApplicationName}-j1939-processing-${ApplicationEnvironmentTag}'
+          CPPostBucket: !Sub '${ApplicationName}-processing-${ApplicationEnvironmentTag}'
       Tags:
           Name: Edge
 
@@ -375,8 +361,8 @@ Resources:
           CPPTGetDevInfo: "{\"method\": \"get\", \"query\": \"SELECT DEVICE_TYPE, DEVICE_OWNER, DOM FROM da_edge_olympus.DEVICE_INFORMATION WHERE DEVICE_ID = %(devId)s;\", \"input\": {\"Params\": [{\"devId\": \"devId\"}]}}"
           CurrentProductsAPI: "https://api.cp.aws.cummins.com/v1/edge-utils/cp-data"
           CurrentProdutCommonAPIKey: "GxcxtISfZE1e9Rb63Gj6kAh5xTTz9ba4hQGfjc20"
-          CPPostBucket: !Sub '${ApplicationName}-j1939-processing-${ApplicationEnvironmentTag}'
-          EndpointBucket: !Sub '${ApplicationName}--j1939-endpoint-bucket-${ApplicationEnvironmentTag}'
+          CPPostBucket: !Sub '${ApplicationName}-processing-${ApplicationEnvironmentTag}'
+          EndpointBucket: !Sub '${ApplicationName}-endpoint-bucket-${ApplicationEnvironmentTag}'
           EndpointFile: "EndpointJson.json"
           Environment: !Sub '${ApplicationEnvironmentTag}'
           JSONFormat: "SDK"
