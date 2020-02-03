@@ -439,3 +439,12 @@ Resources:
       Tier: Standard
       Type: String
       Value: !Ref EdgeJ1939DataLogBucket
+  
+  EdgeEndpointJ1939Bucket: 
+    Type: "AWS::SSM::Parameter"
+    Properties: 
+      Description: "Endpoint j1939 bucket name"
+      Name: "da-edge-j1939-endpoint-bucket"
+      Tier: Standard
+      Type: String
+      Value: !Ref EndpointBucket
