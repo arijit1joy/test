@@ -443,13 +443,13 @@ Resources:
   EdgeEndpointJ1939Bucket: 
     Type: "AWS::SSM::Parameter"
     Properties: 
-      Description: "Endpoint j1939 bucket name"
+      Description: "Endpoint j1939 bucket name" 
       Name: "da-edge-j1939-endpoint-bucket"
       Tier: Standard
       Type: String
       Value: !Ref EndpointBucket
 
-  EdgeJ1939ProcessingBucket: 
+  EdgeJ1939ProcessingBucketSSM: 
     Type: "AWS::SSM::Parameter"
     Properties: 
       Description: "j1939 Processing bucket name"
