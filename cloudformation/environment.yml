@@ -448,3 +448,12 @@ Resources:
       Tier: Standard
       Type: String
       Value: !Ref EndpointBucket
+
+  EdgeJ1939ProcessingBucket: 
+    Type: "AWS::SSM::Parameter"
+    Properties: 
+      Description: "j1939 Processing bucket name"
+      Name: "da-edge-j1939-processing-bucket"
+      Tier: Standard
+      Type: String
+      Value: !Ref EdgeJ1939ProcessingBucket
