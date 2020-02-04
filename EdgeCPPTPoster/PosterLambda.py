@@ -35,7 +35,7 @@ def lambda_handler(event, context):
 
     print(jsonBody)
 
-    devId = jsonBody["thingName"] if "thingName" in jsonBody else None
+    devId = jsonBody["telematicsDeviceId"] if "telematicsDeviceId" in jsonBody else None
 
     headers = {'Content-Type': 'application/json', 'x-api-key': currentProductAPIKey}
 
@@ -44,6 +44,8 @@ def lambda_handler(event, context):
     print(payload)
 
     payload["input"]["Params"][0]["devId"] = devId
+
+    print(devId)
 
     response = requests.post(url=edgeCommonAPIURL, json=payload, headers=headers)
 
