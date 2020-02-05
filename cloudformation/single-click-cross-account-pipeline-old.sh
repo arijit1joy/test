@@ -19,7 +19,7 @@ read ProdAccountProfile
 
 
 aws cloudformation deploy --stack-name da-edge-pre-reqs-j1939-src --template-file ToolsAcct/pre-reqs.yaml --parameter-overrides DevAccount=$DevAccount StageAccount=$StageAccount ProductionAccount=$ProdAccount --profile $ToolsAccountProfile
-#aws cloudformation deploy --stack-name da-edge-pre-reqs-j1939-src --template-file ToolsAcct/pre-reqs.yaml --parameter-overrides DevAccount=$DevAccount StageAccount=$StageAccount --profile $ToolsAccountProfile
+#aws cloudformation deploy --stack-name da-edge-pre-reqs-j1939-src --template-file ToolsAcct/pre-reqs.yaml --parameter-overrides DevAccount=$DevAccount StageAccount=$StageAccount --profile $ToolsAccountProfile 
 
 echo -n "Enter S3 Bucket created from above > "
 read S3Bucket
