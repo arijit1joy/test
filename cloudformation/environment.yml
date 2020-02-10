@@ -65,6 +65,9 @@ Parameters:
     Type: String
   DCSCertificate:
     Type: String
+  EdgeCommonDBAPI:
+    Type: String
+
   
 Globals:
   Function:
@@ -199,8 +202,6 @@ Resources:
         -
           Key: Name
           Value: Edge
-
-
 
   EdgeJ1939ProcessingBucket:
     Type: AWS::S3::Bucket
@@ -405,7 +406,7 @@ Resources:
           EndpointFile: "EndpointJson.json"
           Environment: !Sub '${ApplicationEnvironmentTag}'
           JSONFormat: "SDK"
-          edgeCommonAPIURL: "https://api.edge-test.aws.cummins.com/v1/EdgeDBTestLambda"
+          edgeCommonAPIURL: !Ref EdgeCommonDBAPI
       Layers:
         - !Ref RequestsPythonLayer
       Tags:
