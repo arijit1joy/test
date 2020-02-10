@@ -247,7 +247,7 @@ Resources:
   EndpointBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub 'EDGE-J1939-${ApplicationEnvironmentTag}'
+      BucketName: !Sub 'edge-j1939-${ApplicationEnvironmentTag}'
       AccessControl: BucketOwnerFullControl
       BucketEncryption:
         ServerSideEncryptionConfiguration:
