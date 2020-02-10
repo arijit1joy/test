@@ -246,7 +246,7 @@ Resources:
   EndpointBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub '${ApplicationName}-endpoint-bucket-${ApplicationEnvironmentTag}'
+      BucketName: !Sub 'EDGE-J1939-${ApplicationEnvironmentTag}'
       AccessControl: BucketOwnerFullControl
       BucketEncryption:
         ServerSideEncryptionConfiguration:
@@ -379,7 +379,7 @@ Resources:
       Environment:
         Variables:
           NGDIBody: "{\"messageFormatVersion\": \"\", \"telematicsPartnerName\": \"\", \"customerReference\": \"\", \"componentSerialNumber\": \"\", \"equipmentId\": \"\", \"vin\": \"\", \"telematicsDeviceId\": \"\", \"dataSamplingConfigId\": \"\", \"dataEncryptionSchemeId\": \"\", \"numberOfSamples\": \"\", \"samples\": []}"
-          CPPostBucket: !Sub '${ApplicationName}-processing-${ApplicationEnvironmentTag}'
+          CPPostBucket: !Sub 'EDGE-J1939-${ApplicationEnvironmentTag}'
       Tags:
           Name: Edge
 
