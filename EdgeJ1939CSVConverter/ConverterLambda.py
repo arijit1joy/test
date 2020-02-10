@@ -416,11 +416,10 @@ def lambda_handler(event, context):
 
     filename = fileKey.split("/")[1]
 
-    date = filename.split('_')[4].split('T')[0].split('-')
-    
-    print('Date: ', date)
-
-    s3object = s3resource.Object(CPPostBucket, jsonSampleHead['componentSerialNumber'] + '/' + jsonSampleHead["telematicsDeviceId"] + '/' + date[0] + '/' + date[1] + '/' + date[2] + '/' + filename.split('.csv')[0] + '.json')
+    s3object = s3resource.Object(CPPostBucket,
+                                 'ConvertedFiles/' + jsonSampleHead["telematicsDeviceId"] + '/' +
+                                 filename.split('.csv')[
+                                     0] + '.json')
 
     s3object.put(
         Body=(bytes(json.dumps(jsonSampleHead).encode('UTF-8')))
