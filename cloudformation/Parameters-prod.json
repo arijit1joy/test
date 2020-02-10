@@ -9,10 +9,10 @@
         "CurrentProductURL": "https://connectedsolutions-pv.cummins.com/",
         "AppRegistrationURL": "appRegistration/v2/capability/capabilityAnalysisData?AuthToken=",
         "UDSResultsURL": "v3/uds/udsResults/{ESN}/{Address}/{BoxID}",
-        "CDFAssestLib": "https://av7lq0uhc5.execute-api.us-east-1.amazonaws.com/Prod/",
-        "CDFCommandLib": "https://cylk2mmtoe.execute-api.us-east-1.amazonaws.com/Prod/",
+        "CDFAssestLib": "https://fkl5e7l02k.execute-api.us-east-2.amazonaws.com/Prod/",
+        "CDFCommandLib": "https://qcst8u4sxb.execute-api.us-east-2.amazonaws.com/Prod/",
         "ECFGLibrary": "https://6t5mq3eqla.execute-api.us-east-1.amazonaws.com/Prod/",
-        "CDFFacadeLib": "https://g4nc2zo3n1.execute-api.us-east-1.amazonaws.com/Prod",
+        "CDFFacadeLib": "https://59314x9jvg.execute-api.us-east-2.amazonaws.com/Prod",
         "udsConfigChangeUrl": "v2/uds/periodicUDSConfigChanges?AuthToken=",
         "CDFUploadDataLogBucket": "cdf-us-east-1-device-upload",
         "IOTEndPoint": "arn:aws:iot:us-east-1:732927748536:thing/",
@@ -23,6 +23,7 @@
         "EfpaCbsPocLambdaArn": "arn:aws:lambda:us-east-2:083597665337:function:EdgeEfpaProcessor-Test",
         "DeviceAssociationURL": "https://api.edge.aws.cummins.com/v1/edge-device/content-spec-association",
         "TestEcfgStorageBucket": "telematics-nonprod-storage-test",
-        "DCSCertificate": "54299c18-b88d-421d-96f3-2dc625ea7d20"
+        "DCSCertificate": "54299c18-b88d-421d-96f3-2dc625ea7d20",
+        "EdgeCommonDBAPI": "https://api.edge-prod.aws.cummins.com/v3/EdgeDBLambda"
     }
 }

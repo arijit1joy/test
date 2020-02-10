@@ -65,10 +65,12 @@ Parameters:
     Type: String
   DCSCertificate:
     Type: String
-  
+  EdgeCommonDBAPI:
+    Type: String
+
 Globals:
   Function:
-    Timeout: 30
+    Timeout: 300
     MemorySize: 512
     Environment:
       Variables:
@@ -162,7 +164,7 @@ Resources:
         S3Key: python_pandas.zip
       Description: python-requests for restful API calls
       LayerName: !Sub "pandas-requests"
-  
+
   LambdaInvokePermissionJ1939Converter:
     Type: 'AWS::Lambda::Permission'
     Properties:
@@ -199,7 +201,6 @@ Resources:
         -
           Key: Name
           Value: Edge
-
 
 
   EdgeJ1939ProcessingBucket:
@@ -405,7 +406,7 @@ Resources:
           EndpointFile: "EndpointJson.json"
           Environment: !Sub '${ApplicationEnvironmentTag}'
           JSONFormat: "SDK"
-          edgeCommonAPIURL: "https://api.edge-test.aws.cummins.com/v1/EdgeDBTestLambda"
+          edgeCommonAPIURL: !Ref EdgeCommonDBAPI
       Layers:
         - !Ref RequestsPythonLayer
       Tags:
