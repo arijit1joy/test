@@ -445,7 +445,7 @@ Resources:
     Type: "AWS::SSM::Parameter"
     Properties: 
       Description: "Endpoint j1939 bucket name" 
-      Name: "da-edge-j1939-endpoint-bucket"
+      Name: !Sub edge-j1939-${ApplicationEnvironmentTag}
       Tier: Standard
       Type: String
       Value: !Ref EndpointBucket
