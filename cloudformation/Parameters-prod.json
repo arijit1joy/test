@@ -24,6 +24,6 @@
         "DeviceAssociationURL": "https://api.edge.aws.cummins.com/v1/edge-device/content-spec-association",
         "TestEcfgStorageBucket": "telematics-nonprod-storage-test",
         "DCSCertificate": "54299c18-b88d-421d-96f3-2dc625ea7d20",
-        "EdgeCommonDBAPI": "https://xouqor2vui.execute-api.us-east-1.amazonaws.com/Prod/EdgeDBLambda"
+        "EdgeCommonDBAPI": "https://api.edge-prod.aws.cummins.com/v3/EdgeDBLambda"
     }
 }

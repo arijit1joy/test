@@ -71,7 +71,7 @@ Parameters:
   
 Globals:
   Function:
-    Timeout: 30
+    Timeout: 300
     MemorySize: 512
     Environment:
       Variables:
