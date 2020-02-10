@@ -65,12 +65,10 @@ Parameters:
     Type: String
   DCSCertificate:
     Type: String
-  EdgeCommonDBAPI:
-    Type: String
-
+  
 Globals:
   Function:
-    Timeout: 300
+    Timeout: 30
     MemorySize: 512
     Environment:
       Variables:
@@ -165,44 +163,6 @@ Resources:
       Description: python-requests for restful API calls
       LayerName: !Sub "pandas-requests"
 
-  LambdaInvokePermissionJ1939Converter:
-    Type: 'AWS::Lambda::Permission'
-    Properties:
-      FunctionName: !GetAtt
-        - EdgeJ1939CSVConverter
-        - Arn
-      Action: 'lambda:InvokeFunction'
-      Principal: s3.amazonaws.com
-      SourceAccount: !Ref 'AWS::AccountId'
-      SourceArn: !Join
-        - ''
-        - - 'arn:aws:s3:::'
-          - !Sub 'da-edge-j1939-datalog-files-${ApplicationEnvironmentTag}'
-
-  EdgeJ1939DataLogBucket:
-    Type: AWS::S3::Bucket
-    DependsOn: 
-      - LambdaInvokePermissionJ1939Converter
-    Properties:
-      BucketName: !Sub 'da-edge-j1939-datalog-files-${ApplicationEnvironmentTag}'
-      AccessControl: BucketOwnerFullControl
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              SSEAlgorithm: AES256
-      NotificationConfiguration:
-        LambdaConfigurations:
-          - Function: !GetAtt
-              - EdgeJ1939CSVConverter
-              - Arn
-            Event: "s3:ObjectCreated:*"
-
-      Tags:
-        -
-          Key: Name
-          Value: Edge
-
-
   EdgeJ1939ProcessingBucket:
     Type: AWS::S3::Bucket
     DependsOn: 
@@ -247,7 +207,7 @@ Resources:
   EndpointBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub 'edge-j1939-${ApplicationEnvironmentTag}'
+      BucketName: !Sub '${ApplicationName}-endpoint-bucket-${ApplicationEnvironmentTag}'
       AccessControl: BucketOwnerFullControl
       BucketEncryption:
         ServerSideEncryptionConfiguration:
@@ -380,7 +340,7 @@ Resources:
       Environment:
         Variables:
           NGDIBody: "{\"messageFormatVersion\": \"\", \"telematicsPartnerName\": \"\", \"customerReference\": \"\", \"componentSerialNumber\": \"\", \"equipmentId\": \"\", \"vin\": \"\", \"telematicsDeviceId\": \"\", \"dataSamplingConfigId\": \"\", \"dataEncryptionSchemeId\": \"\", \"numberOfSamples\": \"\", \"samples\": []}"
-          CPPostBucket: !Sub 'EDGE-J1939-${ApplicationEnvironmentTag}'
+          CPPostBucket: !Sub '${ApplicationName}-processing-${ApplicationEnvironmentTag}'
       Tags:
           Name: Edge
 
@@ -406,7 +366,7 @@ Resources:
           EndpointFile: "EndpointJson.json"
           Environment: !Sub '${ApplicationEnvironmentTag}'
           JSONFormat: "SDK"
-          edgeCommonAPIURL: !Ref EdgeCommonDBAPI
+          edgeCommonAPIURL: "https://api.edge-test.aws.cummins.com/v1/EdgeDBTestLambda"
       Layers:
         - !Ref RequestsPythonLayer
       Tags:
@@ -431,30 +391,3 @@ Resources:
           -
             Lambda:
               FunctionArn: "arn:aws:lambda:us-east-1:732927748536:function:EdgePostHBToTATA-dev"
-  
-  EdgeJ1939Bucket: 
-    Type: "AWS::SSM::Parameter"
-    Properties: 
-      Description: "Storing the j1939 bucket name"
-      Name: "da-edge-j1939-datalog-bucket"
-      Tier: Standard
-      Type: String
-      Value: !Ref EdgeJ1939DataLogBucket
-  
-  EdgeEndpointJ1939Bucket: 
-    Type: "AWS::SSM::Parameter"
-    Properties: 
-      Description: "Endpoint j1939 bucket name" 
-      Name: !Sub edge-j1939-${ApplicationEnvironmentTag}
-      Tier: Standard
-      Type: String
-      Value: !Ref EndpointBucket
-
-  EdgeJ1939ProcessingBucketSSM: 
-    Type: "AWS::SSM::Parameter"
-    Properties: 
-      Description: "j1939 Processing bucket name"
-      Name: "da-edge-j1939-processing-bucket"
-      Tier: Standard
-      Type: String
-      Value: !Ref EdgeJ1939ProcessingBucket
