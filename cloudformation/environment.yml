@@ -419,7 +419,7 @@ Resources:
       TopicRulePayload:
         RuleDisabled: "false"
         AwsIotSqlVersion: "2016-03-23"
-        Sql: "select topic(3) as telematicsDeviceId, * from '$aws/things/+/j1939'"
+        Sql: "select topic(3) as telematicsDeviceId, * from '$aws/things/+/public'"
         Actions:
           -
             S3:
