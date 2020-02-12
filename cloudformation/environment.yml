@@ -308,7 +308,7 @@ Resources:
       SourceArn: !Join
         - ''
         - - 'arn:aws:s3:::'
-          - !Sub '${ApplicationName}-processing-${ApplicationEnvironmentTag}'
+          - !Sub 'edge-j1939-${ApplicationEnvironmentTag}'
 
   LambdaInvokePermissionJ1939Bucket:
     Type: 'AWS::Lambda::Permission'
@@ -336,7 +336,7 @@ Resources:
       SourceArn: !Join
         - ''
         - - 'arn:aws:s3:::'
-          - !Sub '${ApplicationName}-processing-${ApplicationEnvironmentTag}'
+          - !Sub 'edge-j1939-${ApplicationEnvironmentTag}'
 
   #Functions
 
