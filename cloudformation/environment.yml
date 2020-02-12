@@ -380,7 +380,7 @@ Resources:
       Environment:
         Variables:
           NGDIBody: "{\"messageFormatVersion\": \"\", \"telematicsPartnerName\": \"\", \"customerReference\": \"\", \"componentSerialNumber\": \"\", \"equipmentId\": \"\", \"vin\": \"\", \"telematicsDeviceId\": \"\", \"dataSamplingConfigId\": \"\", \"dataEncryptionSchemeId\": \"\", \"numberOfSamples\": \"\", \"samples\": []}"
-          !Sub 'edge-j1939-${ApplicationEnvironmentTag}'
+          CPPostBucket: !Sub 'edge-j1939-${ApplicationEnvironmentTag}'
       Tags:
           Name: Edge
 
@@ -401,7 +401,7 @@ Resources:
           CPPTGetDevInfo: "{\"method\": \"get\", \"query\": \"SELECT DEVICE_TYPE, DEVICE_OWNER, DOM FROM da_edge_olympus.DEVICE_INFORMATION WHERE DEVICE_ID = %(devId)s;\", \"input\": {\"Params\": [{\"devId\": \"devId\"}]}}"
           CurrentProductsAPI: "https://api.cp.aws.cummins.com/v1/edge-utils/cp-data"
           CurrentProdutCommonAPIKey: "GxcxtISfZE1e9Rb63Gj6kAh5xTTz9ba4hQGfjc20"
-          !Sub 'edge-j1939-${ApplicationEnvironmentTag}'
+          CPPostBucket: !Sub 'edge-j1939-${ApplicationEnvironmentTag}'
           EndpointBucket: !Sub '${ApplicationName}-endpoint-bucket-${ApplicationEnvironmentTag}'
           EndpointFile: "EndpointJson.json"
           Environment: !Sub '${ApplicationEnvironmentTag}'
