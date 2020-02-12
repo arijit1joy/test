@@ -415,6 +415,8 @@ def lambda_handler(event, context):
     print("Posting file to S3...")
 
     filename = fileKey.split("/")[1]
+    
+    print("Filename: ", filename)
 
     if '-' in filename.split('_')[4]:
     
@@ -424,7 +426,7 @@ def lambda_handler(event, context):
 
         date = filename.split('_')[4][:8]
 
-    s3object = s3resource.Object(CPPostBucket, jsonSampleHead['componentSerialNumber'] + '/' + jsonSampleHead["telematicsDeviceId"] + date + '/' + filename.split('.csv')[0] + '.json')
+    s3object = s3resource.Object(CPPostBucket, jsonSampleHead['componentSerialNumber'] + '/' + jsonSampleHead["telematicsDeviceId"] + '/' + date[:4] + '/' + date[4:6] + '/' + date[6:8] + '/' + filename.split('.csv')[0] + '.json')
 
     s3object.put(
         Body=(bytes(json.dumps(jsonSampleHead).encode('UTF-8')))
