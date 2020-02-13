@@ -427,7 +427,7 @@ Resources:
               RoleArn: !GetAtt
                   - "RoleForJ1939StreamBucket"
                   - "Arn"
-              Key: "ConvertedFiles/${SELECT componentSerialNumber from '$aws/things/+/public'}/${topic(3)}/${parse_time('yyyy', timestamp())}/${parse_time('MM', timestamp())}/${parse_time('dd', timestamp())}/edge_${topic(3)}_${SELECT componentSerialNumber from '$aws/things/+/public'}_${timestamp()}_${parse_time(\"yyyy-MM-dd'T'HH:mm:ss'Z'\", timestamp())}.json"
+              Key: "ConvertedFiles/${topic(3)}/${topic(3)}_${timestamp()}.json"
           -
             Lambda:
               FunctionArn: "arn:aws:lambda:us-east-1:732927748536:function:EdgePostHBToTATA-dev"
