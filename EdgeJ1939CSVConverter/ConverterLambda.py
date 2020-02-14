@@ -269,6 +269,7 @@ def processAS(asRows, asMap, jsonSampleHead, asConvertedProtHeader, asRawProtHea
 
 
 def lambda_handler(event, context):
+    
     s3 = boto3.client('s3')
 
     s3resource = boto3.resource('s3')
@@ -282,6 +283,10 @@ def lambda_handler(event, context):
 
     print(bucketName)
     print(fileKey)
+    
+    fileKey = fileKey.replace("%3A", ":")
+    
+    print("New FileKey:", fileKey)
 
     obj = s3.get_object(Bucket=bucketName, Key=fileKey)
 
@@ -291,6 +296,7 @@ def lambda_handler(event, context):
     # csv_file = open('CD-specificExampleDataFile Rev_2019-08-09.csv', 'r'))
 
     # Get Json File Format
+    
     jsonSampleHead = json.loads(os.environ["NGDIBody"])
 
     print(jsonSampleHead)
@@ -415,15 +421,11 @@ def lambda_handler(event, context):
     print("Posting file to S3...")
 
     filename = fileKey.split("/")[1]
-    
-    print("Filename: ", filename)
 
-    if '-' in filename.split('_')[4]:
-        date = filename.split('_')[4][:10].replace('-', '')
-    else:
-        date = filename.split('_')[4][:8]
-
-    s3object = s3resource.Object(CPPostBucket, "ConvertedFiles/" + jsonSampleHead['componentSerialNumber'] + '/' + jsonSampleHead["telematicsDeviceId"] + '/' + date[:4] + '/' + date[4:6] + '/' + date[6:8] + '/' + filename.split('.csv')[0] + '.json')
+    s3object = s3resource.Object(CPPostBucket,
+                                 'ConvertedFiles/' + jsonSampleHead["telematicsDeviceId"] + '/' +
+                                 filename.split('.csv')[
+                                     0] + '.json')
 
     s3object.put(
         Body=(bytes(json.dumps(jsonSampleHead).encode('UTF-8')))
