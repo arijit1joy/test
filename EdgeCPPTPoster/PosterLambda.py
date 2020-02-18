@@ -2,6 +2,7 @@ import json
 import requests
 import os
 import boto3
+from datetime import datetime
 
 edgeCommonAPIURL = os.environ['edgeCommonAPIURL']
 currentProductAPIKey = os.environ['CurrentProdutCommonAPIKey']
@@ -32,6 +33,28 @@ def lambda_handler(event, context):
     print(file_content)
 
     jsonBody = json.loads(file_content)
+    
+    print("File length: ", len(fileKey.split('/')))
+    
+    if len(fileKey.split('/')) == 3:
+        
+        print('This is a HB file.')
+
+        filename_str = fileKey.split('.')[0].split('/')[2]
+
+        file_details = filename_str.split('_')
+ 
+        date = datetime.fromtimestamp(int(file_details[1])/1000).isoformat().split('T')[0].split('-')
+    
+        s3object = s3.Object(CPPostBucket, 'ConvertedFiles' + '/' + jsonBody['componentSerialNumber'] + '/' + jsonBody["telematicsDeviceId"] + '/' + date[0] + '/' + date[1] + '/' + date[2] + '/' + filename_str + '.json')
+    
+        s3object.put(
+                Body=(bytes(json.dumps(jsonBody).encode('UTF-8')))
+        )
+        
+        s3.Object(bucketName, fileKey).delete()
+
+        return
 
     print(jsonBody)
 
