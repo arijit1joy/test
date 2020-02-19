@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="f2919ab0-2b0d-4f9d-a6a1-840b49d578f5" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ConverterLambda.py" beforeDir="false" afterPath="$PROJECT_DIR$/ConverterLambda.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -15,8 +15,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ConverterLambda.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="353">
-              <caret line="434" selection-end-line="526" />
+            <state relative-caret-position="2231">
+              <caret line="524" selection-start-line="524" selection-end-line="524" />
               <folding>
                 <element signature="e#0#10#0" expanded="true" />
                 <element signature="e#396#2366#0" />
@@ -104,7 +104,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-7" y="40" width="782" height="831" extended-state="0" />
+    <frame x="-7" y="33" width="1550" height="838" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" weight="0.24966975" />
@@ -145,8 +145,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/ConverterLambda.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="353">
-          <caret line="434" selection-end-line="526" />
+        <state relative-caret-position="2231">
+          <caret line="524" selection-start-line="524" selection-end-line="524" />
           <folding>
             <element signature="e#0#10#0" expanded="true" />
             <element signature="e#396#2366#0" />

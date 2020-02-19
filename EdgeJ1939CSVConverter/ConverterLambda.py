@@ -425,12 +425,10 @@ def lambda_handler(event, context):
             seen_ss_j1939_params = True
 
         if '~' in head:
-
             count = count + 1
-            continue
         elif "datetimestamp" in head.lower():
-
             ss_dict["dateTimeStamp"] = count
+            count = count + 1
         else:
 
             if seen_ss_dev_params and not seen_ss_raw_params and not seen_ss_j1939_params:
@@ -473,9 +471,9 @@ def lambda_handler(event, context):
 
         if '~' in head:
             count = count + 1
-            continue
         elif "datetimestamp" in head.lower():
             as_dict["dateTimeStamp"] = count
+            count = count + 1
         else:
             if seen_as_dev_params and not seen_as_raw_params and not seen_as_j1939_params:
                 as_converted_device_parameters.append(head)
