@@ -53,15 +53,17 @@ def process_ss(ss_rows, ss_dict, ngdi_json_template, ss_converted_prot_header,
 
     for key in ss_converted_device_parameters:
 
-        print("Processing", key)
+        if key:
 
-        if "messageid" in key:
+            print("Processing", key)
 
-            ss_sample["convertedDeviceParameters"][key] = ss_values[ss_dict[key]]
+            if "messageid" in key:
 
-        else:
+                ss_sample["convertedDeviceParameters"][key] = ss_values[ss_dict[key]]
 
-            json_sample_head[key] = ss_values[ss_dict[key]]
+            else:
+
+                json_sample_head[key] = ss_values[ss_dict[key]]
 
         del ss_dict[key]
 
@@ -130,13 +132,11 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
 
         device_id = ""
 
+        new_as_dict = as_dict
+
         parameters = {}
 
         sample = {}
-
-        if "asDateTimestamp" in as_dict:
-            sample["dateTimestamp"] = values[as_dict["asDateTimestamp"]]
-            asDateTimestamp = as_dict.pop("asDateTimestamp")
 
         sample["convertedDeviceParameters"] = {}
 
@@ -146,17 +146,23 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
 
         sample["convertedEquipmentFaultCodes"] = []
 
-        for param in as_converted_device_parameters:
+        print()
 
-            if "datetimestamp" in param.lower():
+        for key in as_converted_device_parameters:
 
-                sample[param] = values[as_dict[param]]
+            print("CovDevParam:", key)
 
-            else:
+            if key:
 
-                sample["convertedDeviceParameters"][param] = values[as_dict[param]]
+                if "datetimestamp" in key.lower():
 
-            del as_dict[param]
+                    sample[key] = values[new_as_dict[key]]
+
+                else:
+
+                    sample["convertedDeviceParameters"][key] = values[new_as_dict[key]]
+
+            del new_as_dict[key]
 
         print("Current Sample with Converted Device Parameters:", sample)
 
@@ -164,12 +170,12 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
 
         print("Current ConvertedEquipmentParameters:", conv_eq_obj)
 
-        for param in as_dict:
+        for param in new_as_dict:
 
             if param:
 
                 if param != "activeFaultCodes" and param != "inactiveFaultCodes" and param != "pendingFaultCodes":
-                    parameters[param] = values[as_dict[param]]
+                    parameters[param] = values[new_as_dict[param]]
 
         conv_eq_obj["parameters"] = parameters
 
@@ -189,9 +195,9 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
         conv_eq_fc_obj = {"protocol": protocol, "networkId": network_id, "deviceId": device_id, "activeFaultCodes": [],
                           "inactiveFaultCodes": [], "pendingFaultCodes": []}
 
-        if "activeFaultCodes" in as_dict:
+        if "activeFaultCodes" in new_as_dict:
 
-            ac_fc = values[as_dict["activeFaultCodes"]]
+            ac_fc = values[new_as_dict["activeFaultCodes"]]
 
             print("ActiveFaultCode found:", ac_fc)
 
@@ -212,11 +218,11 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
 
                         conv_eq_fc_obj["activeFaultCodes"].append(fcObj)
 
-        if "inactiveFaultCodes" in as_dict:
+        if "inactiveFaultCodes" in new_as_dict:
 
             print("InActiveFaultCode found:", inac_fc)
 
-            inac_fc = values[as_dict["inactiveFaultCodes"]]
+            inac_fc = values[new_as_dict["inactiveFaultCodes"]]
 
             if inac_fc != "":
 
@@ -235,9 +241,9 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
 
                         conv_eq_fc_obj["inactiveFaultCodes"].append(fcObj)
 
-        if "pendingFaultCodes" in as_dict:
+        if "pendingFaultCodes" in new_as_dict:
 
-            pen_fc = values[as_dict["pendingFaultCodes"]]
+            pen_fc = values[new_as_dict["pendingFaultCodes"]]
 
             print("InActiveFaultCode found:", inac_fc)
 
