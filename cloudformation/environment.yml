@@ -420,7 +420,7 @@ Resources:
       TopicRulePayload:
         RuleDisabled: "false"
         AwsIotSqlVersion: "2016-03-23"
-        Sql: "select topic(3) as telematicsDeviceId, * from '$aws/things/+/public'"
+        Sql: "SELECT componentSerialNumber, * from '$aws/things/+/public'"
         Actions:
           -
             S3:
@@ -428,7 +428,7 @@ Resources:
               RoleArn: !GetAtt
                   - "RoleForJ1939StreamBucket"
                   - "Arn"
-              Key: "ConvertedFiles/${topic(3)}/${topic(3)}_${timestamp()}.json"
+              Key: "ConvertedFiles/$componentSerialNumber/${topic(3)}/${parse_time("yyyy", timestamp(), "UTC")}/${parse_time("MM", timestamp(), "UTC")}/${parse_time("dd", timestamp(), "UTC")}/${topic(3)}_${timestamp()}.json"
           -
             Lambda:
               FunctionArn: "arn:aws:lambda:us-east-1:732927748536:function:EdgePostHBToTATA-dev"
