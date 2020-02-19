@@ -15,13 +15,12 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ConverterLambda.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="467">
-              <caret line="506" column="69" selection-end-line="522" />
+            <state relative-caret-position="603">
+              <caret line="522" selection-start-line="522" selection-end-line="522" />
               <folding>
                 <element signature="e#0#10#0" expanded="true" />
                 <element signature="e#396#2366#0" />
                 <element signature="e#1956#2023#0" />
-                <element signature="e#2588#7346#0" />
               </folding>
             </state>
           </provider>
@@ -148,13 +147,12 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/ConverterLambda.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="467">
-          <caret line="506" column="69" selection-end-line="522" />
+        <state relative-caret-position="603">
+          <caret line="522" selection-start-line="522" selection-end-line="522" />
           <folding>
             <element signature="e#0#10#0" expanded="true" />
             <element signature="e#396#2366#0" />
             <element signature="e#1956#2023#0" />
-            <element signature="e#2588#7346#0" />
           </folding>
         </state>
       </provider>

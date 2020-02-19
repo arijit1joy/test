@@ -495,7 +495,7 @@ def lambda_handler(lambda_event, context):
 
     print("Posting file to S3...")
 
-    filename = file_key.split("/")[1]
+    filename = file_key
 
     print("Filename: ", filename)
 
