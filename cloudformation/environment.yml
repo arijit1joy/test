@@ -381,6 +381,7 @@ Resources:
         Variables:
           NGDIBody: "{\"messageFormatVersion\": \"\", \"telematicsPartnerName\": \"\", \"customerReference\": \"\", \"componentSerialNumber\": \"\", \"equipmentId\": \"\", \"vin\": \"\", \"telematicsDeviceId\": \"\", \"dataSamplingConfigId\": \"\", \"dataEncryptionSchemeId\": \"\", \"numberOfSamples\": \"\", \"samples\": []}"
           CPPostBucket: !Sub 'edge-j1939-${ApplicationEnvironmentTag}'
+          MandatoryParameters: '{"ss":"telematicsPartnerName,customerReference,messageID"}'
       Tags:
           Name: Edge
 
