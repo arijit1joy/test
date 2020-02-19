@@ -11,7 +11,7 @@ s3resource = boto3.resource('s3')
 
 
 def process_ss(ss_rows, ss_dict, ngdi_json_template, ss_converted_prot_header,
-               ss_converted_device_parameters):
+               ss_raw_prot_header, ss_converted_device_parameters):
     ss_values = ss_rows[1]
 
     print("Single Sample Values:", ss_values)
@@ -93,7 +93,8 @@ def process_ss(ss_rows, ss_dict, ngdi_json_template, ss_converted_prot_header,
 
 
 def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
-               as_converted_device_parameters):
+               as_raw_prot_header, as_converted_device_parameters):
+
     old_as_dict = as_dict
 
     json_sample_head = ngdi_json_template
@@ -503,7 +504,7 @@ def lambda_handler(lambda_event, context):
     else:
         date = filename.split('_')[4][:8]
 
-    s3object = s3resource.Object(cp_post_bucket, ngdi_json_template['componentSerialNumber'] + '/' + ngdi_json_template[
+    s3object = s3resource.Object(cp_post_bucket, "ConvertedFiles/" + ngdi_json_template['componentSerialNumber'] + '/' + ngdi_json_template[
         "telematicsDeviceId"] + '/' + date[:4] + '/' + date[4:6] + '/' + date[6:8] + '/' + filename.split('.csv')[
                                      0] + '.json')
 
