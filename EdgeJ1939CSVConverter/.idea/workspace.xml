@@ -15,11 +15,13 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ConverterLambda.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2547">
-              <caret line="245" column="39" selection-end-line="530" />
+            <state relative-caret-position="-269">
+              <caret line="137" lean-forward="true" selection-start-line="137" selection-end-line="137" />
               <folding>
                 <element signature="e#0#10#0" expanded="true" />
+                <element signature="e#396#2366#0" />
                 <element signature="e#1956#2023#0" />
+                <element signature="e#7295#14648#0" />
               </folding>
             </state>
           </provider>
@@ -37,6 +39,7 @@
       <find>seen_as_raw_params</find>
       <find>IndexError</find>
       <find>asDateTimestamp</find>
+      <find>as_dict</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -145,11 +148,13 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/ConverterLambda.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2547">
-          <caret line="245" column="39" selection-end-line="530" />
+        <state relative-caret-position="-269">
+          <caret line="137" lean-forward="true" selection-start-line="137" selection-end-line="137" />
           <folding>
             <element signature="e#0#10#0" expanded="true" />
+            <element signature="e#396#2366#0" />
             <element signature="e#1956#2023#0" />
+            <element signature="e#7295#14648#0" />
           </folding>
         </state>
       </provider>

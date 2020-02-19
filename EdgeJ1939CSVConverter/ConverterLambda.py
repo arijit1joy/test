@@ -11,7 +11,7 @@ s3resource = boto3.resource('s3')
 
 
 def process_ss(ss_rows, ss_dict, ngdi_json_template, ss_converted_prot_header,
-               ss_raw_prot_header, ss_converted_device_parameters):
+               ss_converted_device_parameters):
     ss_values = ss_rows[1]
 
     print("Single Sample Values:", ss_values)
@@ -93,7 +93,8 @@ def process_ss(ss_rows, ss_dict, ngdi_json_template, ss_converted_prot_header,
 
 
 def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
-               as_raw_prot_header, as_converted_device_parameters):
+               as_converted_device_parameters):
+    old_as_dict = as_dict
 
     json_sample_head = ngdi_json_template
 
@@ -126,26 +127,14 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
 
     for values in as_rows:
 
-        protocol = ""
-
-        network_id = ""
-
-        device_id = ""
-
-        new_as_dict = as_dict
+        new_as_dict = {x: old_as_dict[x] for x in old_as_dict}
 
         parameters = {}
 
-        sample = {}
+        sample = {"convertedDeviceParameters": {}, "rawEquipmentParameters": [], "convertedEquipmentParameters": [],
+                  "convertedEquipmentFaultCodes": []}
 
-        sample["convertedDeviceParameters"] = {}
-
-        sample["rawEquipmentParameters"] = []
-
-        sample["convertedEquipmentParameters"] = []
-
-        sample["convertedEquipmentFaultCodes"] = []
-
+        print("OLD AS DICT:", old_as_dict)
         print("AS DICT:", new_as_dict)
 
         for key in as_converted_device_parameters:
@@ -166,7 +155,7 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
 
         print("Current Sample with Converted Device Parameters:", sample)
 
-        conv_eq_obj = {"protocol": protocol, "networkId": network_id, "deviceId": device_id}
+        conv_eq_obj = {"protocol": protocol, "networkId": network_id, "deviceId": address}
 
         print("Current ConvertedEquipmentParameters:", conv_eq_obj)
 
@@ -192,7 +181,7 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
         # as_dict["GPS_Vehicle_Speed"] = GPS_Vehicle_Speed
         # as_dict["asDateTimestamp"] = asDateTimestamp
 
-        conv_eq_fc_obj = {"protocol": protocol, "networkId": network_id, "deviceId": device_id, "activeFaultCodes": [],
+        conv_eq_fc_obj = {"protocol": protocol, "networkId": network_id, "deviceId": address, "activeFaultCodes": [],
                           "inactiveFaultCodes": [], "pendingFaultCodes": []}
 
         if "activeFaultCodes" in new_as_dict:
@@ -220,9 +209,9 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
 
         if "inactiveFaultCodes" in new_as_dict:
 
-            print("InActiveFaultCode found:", inac_fc)
-
             inac_fc = values[new_as_dict["inactiveFaultCodes"]]
+
+            print("InActiveFaultCode found:", inac_fc)
 
             if inac_fc != "":
 
@@ -245,7 +234,7 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
 
             pen_fc = values[new_as_dict["pendingFaultCodes"]]
 
-            print("InActiveFaultCode found:", inac_fc)
+            print("InActiveFaultCode found:", pen_fc)
 
             if pen_fc != "":
 
@@ -268,14 +257,16 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
 
         json_sample_head["samples"].append(sample)
 
+        print("Updated JSON Sample Head:", json_sample_head)
+
     return json_sample_head
 
 
-def lambda_handler(event, context):
-    print("Event:", json.dumps(event))
+def lambda_handler(lambda_event, context):
+    print("Event:", json.dumps(lambda_event))
 
-    bucket_name = event['Records'][0]['s3']['bucket']['name']
-    file_key = event['Records'][0]['s3']['object']['key']
+    bucket_name = lambda_event['Records'][0]['s3']['bucket']['name']
+    file_key = lambda_event['Records'][0]['s3']['object']['key']
 
     print("Bucket:", bucket_name)
     print("File Key:", file_key)
