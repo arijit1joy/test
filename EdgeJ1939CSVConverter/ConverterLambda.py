@@ -3,214 +3,201 @@ import boto3
 import json
 import os
 
+s3 = boto3.client('s3')
+cp_post_bucket = os.environ["CPPostBucket"]
+MandatoryParameters = json.loads(os.environ["MandatoryParameters"])
+NGDIBody = json.loads(os.environ["NGDIBody"])
+s3resource = boto3.resource('s3')
 
-def processSS(ssRows, ssMap, jsonSampleHead, ssConvertedProtHeader, ssRawProtHeader):
-    values = ssRows[1]
 
-    protocol = ""
+def process_ss(ss_rows, ss_dict, ngdi_json_template, ss_converted_prot_header,
+               ss_raw_prot_header, ss_converted_device_parameters):
+    ss_values = ss_rows[1]
 
-    networkId = ""
+    print("Single Sample Values:", ss_values)
 
-    deviceId = ""
+    json_sample_head = ngdi_json_template
+
+    print("Received Json Body in SS Handler:", json_sample_head)
 
     parameters = {}
 
-    convertedHeader = ssConvertedProtHeader.split("~")
+    ss_sample = {"convertedDeviceParameters": {}, "convertedEquipmentParameters": []}
 
-    if (len(convertedHeader) >= 3):
-        protocol = convertedHeader[1]
+    print("Single Sample Converted Protocol Header:", ss_converted_prot_header)
 
-        networkId = convertedHeader[2]
+    converted_prot_header = ss_converted_prot_header.split("~")
 
-        deviceId = convertedHeader[3]
+    print("Converted Protocol Header Array:", converted_prot_header)
 
-    if ("telematicsPartnerName" in ssMap):
-        jsonSampleHead["telematicsPartnerName"] = values[ssMap["telematicsPartnerName"]]
+    try:
+        protocol = converted_prot_header[1]
 
-        ssMap.pop("telematicsPartnerName")
+        print("protocol:", protocol)
 
-    if ("customerReference" in ssMap):
-        jsonSampleHead["customerReference"] = values[ssMap["customerReference"]]
+        network_id = converted_prot_header[2]
 
-        ssMap.pop("customerReference")
+        print("network_id:", network_id)
 
-    if ("equipmentId" in ssMap):
-        jsonSampleHead["equipmentId"] = values[ssMap["equipmentId"]]
+        address = converted_prot_header[3]
 
-        ssMap.pop("equipmentId")
+        print("address:", address)
 
-    if ("vin" in ssMap):
-        jsonSampleHead["vin"] = values[ssMap["vin"]]
+    except IndexError as e:
 
-        ssMap.pop("vin")
+        print("An exception occurred while trying to retrieve the AS protocols network_id and Address:", e)
 
-    sample = {}
+        return
 
-    if ("ssDateTimestamp" in ssMap):
-        sample["dateTimestamp"] = values[ssMap["ssDateTimestamp"]]
+    print("Handling the device metadata headers in SS:", ss_converted_device_parameters)
 
-        ssMap.pop("ssDateTimestamp")
+    for key in ss_converted_device_parameters:
 
-    sample["convertedDeviceParameters"] = {}
+        if key:
 
-    sample["convertedEquipmentParameters"] = []
+            print("Processing", key)
 
-    if ("messageID" in ssMap):
-        sample["convertedDeviceParameters"]["messageID"] = values[ssMap["messageID"]]
+            if "messageid" in key:
 
-        ssMap.pop("messageID")
+                ss_sample["convertedDeviceParameters"][key] = ss_values[ss_dict[key]]
 
-    convEqObj = {}
+            else:
 
-    convEqObj["protocol"] = protocol
-    convEqObj["networkId"] = networkId
-    convEqObj["deviceId"] = deviceId
+                json_sample_head[key] = ss_values[ss_dict[key]]
 
-    print(ssMap)
+        del ss_dict[key]
 
-    for param in ssMap:
+    conv_eq_obj = {"protocol": protocol, "networkId": network_id, "deviceId": address}
 
-        if (param):
-            parameters[param] = values[ssMap[param]]
-            # if (param.lower() == "1635"):
-            #
-            #     parameters[param] = []
-            #
-            #     val = values[ssMap[param]].split(" ")
-            #
-            #     parameters[param].append(val[0])
-            #
-            #     val.remove(val[0])
-            #
-            #     parameters[param].append(" ".join(val).strip())
-            #
-            # else:
-            #     parameters[param] = values[ssMap[param]]
+    print("Json Sample Head after metadata retrieval:", json_sample_head)
+    print("Converted Equipment Object:", conv_eq_obj)
 
-    convEqObj["parameters"] = parameters
+    for param in ss_dict:
 
-    sample["convertedEquipmentParameters"].append(convEqObj)
+        if param:
+            parameters[param] = ss_values[ss_dict[param]]
 
-    jsonSampleHead["samples"].append(sample)
+    print("SS Parameters:", parameters)
 
-    return jsonSampleHead
+    conv_eq_obj["parameters"] = parameters
+
+    print("Converted Equipment Object with Parameters:", conv_eq_obj)
+
+    ss_sample["convertedEquipmentParameters"].append(conv_eq_obj)
+
+    print("Single Sample:", ss_sample)
+
+    json_sample_head["samples"].append(ss_sample)
+
+    return json_sample_head
 
 
-def processAS(asRows, asMap, jsonSampleHead, asConvertedProtHeader, asRawProtHeader):
-    jsonSampleHead["numberOfSamples"] = len(asRows)
+def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
+               as_raw_prot_header, as_converted_device_parameters):
 
-    for values in asRows:
+    old_as_dict = as_dict
 
-        protocol = ""
+    json_sample_head = ngdi_json_template
 
-        networkId = ""
+    json_sample_head["numberOfSamples"] = len(as_rows)
 
-        deviceId = ""
+    print("Original Template from SS to AS", json_sample_head)
+
+    converted_prot_header = as_converted_prot_header.split("~")
+
+    print("AS Converted Protocol Header array:", converted_prot_header)
+
+    try:
+        protocol = converted_prot_header[1]
+
+        print("protocol:", protocol)
+
+        network_id = converted_prot_header[2]
+
+        print("network_id:", network_id)
+
+        address = converted_prot_header[3]
+
+        print("address:", address)
+
+    except IndexError as e:
+
+        print("An exception occurred while trying to retrieve the AS protocols network_id and Address:", e)
+
+        return
+
+    for values in as_rows:
+
+        new_as_dict = {x: old_as_dict[x] for x in old_as_dict}
 
         parameters = {}
 
-        convertedHeader = asConvertedProtHeader.split("~")
+        sample = {"convertedDeviceParameters": {}, "rawEquipmentParameters": [], "convertedEquipmentParameters": [],
+                  "convertedEquipmentFaultCodes": []}
 
-        if (len(convertedHeader) >= 3):
-            protocol = convertedHeader[1]
+        print("OLD AS DICT:", old_as_dict)
+        print("AS DICT:", new_as_dict)
 
-            networkId = convertedHeader[2]
+        for key in as_converted_device_parameters:
 
-            deviceId = convertedHeader[3]
+            print("CovDevParam:", key)
 
-        sample = {}
+            if key:
 
-        if ("asDateTimestamp" in asMap):
-            sample["dateTimestamp"] = values[asMap["asDateTimestamp"]]
-            asDateTimestamp = asMap.pop("asDateTimestamp")
+                if "datetimestamp" in key.lower():
 
-        sample["convertedDeviceParameters"] = {}
+                    sample[key] = values[new_as_dict[key]]
 
-        sample["rawEquipmentParameters"] = []
+                else:
 
-        sample["convertedEquipmentParameters"] = []
+                    sample["convertedDeviceParameters"][key] = values[new_as_dict[key]]
 
-        sample["convertedEquipmentFaultCodes"] = []
+            del new_as_dict[key]
 
-        if ("Latitude" in asMap):
-            sample["convertedDeviceParameters"]["Latitude"] = values[asMap["Latitude"]]
-            Latitude = asMap.pop("Latitude")
+        print("Current Sample with Converted Device Parameters:", sample)
 
-        if ("Longitude" in asMap):
-            sample["convertedDeviceParameters"]["Longitude"] = values[asMap["Longitude"]]
-            Longitude = asMap.pop("Longitude")
+        conv_eq_obj = {"protocol": protocol, "networkId": network_id, "deviceId": address}
 
-        if ("Altitude" in asMap):
-            sample["convertedDeviceParameters"]["Altitude"] = values[asMap["Altitude"]]
-            Altitude = asMap.pop("Altitude")
+        print("Current ConvertedEquipmentParameters:", conv_eq_obj)
 
-        if ("Direction_Heading" in asMap):
-            sample["convertedDeviceParameters"]["Direction_Heading"] = values[asMap["Direction_Heading"]]
-            Direction_Heading = asMap.pop("Direction_Heading")
+        for param in new_as_dict:
 
-        if ("Vehicle_Distance" in asMap):
-            sample["convertedDeviceParameters"]["Vehicle_Distance"] = values[asMap["Vehicle_Distance"]]
-            Vehicle_Distance = asMap.pop("Vehicle_Distance")
+            if param:
 
-        if ("Location_Text_Description" in asMap):
-            sample["convertedDeviceParameters"]["Location_Text_Description"] = values[
-                asMap["Location_Text_Description"]]
-            Location_Text_Description = asMap.pop("Location_Text_Description")
+                if param != "activeFaultCodes" and param != "inactiveFaultCodes" and param != "pendingFaultCodes":
+                    parameters[param] = values[new_as_dict[param]]
 
-        if ("GPS_Vehicle_Speed" in asMap):
-            sample["convertedDeviceParameters"]["GPS_Vehicle_Speed"] = values[asMap["GPS_Vehicle_Speed"]]
-            GPS_Vehicle_Speed = asMap.pop("GPS_Vehicle_Speed")
+        conv_eq_obj["parameters"] = parameters
 
-        convEqObj = {}
+        sample["convertedEquipmentParameters"].append(conv_eq_obj)
 
-        convEqObj["protocol"] = protocol
-        convEqObj["networkId"] = networkId
-        convEqObj["deviceId"] = deviceId
+        print("Current Sample with Converted Equipment Parameters:", sample)
 
-        for param in asMap:
+        # as_dict["Latitude"] = Latitude
+        # as_dict["Longitude"] = Longitude
+        # as_dict["Altitude"] = Altitude
+        # as_dict["Direction_Heading"] = Direction_Heading
+        # as_dict["Vehicle_Distance"] = Vehicle_Distance
+        # as_dict["Location_Text_Description"] = Location_Text_Description
+        # as_dict["GPS_Vehicle_Speed"] = GPS_Vehicle_Speed
+        # as_dict["asDateTimestamp"] = asDateTimestamp
 
-            if (param):
+        conv_eq_fc_obj = {"protocol": protocol, "networkId": network_id, "deviceId": address, "activeFaultCodes": [],
+                          "inactiveFaultCodes": [], "pendingFaultCodes": []}
 
-                if (param != "activeFaultCodes" and param != "inactiveFaultCodes" and param != "pendingFaultCodes"):
-                    parameters[param] = values[asMap[param]]
+        if "activeFaultCodes" in new_as_dict:
 
-        convEqObj["parameters"] = parameters
+            ac_fc = values[new_as_dict["activeFaultCodes"]]
 
-        sample["convertedEquipmentParameters"].append(convEqObj)
+            print("ActiveFaultCode found:", ac_fc)
 
-        jsonSampleHead["samples"].append(sample)
+            if ac_fc != "":
 
-        asMap["Latitude"] = Latitude
-        asMap["Longitude"] = Longitude
-        asMap["Altitude"] = Altitude
-        asMap["Direction_Heading"] = Direction_Heading
-        asMap["Vehicle_Distance"] = Vehicle_Distance
-        asMap["Location_Text_Description"] = Location_Text_Description
-        asMap["GPS_Vehicle_Speed"] = GPS_Vehicle_Speed
-        asMap["asDateTimestamp"] = asDateTimestamp
+                ac_fc_array = ac_fc.split("|")
 
-        convEqFCObj = {}
+                for fc in ac_fc_array:
 
-        convEqFCObj["protocol"] = protocol
-        convEqFCObj["networkId"] = networkId
-        convEqFCObj["deviceId"] = deviceId
-        convEqFCObj["activeFaultCodes"] = []
-        convEqFCObj["inactiveFaultCodes"] = []
-        convEqFCObj["pendingFaultCodes"] = []
-
-        if ("activeFaultCodes" in asMap):
-
-            acFC = values[asMap["activeFaultCodes"]]
-
-            print(acFC)
-
-            if (acFC != ""):
-
-                acFcArray = acFC.split("|")
-
-                for fc in acFcArray:
-
-                    if (fc):
+                    if fc:
 
                         fcObj = {}
 
@@ -219,40 +206,21 @@ def processAS(asRows, asMap, jsonSampleHead, asConvertedProtHeader, asRawProtHea
                         for fcVal in fcArr:
                             fcObj[fcVal.split(":")[0]] = fcVal.split(":")[1]
 
-                        convEqFCObj["activeFaultCodes"].append(fcObj)
+                        conv_eq_fc_obj["activeFaultCodes"].append(fcObj)
 
-        if ("inactiveFaultCodes" in asMap):
+        if "inactiveFaultCodes" in new_as_dict:
 
-            acFC = values[asMap["inactiveFaultCodes"]]
+            inac_fc = values[new_as_dict["inactiveFaultCodes"]]
 
-            if (acFC != ""):
+            print("InActiveFaultCode found:", inac_fc)
 
-                acFcArray = acFC.split("|")
+            if inac_fc != "":
 
-                for fc in acFcArray:
+                ac_fc_array = inac_fc.split("|")
 
-                    if (fc):
+                for fc in ac_fc_array:
 
-                        fcObj = {}
-
-                        fcArr = fc.split("~")
-
-                        for fcVal in fcArr:
-                            fcObj[fcVal.split(":")[0]] = fcVal.split(":")[1]
-
-                        convEqFCObj["inactiveFaultCodes"].append(fcObj)
-
-        if ("pendingFaultCodes" in asMap):
-
-            acFC = values[asMap["pendingFaultCodes"]]
-
-            if (acFC != ""):
-
-                acFcArray = acFC.split("|")
-
-                for fc in acFcArray:
-
-                    if (fc):
+                    if fc:
 
                         fcObj = {}
 
@@ -261,168 +229,287 @@ def processAS(asRows, asMap, jsonSampleHead, asConvertedProtHeader, asRawProtHea
                         for fcVal in fcArr:
                             fcObj[fcVal.split(":")[0]] = fcVal.split(":")[1]
 
-                        convEqFCObj["pendingFaultCodes"].append(fcObj)
+                        conv_eq_fc_obj["inactiveFaultCodes"].append(fcObj)
 
-        sample["convertedEquipmentFaultCodes"].append(convEqFCObj)
+        if "pendingFaultCodes" in new_as_dict:
 
-    return jsonSampleHead
+            pen_fc = values[new_as_dict["pendingFaultCodes"]]
+
+            print("InActiveFaultCode found:", pen_fc)
+
+            if pen_fc != "":
+
+                ac_fc_array = pen_fc.split("|")
+
+                for fc in ac_fc_array:
+
+                    if fc:
+
+                        fcObj = {}
+
+                        fcArr = fc.split("~")
+
+                        for fcVal in fcArr:
+                            fcObj[fcVal.split(":")[0]] = fcVal.split(":")[1]
+
+                        conv_eq_fc_obj["pendingFaultCodes"].append(fcObj)
+
+        sample["convertedEquipmentFaultCodes"].append(conv_eq_fc_obj)
+
+        json_sample_head["samples"].append(sample)
+
+        print("Updated JSON Sample Head:", json_sample_head)
+
+    return json_sample_head
 
 
-def lambda_handler(event, context):
-    s3 = boto3.client('s3')
+def lambda_handler(lambda_event, context):
+    print("Event:", json.dumps(lambda_event))
 
-    s3resource = boto3.resource('s3')
+    bucket_name = lambda_event['Records'][0]['s3']['bucket']['name']
+    file_key = lambda_event['Records'][0]['s3']['object']['key']
 
-    CPPostBucket = os.environ["CPPostBucket"]
+    print("Bucket:", bucket_name)
+    print("File Key:", file_key)
 
-    print(json.dumps(event))
+    file_key = file_key.replace("%3A", ":")
 
-    bucketName = event['Records'][0]['s3']['bucket']['name']
-    fileKey = event['Records'][0]['s3']['object']['key']
+    print("New FileKey:", file_key)
 
-    print(bucketName)
-    print(fileKey)
-
-    obj = s3.get_object(Bucket=bucketName, Key=fileKey)
-
+    obj = s3.get_object(Bucket=bucket_name, Key=file_key)
     csv_file = obj['Body'].read().decode('utf-8').splitlines(True)
 
-    # Get CSV File
-    # csv_file = open('CD-specificExampleDataFile Rev_2019-08-09.csv', 'r'))
+    print("Csv File:", csv_file)
 
-    # Get Json File Format
-    jsonSampleHead = json.loads(os.environ["NGDIBody"])
+    ngdi_json_template = json.loads(os.environ["NGDIBody"])
 
-    print(jsonSampleHead)
+    print("NGDI Template", ngdi_json_template)
 
-    ssRow = False
-    seenSS = False
+    ss_row = False
+    seen_ss = False
 
-    csvRows = []
-
-    ssRows = []
-    asRows = []
+    csv_rows = []
 
     # Get all the rows from the CSV
     for row in csv.reader(csv_file, delimiter=','):
 
-        newRow = list(filter(lambda x: x != '', row))
+        new_row = list(filter(lambda x: x != '', row))
 
-        if (newRow):
-            csvRows.append(row)
+        if new_row:
+            csv_rows.append(row)
 
-    for row in csvRows:
+    print("CSV Rows: ", csv_rows)
 
-        if (ssRow == False and seenSS == False):
+    ss_rows = []
+    as_rows = []
 
-            if ("messageFormatVersion" in row):
+    for row in csv_rows:
 
-                jsonSampleHead["messageFormatVersion"] = row[1]
+        print("Processing Row:", row)
 
-            elif ("dataEncryptionSchemeId" in row):
+        if (not ss_row) and (not seen_ss):
 
-                jsonSampleHead["dataEncryptionSchemeId"] = row[1]
+            if "messageFormatVersion" in row:
 
-            elif ("telematicsBoxId" in row):
+                print("messageFormatVersion row:", row)
 
-                jsonSampleHead["telematicsDeviceId"] = row[1]
+                ngdi_json_template["messageFormatVersion"] = row[1] if row[1] else None
 
-            elif ("componentSerialNumber" in row):
+            elif "dataEncryptionSchemeId" in row:
 
-                jsonSampleHead["componentSerialNumber"] = row[1]
+                print("dataEncryptionSchemeId row:", row)
 
-            elif ("dataSamplingConfigId" in row):
+                ngdi_json_template["dataEncryptionSchemeId"] = row[1] if row[1] else None
 
-                jsonSampleHead["dataSamplingConfigId"] = row[1]
+            elif "telematicsBoxId" in row:
 
-            elif ("ssDateTimestamp" in row):
+                print("telematicsBoxId row:", row)
 
-                ssRow = True
+                ngdi_json_template["telematicsDeviceId"] = row[1] if row[1] else None
 
-                seenSS = True
+            elif "componentSerialNumber" in row:
 
-                ssRows.append(row)
+                print("componentSerialNumber row:", row)
 
-        elif (ssRow == True):
+                ngdi_json_template["componentSerialNumber"] = row[1] if row[1] else None
 
-            ssRows.append(row)
+            elif "dataSamplingConfigId" in row:
 
-            ssRow = False
+                print("dataSamplingConfigId row:", row)
+
+                ngdi_json_template["dataSamplingConfigId"] = row[1] if row[1] else None
+
+            elif "ssDateTimestamp" in row:
+
+                print("ssDateTimestamp Header row:", row)
+
+                ss_row = True
+                seen_ss = True
+                ss_rows.append(row)
+
+        elif ss_row:
+
+            if "asDateTimestamp" in row:
+                print("Missing the Single Sample Values. ERROR")
+
+                return
+
+            print("ssDateTimestamp Values row:", row)
+
+            ss_rows.append(row)
+
+            ss_row = False
 
         else:
 
-            asRows.append(row)
+            as_rows.append(row)
 
-    ssMap = {}
-    asMap = {}
-    ssConvertedProtHeader = ""
-    asConvertedProtHeader = ""
-    ssRawProtHeader = ""
-    asRawProtHeader = ""
+    if not seen_ss or (not as_rows):
+        print("Missing the Single Sample Values or the All Samples Values. Both are MANDATORY. ERROR!")
+        return
+
+    print("NGDI Template after main metadata addition --->", ngdi_json_template)
+
+    ss_dict = {}
+    as_dict = {}
+    ss_converted_prot_header = ""
+    as_converted_prot_header = ""
+    ss_raw_prot_header = ""
+    as_raw_prot_header = ""
 
     count = 0
 
-    for head in ssRows[0]:
+    ss_headers = ss_rows[0]
+    print("SS Headers:", ss_headers)
 
-        if ('j1939' in head.lower() and 'converted' in head.lower()):
-            ssConvertedProtHeader = head
+    as_headers = as_rows[0]
+    print("AS Headers:", as_headers)
 
-        if ('j1939' in head.lower() and 'raw' in head.lower()):
-            ssRawProtHeader = head
+    ss_converted_device_parameters = []
+    seen_ss_dev_params = False
+    seen_ss_j1939_params = False
+    seen_ss_raw_params = False
 
-        if ('~' in head):
+    as_converted_device_parameters = []
+    seen_as_dev_params = False
+    seen_as_j1939_params = False
+    seen_as_raw_params = False
 
+    mandatory_ss_parameter_list = MandatoryParameters["ss"].split(",") if "ss" in MandatoryParameters else None
+
+    print("Mandatory SS Headers: ", mandatory_ss_parameter_list)
+
+    if mandatory_ss_parameter_list:
+
+        for ss_param in mandatory_ss_parameter_list:
+
+            if ss_param not in ss_headers:
+                print("Some of the SS mandatory headers are missing! Headers ",
+                      mandatory_ss_parameter_list, " are mandatory! ERROR")
+
+                return
+
+    for head in ss_headers:
+
+        if 'device' in head.lower() and 'converted' in head.lower():
+            seen_ss_dev_params = True
+
+        if 'j1939' in head.lower() and 'raw' in head.lower():
+            ss_raw_prot_header = head
+            seen_ss_raw_params = True
+
+        if 'j1939' in head.lower() and 'converted' in head.lower():
+            ss_converted_prot_header = head
+            seen_ss_j1939_params = True
+
+        if '~' in head:
             count = count + 1
-
-            continue
+        elif "datetimestamp" in head.lower():
+            ss_dict["dateTimeStamp"] = count
+            count = count + 1
         else:
 
-            ssMap[head] = count
+            if seen_ss_dev_params and not seen_ss_raw_params and not seen_ss_j1939_params:
+                ss_converted_device_parameters.append(head)
 
+            ss_dict[head] = count
             count = count + 1
+
+    print("SS_DICT:", ss_dict)
+    print("SS Device Headers:", ss_converted_device_parameters)
 
     count = 0
 
-    for head in asRows[0]:
+    mandatory_as_parameter_list = MandatoryParameters["as"].split(",") if "as" in MandatoryParameters else None
 
-        if ('j1939' in head.lower() and 'converted' in head.lower()):
-            asConvertedProtHeader = head
+    print("Mandatory AS Headers: ", mandatory_as_parameter_list)
 
-        if ('j1939' in head.lower() and 'raw' in head.lower()):
-            asRawProtHeader = head
+    if mandatory_as_parameter_list:
 
-        if ('~' in head):
+        for as_param in mandatory_as_parameter_list:
+
+            if as_param not in as_headers:
+                print("Some of the AS mandatory headers are missing! Headers ",
+                      mandatory_as_parameter_list, " are mandatory! ERROR")
+
+                return
+
+    for head in as_headers:
+
+        if 'j1939' in head.lower() and 'converted' in head.lower():
+            as_converted_prot_header = head
+            seen_as_j1939_params = True
+
+        if 'j1939' in head.lower() and 'raw' in head.lower():
+            as_raw_prot_header = head
+            seen_as_raw_params = True
+
+        if 'converted' in head.lower() and 'device' in head.lower():
+            seen_as_dev_params = True
+
+        if '~' in head:
             count = count + 1
-
-            continue
+        elif "datetimestamp" in head.lower():
+            as_dict["dateTimeStamp"] = count
+            count = count + 1
         else:
-            asMap[head] = count
-
+            if seen_as_dev_params and not seen_as_raw_params and not seen_as_j1939_params:
+                as_converted_device_parameters.append(head)
+            as_dict[head] = count
             count = count + 1
 
-    print(ssMap)
+    print("AS_DICT:", as_dict)
+    print("AS Device Parameters:", as_converted_device_parameters)
 
-    print(asMap)
+    del as_rows[0]
 
-    asRows.remove(asRows[0])
+    ngdi_json_template = process_ss(ss_rows, ss_dict, ngdi_json_template, ss_converted_prot_header,
+                                    ss_raw_prot_header, ss_converted_device_parameters)
 
-    jsonSampleHead = processSS(ssRows, ssMap, jsonSampleHead, ssConvertedProtHeader, ssRawProtHeader)
+    print("NGDI JSON Template after SS handling:", ngdi_json_template)
 
-    jsonSampleHead = processAS(asRows, asMap, jsonSampleHead, asConvertedProtHeader, asRawProtHeader)
+    ngdi_json_template = process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
+                                    as_raw_prot_header, as_converted_device_parameters)
 
-    print(jsonSampleHead)
+    print("NGDI JSON Template after AS handling:", ngdi_json_template)
 
     print("Posting file to S3...")
 
-    filename = fileKey.split("/")[1]
+    filename = file_key.split("/")[1]
 
-    s3object = s3resource.Object(CPPostBucket,
-                                 'ConvertedFiles/' + jsonSampleHead["telematicsDeviceId"] + '/' +
-                                 filename.split('.csv')[
+    print("Filename: ", filename)
+
+    if '-' in filename.split('_')[4]:
+        date = filename.split('_')[4][:10].replace('-', '')
+    else:
+        date = filename.split('_')[4][:8]
+
+    s3object = s3resource.Object(cp_post_bucket, "ConvertedFiles/" + ngdi_json_template['componentSerialNumber'] + '/' + ngdi_json_template[
+        "telematicsDeviceId"] + '/' + date[:4] + '/' + date[4:6] + '/' + date[6:8] + '/' + filename.split('.csv')[
                                      0] + '.json')
 
     s3object.put(
-        Body=(bytes(json.dumps(jsonSampleHead).encode('UTF-8')))
+        Body=(bytes(json.dumps(ngdi_json_template).encode('UTF-8')))
     )
 
 

@@ -32,7 +32,7 @@ def lambda_handler(event, context):
     print(file_content)
 
     jsonBody = json.loads(file_content)
-
+    
     print(jsonBody)
 
     devId = jsonBody["telematicsDeviceId"] if "telematicsDeviceId" in jsonBody else None
@@ -173,9 +173,7 @@ def lambda_handler(event, context):
 
                         print(filename)
 
-                        s3object = s3.Object(CPPostBucket,
-                                             'NGDI/' + devId + '/' +
-                                             filename)
+                        s3object = s3.Object(CPPostBucket, fileKey.replace("ConvertedFiles", "NGDI"))
 
                         print(s3object)
 

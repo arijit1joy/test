@@ -209,7 +209,7 @@ Resources:
       - LambdaInvokePermissionJ1939ProcessingBucket
       - LambdaInvokeNGDI2CDSDKPermission
     Properties:
-      BucketName: !Sub '${ApplicationName}-processing-${ApplicationEnvironmentTag}'
+      BucketName: !Sub 'edge-j1939-${ApplicationEnvironmentTag}'
       AccessControl: BucketOwnerFullControl
       BucketEncryption:
         ServerSideEncryptionConfiguration:
@@ -308,7 +308,7 @@ Resources:
       SourceArn: !Join
         - ''
         - - 'arn:aws:s3:::'
-          - !Sub '${ApplicationName}-processing-${ApplicationEnvironmentTag}'
+          - !Sub 'edge-j1939-${ApplicationEnvironmentTag}'
 
   LambdaInvokePermissionJ1939Bucket:
     Type: 'AWS::Lambda::Permission'
@@ -336,7 +336,7 @@ Resources:
       SourceArn: !Join
         - ''
         - - 'arn:aws:s3:::'
-          - !Sub '${ApplicationName}-processing-${ApplicationEnvironmentTag}'
+          - !Sub 'edge-j1939-${ApplicationEnvironmentTag}'
 
   #Functions
 
@@ -380,7 +380,8 @@ Resources:
       Environment:
         Variables:
           NGDIBody: "{\"messageFormatVersion\": \"\", \"telematicsPartnerName\": \"\", \"customerReference\": \"\", \"componentSerialNumber\": \"\", \"equipmentId\": \"\", \"vin\": \"\", \"telematicsDeviceId\": \"\", \"dataSamplingConfigId\": \"\", \"dataEncryptionSchemeId\": \"\", \"numberOfSamples\": \"\", \"samples\": []}"
-          CPPostBucket: !Sub '${ApplicationName}-processing-${ApplicationEnvironmentTag}'
+          CPPostBucket: !Sub 'edge-j1939-${ApplicationEnvironmentTag}'
+          MandatoryParameters: '{"ss":"telematicsPartnerName,customerReference,messageID"}'
       Tags:
           Name: Edge
 
@@ -401,7 +402,7 @@ Resources:
           CPPTGetDevInfo: "{\"method\": \"get\", \"query\": \"SELECT DEVICE_TYPE, DEVICE_OWNER, DOM FROM da_edge_olympus.DEVICE_INFORMATION WHERE DEVICE_ID = %(devId)s;\", \"input\": {\"Params\": [{\"devId\": \"devId\"}]}}"
           CurrentProductsAPI: "https://api.cp.aws.cummins.com/v1/edge-utils/cp-data"
           CurrentProdutCommonAPIKey: "GxcxtISfZE1e9Rb63Gj6kAh5xTTz9ba4hQGfjc20"
-          CPPostBucket: !Sub '${ApplicationName}-processing-${ApplicationEnvironmentTag}'
+          CPPostBucket: !Sub 'edge-j1939-${ApplicationEnvironmentTag}'
           EndpointBucket: !Sub '${ApplicationName}-endpoint-bucket-${ApplicationEnvironmentTag}'
           EndpointFile: "EndpointJson.json"
           Environment: !Sub '${ApplicationEnvironmentTag}'
@@ -419,7 +420,7 @@ Resources:
       TopicRulePayload:
         RuleDisabled: "false"
         AwsIotSqlVersion: "2016-03-23"
-        Sql: "select topic(3) as telematicsDeviceId, * from '$aws/things/+/j1939'"
+        Sql: "SELECT componentSerialNumber, * from '$aws/things/+/public'"
         Actions:
           -
             S3:
@@ -427,7 +428,7 @@ Resources:
               RoleArn: !GetAtt
                   - "RoleForJ1939StreamBucket"
                   - "Arn"
-              Key: "ConvertedFiles/${topic(3)}/${topic(3)}_${timestamp()}.json"
+              Key: 'ConvertedFiles/$componentSerialNumber/${topic(3)}/${parse_time("yyyy", timestamp(), "UTC")}/${parse_time("MM", timestamp(), "UTC")}/${parse_time("dd", timestamp(), "UTC")}/${topic(3)}_${timestamp()}.json'
           -
             Lambda:
               FunctionArn: "arn:aws:lambda:us-east-1:732927748536:function:EdgePostHBToTATA-dev"
