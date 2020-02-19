@@ -11,7 +11,7 @@ s3resource = boto3.resource('s3')
 
 
 def process_ss(ss_rows, ss_dict, ngdi_json_template, ss_converted_prot_header,
-               ss_converted_device_parameters):
+               ss_raw_prot_header, ss_converted_device_parameters):
     ss_values = ss_rows[1]
 
     print("Single Sample Values:", ss_values)

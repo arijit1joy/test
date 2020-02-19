@@ -2,10 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="f2919ab0-2b0d-4f9d-a6a1-840b49d578f5" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../EdgeCPPTPoster/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../EdgeCPPTPoster/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../EdgeCPPTPoster/PosterLambda.py" beforeDir="false" afterPath="$PROJECT_DIR$/../EdgeCPPTPoster/PosterLambda.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ConverterLambda.py" beforeDir="false" afterPath="$PROJECT_DIR$/ConverterLambda.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../cloudformation/environment.yml" beforeDir="false" afterPath="$PROJECT_DIR$/../cloudformation/environment.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -18,18 +15,11 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ConverterLambda.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="449">
-              <caret line="510" column="67" selection-start-line="510" selection-start-column="67" selection-end-line="510" selection-end-column="67" />
+            <state relative-caret-position="353">
+              <caret line="434" selection-end-line="526" />
               <folding>
                 <element signature="e#0#10#0" expanded="true" />
                 <element signature="e#396#2366#0" />
-                <element signature="e#3423#3544#0" />
-                <element signature="e#3815#4043#0" />
-                <element signature="e#4326#4514#0" />
-                <element signature="e#5471#5990#0" />
-                <element signature="e#5613#5990#0" />
-                <element signature="e#6077#6552#0" />
-                <element signature="e#6586#7059#0" />
               </folding>
             </state>
           </provider>
@@ -71,11 +61,11 @@
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds">
-    <option name="x" value="-8" />
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="-9" />
     <option name="y" value="50" />
-    <option name="width" value="977" />
-    <option name="height" value="1038" />
+    <option name="width" value="978" />
+    <option name="height" value="1039" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -85,6 +75,7 @@
     <panes />
   </component>
   <component name="PropertiesComponent">
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="settings.editor.selected.configurable" value="Errors" />
   </component>
   <component name="RunDashboard">
@@ -113,7 +104,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-6" y="40" width="781" height="830" extended-state="0" />
+    <frame x="-7" y="40" width="782" height="831" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" weight="0.24966975" />
@@ -154,18 +145,11 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/ConverterLambda.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="449">
-          <caret line="510" column="67" selection-start-line="510" selection-start-column="67" selection-end-line="510" selection-end-column="67" />
+        <state relative-caret-position="353">
+          <caret line="434" selection-end-line="526" />
           <folding>
             <element signature="e#0#10#0" expanded="true" />
             <element signature="e#396#2366#0" />
-            <element signature="e#3423#3544#0" />
-            <element signature="e#3815#4043#0" />
-            <element signature="e#4326#4514#0" />
-            <element signature="e#5471#5990#0" />
-            <element signature="e#5613#5990#0" />
-            <element signature="e#6077#6552#0" />
-            <element signature="e#6586#7059#0" />
           </folding>
         </state>
       </provider>
