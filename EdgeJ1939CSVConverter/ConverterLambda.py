@@ -146,7 +146,7 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
 
         sample["convertedEquipmentFaultCodes"] = []
 
-        print()
+        print("AS DICT:", new_as_dict)
 
         for key in as_converted_device_parameters:
 
