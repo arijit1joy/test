@@ -7,7 +7,7 @@ s3 = boto3.client('s3')
 cp_post_bucket = os.environ["CPPostBucket"]
 MandatoryParameters = json.loads(os.environ["MandatoryParameters"])
 NGDIBody = json.loads(os.environ["NGDIBody"])
-s3resource = boto3.resource('s3')
+s3_client = boto3.client('s3')
 
 
 def process_ss(ss_rows, ss_dict, ngdi_json_template, ss_converted_prot_header,
@@ -94,7 +94,6 @@ def process_ss(ss_rows, ss_dict, ngdi_json_template, ss_converted_prot_header,
 
 def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
                as_raw_prot_header, as_converted_device_parameters):
-
     old_as_dict = as_dict
 
     json_sample_head = ngdi_json_template
@@ -504,13 +503,11 @@ def lambda_handler(lambda_event, context):
     else:
         date = filename.split('_')[4][:8]
 
-    s3object = s3resource.Object(cp_post_bucket, "ConvertedFiles/" + ngdi_json_template['componentSerialNumber'] + '/' + ngdi_json_template[
-        "telematicsDeviceId"] + '/' + date[:4] + '/' + date[4:6] + '/' + date[6:8] + '/' + filename.split('.csv')[
-                                     0] + '.json')
-
-    s3object.put(
-        Body=(bytes(json.dumps(ngdi_json_template).encode('UTF-8')))
-    )
+    s3object = s3_client.put_object(Bucket=cp_post_bucket,
+                                    Body="ConvertedFiles/" + ngdi_json_template['componentSerialNumber'] + '/' +
+                                         ngdi_json_template["telematicsDeviceId"] + '/' + date[:4] + '/' + date[4:6] +
+                                         '/' + date[6:8] + '/' + filename.split('.csv')[0] + '.json',
+                                    Metadata={'j1939type': 'FC'})
 
 
 '''

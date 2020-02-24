@@ -2,7 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="f2919ab0-2b0d-4f9d-a6a1-840b49d578f5" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/../EdgeCPPTPoster/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../EdgeNGDI2CDSDKConversion/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../EdgeCPPTPoster/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../EdgeCPPTPoster/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ConverterLambda.py" beforeDir="false" afterPath="$PROJECT_DIR$/ConverterLambda.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../EdgeNGDI2CDSDKConversion/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../EdgeNGDI2CDSDKConversion/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -15,12 +20,10 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ConverterLambda.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="603">
-              <caret line="522" selection-start-line="522" selection-end-line="522" />
+            <state relative-caret-position="231">
+              <caret line="498" column="33" selection-end-line="519" />
               <folding>
                 <element signature="e#0#10#0" expanded="true" />
-                <element signature="e#396#2366#0" />
-                <element signature="e#1956#2023#0" />
               </folding>
             </state>
           </provider>
@@ -64,10 +67,9 @@
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-9" />
-    <option name="y" value="50" />
-    <option name="width" value="978" />
-    <option name="height" value="1039" />
+    <option name="x" value="1455" />
+    <option name="width" value="440" />
+    <option name="height" value="460" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -147,12 +149,10 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/ConverterLambda.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="603">
-          <caret line="522" selection-start-line="522" selection-end-line="522" />
+        <state relative-caret-position="231">
+          <caret line="498" column="33" selection-end-line="519" />
           <folding>
             <element signature="e#0#10#0" expanded="true" />
-            <element signature="e#396#2366#0" />
-            <element signature="e#1956#2023#0" />
           </folding>
         </state>
       </provider>
