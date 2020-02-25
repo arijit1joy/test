@@ -117,6 +117,94 @@ Resources:
         PolicyName:                LambdaWorkerPolicy
       RoleName:                    !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-LambdaRole"
 
+  EdgeNGDI2CDSDKConversionLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+      Path: /
+      Policies:
+      - PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action:
+              - 'logs:CreateLogStream'
+              - 'logs:PutLogEvents'
+            Resource: 'arn:aws:logs:*:*:*'
+          - Effect: Allow
+            Action:
+              - 's3:GetObject'
+              - 's3:PutObject'
+            Resource: 
+              Fn::Sub: 'arn:aws:s3:::${ApplicationName}-spn-list-${ApplicationEnvironmentTag}/*'
+          Version:                 '2012-10-17'
+        PolicyName:                LambdaWorkerPolicy
+      RoleName:                    !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeNGDI2CDSDKConversionLambdaRole"
+
+  EdgeJ1939CSVConverterLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+      Path: /
+      Policies:
+      - PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action:
+              - 'logs:CreateLogStream'
+              - 'logs:PutLogEvents'
+            Resource: 'arn:aws:logs:*:*:*'
+          - Effect: Allow
+            Action:
+              - 's3:GetObject'
+              - 's3:PutObject'
+            Resource: 
+              Fn::Sub: 'arn:aws:s3:::edge-j1939-${ApplicationEnvironmentTag}/*'
+          Version:                 '2012-10-17'
+        PolicyName:                LambdaWorkerPolicy
+      RoleName:                    !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeJ1939CSVConverterLambdaRole"
+  
+  EdgeCPPTPosterLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+      Path: /
+      Policies:
+      - PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action:
+              - 'logs:CreateLogStream'
+              - 'logs:PutLogEvents'
+            Resource: 'arn:aws:logs:*:*:*'
+          - Effect: Allow
+            Action:
+              - 's3:GetObject'
+              - 's3:PutObject'
+            Resource: 
+              - !Sub "arn:aws:s3:::edge-j1939-${ApplicationEnvironmentTag}/*",
+              - !Sub "${ApplicationName}-endpoint-bucket-${ApplicationEnvironmentTag}/*"
+          Version:                 '2012-10-17'
+        PolicyName:                LambdaWorkerPolicy
+      RoleName:                    !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeCPPTPosterLambdaRole"
+
   RoleForJ1939StreamBucket:
     Type: AWS::IAM::Role
     Properties:
@@ -351,7 +439,7 @@ Resources:
         Key: !Sub '${VersionId}/EdgeNGDI2CDSDKConversion.zip'
       Description: 'Function to convert the NDGI to CD SDK Format'
       Role: !GetAtt
-          - LambdaTrustRole
+          - EdgeNGDI2CDSDKConversionLambdaRole
           - Arn
       Environment:
         Variables:
@@ -371,7 +459,7 @@ Resources:
       Handler: ConverterLambda.lambda_handler
       FunctionName: !Sub '${ApplicationName}-EdgeJ1939CSVConverter-${ApplicationEnvironmentTag}'
       Role: !GetAtt
-          - LambdaTrustRole
+          - EdgeJ1939CSVConverterLambdaRole
           - Arn
       Runtime: python3.7
       CodeUri:
@@ -391,7 +479,7 @@ Resources:
       Handler: PosterLambda.lambda_handler
       FunctionName: !Sub '${ApplicationName}-EdgeCPPTPoster-${ApplicationEnvironmentTag}'
       Role: !GetAtt
-          - LambdaTrustRole
+          - EdgeCPPTPosterLambdaRole
           - Arn
       Runtime: python3.7
       CodeUri:
