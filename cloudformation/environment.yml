@@ -200,7 +200,7 @@ Resources:
               - 's3:PutObject'
             Resource: 
               - !Sub 'arn:aws:s3:::edge-j1939-${ApplicationEnvironmentTag}/*'
-              # - !Sub '${ApplicationName}-endpoint-bucket-${ApplicationEnvironmentTag}/*'
+              - !Sub 'arn:aws:s3:::${ApplicationName}-endpoint-bucket-${ApplicationEnvironmentTag}/*'
           Version:                 '2012-10-17'
         PolicyName:                LambdaWorkerPolicy
       RoleName:                    !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeCPPTPosterLambdaRole"
