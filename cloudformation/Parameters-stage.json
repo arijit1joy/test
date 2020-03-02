@@ -24,6 +24,10 @@
         "DeviceAssociationURL": "https://api.edge-stage.aws.cummins.com/v1/edge-device/content-spec-association",
         "TestEcfgStorageBucket": "telematics-nonprod-storage-test",
         "DCSCertificate": "32fd3e97-0e17-47fd-bfb1-fe85172944f1",
-        "EdgeCommonDBAPI": "https://api.edge-stage.aws.cummins.com/v3/EdgeDBLambda"
+        "EdgeCommonDBAPI": "https://api.edge-stage.aws.cummins.com/v3/EdgeDBLambda",
+        "PTJ1939PostURL": "https://aek3ahc9f0.execute-api.us-east-1.amazonaws.com/stage/ngdi",
+        "PTJ1939Header": "{\"Content-Type\":\"application/json\"}",
+        "CDPTJ1939PostURL": "https://mt5afmpt32.execute-api.us-east-1.amazonaws.com/Test/ngdi",
+        "CDPTJ1939Header": "{\"Content-Type\":\"application/json\"}"
     }
 }
