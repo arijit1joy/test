@@ -257,10 +257,11 @@ Resources:
                       - !GetAtt
                         - "EdgeJ1939CSVConverterLambdaRole"
                         - "RoleId"
+                      - "{{resolve:ssm:Oem-lambda-role-id:1}}"
+                    AWS:
                       - !GetAtt
                         - "EdgePublicDataIoTTopicRule"
-                        - "RoleId"
-                      - "{{resolve:ssm:Oem-lambda-role-id:1}}"
+                        - "Arn"
               - 
                 Action: 
                   - "s3:GetObject"
