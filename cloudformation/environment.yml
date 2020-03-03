@@ -236,6 +236,51 @@ Resources:
                 Resource: !GetAtt
                   - EdgeJ1939ProcessingBucket
                   - Arn
+                Principal:
+                  AWS: 
+                    - !GetAtt
+                      - "EdgeCPPTPosterLambdaRole"
+                      - "Arn"
+                    - !GetAtt
+                      - "EdgeJ1939CSVConverterLambdaRole"
+                      - "Arn"
+                    - !GetAtt
+                      - "EdgePublicDataIoTTopicRule"
+                      - "Arn"
+                Condition: 
+                  StringLike: 
+                    aws:userId:
+                      - !Ref 'AWS::AccountId'
+                      - !GetAtt
+                        - "EdgeCPPTPosterLambdaRole"
+                        - "RoleId"
+                      - !GetAtt
+                        - "EdgeJ1939CSVConverterLambdaRole"
+                        - "RoleId"
+                      - !GetAtt
+                        - "EdgePublicDataIoTTopicRule"
+                        - "RoleId"
+                      - "{{resolve:ssm:Oem-lambda-role-id:1}}"
+              - 
+                Action: 
+                  - "s3:GetObject"
+                Effect: "Allow"
+                Resource: !GetAtt
+                  - EdgeJ1939ProcessingBucket
+                  - Arn
+                Principal: "*"
+                Condition:
+                  StringLike:
+                    aws:userId:
+                    - "{{resolve:ssm:Azure-user-id:1}}"
+                    - "{{resolve:ssm:olympus-admin-role:1}}"
+                    - "{{resolve:ssm:Oem-lambda-role-id:1}}"
+                    - !GetAtt
+                      - "EdgeCPPTPosterLambdaRole"
+                      - "RoleId"
+                    - !GetAtt
+                      - "EdgeNGDI2CDSDKConversionLambdaRole"
+                      - "RoleId"
 
   RequestsPythonLayer:
     Type: "AWS::Lambda::LayerVersion"
