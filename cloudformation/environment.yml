@@ -575,9 +575,9 @@ Resources:
           -
             S3:
               BucketName: !Ref EdgeJ1939ProcessingBucket
-              # RoleArn: !GetAtt
-              #     - "RoleForJ1939StreamBucket"
-              #     - "Arn"
+              RoleArn: !GetAtt
+                  - "RoleForJ1939StreamBucket"
+                  - "Arn"
               Key: 'ConvertedFiles/$componentSerialNumber/${topic(3)}/${parse_time("yyyy", timestamp(), "UTC")}/${parse_time("MM", timestamp(), "UTC")}/${parse_time("dd", timestamp(), "UTC")}/${topic(3)}_${timestamp()}.json'
           -
             Lambda:
