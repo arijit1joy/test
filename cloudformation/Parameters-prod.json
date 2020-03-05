@@ -2,7 +2,7 @@
     "Parameters": {
         "ApplicationEnvironmentTag": "prod",
         "ApplicationName": "da-edge-j1939",
-        "DomainName": "aws.cummins.com",
+        "DomainName": "awsprd.cummins.com",
         "ApiBasePath": "v1",
         "VersionId": "empty",
         "ArtifactsBucket": "da-edge-pre-reqs-j1939-src-prod-artifactbucket-s1k3x04rn96t",
