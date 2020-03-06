@@ -529,55 +529,55 @@ Resources:
                  - "{{resolve:ssm:Azure-user-id:1}}"
                  - "{{resolve:ssm:olympus-admin-role:1}}"
   
-  EdgeJ1939DataLogBucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties: 
-      Bucket: 
-        Ref: "EdgeJ1939DataLogBucket"
-      PolicyDocument: 
-        Statement:     
-          - 
-            Action: 
-              - "s3:PutObject"
-            Effect: "Allow"
-            Resource: 
-              Fn::Join: 
-                - ""
-                - 
-                  - "arn:aws:s3:::"
-                  - 
-                    Ref: "EdgeJ1939DataLogBucket"
-                  - "/J1939/*"
-            Principal: 
-              - "{{resolve:ssm:EdgeUploadedFileProcessor:1}}"
-            Condition: 
-              StringLike: 
-                aws:userId:
-                  - !Ref 'AWS::AccountId'
-                  - !GetAtt
-                    - "LambdaTrustRole"
-                    - "RoleId"                
-          - 
-            Action: 
-              - "s3:GetObject"
-            Effect: "Allow"
-            Resource: 
-              Fn::Join: 
-                - ""
-                - 
-                  - "arn:aws:s3:::"
-                  - 
-                    Ref: "EdgeJ1939DataLogBucket"
-                  - "/J1939/*"
-            Principal:
-              AWS: !GetAtt
-                  - "EdgeNGDI2CDSDKConversionLambdaRole"
-                  - "Arn"
-            Condition: 
-              StringLike: 
-                aws:userId:
-                 - "{{resolve:ssm:Azure-user-id:1}}"
-                 - "{{resolve:ssm:olympus-admin-role:1}}"
+  # EdgeJ1939DataLogBucketPolicy:
+  #   Type: AWS::S3::BucketPolicy
+  #   Properties: 
+  #     Bucket: 
+  #       Ref: "EdgeJ1939DataLogBucket"
+  #     PolicyDocument: 
+  #       Statement:     
+  #         - 
+  #           Action: 
+  #             - "s3:PutObject"
+  #           Effect: "Allow"
+  #           Resource: 
+  #             Fn::Join: 
+  #               - ""
+  #               - 
+  #                 - "arn:aws:s3:::"
+  #                 - 
+  #                   Ref: "EdgeJ1939DataLogBucket"
+  #                 - "/J1939/*"
+  #           Principal: 
+  #             - "{{resolve:ssm:EdgeUploadedFileProcessor:1}}"
+  #           Condition: 
+  #             StringLike: 
+  #               aws:userId:
+  #                 - !Ref 'AWS::AccountId'
+  #                 - !GetAtt
+  #                   - "LambdaTrustRole"
+  #                   - "RoleId"                
+  #         - 
+  #           Action: 
+  #             - "s3:GetObject"
+  #           Effect: "Allow"
+  #           Resource: 
+  #             Fn::Join: 
+  #               - ""
+  #               - 
+  #                 - "arn:aws:s3:::"
+  #                 - 
+  #                   Ref: "EdgeJ1939DataLogBucket"
+  #                 - "/J1939/*"
+  #           Principal:
+  #             AWS: !GetAtt
+  #                 - "EdgeNGDI2CDSDKConversionLambdaRole"
+  #                 - "Arn"
+  #           Condition: 
+  #             StringLike: 
+  #               aws:userId:
+  #                - "{{resolve:ssm:Azure-user-id:1}}"
+  #                - "{{resolve:ssm:olympus-admin-role:1}}"
 
   SpnlistbucketPolicy:
     Type: AWS::S3::BucketPolicy
