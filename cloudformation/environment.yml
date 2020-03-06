@@ -580,7 +580,7 @@ Resources:
     Type: AWS::S3::BucketPolicy
     Properties: 
       Bucket: 
-        Ref: "EdgeJ1939DataLogBucket"
+        Ref: "Spnlistbucket"
       PolicyDocument: 
         Statement:                   
           - 
@@ -593,7 +593,7 @@ Resources:
                 - 
                   - "arn:aws:s3:::"
                   - 
-                    Ref: "EdgeJ1939DataLogBucket"
+                    Ref: "Spnlistbucket"
                   - "/J1939/*"
             Principal:
               AWS: !GetAtt
