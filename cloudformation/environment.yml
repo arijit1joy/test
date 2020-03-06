@@ -282,6 +282,7 @@ Resources:
                     - !GetAtt
                       - "EdgeNGDI2CDSDKConversionLambdaRole"
                       - "RoleId"
+      RoleName: !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-J1939StreamBucket"
 
   RequestsPythonLayer:
     Type: "AWS::Lambda::LayerVersion"
