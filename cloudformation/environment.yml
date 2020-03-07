@@ -546,7 +546,9 @@ Resources:
                   - 
                     Ref: "EdgeJ1939DataLogBucket"
                   - "/J1939/*"
-            Principal: "{{resolve:ssm:EdgeUploadedFileProcessor:2}}"
+            Principal:
+              AWS: 
+                - "{{resolve:ssm:EdgeUploadedFileProcessor:2}}"
             Condition: 
               StringLike: 
                 aws:userId:
