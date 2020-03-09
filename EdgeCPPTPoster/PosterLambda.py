@@ -96,9 +96,11 @@ def lambda_handler(event, context):
 
     file_object = s3_client.get_object(Bucket=bucket_name, Key=file_key)
 
-    print("File From s3:", file_object)
+    print("Get File Object Response:", file_object)
 
-    json_body = json.loads(file_object)
+    file_object_stream = file_object['Body'].read()
+
+    json_body = json.loads(file_object_stream)
 
     print("File as JSON:", json_body)
 

@@ -14,6 +14,10 @@ def process_ss(ss_rows, ss_dict, ngdi_json_template, ss_converted_prot_header,
                ss_raw_prot_header, ss_converted_device_parameters):
     ss_values = ss_rows[1]
 
+    print(" ")
+    print("<------------------------------------------NEW SS SAMPLE--------------------------------------------->")
+    print(" ")
+
     print("Single Sample Values:", ss_values)
 
     json_sample_head = ngdi_json_template
@@ -134,12 +138,14 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
         sample = {"convertedDeviceParameters": {}, "rawEquipmentParameters": [], "convertedEquipmentParameters": [],
                   "convertedEquipmentFaultCodes": []}
 
+        print(" ")
+        print("<------------------------------------------NEW AS SAMPLE--------------------------------------------->")
+        print(" ")
+
         print("OLD AS DICT:", old_as_dict)
         print("AS DICT:", new_as_dict)
 
         for key in as_converted_device_parameters:
-
-            print("CovDevParam:", key)
 
             if key:
 
@@ -172,15 +178,6 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
 
         print("Current Sample with Converted Equipment Parameters:", sample)
 
-        # as_dict["Latitude"] = Latitude
-        # as_dict["Longitude"] = Longitude
-        # as_dict["Altitude"] = Altitude
-        # as_dict["Direction_Heading"] = Direction_Heading
-        # as_dict["Vehicle_Distance"] = Vehicle_Distance
-        # as_dict["Location_Text_Description"] = Location_Text_Description
-        # as_dict["GPS_Vehicle_Speed"] = GPS_Vehicle_Speed
-        # as_dict["asDateTimestamp"] = asDateTimestamp
-
         conv_eq_fc_obj = {"protocol": protocol, "networkId": network_id, "deviceId": address, "activeFaultCodes": [],
                           "inactiveFaultCodes": [], "pendingFaultCodes": []}
 
@@ -188,9 +185,7 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
 
             ac_fc = values[new_as_dict["activeFaultCodes"]]
 
-            print("ActiveFaultCode found:", ac_fc)
-
-            if ac_fc != "":
+            if ac_fc:
 
                 ac_fc_array = ac_fc.split("|")
 
@@ -211,9 +206,7 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
 
             inac_fc = values[new_as_dict["inactiveFaultCodes"]]
 
-            print("InActiveFaultCode found:", inac_fc)
-
-            if inac_fc != "":
+            if inac_fc:
 
                 ac_fc_array = inac_fc.split("|")
 
@@ -234,9 +227,7 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
 
             pen_fc = values[new_as_dict["pendingFaultCodes"]]
 
-            print("InActiveFaultCode found:", pen_fc)
-
-            if pen_fc != "":
+            if pen_fc:
 
                 ac_fc_array = pen_fc.split("|")
 
@@ -303,8 +294,6 @@ def lambda_handler(lambda_event, context):
     as_rows = []
 
     for row in csv_rows:
-
-        print("Processing Row:", row)
 
         if (not ss_row) and (not seen_ss):
 
@@ -482,15 +471,31 @@ def lambda_handler(lambda_event, context):
 
     del as_rows[0]
 
+    print(" ")
+    print("<xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx---Handling Single Samples---xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>")
+    print(" ")
+
     ngdi_json_template = process_ss(ss_rows, ss_dict, ngdi_json_template, ss_converted_prot_header,
                                     ss_raw_prot_header, ss_converted_device_parameters)
 
     print("NGDI JSON Template after SS handling:", ngdi_json_template)
 
+    print(" ")
+    print("<xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx---Handled Single Samples---xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>")
+    print(" ")
+
+    print(" ")
+    print("<xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx---Handling All Samples---xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>")
+    print(" ")
+
     ngdi_json_template = process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
                                     as_raw_prot_header, as_converted_device_parameters)
 
     print("NGDI JSON Template after AS handling:", ngdi_json_template)
+
+    print(" ")
+    print("<xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx---Handled All Samples---xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>")
+    print(" ")
 
     print("Posting file to S3...")
 
@@ -503,11 +508,14 @@ def lambda_handler(lambda_event, context):
     else:
         date = filename.split('_')[4][:8]
 
-    s3object = s3_client.put_object(Bucket=cp_post_bucket,
-                                    Body="ConvertedFiles/" + ngdi_json_template['componentSerialNumber'] + '/' +
-                                         ngdi_json_template["telematicsDeviceId"] + '/' + date[:4] + '/' + date[4:6] +
-                                         '/' + date[6:8] + '/' + filename.split('.csv')[0] + '.json',
+    store_file_response = s3_client.put_object(Bucket=cp_post_bucket,
+                                    Key="ConvertedFiles/" + ngdi_json_template['componentSerialNumber'] + '/' +
+                                        ngdi_json_template["telematicsDeviceId"] + '/' + date[:4] + '/' + date[4:6] +
+                                        '/' + date[6:8] + '/' + filename.split('.csv')[0] + '.json',
+                                    Body=json.dumps(ngdi_json_template).encode(),
                                     Metadata={'j1939type': 'FC'})
+
+    print("Store File Response:", store_file_response)
 
 
 '''

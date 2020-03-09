@@ -21,13 +21,7 @@ class Parameter:
         self.Parameter_Source_Address = parameter_source_address
 
 
-class Snapshot:
-    Snapshot_DateTimestamp: Optional[str]
-    Parameter: Optional[List[Parameter]]
 
-    def __init__(self, snapshot_date_timestamp: Optional[str], parameter: Optional[List[Parameter]]) -> None:
-        self.Snapshot_DateTimestamp = snapshot_date_timestamp
-        self.Parameter = parameter
 
 class Sdkclass:
     Notification_Version: Optional[str]
@@ -62,7 +56,20 @@ class Sdkclass:
     Customer_Equipment_Group: Optional[List[CustomerEquipmentGroup]]
     Snapshots: Optional[List[Snapshot]]
 
-    def __init__(self, notification_version: Optional[str], message_type: Optional[str], telematics_box_id: Optional[str], telematics_partner_message_id: Optional[int], telematics_partner_name: Optional[str], customer_reference: Optional[str], equipment_id: Optional[int], engine_serial_number: Optional[str], vin: Optional[str], occurrence_date_time: Optional[str], sent_date_time: Optional[datetime], active: Optional[int], datalink_bus: Optional[str], source_address: Optional[int], spn: Optional[int], fmi: Optional[int], occurrence_count: Optional[int], latitude: Optional[str], longitude: Optional[str], altitude: Optional[int], direction_heading: Optional[int], vehicle_distance: Optional[int], location_text_description: Optional[str], gps_vehicle_speed: Optional[int], software_identification: Optional[str], make: Optional[str], model: Optional[str], unit_number: Optional[str], active_faults: Optional[List[Any]], customer_equipment_group: Optional[List[CustomerEquipmentGroup]], snapshots: Optional[List[Snapshot]]) -> None:
+    def __init__(self, notification_version: Optional[str], message_type: Optional[str],
+                 telematics_box_id: Optional[str], telematics_partner_message_id: Optional[int],
+                 telematics_partner_name: Optional[str], customer_reference: Optional[str],
+                 equipment_id: Optional[int], engine_serial_number: Optional[str], vin: Optional[str],
+                 occurrence_date_time: Optional[str], sent_date_time: Optional[datetime],
+                 active: Optional[int], datalink_bus: Optional[str], source_address: Optional[int],
+                 spn: Optional[int], fmi: Optional[int], occurrence_count: Optional[int],
+                 latitude: Optional[str], longitude: Optional[str], altitude: Optional[int],
+                 direction_heading: Optional[int], vehicle_distance: Optional[int],
+                 location_text_description: Optional[str], gps_vehicle_speed: Optional[int],
+                 software_identification: Optional[str], make: Optional[str], model: Optional[str],
+                 unit_number: Optional[str], active_faults: Optional[List[Any]],
+                 customer_equipment_group: Optional[List[CustomerEquipmentGroup]],
+                 snapshots: Optional[List[Snapshot]]) -> None:
         self.Notification_Version = notification_version
         self.Message_Type = message_type
         self.Telematics_Box_ID = telematics_box_id
