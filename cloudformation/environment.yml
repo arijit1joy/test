@@ -147,9 +147,9 @@ Resources:
           - Effect: Allow
             Action:
               - 's3:GetObject'
-              - 's3:PutObject'
             Resource: 
-              Fn::Sub: 'arn:aws:s3:::${ApplicationName}-spn-list-${ApplicationEnvironmentTag}/*'
+              - !Sub 'arn:aws:s3:::edge-j1939-${ApplicationEnvironmentTag}/NGDI/*'
+              - !Sub: 'arn:aws:s3:::${ApplicationName}-spn-list-${ApplicationEnvironmentTag}/*'
           Version:                 '2012-10-17'
         PolicyName:                LambdaWorkerPolicy
       RoleName:                    !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeNGDI2CDSDKConversionLambdaRole"
@@ -236,52 +236,6 @@ Resources:
                 Resource: !GetAtt
                   - EdgeJ1939ProcessingBucket
                   - Arn
-              #   Principal:
-              #     AWS: 
-              #       - !GetAtt
-              #         - "EdgeCPPTPosterLambdaRole"
-              #         - "Arn"
-              #       - !GetAtt
-              #         - "EdgeJ1939CSVConverterLambdaRole"
-              #         - "Arn"
-              #       - !GetAtt
-              #         - "EdgePublicDataIoTTopicRule"
-              #         - "Arn"
-              #   Condition: 
-              #     StringLike: 
-              #       aws:userId:
-              #         - !Ref 'AWS::AccountId'
-              #         - !GetAtt
-              #           - "EdgeCPPTPosterLambdaRole"
-              #           - "RoleId"
-              #         - !GetAtt
-              #           - "EdgeJ1939CSVConverterLambdaRole"
-              #           - "RoleId"
-              #         - "{{resolve:ssm:Oem-lambda-role-id:1}}"
-              #       # AWS:
-              #       #   - !GetAtt
-              #       #     - "EdgePublicDataIoTTopicRule"
-              #       #     - "Arn"
-              # - 
-              #   Action: 
-              #     - "s3:GetObject"
-              #   Effect: "Allow"
-              #   Resource: !GetAtt
-              #     - EdgeJ1939ProcessingBucket
-              #     - Arn
-              #   Principal: "*"
-              #   Condition:
-              #     StringLike:
-              #       aws:userId:
-              #       - "{{resolve:ssm:Azure-user-id:1}}"
-              #       - "{{resolve:ssm:olympus-admin-role:1}}"
-              #       - "{{resolve:ssm:Oem-lambda-role-id:1}}"
-              #       - !GetAtt
-              #         - "EdgeCPPTPosterLambdaRole"
-              #         - "RoleId"
-              #       - !GetAtt
-              #         - "EdgeNGDI2CDSDKConversionLambdaRole"
-              #         - "RoleId"
       RoleName: !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-J1939StreamBucket"
 
   RequestsPythonLayer:
