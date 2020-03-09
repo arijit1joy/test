@@ -237,6 +237,42 @@ Resources:
                   - EdgeJ1939ProcessingBucket
                   - Arn
       RoleName: !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-J1939StreamBucket"
+  EndpointBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties: 
+      Bucket: 
+        Ref: "EndpointBucket"
+      PolicyDocument: 
+        Statement: 
+          - 
+            Action: 
+              - "s3:PutObject"
+              - "s3:GetObject"
+              - "s3:List*"
+            Effect: "Allow"
+            Resource: 
+              Fn::Join: 
+                - ""
+                - 
+                  - "arn:aws:s3:::"
+                  - 
+                    Ref: "EndpointBucket"
+                  - "/*"
+            Principal:
+              AWS: 
+                - !Sub "arn:aws:iam::${AWS::AccountId}:role/${ApplicationName}-device-${ApplicationEnvironmentTag}-EdgeRegAssocLambdaRole"
+                - !GetAtt
+                  - EdgeCPPTPosterLambdaRole
+                  - Arn
+            Condition: 
+              StringLike: 
+                aws:userId:
+                  - "{{resolve:ssm:Azure-user-id:1}}"
+                  - "{{resolve:ssm:olympus-admin-role:1}}"
+                  - !Ref 'AWS::AccountId'
+                  - !GetAtt
+                    - "LambdaTrustRole"
+                    - "RoleId" 
 
   RequestsPythonLayer:
     Type: "AWS::Lambda::LayerVersion"
