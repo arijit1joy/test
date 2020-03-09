@@ -1,14 +1,8 @@
 import json
 import cd_sdk_hb as hbsdk
-# import cd_sdk_fc as fcsdk
-# import sObject as s3_object
 import os
-# import pandas as pd
-# from pandas.io.json import json_normalize
 import boto3
 import requests
-# import uuid
-# import base64
 
 # metadata = {}
 spn_bucket = os.getenv('spn_parameter_json_object')
@@ -28,19 +22,6 @@ s3_client = boto3.client('s3')
 spn_file_stream = s3_client.get_object(Bucket=spn_bucket, Key=spn_bucket_key)
 spn_file = spn_file_stream['Body'].read()
 spn_file_json = json.loads(spn_file)
-
-# print(spnparams)
-
-# def metadatainformation(data):
-#     metadata['messageFormatVersion'] = data['messageFormatVersion'][0] if "messageFormatVersion" in data else None
-#     metadata['telematicsPartnerName'] = data['telematicsPartnerName'][0] if "telematicsPartnerName" in data else None
-#     metadata['customerReference'] = data['customerReference'][0] if "customerReference" in data else None
-#     metadata['componentSerialNumber'] = data['componentSerialNumber'][0] if "componentSerialNumber" in data else None
-#     metadata['equipmentId'] = data['equipmentId'][0] if "equipmentId" in data else None
-#     metadata['vin'] = data['vin'][0] if "vin" in data else None
-#     metadata['telematicsDeviceId'] = data['telematicsDeviceId'][0] if "telematicsDeviceId" in data else None
-#     metadata['dataSamplingConfigId'] = data['dataSamplingConfigId'][0] if "dataSamplingConfigId" in data else None
-#     metadata['dataEncryptionSchemeId'] = data['dataEncryptionSchemeId'][0] if "dataEncryptionSchemeId" in data else None
 
 
 def get_metadata_info(j1939_file):
@@ -311,184 +292,6 @@ def process(bucket, key):
         print("Error! Metadata retrieval failed! See logs.")
 
         return
-
-
-# def processfaults(currentrow, index, fc_or_hb):
-#
-#     # print('-----------------------------------------  CURRENT ROW  ----------------------------------------------')
-#     # print(index, currentrow[index]['dateTimestamp'])
-#     # print(index, currentrow[index]['convertedEquipmentParameters'][0]['parameters'])
-#     # print(index, currentrow[index]['convertedEquipmentFaultCodes'][0]['activeFaultCodes'])
-#     # print('------------------------------------------------------------------------------------------------------')
-#     # print('activeFaultCodes - length ', len(currentrow[index]['convertedEquipmentFaultCodes'][0]['activeFaultCodes']))
-#
-#     conv_eq_fault_codes = currentrow[index]['convertedEquipmentFaultCodes'][0] \
-#         if "convertedEquipmentFaultCodes" in currentrow[index] and currentrow[index]['convertedEquipmentFaultCodes'] \
-#         else []
-#
-#     active_fc_exist = False
-#     inactive_fc_exist = False
-#
-#     # Checking if (in)active fault codes exist
-#     if conv_eq_fault_codes and 'activeFaultCodes' in conv_eq_fault_codes:
-#
-#         active_fc_exist = True
-#         active_fc = conv_eq_fault_codes['activeFaultCodes']
-#
-#     if conv_eq_fault_codes and 'activeFaultCodes' in conv_eq_fault_codes:
-#         inactive_fc_exist = True
-#
-#     sdkjson(currentrow[index]['dateTimestamp'],
-#             currentrow[index]['convertedDeviceParameters.Latitude'] if 'convertedDeviceParameters.Latitude' in currentrow[index] else None,
-#             currentrow[index]['convertedDeviceParameters.Longitude'] if 'convertedDeviceParameters.Longitude' in currentrow[index] else None,
-#             currentrow[index]['convertedDeviceParameters.Altitude'] if 'convertedDeviceParameters.Altitude' in currentrow[index] else None,
-#             currentrow[index]['convertedDeviceParameters.Direction_Heading'] if 'convertedDeviceParameters.Direction_Heading' in currentrow[index] else None,
-#             currentrow[index]['convertedDeviceParameters.Vehicle_Distance'] if 'convertedDeviceParameters.Vehicle_Distance' in currentrow[index] else None,
-#             currentrow[index]['convertedDeviceParameters.Location_Text_Description'] if 'convertedDeviceParameters.Location_Text_Description' in currentrow[index] else None,
-#             currentrow[index]['convertedDeviceParameters.GPS_Vehicle_Speed'] if 'convertedDeviceParameters.GPS_Vehicle_Speed' in currentrow[index] else None,
-#             conv_eq_fault_codes['parameters'],
-#             conv_eq_fault_codes['deviceId'],
-#             conv_eq_fault_codes['activeFaultCodes'] if active_fc_exist
-#             else conv_eq_fault_codes['activeFaultCodes'] if inactive_fc_exist
-#             else conv_eq_fault_codes['inactiveFaultCodes']
-#             if conv_eq_fault_codes and 'inactiveFaultCodes' in conv_eq_fault_codes
-#             else None,
-#             0, fc_or_hb)
-#     elif (InactiveFaultsLen > 0):
-#         sdkjson(currentrow[index]['dateTimestamp'],
-#                 currentrow[index]['convertedDeviceParameters.Latitude'],
-#                 currentrow[index]['convertedDeviceParameters.Longitude'],
-#                 currentrow[index]['convertedDeviceParameters.Altitude'],
-#                 currentrow[index]['convertedDeviceParameters.Direction_Heading'],
-#                 currentrow[index]['convertedDeviceParameters.Vehicle_Distance'],
-#                 currentrow[index]['convertedDeviceParameters.Location_Text_Description'],
-#                 currentrow[index]['convertedDeviceParameters.GPS_Vehicle_Speed'],
-#                 currentrow[index]['convertedEquipmentParameters'][0]['parameters'],
-#                 currentrow[index]['convertedEquipmentParameters'][0]['deviceId'],
-#                 currentrow[index]['convertedEquipmentFaultCodes'][0]['inactiveFaultCodes'],
-#                 1, fc_or_hb)
-#
-#
-# def sdkjson(datetime, latitude, longitude, altitiude, direction, distance, location, speed, parameters,
-#             paramsourceaddres, faults, active, fcHb):
-#     if active == 0:
-#         # print('Snapshot_DateTimestamp : ', datetime,
-#         #       ' Latitude : ', latitude,
-#         #       ' Longitude : ', longitude,
-#         #       ' Altitude : ', altitiude,
-#         #       ' Direction_Heading : ', direction,
-#         #       ' Vehicle_Distance : ', distance,
-#         #       ' Location_Text_Description : ',location,
-#         #       ' GPS_Vehicle_Speed : ', speed,
-#         #       ' Snapshot_Parameters : ', parameters,
-#         #       ' Active Faults :', faults)
-#         finalmessage(datetime, latitude, longitude, altitiude, direction, distance, location, speed, parameters,
-#                      paramsourceaddres, faults, 0, fcHb)
-#     elif active == 1:
-#         # print('Snapshot_DateTimestamp : ', datetime,
-#         #       ' Latitude : ', latitude,
-#         #       ' Longitude : ', longitude,
-#         #       ' Altitude : ', altitiude,
-#         #       ' Direction_Heading : ', direction,
-#         #       ' Vehicle_Distance : ', distance,
-#         #       ' Location_Text_Description : ',location,
-#         #       ' GPS_Vehicle_Speed : ', speed,
-#         #       ' Snapshot_Parameters : ', parameters,
-#         #       ' InActive Faults :', faults)
-#         finalmessage(datetime, latitude, longitude, altitiude, direction, distance, location, speed, parameters,
-#                      paramsourceaddres, faults, 1, fcHb)
-#
-#
-# def finalmessage(datetime, latitude, longitude, altitiude, direction, distance, location, speed, parameters,
-#                  paramsourceaddres, faults, activeorinactive, FCHB):
-#     parameter = []
-#     snapshots = json.loads(json.dumps(parameters))
-#     for key, value in snapshots.items():
-#         # print('Name : ', key, ' Value : ', value, ' Parameter_Source_Address : ', paramsourceaddres)
-#         parameter.append({"Name": spnparams[key], "Value": value, "Parameter_Source_Address": paramsourceaddres})
-#
-#     snapshotdata = []
-#     snapshot = cdsdk.Snapshot(datetime, json.loads(json.dumps(parameter)))
-#     snapshotdata.append(snapshot.__dict__)
-#     # print(snapshotdata)
-#     # snapshot.snapshot_date_timestamp = datetime
-#     # snapshot.parameter = json.loads(json.dumps(parameter))
-#
-#     equimentgroups = []
-#     equimentgroup = cdsdk.CustomerEquipmentGroup(equimentgroups)
-#
-#     spnfmi = json.loads(json.dumps(faults))
-#     # print(spnfmi)
-#     for spns in spnfmi:
-#         spn = ''
-#         fmi = ''
-#         count = ''
-#         for key, value in spns.items():
-#             if key == 'spn':
-#                 spn = value
-#             if key == 'fmi':
-#                 fmi = value
-#             if key == 'count':
-#                 count = value
-#         # print('spn : ', spn)
-#         # print('fmi : ', fmi)
-#         # print('count : ', count)
-#         # print('FCorHB : ', FCorHB)
-#         sdk = cdsdk.Sdkclass(
-#             '1.0',
-#             FCHB,
-#             metadata['telematicsDeviceId'],
-#             get_a_uuid(),
-#             metadata['telematicsPartnerName'],
-#             metadata['customerReference'],
-#             metadata['equipmentId'],
-#             metadata['componentSerialNumber'],
-#             metadata['vin'],
-#             datetime,
-#             datetime,
-#             activeorinactive,
-#             '',
-#             paramsourceaddres,
-#             spn,
-#             fmi,
-#             count,
-#             latitude,
-#             longitude,
-#             altitiude,
-#             direction,
-#             distance,
-#             location,
-#             speed,
-#             '',
-#             'Cummins',
-#             'Model',
-#             'Unit Number',
-#             '',
-#             equimentgroup.__dict__,
-#             snapshotdata)
-#
-#         jsonObj = json.dumps(sdk.__dict__)
-#         post_cd_message(jsonObj)
-#
-#
-# def get_a_uuid():
-#     uuid_info = str(uuid.uuid4())
-#     return uuid_info
-#
-#
-# def serialize(obj):
-#     if isinstance(obj, date):
-#         serial = obj.isoformat()
-#         return serial
-#
-#
-# def set_pandas_options() -> None:
-#
-#     pd.options.display.max_columns = 1000
-#     pd.options.display.max_rows = 1000
-#     pd.options.display.max_colwidth = 199
-#     pd.options.display.width = None
-#     # pd.options.display.precision = 2  # set as needed
 
 
 def lambda_handler(event, context):

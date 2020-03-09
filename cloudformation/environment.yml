@@ -236,52 +236,52 @@ Resources:
                 Resource: !GetAtt
                   - EdgeJ1939ProcessingBucket
                   - Arn
-                Principal:
-                  AWS: 
-                    - !GetAtt
-                      - "EdgeCPPTPosterLambdaRole"
-                      - "Arn"
-                    - !GetAtt
-                      - "EdgeJ1939CSVConverterLambdaRole"
-                      - "Arn"
-                    - !GetAtt
-                      - "EdgePublicDataIoTTopicRule"
-                      - "Arn"
-                Condition: 
-                  StringLike: 
-                    aws:userId:
-                      - !Ref 'AWS::AccountId'
-                      - !GetAtt
-                        - "EdgeCPPTPosterLambdaRole"
-                        - "RoleId"
-                      - !GetAtt
-                        - "EdgeJ1939CSVConverterLambdaRole"
-                        - "RoleId"
-                      - "{{resolve:ssm:Oem-lambda-role-id:1}}"
-                    # AWS:
-                    #   - !GetAtt
-                    #     - "EdgePublicDataIoTTopicRule"
-                    #     - "Arn"
-              - 
-                Action: 
-                  - "s3:GetObject"
-                Effect: "Allow"
-                Resource: !GetAtt
-                  - EdgeJ1939ProcessingBucket
-                  - Arn
-                Principal: "*"
-                Condition:
-                  StringLike:
-                    aws:userId:
-                    - "{{resolve:ssm:Azure-user-id:1}}"
-                    - "{{resolve:ssm:olympus-admin-role:1}}"
-                    - "{{resolve:ssm:Oem-lambda-role-id:1}}"
-                    - !GetAtt
-                      - "EdgeCPPTPosterLambdaRole"
-                      - "RoleId"
-                    - !GetAtt
-                      - "EdgeNGDI2CDSDKConversionLambdaRole"
-                      - "RoleId"
+              #   Principal:
+              #     AWS: 
+              #       - !GetAtt
+              #         - "EdgeCPPTPosterLambdaRole"
+              #         - "Arn"
+              #       - !GetAtt
+              #         - "EdgeJ1939CSVConverterLambdaRole"
+              #         - "Arn"
+              #       - !GetAtt
+              #         - "EdgePublicDataIoTTopicRule"
+              #         - "Arn"
+              #   Condition: 
+              #     StringLike: 
+              #       aws:userId:
+              #         - !Ref 'AWS::AccountId'
+              #         - !GetAtt
+              #           - "EdgeCPPTPosterLambdaRole"
+              #           - "RoleId"
+              #         - !GetAtt
+              #           - "EdgeJ1939CSVConverterLambdaRole"
+              #           - "RoleId"
+              #         - "{{resolve:ssm:Oem-lambda-role-id:1}}"
+              #       # AWS:
+              #       #   - !GetAtt
+              #       #     - "EdgePublicDataIoTTopicRule"
+              #       #     - "Arn"
+              # - 
+              #   Action: 
+              #     - "s3:GetObject"
+              #   Effect: "Allow"
+              #   Resource: !GetAtt
+              #     - EdgeJ1939ProcessingBucket
+              #     - Arn
+              #   Principal: "*"
+              #   Condition:
+              #     StringLike:
+              #       aws:userId:
+              #       - "{{resolve:ssm:Azure-user-id:1}}"
+              #       - "{{resolve:ssm:olympus-admin-role:1}}"
+              #       - "{{resolve:ssm:Oem-lambda-role-id:1}}"
+              #       - !GetAtt
+              #         - "EdgeCPPTPosterLambdaRole"
+              #         - "RoleId"
+              #       - !GetAtt
+              #         - "EdgeNGDI2CDSDKConversionLambdaRole"
+              #         - "RoleId"
       RoleName: !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-J1939StreamBucket"
 
   RequestsPythonLayer:
@@ -454,6 +454,7 @@ Resources:
                 - !GetAtt
                   - EdgeJ1939CSVConverterLambdaRole
                   - Arn
+                - !Sub "arn:aws:iam::${AWS::AccountId}:role/da-edge-oem-${ApplicationEnvironmentTag}-LambdaRole"
             Condition: 
               StringLike: 
                 aws:userId:
