@@ -149,7 +149,7 @@ Resources:
               - 's3:GetObject'
             Resource: 
               - !Sub 'arn:aws:s3:::edge-j1939-${ApplicationEnvironmentTag}/NGDI/*'
-              - !Sub: 'arn:aws:s3:::${ApplicationName}-spn-list-${ApplicationEnvironmentTag}/*'
+              - !Sub 'arn:aws:s3:::${ApplicationName}-spn-list-${ApplicationEnvironmentTag}/*'
           Version:                 '2012-10-17'
         PolicyName:                LambdaWorkerPolicy
       RoleName:                    !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeNGDI2CDSDKConversionLambdaRole"
