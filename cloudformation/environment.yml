@@ -237,6 +237,7 @@ Resources:
                   - EdgeJ1939ProcessingBucket
                   - Arn
       RoleName: !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-J1939StreamBucket"
+
   EndpointBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties: 
@@ -260,7 +261,7 @@ Resources:
                   - "/*"
             Principal:
               AWS: 
-                - !Sub "arn:aws:iam::${AWS::AccountId}:role/${ApplicationName}-device-${ApplicationEnvironmentTag}-EdgeRegAssocLambdaRole"
+                - !Sub "arn:aws:iam::${AWS::AccountId}:role/da-edge-device-device-${ApplicationEnvironmentTag}-EdgeRegAssocLambdaRole"
                 - !GetAtt
                   - EdgeCPPTPosterLambdaRole
                   - Arn

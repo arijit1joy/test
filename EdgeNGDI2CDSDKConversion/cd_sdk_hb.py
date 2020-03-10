@@ -1,4 +1,14 @@
 import json
+import uuid
+
+
+def get_message_id():
+
+    message_id = str(uuid.uuid4())
+
+    print("MessageID:", message_id)
+
+    return message_id
 
 
 def get_json_payload():
@@ -44,6 +54,8 @@ class CDHBSDK:
 
         json_payload = get_json_payload()
 
+        print("HB JSON Payload:", json_payload)
+
         for var in class_variables:
 
             if class_variables[var]:
@@ -58,7 +70,13 @@ class CDHBSDK:
 
                 json_payload[param] = self.values[param.lower()]
 
-        return json_payload
+        if not json_payload["Telematics_Partner_Message_ID"]:
+
+            json_payload["Telematics_Partner_Message_ID"] = get_message_id()
+
+        print("NEW HB JSON Payload:", json_payload)
+
+        return json.loads(json.dumps(json_payload))
 
     def get_payload(self):
 

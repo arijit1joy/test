@@ -12,7 +12,7 @@ cd_url = os.getenv('cd_url')
 converted_equip_params_var = os.getenv('converted_equip_params')
 converted_device_params_var = os.getenv('converted_device_params')
 converted_equip_fc_var = os.getenv('converted_equip_fc')
-class_arg_map = os.getenv('class_arg_map')
+class_arg_map = json.loads(os.getenv('class_arg_map'))
 time_stamp_param = os.getenv('time_stamp_param')
 active_fault_code_indicator = os.getenv('active_fault_code_indicator')
 param_indicator = os.getenv('param_indicator')
@@ -25,32 +25,32 @@ spn_file_json = json.loads(spn_file)
 
 
 def get_metadata_info(j1939_file):
-
+    j1939_file_val = j1939_file
     print("Removing 'samples' from the j1939 file...")
 
     try:
-        del j1939_file["samples"]
+        j1939_file_val.pop("samples")
 
-        print("j1939 file with no samples:", j1939_file)
+        print("j1939 file with no samples:", j1939_file_val)
 
-        return j1939_file
+        return j1939_file_val
 
     except Exception as e:
 
         print("An exception occurred while retrieving metadata:", e)
 
-        return  False
+        return False
 
 
 def get_snapshot_data(params, time_stamp, address):
-
     print("Getting snapshot data for the parameter list:", params)
 
     snapshot_data = []
 
+    print("SPN File as JSON:", spn_file_json)
+
     try:
         for param in params:
-
             snapshot_data.append({"Snapshot_DateTimestamp": time_stamp,
                                   "Parameter": [{
                                       "Name": spn_file_json[param],
@@ -67,23 +67,25 @@ def get_snapshot_data(params, time_stamp, address):
 
 
 def post_cd_message(data):
-
     PARAMS = {}
     req = requests.get(url=auth_token_url, params=PARAMS)
     auth_token = json.loads(req.text)
     # print('AuthToken  -- >', auth_token['authToken'])
     auth_token_info = auth_token['authToken']
 
+    url = cd_url + auth_token_info
+
     print('Auth Token ---------------->', auth_token_info)
-    print('Faults   ------------------> ', data)
-    print('cd_url   ------------------> ', cd_url)
-    r = requests.post(url=cd_url + auth_token_info, data=data)
+    print('File to send to CD   ------------------> ', data)
+    print('cd_url   ------------------> ', url)
+    print('Type of message:', type(data))
+
+    r = requests.post(url=url, json=data)
     response = r.text
     print('response ------------> ', response)
 
 
 def handle_hb(converted_device_params, converted_equip_params, converted_equip_fc, metadata, time_stamp):
-
     var_dict = {}
     address = ""
 
@@ -155,7 +157,6 @@ def handle_hb(converted_device_params, converted_equip_params, converted_equip_f
                                     if fc_param in converted_equip_fc:
 
                                         for fc in converted_equip_fc[fc_param]:
-
                                             fc["Fault_Source_Address"] = address
                                             fc["SPN"] = fc["spn"]
                                             fc["FMI"] = fc["fmi"]
@@ -182,7 +183,6 @@ def handle_hb(converted_device_params, converted_equip_params, converted_equip_f
 
 
 def send_sample(sample, metadata, fc_or_hb):
-
     print("Handling Sample:", sample)
 
     converted_equip_params = []
@@ -197,25 +197,21 @@ def send_sample(sample, metadata, fc_or_hb):
     print("Retrieving the params from the Sample")
 
     if converted_equip_params_var in sample:
-
         converted_equip_params = sample[converted_equip_params_var][0] if sample[converted_equip_params_var] else []
 
         print("Found", converted_equip_params_var, ":", converted_equip_params)
 
     if converted_device_params_var in sample:
-
         converted_device_params = sample[converted_device_params_var] if sample[converted_device_params_var] else {}
 
         print("Found", converted_device_params_var, ":", converted_device_params)
 
     if converted_equip_fc_var in sample:
-
         converted_equip_fc = sample[converted_equip_fc_var][0] if sample[converted_equip_fc_var] else []
 
         print("Found", converted_equip_fc_var, ":", converted_equip_fc)
 
     if time_stamp_param in sample:
-
         time_stamp = sample[time_stamp_param]
 
     print("Sample Time Stamp:", time_stamp)
@@ -234,11 +230,10 @@ def send_sample(sample, metadata, fc_or_hb):
 
 
 def process(bucket, key):
-
     print("Retrieving the JSON file from the NGDI folder")
 
     j1939_file_object = s3_client.get_object(Bucket=bucket, Key=key)
-    
+
     print("Checking if this is HB or FC...")
 
     file_metadata = j1939_file_object["Metadata"]
@@ -250,7 +245,6 @@ def process(bucket, key):
     print("FC or HB : ", fc_or_hb)
 
     if not fc_or_hb:
-
         print("Error! Cannot determine if this is an FC of an HB file. Check file metadata!")
 
         return
@@ -263,22 +257,21 @@ def process(bucket, key):
 
     print("Retrieving Metadata from the file:", j1939_file)
 
+    print("Retrieving Samples from the file:", j1939_file)
+
+    samples = j1939_file["samples"] if "samples" in j1939_file else None
+
+    print("File Samples:", samples)
+
     metadata = get_metadata_info(j1939_file)
 
     if metadata:
-
-        print("Retrieving Samples from the file:", j1939_file)
-
-        samples = j1939_file["samples"] if "samples" in j1939_file else None
-
-        print("File Samples:", samples)
 
         if samples:
 
             print("Sending samples for CD processing . . .")
 
             for sample in samples:
-
                 send_sample(sample, metadata, fc_or_hb)
 
         else:
@@ -295,8 +288,7 @@ def process(bucket, key):
 
 
 def lambda_handler(event, context):
-
-    print("Lambda Event:")
+    print("Lambda Event:", event)
 
     print("NGDI JSON Object:", event['Records'][0]['s3']['object']['key'])
 
