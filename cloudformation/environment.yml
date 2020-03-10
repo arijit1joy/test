@@ -397,7 +397,7 @@ Resources:
   EndpointBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub 'da-edge-${AWS::AccountId}-endpoint-bucket-${ApplicationEnvironmentTag}'
+      BucketName: !Sub 'da-edge-j1939-endpoint-bucket-${ApplicationEnvironmentTag}'
       AccessControl: BucketOwnerFullControl
       BucketEncryption:
         ServerSideEncryptionConfiguration:
@@ -411,7 +411,7 @@ Resources:
   Spnlistbucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub 'da-edge-${AWS::AccountId}-spn-list-${ApplicationEnvironmentTag}'
+      BucketName: !Sub 'da-edge-j1939-spn-list-${ApplicationEnvironmentTag}'
       AccessControl: BucketOwnerFullControl
       BucketEncryption:
         ServerSideEncryptionConfiguration:
@@ -615,19 +615,19 @@ Resources:
         - - 'arn:aws:s3:::'
           - !Sub 'edge-j1939-${ApplicationEnvironmentTag}'
 
-  LambdaInvokePermissionJ1939Bucket:
-    Type: 'AWS::Lambda::Permission'
-    Properties:
-      FunctionName: !GetAtt
-        - EdgeJ1939CSVConverter
-        - Arn
-      Action: 'lambda:InvokeFunction'
-      Principal: s3.amazonaws.com
-      SourceAccount: !Ref 'AWS::AccountId'
-      SourceArn: !Join
-        - ''
-        - - 'arn:aws:s3:::'
-          - !Sub 'da-edge-${AWS::AccountId}-decrypt-files-${ApplicationEnvironmentTag}'
+  # LambdaInvokePermissionJ1939Bucket:
+  #   Type: 'AWS::Lambda::Permission'
+  #   Properties:
+  #     FunctionName: !GetAtt
+  #       - EdgeJ1939CSVConverter
+  #       - Arn
+  #     Action: 'lambda:InvokeFunction'
+  #     Principal: s3.amazonaws.com
+  #     SourceAccount: !Ref 'AWS::AccountId'
+  #     SourceArn: !Join
+  #       - ''
+  #       - - 'arn:aws:s3:::'
+  #         - !Sub 'da-edge-${AWS::AccountId}-decrypt-files-${ApplicationEnvironmentTag}'
 
   LambdaInvokeNGDI2CDSDKPermission:
     Type: 'AWS::Lambda::Permission'
