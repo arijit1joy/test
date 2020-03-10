@@ -23,6 +23,11 @@
         "EfpaCbsPocLambdaArn": "arn:aws:lambda:us-east-2:083597665337:function:EdgeEfpaProcessor-Test",
         "DeviceAssociationURL": "https://api.edge-test.aws.cummins.com/v1/edge-device/content-spec-association",
         "TestEcfgStorageBucket": "telematics-nonprod-storage-test",
-        "DCSCertificate": "77e08d23-c9d7-442a-9379-4d3b55ee2fc5"
+        "DCSCertificate": "77e08d23-c9d7-442a-9379-4d3b55ee2fc5",
+        "EdgeCommonDBAPI": "https://api.edge-test.aws.cummins.com/v3/EdgeDBLambda",
+        "PTJ1939PostURL": "https://mt5afmpt32.execute-api.us-east-1.amazonaws.com/Test/ngdi",
+        "PTJ1939Header": "{\"Content-Type\":\"application/json\"}",
+        "CDPTJ1939PostURL": "https://mt5afmpt32.execute-api.us-east-1.amazonaws.com/Test/ngdi",
+        "CDPTJ1939Header": "{\"Content-Type\":\"application/json\"}"
     }
 }
