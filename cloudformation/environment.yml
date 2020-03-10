@@ -712,7 +712,6 @@ Resources:
       Environment:
         Variables:
           CPPTGetDevInfo: "{\"method\": \"get\", \"query\": \"SELECT DEVICE_TYPE, DEVICE_OWNER, DOM FROM CS_PARTNER_VAL.EDG_DEVICE_INFORMATION WHERE DEVICE_ID = %(devId)s;\", \"input\": {\"Params\": [{\"devId\": \"devId\"}]}}"
-          CurrentProductsAPI: "https://api.cp.aws.cummins.com/v1/edge-utils/cp-data"
           CurrentProductsAPI: !Ref CPDBApi
           CurrentProdutCommonAPIKey: "GxcxtISfZE1e9Rb63Gj6kAh5xTTz9ba4hQGfjc20"
           CPPostBucket: !Sub 'edge-j1939-${ApplicationEnvironmentTag}'
@@ -750,9 +749,7 @@ Resources:
               Key: 'ConvertedFiles/$componentSerialNumber/${topic(3)}/${parse_time("yyyy", timestamp(), "UTC")}/${parse_time("MM", timestamp(), "UTC")}/${parse_time("dd", timestamp(), "UTC")}/${topic(3)}_${timestamp()}.json'
           -
             Lambda:
-              FunctionArn: !GetAtt
-                  - "EdgePostHBToTATA"
-                  - "Arn"
+              FunctionArn: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:EdgePostHBToTATA-${ApplicationEnvironmentTag}"
   
   EdgeJ1939Bucket: 
     Type: "AWS::SSM::Parameter"
