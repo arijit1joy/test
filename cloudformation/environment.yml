@@ -265,15 +265,17 @@ Resources:
                 - !GetAtt
                   - EdgeCPPTPosterLambdaRole
                   - Arn
-            Condition: 
-              StringLike: 
-                aws:userId:
-                  - "{{resolve:ssm:Azure-user-id:1}}"
-                  - "{{resolve:ssm:olympus-admin-role:1}}"
-                  - !Ref 'AWS::AccountId'
-                  - !GetAtt
-                    - "LambdaTrustRole"
-                    - "RoleId" 
+                - "{{resolve:ssm:olympus-admin-role:1}}"
+                - "{{resolve:ssm:Azure-user-id:1}}"
+            # Condition: 
+            #   StringLike: 
+            #     aws:userId:
+                  
+                  
+            #       - !Ref 'AWS::AccountId'
+            #       - !GetAtt
+            #         - "LambdaTrustRole"
+            #         - "RoleId" 
 
   RequestsPythonLayer:
     Type: "AWS::Lambda::LayerVersion"
@@ -446,13 +448,13 @@ Resources:
                   - EdgeJ1939CSVConverterLambdaRole
                   - Arn
                 - !Sub "arn:aws:iam::${AWS::AccountId}:role/da-edge-oem-${ApplicationEnvironmentTag}-LambdaRole"
-            Condition: 
-              StringLike: 
-                aws:userId:
-                  - !Ref 'AWS::AccountId'
-                  - !GetAtt
-                    - "LambdaTrustRole"
-                    - "RoleId"    
+            # Condition: 
+            #   StringLike: 
+            #     aws:userId:
+            #       - !Ref 'AWS::AccountId'
+            #       - !GetAtt
+            #         - "LambdaTrustRole"
+            #         - "RoleId"    
           - 
             Action: 
               - "s3:PutObject"
@@ -469,13 +471,13 @@ Resources:
               AWS: !GetAtt
                   - "EdgeCPPTPosterLambdaRole"
                   - "Arn"
-            Condition: 
-              StringLike: 
-                aws:userId:
-                  - !Ref 'AWS::AccountId'
-                  - !GetAtt
-                    - "LambdaTrustRole"
-                    - "RoleId"                
+            # Condition: 
+            #   StringLike: 
+            #     aws:userId:
+            #       - !Ref 'AWS::AccountId'
+            #       - !GetAtt
+            #         - "LambdaTrustRole"
+            #         - "RoleId"                
           - 
             Action: 
               - "s3:GetObject"
@@ -489,14 +491,13 @@ Resources:
                     Ref: "EdgeJ1939ProcessingBucket"
                   - "/*"
             Principal:
-              AWS: !GetAtt
+              AWS: 
+                - !GetAtt
                   - "EdgeCPPTPosterLambdaRole"
                   - "Arn"
-            Condition: 
-              StringLike: 
-                aws:userId:
-                 - "{{resolve:ssm:Azure-user-id:1}}"
-                 - "{{resolve:ssm:olympus-admin-role:1}}"
+                - !GetAtt
+                  - "EdgeNGDI2CDSDKConversionLambdaRole"
+                  - "Arn"
           - 
             Action: 
               - "s3:GetObject"
@@ -510,14 +511,10 @@ Resources:
                     Ref: "EdgeJ1939ProcessingBucket"
                   - "/NGDI/*"
             Principal:
-              AWS: !GetAtt
-                  - "EdgeNGDI2CDSDKConversionLambdaRole"
-                  - "Arn"
-            Condition: 
-              StringLike: 
-                aws:userId:
-                 - "{{resolve:ssm:Azure-user-id:1}}"
-                 - "{{resolve:ssm:olympus-admin-role:1}}"
+              AWS: 
+                  - "{{resolve:ssm:Azure-user-id:1}}"
+                  - "{{resolve:ssm:olympus-admin-role:1}}"
+
   
   EdgeJ1939DataLogBucketPolicy:
     Type: AWS::S3::BucketPolicy
@@ -541,13 +538,13 @@ Resources:
             Principal:
               AWS: 
                 - "{{resolve:ssm:EdgeUploadedFileProcessor:2}}"
-            Condition: 
-              StringLike: 
-                aws:userId:
-                  - !Ref 'AWS::AccountId'
-                  - !GetAtt
-                    - "LambdaTrustRole"
-                    - "RoleId" 
+            # Condition: 
+            #   StringLike: 
+            #     aws:userId:
+            #       - !Ref 'AWS::AccountId'
+            #       - !GetAtt
+            #         - "LambdaTrustRole"
+            #         - "RoleId" 
           - 
             Action: 
               - "s3:GetObject"
@@ -561,14 +558,20 @@ Resources:
                     Ref: "EdgeJ1939DataLogBucket"
                   - "/J1939/*"
             Principal:
-              AWS: !GetAtt
+              AWS: 
+                - !GetAtt
                   - "EdgeNGDI2CDSDKConversionLambdaRole"
                   - "Arn"
-            Condition: 
-              StringLike: 
-                aws:userId:
-                 - "{{resolve:ssm:Azure-user-id:1}}"
-                 - "{{resolve:ssm:olympus-admin-role:1}}"
+                - "{{resolve:ssm:Azure-user-id:1}}"                 
+                - "{{resolve:ssm:olympus-admin-role:1}}"
+            # Condition: 
+            #   StringLike: 
+            #     aws:userId:
+
+            #      - !Ref 'AWS::AccountId'
+            #      - !GetAtt
+            #         - "LambdaTrustRole"
+            #         - "RoleId"
 
   SpnlistbucketPolicy:
     Type: AWS::S3::BucketPolicy
@@ -598,6 +601,10 @@ Resources:
                 aws:userId:
                  - "{{resolve:ssm:Azure-user-id:1}}"
                  - "{{resolve:ssm:olympus-admin-role:1}}"
+                 - !Ref 'AWS::AccountId'
+                 - !GetAtt
+                    - "LambdaTrustRole"
+                    - "RoleId"
 
   LambdaInvokePermissionJ1939ProcessingBucket:
     Type: 'AWS::Lambda::Permission'
@@ -668,6 +675,8 @@ Resources:
           time_stamp_param: "dateTimestamp"
           active_fault_code_indicator: "activeFaultCodes"
           param_indicator: "parameters"
+          message_format_version_indicator: "messageFormatVersion"
+          notification_version: "2.5.2"
           class_arg_map: '{"messageFormatVersion": "notification_version", "telematicsPartnerName": "telematics_partner_name", "customerReference": "customer_reference", "componentSerialNumber": "engine_serial_number", "equipmentId": "equipment_id", "vin": "vin", "telematicsDeviceId": "telematics_box_id", "samples": {"dateTimestamp": "occurrence_date_time", "convertedDeviceParameters": {"messageID": "telematics_partner_message_id", "Latitude": "latitude", "Longitude": "longitude", "Altitude": "altitude", "Direction_Heading": "direction_heading", "Vehicle_Distance": "vehicle_distance", "Location_Text_Description": "location_text_description", "GPS_Vehicle_Speed": "gps_vehicle_speed"}, "convertedEquipmentParameters": [{"protocol": "datalink_bus", "deviceId": "source_address", "parameters": "snapshots"}], "convertedEquipmentFaultCodes": [{"activeFaultCodes": "active_faults"}]}}'
       Layers:
         - !Ref PandasPythonLayer

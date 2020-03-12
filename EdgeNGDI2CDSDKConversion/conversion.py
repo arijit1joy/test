@@ -16,6 +16,8 @@ class_arg_map = json.loads(os.getenv('class_arg_map'))
 time_stamp_param = os.getenv('time_stamp_param')
 active_fault_code_indicator = os.getenv('active_fault_code_indicator')
 param_indicator = os.getenv('param_indicator')
+notification_version = os.getenv('notification_version')
+message_format_version_indicator = os.getenv('message_format_version_indicator')
 
 s3_client = boto3.client('s3')
 
@@ -100,6 +102,10 @@ def handle_hb(converted_device_params, converted_equip_params, converted_equip_f
             print("Handling the arg:", arg)
 
             if class_arg_map[arg] and type(class_arg_map[arg]) == str:
+
+                if arg == message_format_version_indicator:
+
+                    var_dict[class_arg_map[arg]] = notification_version
 
                 if arg in metadata and metadata[arg]:
                     var_dict[class_arg_map[arg]] = metadata[arg]
