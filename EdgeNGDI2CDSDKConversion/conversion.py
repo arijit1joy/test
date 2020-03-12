@@ -3,6 +3,7 @@ import cd_sdk_hb as hbsdk
 import os
 import boto3
 import requests
+import datetime
 
 # metadata = {}
 spn_bucket = os.getenv('spn_parameter_json_object')
@@ -69,6 +70,7 @@ def get_snapshot_data(params, time_stamp, address):
 
 
 def post_cd_message(data):
+
     PARAMS = {}
     req = requests.get(url=auth_token_url, params=PARAMS)
     auth_token = json.loads(req.text)
@@ -78,6 +80,14 @@ def post_cd_message(data):
     url = cd_url + auth_token_info
 
     print('Auth Token ---------------->', auth_token_info)
+
+    sent_date_time = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+
+    print('Sent_Date_Time  ------------------> ', sent_date_time)
+
+    data["Sent_Date_Time"] = sent_date_time if "Sent_Date_Time" in data else data["Occurrence_Date_Time"] \
+        if "Occurrence_Date_Time" in data else ''
+
     print('File to send to CD   ------------------> ', data)
     print('cd_url   ------------------> ', url)
     print('Type of message:', type(data))
