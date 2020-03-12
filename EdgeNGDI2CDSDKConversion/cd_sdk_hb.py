@@ -1,5 +1,6 @@
 import json
 import uuid
+import datetime
 
 
 def get_message_id():
@@ -73,6 +74,10 @@ class CDHBSDK:
         if not json_payload["Telematics_Partner_Message_ID"]:
 
             json_payload["Telematics_Partner_Message_ID"] = get_message_id()
+
+        if not json_payload["Sent_Date_Time"]:
+
+            json_payload["Sent_Date_Time"] = json_payload["Occurrence_Date_Time"] if "Occurrence_Date_Time" in json_payload else ""
 
         print("NEW HB JSON Payload:", json_payload)
 
