@@ -122,7 +122,7 @@ Resources:
             Effect:                Allow
             Resource:              '*'
           Version:                 '2012-10-17'
-        PolicyName:                LambdaWorkerPolicy
+        PolicyName:                !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-LambdaWorkerPolicy"
       RoleName:                    !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-LambdaRole"
 
   EdgeNGDI2CDSDKConversionLambdaRole:
@@ -144,14 +144,8 @@ Resources:
               - 'logs:CreateLogStream'
               - 'logs:PutLogEvents'
             Resource: 'arn:aws:logs:*:*:*'
-          - Effect: Allow
-            Action:
-              - 's3:GetObject'
-            Resource: 
-              - !Sub 'arn:aws:s3:::edge-j1939-${ApplicationEnvironmentTag}/NGDI/*'
-              - !Sub 'arn:aws:s3:::${ApplicationName}-spn-list-${ApplicationEnvironmentTag}/*'
           Version:                 '2012-10-17'
-        PolicyName:                LambdaWorkerPolicy
+        PolicyName:                !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeNGDI2CDSDKConversionLambdaWorkerPolicy"
       RoleName:                    !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeNGDI2CDSDKConversionLambdaRole"
 
   EdgeJ1939CSVConverterLambdaRole:
@@ -173,14 +167,8 @@ Resources:
               - 'logs:CreateLogStream'
               - 'logs:PutLogEvents'
             Resource: 'arn:aws:logs:*:*:*'
-          - Effect: Allow
-            Action:
-              - 's3:GetObject'
-              - 's3:PutObject'
-            Resource: 
-              - !Sub 'arn:aws:s3:::edge-j1939-${ApplicationEnvironmentTag}/*'
           Version:                 '2012-10-17'
-        PolicyName:                LambdaWorkerPolicy
+        PolicyName:                !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeJ1939CSVConverterLambdaWorkerPolicy"
       RoleName:                    !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeJ1939CSVConverterLambdaRole"
   
   EdgeCPPTPosterLambdaRole:
@@ -202,15 +190,8 @@ Resources:
               - 'logs:CreateLogStream'
               - 'logs:PutLogEvents'
             Resource: 'arn:aws:logs:*:*:*'
-          - Effect: Allow
-            Action:
-              - 's3:GetObject'
-              - 's3:PutObject'
-            Resource: 
-              - !Sub 'arn:aws:s3:::edge-j1939-${ApplicationEnvironmentTag}/*'
-              - !Sub 'arn:aws:s3:::${ApplicationName}-endpoint-bucket-${ApplicationEnvironmentTag}/*'
           Version:                 '2012-10-17'
-        PolicyName:                LambdaWorkerPolicy
+        PolicyName:                !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeCPPTPosterLambdaWorkerPolicy"
       RoleName:                    !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeCPPTPosterLambdaRole"
 
   RoleForJ1939StreamBucket:
@@ -225,17 +206,6 @@ Resources:
             Principal:
               Service:
                 - iot.amazonaws.com
-      Policies:
-        - PolicyName: EdgeJ1939S3RolePolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              -
-                Effect: "Allow"
-                Action: "S3:PutObject"
-                Resource: !GetAtt
-                  - EdgeJ1939ProcessingBucket
-                  - Arn
       RoleName: !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-J1939StreamBucket"
 
   EndpointBucketPolicy:
@@ -267,15 +237,6 @@ Resources:
                   - Arn
                 - "{{resolve:ssm:olympus-admin-role:1}}"
                 - "{{resolve:ssm:Azure-user-id:1}}"
-            # Condition: 
-            #   StringLike: 
-            #     aws:userId:
-                  
-                  
-            #       - !Ref 'AWS::AccountId'
-            #       - !GetAtt
-            #         - "LambdaTrustRole"
-            #         - "RoleId" 
 
   RequestsPythonLayer:
     Type: "AWS::Lambda::LayerVersion"
@@ -448,13 +409,6 @@ Resources:
                   - EdgeJ1939CSVConverterLambdaRole
                   - Arn
                 - !Sub "arn:aws:iam::${AWS::AccountId}:role/da-edge-oem-${ApplicationEnvironmentTag}-LambdaRole"
-            # Condition: 
-            #   StringLike: 
-            #     aws:userId:
-            #       - !Ref 'AWS::AccountId'
-            #       - !GetAtt
-            #         - "LambdaTrustRole"
-            #         - "RoleId"    
           - 
             Action: 
               - "s3:PutObject"
@@ -471,13 +425,6 @@ Resources:
               AWS: !GetAtt
                   - "EdgeCPPTPosterLambdaRole"
                   - "Arn"
-            # Condition: 
-            #   StringLike: 
-            #     aws:userId:
-            #       - !Ref 'AWS::AccountId'
-            #       - !GetAtt
-            #         - "LambdaTrustRole"
-            #         - "RoleId"                
           - 
             Action: 
               - "s3:GetObject"
@@ -514,6 +461,23 @@ Resources:
               AWS: 
                   - "{{resolve:ssm:Azure-user-id:1}}"
                   - "{{resolve:ssm:olympus-admin-role:1}}"
+          -
+            Action: 
+              - "s3:PutObject"
+            Effect: "Allow"
+            Resource: 
+              Fn::Join: 
+                - ""
+                - 
+                  - "arn:aws:s3:::"
+                  - 
+                    Ref: "EdgeJ1939ProcessingBucket"
+                  - "/ConvertedFiles/*"
+            Principal:
+              AWS: 
+                - !GetAtt
+                  - RoleForJ1939StreamBucket
+                  - Arn 
 
   
   EdgeJ1939DataLogBucketPolicy:
@@ -534,17 +498,10 @@ Resources:
                   - "arn:aws:s3:::"
                   - 
                     Ref: "EdgeJ1939DataLogBucket"
-                  - "/J1939/*"
+                  - "/*"
             Principal:
               AWS: 
                 - "{{resolve:ssm:EdgeUploadedFileProcessor:2}}"
-            # Condition: 
-            #   StringLike: 
-            #     aws:userId:
-            #       - !Ref 'AWS::AccountId'
-            #       - !GetAtt
-            #         - "LambdaTrustRole"
-            #         - "RoleId" 
           - 
             Action: 
               - "s3:GetObject"
@@ -562,16 +519,8 @@ Resources:
                 - !GetAtt
                   - "EdgeNGDI2CDSDKConversionLambdaRole"
                   - "Arn"
-                - "{{resolve:ssm:Azure-user-id:1}}"                 
+                - "{{resolve:ssm:Azure-user-id:1}}"   
                 - "{{resolve:ssm:olympus-admin-role:1}}"
-            # Condition: 
-            #   StringLike: 
-            #     aws:userId:
-
-            #      - !Ref 'AWS::AccountId'
-            #      - !GetAtt
-            #         - "LambdaTrustRole"
-            #         - "RoleId"
 
   SpnlistbucketPolicy:
     Type: AWS::S3::BucketPolicy
@@ -591,20 +540,12 @@ Resources:
                   - "arn:aws:s3:::"
                   - 
                     Ref: "Spnlistbucket"
-                  - "/J1939/*"
+                  - "/*"
             Principal:
-              AWS: !GetAtt
+              AWS: 
+                - !GetAtt
                   - "EdgeNGDI2CDSDKConversionLambdaRole"
                   - "Arn"
-            Condition: 
-              StringLike: 
-                aws:userId:
-                 - "{{resolve:ssm:Azure-user-id:1}}"
-                 - "{{resolve:ssm:olympus-admin-role:1}}"
-                 - !Ref 'AWS::AccountId'
-                 - !GetAtt
-                    - "LambdaTrustRole"
-                    - "RoleId"
 
   LambdaInvokePermissionJ1939ProcessingBucket:
     Type: 'AWS::Lambda::Permission'
