@@ -75,6 +75,8 @@ Parameters:
     Type: String
   CDPTJ1939Header:
     Type: String
+  CPDBApi:
+    Type: String
 
 Globals:
   Function:
@@ -397,7 +399,7 @@ Resources:
   EndpointBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub '${ApplicationName}-endpoint-bucket-${ApplicationEnvironmentTag}'
+      BucketName: !Sub 'da-edge-j1939-endpoint-bucket-${ApplicationEnvironmentTag}'
       AccessControl: BucketOwnerFullControl
       BucketEncryption:
         ServerSideEncryptionConfiguration:
@@ -411,7 +413,7 @@ Resources:
   Spnlistbucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub '${ApplicationName}-spn-list-${ApplicationEnvironmentTag}'
+      BucketName: !Sub 'da-edge-j1939-spn-list-${ApplicationEnvironmentTag}'
       AccessControl: BucketOwnerFullControl
       BucketEncryption:
         ServerSideEncryptionConfiguration:
@@ -620,19 +622,19 @@ Resources:
         - - 'arn:aws:s3:::'
           - !Sub 'edge-j1939-${ApplicationEnvironmentTag}'
 
-  LambdaInvokePermissionJ1939Bucket:
-    Type: 'AWS::Lambda::Permission'
-    Properties:
-      FunctionName: !GetAtt
-        - EdgeJ1939CSVConverter
-        - Arn
-      Action: 'lambda:InvokeFunction'
-      Principal: s3.amazonaws.com
-      SourceAccount: !Ref 'AWS::AccountId'
-      SourceArn: !Join
-        - ''
-        - - 'arn:aws:s3:::'
-          - !Sub 'da-edge-${AWS::AccountId}-decrypt-files-${ApplicationEnvironmentTag}'
+  # LambdaInvokePermissionJ1939Bucket:
+  #   Type: 'AWS::Lambda::Permission'
+  #   Properties:
+  #     FunctionName: !GetAtt
+  #       - EdgeJ1939CSVConverter
+  #       - Arn
+  #     Action: 'lambda:InvokeFunction'
+  #     Principal: s3.amazonaws.com
+  #     SourceAccount: !Ref 'AWS::AccountId'
+  #     SourceArn: !Join
+  #       - ''
+  #       - - 'arn:aws:s3:::'
+  #         - !Sub 'da-edge-${AWS::AccountId}-decrypt-files-${ApplicationEnvironmentTag}'
 
   LambdaInvokeNGDI2CDSDKPermission:
     Type: 'AWS::Lambda::Permission'
@@ -654,7 +656,7 @@ Resources:
     Type: 'AWS::Serverless::Function'
     Properties:
       Handler: conversion.lambda_handler
-      FunctionName: !Sub '${ApplicationName}-EdgeNGDI2CDSDKConversion-${ApplicationEnvironmentTag}'
+      FunctionName: !Sub 'EdgeNGDI2CDSDKConversion-${ApplicationEnvironmentTag}'
       Runtime: python3.7
       CodeUri:
         Bucket: !Ref ArtifactsBucket
@@ -688,7 +690,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: ConverterLambda.lambda_handler
-      FunctionName: !Sub '${ApplicationName}-EdgeJ1939CSVConverter-${ApplicationEnvironmentTag}'
+      FunctionName: !Sub 'EdgeJ1939CSVConverter-${ApplicationEnvironmentTag}'
       Role: !GetAtt
           - EdgeJ1939CSVConverterLambdaRole
           - Arn
@@ -708,7 +710,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: PosterLambda.lambda_handler
-      FunctionName: !Sub '${ApplicationName}-EdgeCPPTPoster-${ApplicationEnvironmentTag}'
+      FunctionName: !Sub 'EdgeCPPTPoster-${ApplicationEnvironmentTag}'
       Role: !GetAtt
           - EdgeCPPTPosterLambdaRole
           - Arn
@@ -718,8 +720,8 @@ Resources:
         Key: !Sub '${VersionId}/EdgeCPPTPoster.zip'
       Environment:
         Variables:
-          CPPTGetDevInfo: "{\"method\": \"get\", \"query\": \"SELECT DEVICE_TYPE, DEVICE_OWNER, DOM FROM da_edge_olympus.DEVICE_INFORMATION WHERE DEVICE_ID = %(devId)s;\", \"input\": {\"Params\": [{\"devId\": \"devId\"}]}}"
-          CurrentProductsAPI: "https://api.cp.aws.cummins.com/v1/edge-utils/cp-data"
+          CPPTGetDevInfo: "{\"method\": \"get\", \"query\": \"SELECT DEVICE_TYPE, DEVICE_OWNER, DOM FROM CS_PARTNER_VAL.EDG_DEVICE_INFORMATION WHERE DEVICE_ID = %(devId)s;\", \"input\": {\"Params\": [{\"devId\": \"devId\"}]}}"
+          CurrentProductsAPI: !Ref CPDBApi
           CurrentProdutCommonAPIKey: "GxcxtISfZE1e9Rb63Gj6kAh5xTTz9ba4hQGfjc20"
           CPPostBucket: !Sub 'edge-j1939-${ApplicationEnvironmentTag}'
           EndpointBucket: !Sub '${ApplicationName}-endpoint-bucket-${ApplicationEnvironmentTag}'
@@ -743,7 +745,7 @@ Resources:
   EdgePublicDataIoTTopicRule:
     Type: AWS::IoT::TopicRule
     Properties:
-      RuleName: !Sub "da_edge_j1939_EdgeIotRulePublicDataDataLogger_${ApplicationEnvironmentTag}"
+      RuleName: !Sub "EdgeIotRulePublicDataDataLogger_${ApplicationEnvironmentTag}"
       TopicRulePayload:
         RuleDisabled: "false"
         AwsIotSqlVersion: "2016-03-23"
@@ -756,7 +758,7 @@ Resources:
               Key: 'ConvertedFiles/$componentSerialNumber/${topic(3)}/${parse_time("yyyy", timestamp(), "UTC")}/${parse_time("MM", timestamp(), "UTC")}/${parse_time("dd", timestamp(), "UTC")}/${topic(3)}_${timestamp()}.json'
           -
             Lambda:
-              FunctionArn: "arn:aws:lambda:us-east-1:732927748536:function:EdgePostHBToTATA-dev"
+              FunctionArn: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:EdgePostHBToTATA-${ApplicationEnvironmentTag}"
   
   EdgeJ1939Bucket: 
     Type: "AWS::SSM::Parameter"
