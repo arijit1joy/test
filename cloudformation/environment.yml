@@ -487,21 +487,21 @@ Resources:
         Ref: "EdgeJ1939DataLogBucket"
       PolicyDocument: 
         Statement:  
-          - 
-            Action: 
-              - "s3:PutObject"
-            Effect: "Allow"
-            Resource: 
-              Fn::Join: 
-                - ""
-                - 
-                  - "arn:aws:s3:::"
-                  - 
-                    Ref: "EdgeJ1939DataLogBucket"
-                  - "/*"
-            Principal:
-              AWS: 
-                - "{{resolve:ssm:EdgeUploadedFileProcessor:2}}"
+          # - 
+          #   Action: 
+          #     - "s3:PutObject"
+          #   Effect: "Allow"
+          #   Resource: 
+          #     Fn::Join: 
+          #       - ""
+          #       - 
+          #         - "arn:aws:s3:::"
+          #         - 
+          #           Ref: "EdgeJ1939DataLogBucket"
+          #         - "/*"
+          #   Principal:
+          #     AWS: 
+          #       - "{{resolve:ssm:EdgeUploadedFileProcessor:2}}"
           - 
             Action: 
               - "s3:GetObject"
