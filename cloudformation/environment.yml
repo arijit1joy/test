@@ -236,7 +236,7 @@ Resources:
                   - EdgeCPPTPosterLambdaRole
                   - Arn
                 - !Sub "{{resolve:ssm:olympus-${ApplicationEnvironmentTag}.aws.cummins.com-Olympus-AdminRoleARN:1}}"
-                - "{{resolve:ssm:Azure-user-id:1}}"
+                # - "{{resolve:ssm:Azure-user-id:1}}"
 
   RequestsPythonLayer:
     Type: "AWS::Lambda::LayerVersion"
@@ -459,7 +459,7 @@ Resources:
                   - "/NGDI/*"
             Principal:
               AWS: 
-                  - "{{resolve:ssm:Azure-user-id:1}}"
+                  # - "{{resolve:ssm:Azure-user-id:1}}"
                   - !Sub "{{resolve:ssm:olympus-${ApplicationEnvironmentTag}.aws.cummins.com-Olympus-AdminRoleARN:1}}"
           -
             Action: 
@@ -519,7 +519,7 @@ Resources:
                 - !GetAtt
                   - "EdgeNGDI2CDSDKConversionLambdaRole"
                   - "Arn"
-                - "{{resolve:ssm:Azure-user-id:1}}"   
+                # - "{{resolve:ssm:Azure-user-id:1}}"   
                 - !Sub "{{resolve:ssm:olympus-${ApplicationEnvironmentTag}.aws.cummins.com-Olympus-AdminRoleARN:1}}"
 
   SpnlistbucketPolicy:
