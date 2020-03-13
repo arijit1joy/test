@@ -501,7 +501,7 @@ Resources:
           #         - "/*"
           #   Principal:
           #     AWS: 
-          #       - "{{resolve:ssm:EdgeUploadedFileProcessor:2}}"
+          #       - "{{resolve:ssm:EdgeUploadedFileProcessor:2}}" 
           - 
             Action: 
               - "s3:GetObject"
