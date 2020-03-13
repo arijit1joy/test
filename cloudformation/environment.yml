@@ -235,7 +235,7 @@ Resources:
                 - !GetAtt
                   - EdgeCPPTPosterLambdaRole
                   - Arn
-                - "{{resolve:ssm:olympus-admin-role:1}}"
+                - !Sub "{{resolve:ssm:olympus-${ApplicationEnvironmentTag}.aws.cummins.com-Olympus-AdminRoleARN:1}}"
                 - "{{resolve:ssm:Azure-user-id:1}}"
 
   RequestsPythonLayer:
@@ -460,7 +460,7 @@ Resources:
             Principal:
               AWS: 
                   - "{{resolve:ssm:Azure-user-id:1}}"
-                  - "{{resolve:ssm:olympus-admin-role:1}}"
+                  - !Sub "{{resolve:ssm:olympus-${ApplicationEnvironmentTag}.aws.cummins.com-Olympus-AdminRoleARN:1}}"
           -
             Action: 
               - "s3:PutObject"
@@ -520,7 +520,7 @@ Resources:
                   - "EdgeNGDI2CDSDKConversionLambdaRole"
                   - "Arn"
                 - "{{resolve:ssm:Azure-user-id:1}}"   
-                - "{{resolve:ssm:olympus-admin-role:1}}"
+                - !Sub "{{resolve:ssm:olympus-${ApplicationEnvironmentTag}.aws.cummins.com-Olympus-AdminRoleARN:1}}"
 
   SpnlistbucketPolicy:
     Type: AWS::S3::BucketPolicy
