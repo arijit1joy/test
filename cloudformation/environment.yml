@@ -513,7 +513,6 @@ Resources:
                   - "arn:aws:s3:::"
                   - 
                     Ref: "EdgeJ1939DataLogBucket"
-                  - "/J1939/*"
             Principal:
               AWS: 
                 - !GetAtt
