@@ -517,7 +517,7 @@ Resources:
             Principal:
               AWS: 
                 - !GetAtt
-                  - "EdgeNGDI2CDSDKConversionLambdaRole"
+                  - "EdgeJ1939CSVConverterLambdaRole"
                   - "Arn"
                 # - "{{resolve:ssm:Azure-user-id:1}}"   
                 - !Sub "{{resolve:ssm:olympus-${ApplicationEnvironmentTag}.aws.cummins.com-Olympus-AdminRoleARN:1}}"
