@@ -88,9 +88,9 @@ def post_cd_message(data):
     data["Sent_Date_Time"] = sent_date_time if sent_date_time else data["Occurrence_Date_Time"] \
         if "Occurrence_Date_Time" in data else ''
 
-    data["equipmentId"] = ""  # Temporary solution to EQUIP_ID renaming Issue on CP end - Removing "equipmentId"
-    data["customerReference"] = "Bench_Test"  # Temporary solution to Missing "Cummins" Cust_Ref
-    data["telematicsPartnerName"] = "Edge"  # Temporary solution to Missing "Cummins" Telematics Partner
+    data["Equipment_ID"] = ""  # Temporary solution to EQUIP_ID renaming Issue on CP end - Removing "equipmentId"
+    data["Customer_Reference"] = "Bench_Test"  # Temporary solution to Missing "Cummins" Cust_Ref
+    data["Telematics_Partner_Name"] = "Edge"  # Temporary solution to Missing "Cummins" Telematics Partner
 
     print('File to send to CD   ------------------> ', data)
     print('cd_url   ------------------> ', url)
@@ -121,7 +121,7 @@ def handle_hb(converted_device_params, converted_equip_params, converted_equip_f
 
                     var_dict[class_arg_map[arg]] = notification_version
 
-                if arg in metadata and metadata[arg]:
+                elif arg in metadata and metadata[arg]:
                     var_dict[class_arg_map[arg]] = metadata[arg]
 
             if class_arg_map[arg] and type(class_arg_map[arg]) == dict:
