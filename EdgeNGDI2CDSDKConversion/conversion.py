@@ -85,8 +85,12 @@ def post_cd_message(data):
 
     print('Sent_Date_Time  ------------------> ', sent_date_time)
 
-    data["Sent_Date_Time"] = sent_date_time if "Sent_Date_Time" in data else data["Occurrence_Date_Time"] \
+    data["Sent_Date_Time"] = sent_date_time if sent_date_time else data["Occurrence_Date_Time"] \
         if "Occurrence_Date_Time" in data else ''
+
+    data["equipmentId"] = ""  # Temporary solution to EQUIP_ID renaming Issue on CP end - Removing "equipmentId"
+    data["customerReference"] = "Bench_Test"  # Temporary solution to Missing "Cummins" Cust_Ref
+    data["telematicsPartnerName"] = "Edge"  # Temporary solution to Missing "Cummins" Telematics Partner
 
     print('File to send to CD   ------------------> ', data)
     print('cd_url   ------------------> ', url)
