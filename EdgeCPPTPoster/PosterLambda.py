@@ -94,6 +94,10 @@ def lambda_handler(event, context):
     print("Bucket Name:", bucket_name)
     print("File Key:", file_key)
 
+    file_key = file_key.replace("%3A", ":")
+
+    print("New FileKey:", file_key)
+
     file_object = s3_client.get_object(Bucket=bucket_name, Key=file_key)
 
     print("Get File Object Response:", file_object)
