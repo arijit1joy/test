@@ -503,10 +503,10 @@ def lambda_handler(lambda_event, context):
 
     print("Filename: ", filename)
 
-    if '-' in filename.split('_')[4]:
-        date = filename.split('_')[4][:10].replace('-', '')
+    if '-' in filename.split('_')[-1]:
+        date = filename.split('_')[-1][:10].replace('-', '')
     else:
-        date = filename.split('_')[4][:8]
+        date = filename.split('_')[-1][:8]
 
     store_file_response = s3_client.put_object(Bucket=cp_post_bucket,
                                     Key="ConvertedFiles/" + ngdi_json_template['componentSerialNumber'] + '/' +
