@@ -236,7 +236,7 @@ Resources:
                   - EdgeCPPTPosterLambdaRole
                   - Arn
                 - !Sub "{{resolve:ssm:olympus-${ApplicationEnvironmentTag}.aws.cummins.com-Olympus-AdminRoleARN:1}}"
-                # - "{{resolve:ssm:Azure-user-id:1}}"
+                - "{{resolve:ssm:Azure-user-id:1}}"
 
   RequestsPythonLayer:
     Type: "AWS::Lambda::LayerVersion"
@@ -459,7 +459,7 @@ Resources:
                   - "/NGDI/*"
             Principal:
               AWS: 
-                  # - "{{resolve:ssm:Azure-user-id:1}}"
+                  - "{{resolve:ssm:Azure-user-id:1}}"
                   - !Sub "{{resolve:ssm:olympus-${ApplicationEnvironmentTag}.aws.cummins.com-Olympus-AdminRoleARN:1}}"
           -
             Action: 
@@ -487,21 +487,21 @@ Resources:
         Ref: "EdgeJ1939DataLogBucket"
       PolicyDocument: 
         Statement:  
-          # - 
-          #   Action: 
-          #     - "s3:PutObject"
-          #   Effect: "Allow"
-          #   Resource: 
-          #     Fn::Join: 
-          #       - ""
-          #       - 
-          #         - "arn:aws:s3:::"
-          #         - 
-          #           Ref: "EdgeJ1939DataLogBucket"
-          #         - "/*"
-          #   Principal:
-          #     AWS: 
-          #       - "{{resolve:ssm:EdgeUploadedFileProcessor:1}}" 
+          - 
+            Action: 
+              - "s3:PutObject"
+            Effect: "Allow"
+            Resource: 
+              Fn::Join: 
+                - ""
+                - 
+                  - "arn:aws:s3:::"
+                  - 
+                    Ref: "EdgeJ1939DataLogBucket"
+                  - "/*"
+            Principal:
+              AWS: 
+                - "{{resolve:ssm:EdgeUploadedFileProcessor:1}}" 
           - 
             Action: 
               - "s3:GetObject"
@@ -519,7 +519,7 @@ Resources:
                 - !GetAtt
                   - "EdgeJ1939CSVConverterLambdaRole"
                   - "Arn"
-                # - "{{resolve:ssm:Azure-user-id:1}}"   
+                - "{{resolve:ssm:Azure-user-id:1}}"   
                 - !Sub "{{resolve:ssm:olympus-${ApplicationEnvironmentTag}.aws.cummins.com-Olympus-AdminRoleARN:1}}"
 
   SpnlistbucketPolicy:
