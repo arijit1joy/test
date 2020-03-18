@@ -87,7 +87,7 @@ Globals:
         region: !Sub ${AWS::Region}
 
 Resources:
-  # IAM role for lambda to assume
+  # IAM role for lambda to assume 
   LambdaTrustRole:
     Type: AWS::IAM::Role
     Properties:
