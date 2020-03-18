@@ -474,8 +474,7 @@ Resources:
                     Ref: "EdgeJ1939ProcessingBucket"
                   - "/ConvertedFiles/*"
             Principal:
-              AWS: 
-                - !GetAtt
+              AWS: !GetAtt
                   - RoleForJ1939StreamBucket
                   - Arn 
 
