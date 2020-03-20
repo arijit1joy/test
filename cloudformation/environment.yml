@@ -459,8 +459,8 @@ Resources:
                   - "/NGDI/*"
             Principal:
               AWS: 
-                  - "{{resolve:ssm:Azure-user-id:1}}"
-                  - !Sub "{{resolve:ssm:olympus-${ApplicationEnvironmentTag}.aws.cummins.com-Olympus-AdminRoleARN:1}}"
+                - "{{resolve:ssm:Azure-user-id:1}}"
+                - !Sub "{{resolve:ssm:olympus-${ApplicationEnvironmentTag}.aws.cummins.com-Olympus-AdminRoleARN:1}}"
           -
             Action: 
               - "s3:PutObject"
@@ -499,8 +499,7 @@ Resources:
                     Ref: "EdgeJ1939DataLogBucket"
                   - "/*"
             Principal:
-              AWS: 
-                - "{{resolve:ssm:EdgeUploadedFileProcessor:1}}" 
+              AWS: "{{resolve:ssm:EdgeUploadedFileProcessor:1}}" 
           - 
             Action: 
               - "s3:GetObject"
