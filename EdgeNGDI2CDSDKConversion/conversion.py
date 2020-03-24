@@ -1,8 +1,10 @@
 import json
-import cd_sdk_hb as hbsdk
+import cd_sdk_hb as hb_sdk
+import cd_sdk_fc as fc_sdk
 import os
 import boto3
 import requests
+import datetime
 
 # metadata = {}
 spn_bucket = os.getenv('spn_parameter_json_object')
@@ -15,7 +17,14 @@ converted_equip_fc_var = os.getenv('converted_equip_fc')
 class_arg_map = json.loads(os.getenv('class_arg_map'))
 time_stamp_param = os.getenv('time_stamp_param')
 active_fault_code_indicator = os.getenv('active_fault_code_indicator')
+inactive_fault_code_indicator = os.getenv('inactive_fault_code_indicator')
 param_indicator = os.getenv('param_indicator')
+notification_version = os.getenv('notification_version')
+message_format_version_indicator = os.getenv('message_format_version_indicator')
+spn_indicator = os.getenv('spn_indicator')
+fmi_indicator = os.getenv('fmi_indicator')
+count_indicator = os.getenv('count_indicator')
+active_cd_parameter = os.getenv('active_cd_parameter')
 
 s3_client = boto3.client('s3')
 
@@ -67,6 +76,7 @@ def get_snapshot_data(params, time_stamp, address):
 
 
 def post_cd_message(data):
+
     PARAMS = {}
     req = requests.get(url=auth_token_url, params=PARAMS)
     auth_token = json.loads(req.text)
@@ -76,6 +86,18 @@ def post_cd_message(data):
     url = cd_url + auth_token_info
 
     print('Auth Token ---------------->', auth_token_info)
+
+    sent_date_time = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+
+    print('Sent_Date_Time  ------------------> ', sent_date_time)
+
+    data["Sent_Date_Time"] = sent_date_time if sent_date_time else data["Occurrence_Date_Time"] \
+        if "Occurrence_Date_Time" in data else ''
+
+    data["Equipment_ID"] = ""  # Temporary solution to EQUIP_ID renaming Issue on CP end - Removing "equipmentId"
+    data["Customer_Reference"] = "Bench_Test"  # Temporary solution to Missing "Cummins" Cust_Ref
+    data["Telematics_Partner_Name"] = "Edge"  # Temporary solution to Missing "Cummins" Telematics Partner
+
     print('File to send to CD   ------------------> ', data)
     print('cd_url   ------------------> ', url)
     print('Type of message:', type(data))
@@ -85,11 +107,29 @@ def post_cd_message(data):
     print('response ------------> ', response)
 
 
+def get_active_faults(fault_list, address):
+
+    final_fc_list = []
+
+    for fc in fault_list:
+        fc["Fault_Source_Address"] = address
+        fc["SPN"] = fc["spn"]
+        fc["FMI"] = fc["fmi"]
+
+        del fc["spn"]
+        del fc["fmi"]
+        del fc["count"]
+
+        final_fc_list.append(fc)
+
+    return final_fc_list
+
+
 def handle_hb(converted_device_params, converted_equip_params, converted_equip_fc, metadata, time_stamp):
     var_dict = {}
     address = ""
 
-    print("Retrieving parameters for creating HB SDK Class Object")
+    print("Retrieving parameters for creating FC SDK Class Object")
 
     print("CD SDK Arguments Map:", class_arg_map)
 
@@ -101,7 +141,11 @@ def handle_hb(converted_device_params, converted_equip_params, converted_equip_f
 
             if class_arg_map[arg] and type(class_arg_map[arg]) == str:
 
-                if arg in metadata and metadata[arg]:
+                if arg == message_format_version_indicator:
+
+                    var_dict[class_arg_map[arg]] = notification_version
+
+                elif arg in metadata and metadata[arg]:
                     var_dict[class_arg_map[arg]] = metadata[arg]
 
             if class_arg_map[arg] and type(class_arg_map[arg]) == dict:
@@ -156,22 +200,13 @@ def handle_hb(converted_device_params, converted_equip_params, converted_equip_f
 
                                     if fc_param in converted_equip_fc:
 
-                                        for fc in converted_equip_fc[fc_param]:
-                                            fc["Fault_Source_Address"] = address
-                                            fc["SPN"] = fc["spn"]
-                                            fc["FMI"] = fc["fmi"]
-
-                                            del fc["spn"]
-                                            del fc["fmi"]
-                                            del fc["count"]
-
-                                            final_fc.append(fc)
+                                        final_fc = get_active_faults(converted_equip_fc[fc_param], address)
 
                                     var_dict[sample_obj[fc_param]] = final_fc
 
-        print("CD SDK Class Variable Dict:", var_dict)
+        print("HB CD SDK Class Variable Dict:", var_dict)
 
-        hb_sdk_object = hbsdk.CDHBSDK(var_dict)
+        hb_sdk_object = hb_sdk.CDHBSDK(var_dict)
 
         print("Posting Sample to CD...")
 
@@ -180,6 +215,138 @@ def handle_hb(converted_device_params, converted_equip_params, converted_equip_f
     except Exception as e:
 
         print("Error! The following Exception occurred while handling this sample:", e)
+
+
+def handle_fc(converted_device_params, converted_equip_params, converted_equip_fc, metadata, time_stamp):
+
+    var_dict = {}
+    address = ""
+
+    print("Retrieving parameters for creating HB SDK Class Object")
+
+    print("CD SDK Arguments Map:", class_arg_map)
+
+    try:
+
+        for arg in class_arg_map:
+
+            print("Handling the arg:", arg)
+
+            if class_arg_map[arg] and type(class_arg_map[arg]) == str:
+
+                if arg == message_format_version_indicator:
+
+                    var_dict[class_arg_map[arg]] = notification_version
+
+                elif arg in metadata and metadata[arg]:
+                    var_dict[class_arg_map[arg]] = metadata[arg]
+
+            if class_arg_map[arg] and type(class_arg_map[arg]) == dict:
+
+                samples = class_arg_map[arg]
+
+                for param in samples:
+
+                    if samples[param] and type(samples[param]) == str and param == time_stamp_param:
+
+                        var_dict[samples[param]] = time_stamp
+
+                    else:
+
+                        if samples[param]:
+
+                            if param == converted_device_params_var:
+
+                                sample_obj = samples[param]
+
+                                for val in sample_obj:
+                                    var_dict[sample_obj[val]] = converted_device_params[val] \
+                                        if val in converted_device_params else ""
+
+                            elif param == converted_equip_params_var:
+
+                                sample_obj = samples[param][0]
+
+                                address = converted_equip_params["deviceId"] \
+                                    if "deviceId" in converted_equip_params else ""
+
+                                for equip_param in sample_obj:
+
+                                    if equip_param == param_indicator:
+
+                                        var_dict[sample_obj[equip_param]] = get_snapshot_data(
+                                            converted_equip_params[equip_param], time_stamp, address) \
+                                            if equip_param in converted_equip_params else ""
+
+                                    else:
+
+                                        var_dict[sample_obj[equip_param]] = converted_equip_params[equip_param] \
+                                            if equip_param in converted_equip_params else ""
+
+                            else:
+
+                                sample_obj = samples[param][0]
+
+                                for fc_param in sample_obj:
+
+                                    final_fc = []
+
+                                    if fc_param in converted_equip_fc and fc_param == active_fault_code_indicator:
+
+                                        all_fcs = converted_equip_fc[fc_param]
+
+                                        fc_index = 0
+
+                                        for fc in all_fcs:
+
+                                            final_fc = get_active_faults(all_fcs, address)
+
+                                            create_fc_class(fc, final_fc, fc_index, sample_obj[fc_param], var_dict, 1)
+
+                                            fc_index = fc_index + 1
+
+                                    else:
+                                        if fc_param in converted_equip_fc:
+
+                                            all_inactive_fcs = converted_equip_fc[fc_param]
+
+                                            all_fcs = converted_equip_fc[active_fault_code_indicator] if \
+                                                active_fault_code_indicator in converted_equip_fc else []
+
+                                            fc_index = 0
+
+                                            for fc in all_inactive_fcs:
+
+                                                final_fc = get_active_faults(all_fcs, address)
+
+                                                create_fc_class(fc, final_fc, fc_index, sample_obj[fc_param],
+                                                                var_dict, 0)
+
+                                                fc_index = fc_index + 1
+
+    except Exception as e:
+
+        print("Error! The following Exception occurred while handling this sample:", e)
+
+
+def create_fc_class(fc, active_fcs, fc_index, active_fc_param, var_dict, active_or_inactive):
+
+    del active_fcs[fc_index]
+
+    var_dict[active_fc_param] = active_fcs
+    var_dict[active_cd_parameter] = active_or_inactive
+
+    var_dict[spn_indicator.lower()] = fc["spn"]
+    var_dict[fmi_indicator.lower()] = fc["fmi"]
+    var_dict[count_indicator.lower()] = fc["count"]
+
+    print("FC CD SDK Class Variable Dict:", var_dict)
+
+    fc_sdk_object = fc_sdk.CDFCSDK(var_dict)
+
+    print("Posting Sample to CD...")
+
+    post_cd_message(fc_sdk_object.get_payload())
 
 
 def send_sample(sample, metadata, fc_or_hb):
@@ -225,8 +392,9 @@ def send_sample(sample, metadata, fc_or_hb):
         handle_hb(converted_device_params, converted_equip_params, converted_equip_fc, metadata, time_stamp)
 
     else:
-
-        print("FC processing coming very soon")
+        
+        print("Handling FC...")
+        handle_fc(converted_device_params, converted_equip_params, converted_equip_fc, metadata, time_stamp)
 
 
 def process(bucket, key):
@@ -298,6 +466,10 @@ def lambda_handler(event, context):
 
     print("Bucket:", bucket)
     print("Key:", key)
+
+    key = key.replace("%3A", ":")
+
+    print("New FileKey:", key)
 
     process(bucket, key)
 

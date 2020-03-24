@@ -75,8 +75,6 @@ Parameters:
     Type: String
   CDPTJ1939Header:
     Type: String
-  CPDBApi:
-    Type: String
 
 Globals:
   Function:
@@ -89,7 +87,7 @@ Globals:
         region: !Sub ${AWS::Region}
 
 Resources:
-  # IAM role for lambda to assume
+  # IAM role for lambda to assume 
   LambdaTrustRole:
     Type: AWS::IAM::Role
     Properties:
@@ -124,7 +122,7 @@ Resources:
             Effect:                Allow
             Resource:              '*'
           Version:                 '2012-10-17'
-        PolicyName:                LambdaWorkerPolicy
+        PolicyName:                !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-LambdaWorkerPolicy"
       RoleName:                    !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-LambdaRole"
 
   EdgeNGDI2CDSDKConversionLambdaRole:
@@ -146,14 +144,8 @@ Resources:
               - 'logs:CreateLogStream'
               - 'logs:PutLogEvents'
             Resource: 'arn:aws:logs:*:*:*'
-          - Effect: Allow
-            Action:
-              - 's3:GetObject'
-            Resource: 
-              - !Sub 'arn:aws:s3:::edge-j1939-${ApplicationEnvironmentTag}/NGDI/*'
-              - !Sub 'arn:aws:s3:::${ApplicationName}-spn-list-${ApplicationEnvironmentTag}/*'
           Version:                 '2012-10-17'
-        PolicyName:                LambdaWorkerPolicy
+        PolicyName:                !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeNGDI2CDSDKConversionLambdaWorkerPolicy"
       RoleName:                    !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeNGDI2CDSDKConversionLambdaRole"
 
   EdgeJ1939CSVConverterLambdaRole:
@@ -175,14 +167,8 @@ Resources:
               - 'logs:CreateLogStream'
               - 'logs:PutLogEvents'
             Resource: 'arn:aws:logs:*:*:*'
-          - Effect: Allow
-            Action:
-              - 's3:GetObject'
-              - 's3:PutObject'
-            Resource: 
-              - !Sub 'arn:aws:s3:::edge-j1939-${ApplicationEnvironmentTag}/*'
           Version:                 '2012-10-17'
-        PolicyName:                LambdaWorkerPolicy
+        PolicyName:                !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeJ1939CSVConverterLambdaWorkerPolicy"
       RoleName:                    !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeJ1939CSVConverterLambdaRole"
   
   EdgeCPPTPosterLambdaRole:
@@ -204,15 +190,8 @@ Resources:
               - 'logs:CreateLogStream'
               - 'logs:PutLogEvents'
             Resource: 'arn:aws:logs:*:*:*'
-          - Effect: Allow
-            Action:
-              - 's3:GetObject'
-              - 's3:PutObject'
-            Resource: 
-              - !Sub 'arn:aws:s3:::edge-j1939-${ApplicationEnvironmentTag}/*'
-              - !Sub 'arn:aws:s3:::${ApplicationName}-endpoint-bucket-${ApplicationEnvironmentTag}/*'
           Version:                 '2012-10-17'
-        PolicyName:                LambdaWorkerPolicy
+        PolicyName:                !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeCPPTPosterLambdaWorkerPolicy"
       RoleName:                    !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeCPPTPosterLambdaRole"
 
   RoleForJ1939StreamBucket:
@@ -227,17 +206,6 @@ Resources:
             Principal:
               Service:
                 - iot.amazonaws.com
-      Policies:
-        - PolicyName: EdgeJ1939S3RolePolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              -
-                Effect: "Allow"
-                Action: "S3:PutObject"
-                Resource: !GetAtt
-                  - EdgeJ1939ProcessingBucket
-                  - Arn
       RoleName: !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-J1939StreamBucket"
 
   EndpointBucketPolicy:
@@ -263,19 +231,11 @@ Resources:
                   - "/*"
             Principal:
               AWS: 
-                - !Sub "arn:aws:iam::${AWS::AccountId}:role/da-edge-device-device-${ApplicationEnvironmentTag}-EdgeRegAssocLambdaRole"
+                - !Sub "arn:aws:iam::${AWS::AccountId}:role/da-edge-device-${ApplicationEnvironmentTag}-EdgeRegAssocLambdaRole"
                 - !GetAtt
                   - EdgeCPPTPosterLambdaRole
                   - Arn
-            Condition: 
-              StringLike: 
-                aws:userId:
-                  - "{{resolve:ssm:Azure-user-id:1}}"
-                  - "{{resolve:ssm:olympus-admin-role:1}}"
-                  - !Ref 'AWS::AccountId'
-                  - !GetAtt
-                    - "LambdaTrustRole"
-                    - "RoleId" 
+                - !Sub "{{resolve:ssm:olympus-${ApplicationEnvironmentTag}.aws.cummins.com-Olympus-AdminRoleARN:1}}"
 
   RequestsPythonLayer:
     Type: "AWS::Lambda::LayerVersion"
@@ -287,7 +247,7 @@ Resources:
         S3Bucket: !Ref ArtifactsBucket
         S3Key: python-requests.zip
       Description: python-requests for restful API calls
-      LayerName: !Sub "python-requests"
+      LayerName: !Sub "${ApplicationName}-python-requests"
 
   PandasPythonLayer:
     Type: "AWS::Lambda::LayerVersion"
@@ -397,7 +357,7 @@ Resources:
   EndpointBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub 'da-edge-${AWS::AccountId}-endpoint-bucket-${ApplicationEnvironmentTag}'
+      BucketName: !Sub '${ApplicationName}-endpoint-bucket-${ApplicationEnvironmentTag}'
       AccessControl: BucketOwnerFullControl
       BucketEncryption:
         ServerSideEncryptionConfiguration:
@@ -411,7 +371,7 @@ Resources:
   Spnlistbucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub 'da-edge-${AWS::AccountId}-spn-list-${ApplicationEnvironmentTag}'
+      BucketName: !Sub '${ApplicationName}-spn-list-${ApplicationEnvironmentTag}'
       AccessControl: BucketOwnerFullControl
       BucketEncryption:
         ServerSideEncryptionConfiguration:
@@ -448,13 +408,6 @@ Resources:
                   - EdgeJ1939CSVConverterLambdaRole
                   - Arn
                 - !Sub "arn:aws:iam::${AWS::AccountId}:role/da-edge-oem-${ApplicationEnvironmentTag}-LambdaRole"
-            Condition: 
-              StringLike: 
-                aws:userId:
-                  - !Ref 'AWS::AccountId'
-                  - !GetAtt
-                    - "LambdaTrustRole"
-                    - "RoleId"    
           - 
             Action: 
               - "s3:PutObject"
@@ -471,13 +424,6 @@ Resources:
               AWS: !GetAtt
                   - "EdgeCPPTPosterLambdaRole"
                   - "Arn"
-            Condition: 
-              StringLike: 
-                aws:userId:
-                  - !Ref 'AWS::AccountId'
-                  - !GetAtt
-                    - "LambdaTrustRole"
-                    - "RoleId"                
           - 
             Action: 
               - "s3:GetObject"
@@ -491,14 +437,13 @@ Resources:
                     Ref: "EdgeJ1939ProcessingBucket"
                   - "/*"
             Principal:
-              AWS: !GetAtt
+              AWS: 
+                - !GetAtt
                   - "EdgeCPPTPosterLambdaRole"
                   - "Arn"
-            Condition: 
-              StringLike: 
-                aws:userId:
-                 - "{{resolve:ssm:Azure-user-id:1}}"
-                 - "{{resolve:ssm:olympus-admin-role:1}}"
+                - !GetAtt
+                  - "EdgeNGDI2CDSDKConversionLambdaRole"
+                  - "Arn"
           - 
             Action: 
               - "s3:GetObject"
@@ -512,14 +457,25 @@ Resources:
                     Ref: "EdgeJ1939ProcessingBucket"
                   - "/NGDI/*"
             Principal:
+              AWS: 
+                - !Sub "{{resolve:ssm:olympus-${ApplicationEnvironmentTag}.aws.cummins.com-Olympus-AdminRoleARN:1}}"
+          -
+            Action: 
+              - "s3:PutObject"
+            Effect: "Allow"
+            Resource: 
+              Fn::Join: 
+                - ""
+                - 
+                  - "arn:aws:s3:::"
+                  - 
+                    Ref: "EdgeJ1939ProcessingBucket"
+                  - "/ConvertedFiles/*"
+            Principal:
               AWS: !GetAtt
-                  - "EdgeNGDI2CDSDKConversionLambdaRole"
-                  - "Arn"
-            Condition: 
-              StringLike: 
-                aws:userId:
-                 - "{{resolve:ssm:Azure-user-id:1}}"
-                 - "{{resolve:ssm:olympus-admin-role:1}}"
+                  - RoleForJ1939StreamBucket
+                  - Arn 
+
   
   EdgeJ1939DataLogBucketPolicy:
     Type: AWS::S3::BucketPolicy
@@ -539,17 +495,9 @@ Resources:
                   - "arn:aws:s3:::"
                   - 
                     Ref: "EdgeJ1939DataLogBucket"
-                  - "/J1939/*"
+                  - "/*"
             Principal:
-              AWS: 
-                - "{{resolve:ssm:EdgeUploadedFileProcessor:2}}"
-            Condition: 
-              StringLike: 
-                aws:userId:
-                  - !Ref 'AWS::AccountId'
-                  - !GetAtt
-                    - "LambdaTrustRole"
-                    - "RoleId" 
+              AWS: "{{resolve:ssm:EdgeUploadedFileProcessor:1}}" 
           - 
             Action: 
               - "s3:GetObject"
@@ -561,16 +509,13 @@ Resources:
                   - "arn:aws:s3:::"
                   - 
                     Ref: "EdgeJ1939DataLogBucket"
-                  - "/J1939/*"
+                  - "/*"
             Principal:
-              AWS: !GetAtt
-                  - "EdgeNGDI2CDSDKConversionLambdaRole"
+              AWS: 
+                - !GetAtt
+                  - "EdgeJ1939CSVConverterLambdaRole"
                   - "Arn"
-            Condition: 
-              StringLike: 
-                aws:userId:
-                 - "{{resolve:ssm:Azure-user-id:1}}"
-                 - "{{resolve:ssm:olympus-admin-role:1}}"
+                - !Sub "{{resolve:ssm:olympus-${ApplicationEnvironmentTag}.aws.cummins.com-Olympus-AdminRoleARN:1}}"
 
   SpnlistbucketPolicy:
     Type: AWS::S3::BucketPolicy
@@ -590,16 +535,12 @@ Resources:
                   - "arn:aws:s3:::"
                   - 
                     Ref: "Spnlistbucket"
-                  - "/J1939/*"
+                  - "/*"
             Principal:
-              AWS: !GetAtt
+              AWS: 
+                - !GetAtt
                   - "EdgeNGDI2CDSDKConversionLambdaRole"
                   - "Arn"
-            Condition: 
-              StringLike: 
-                aws:userId:
-                 - "{{resolve:ssm:Azure-user-id:1}}"
-                 - "{{resolve:ssm:olympus-admin-role:1}}"
 
   LambdaInvokePermissionJ1939ProcessingBucket:
     Type: 'AWS::Lambda::Permission'
@@ -647,9 +588,10 @@ Resources:
 
   EdgeNGDI2CDSDKConversion:
     Type: 'AWS::Serverless::Function'
+    DependsOn: RequestsPythonLayer
     Properties:
       Handler: conversion.lambda_handler
-      FunctionName: !Sub 'EdgeNGDI2CDSDKConversion-${ApplicationEnvironmentTag}'
+      FunctionName: !Sub '${ApplicationName}-EdgeNGDI2CDSDKConversion-${ApplicationEnvironmentTag}'
       Runtime: python3.7
       CodeUri:
         Bucket: !Ref ArtifactsBucket
@@ -670,7 +612,14 @@ Resources:
           time_stamp_param: "dateTimestamp"
           active_fault_code_indicator: "activeFaultCodes"
           param_indicator: "parameters"
-          class_arg_map: '{"messageFormatVersion": "notification_version", "telematicsPartnerName": "telematics_partner_name", "customerReference": "customer_reference", "componentSerialNumber": "engine_serial_number", "equipmentId": "equipment_id", "vin": "vin", "telematicsDeviceId": "telematics_box_id", "samples": {"dateTimestamp": "occurrence_date_time", "convertedDeviceParameters": {"messageID": "telematics_partner_message_id", "Latitude": "latitude", "Longitude": "longitude", "Altitude": "altitude", "Direction_Heading": "direction_heading", "Vehicle_Distance": "vehicle_distance", "Location_Text_Description": "location_text_description", "GPS_Vehicle_Speed": "gps_vehicle_speed"}, "convertedEquipmentParameters": [{"protocol": "datalink_bus", "deviceId": "source_address", "parameters": "snapshots"}], "convertedEquipmentFaultCodes": [{"activeFaultCodes": "active_faults"}]}}'
+          message_format_version_indicator: "messageFormatVersion"
+          notification_version: "2.5.2"
+          spn_indicator: "SPN"
+          fmi_indicator: "FMI"
+          count_indicator: "Occurrence_Count"
+          active_cd_parameter: "active"
+          inactive_fault_code_indicator: "inactiveFaultCodes"
+          class_arg_map: '{"messageFormatVersion": "notification_version", "telematicsPartnerName": "telematics_partner_name", "customerReference": "customer_reference", "componentSerialNumber": "engine_serial_number", "equipmentId": "equipment_id", "vin": "vin", "telematicsDeviceId": "telematics_box_id", "samples": {"dateTimestamp": "occurrence_date_time", "convertedDeviceParameters": {"messageID": "telematics_partner_message_id", "Latitude": "latitude", "Longitude": "longitude", "Altitude": "altitude", "Direction_Heading": "direction_heading", "Vehicle_Distance": "vehicle_distance", "Location_Text_Description": "location_text_description", "GPS_Vehicle_Speed": "gps_vehicle_speed"}, "convertedEquipmentParameters": [{"protocol": "datalink_bus", "deviceId": "source_address", "parameters": "snapshots"}], "convertedEquipmentFaultCodes": [{"activeFaultCodes": "active_faults", "inactiveFaultCodes": ""}]}}'
       Layers:
         - !Ref PandasPythonLayer
         - !Ref RequestsPythonLayer
@@ -679,9 +628,10 @@ Resources:
           
   EdgeJ1939CSVConverter:
     Type: AWS::Serverless::Function
+    DependsOn: RequestsPythonLayer
     Properties:
       Handler: ConverterLambda.lambda_handler
-      FunctionName: !Sub 'EdgeJ1939CSVConverter-${ApplicationEnvironmentTag}'
+      FunctionName: !Sub '${ApplicationName}-EdgeJ1939CSVConverter-${ApplicationEnvironmentTag}'
       Role: !GetAtt
           - EdgeJ1939CSVConverterLambdaRole
           - Arn
@@ -693,15 +643,18 @@ Resources:
         Variables:
           NGDIBody: "{\"messageFormatVersion\": \"\", \"telematicsPartnerName\": \"\", \"customerReference\": \"\", \"componentSerialNumber\": \"\", \"equipmentId\": \"\", \"vin\": \"\", \"telematicsDeviceId\": \"\", \"dataSamplingConfigId\": \"\", \"dataEncryptionSchemeId\": \"\", \"numberOfSamples\": \"\", \"samples\": []}"
           CPPostBucket: !Sub 'edge-j1939-${ApplicationEnvironmentTag}'
-          MandatoryParameters: '{"ss":"telematicsPartnerName,customerReference,messageID"}'
+          MandatoryParameters: '{"ss":"telematicsPartnerName,customerReference"}'
+      Layers:
+        - !Ref RequestsPythonLayer
       Tags:
           Name: Edge
 
   EdgeCPPTPoster:
     Type: AWS::Serverless::Function
+    DependsOn: RequestsPythonLayer
     Properties:
       Handler: PosterLambda.lambda_handler
-      FunctionName: !Sub 'EdgeCPPTPoster-${ApplicationEnvironmentTag}'
+      FunctionName: !Sub '${ApplicationName}-EdgeCPPTPoster-${ApplicationEnvironmentTag}'
       Role: !GetAtt
           - EdgeCPPTPosterLambdaRole
           - Arn
@@ -711,9 +664,8 @@ Resources:
         Key: !Sub '${VersionId}/EdgeCPPTPoster.zip'
       Environment:
         Variables:
-          CPPTGetDevInfo: "{\"method\": \"get\", \"query\": \"SELECT DEVICE_TYPE, DEVICE_OWNER, DOM FROM CS_PARTNER_VAL.EDG_DEVICE_INFORMATION WHERE DEVICE_ID = %(devId)s;\", \"input\": {\"Params\": [{\"devId\": \"devId\"}]}}"
+          CPPTGetDevInfo: "{\"method\": \"get\", \"query\": \"SELECT DEVICE_TYPE, DEVICE_OWNER, DOM FROM da_edge_olympus.DEVICE_INFORMATION WHERE DEVICE_ID = %(devId)s;\", \"input\": {\"Params\": [{\"devId\": \"devId\"}]}}"
           CurrentProductsAPI: "https://api.cp.aws.cummins.com/v1/edge-utils/cp-data"
-          CurrentProductsAPI: !Ref CPDBApi
           CurrentProdutCommonAPIKey: "GxcxtISfZE1e9Rb63Gj6kAh5xTTz9ba4hQGfjc20"
           CPPostBucket: !Sub 'edge-j1939-${ApplicationEnvironmentTag}'
           EndpointBucket: !Sub '${ApplicationName}-endpoint-bucket-${ApplicationEnvironmentTag}'
@@ -737,7 +689,7 @@ Resources:
   EdgePublicDataIoTTopicRule:
     Type: AWS::IoT::TopicRule
     Properties:
-      RuleName: !Sub "EdgeIotRulePublicDataDataLogger_${ApplicationEnvironmentTag}"
+      RuleName: !Sub "da_edge_j1939_EdgeIotRulePublicDataDataLogger_${ApplicationEnvironmentTag}"
       TopicRulePayload:
         RuleDisabled: "false"
         AwsIotSqlVersion: "2016-03-23"
@@ -750,9 +702,7 @@ Resources:
               Key: 'ConvertedFiles/$componentSerialNumber/${topic(3)}/${parse_time("yyyy", timestamp(), "UTC")}/${parse_time("MM", timestamp(), "UTC")}/${parse_time("dd", timestamp(), "UTC")}/${topic(3)}_${timestamp()}.json'
           -
             Lambda:
-              FunctionArn: !GetAtt
-                  - "EdgePostHBToTATA"
-                  - "Arn"
+              FunctionArn: "arn:aws:lambda:us-east-1:732927748536:function:EdgePostHBToTATA-dev"
   
   EdgeJ1939Bucket: 
     Type: "AWS::SSM::Parameter"

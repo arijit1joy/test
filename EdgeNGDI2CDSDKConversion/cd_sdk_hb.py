@@ -18,16 +18,9 @@ def get_json_payload():
         return json.loads(json_file_stream.read())
 
 
-class Snapshot:
-
-    def __init__(self, snapshot_date_timestamp, parameter):
-        self.snapshot_timestamp = snapshot_date_timestamp
-        self.parameter = parameter
-
-
 class CDHBSDK:
 
-    """CD SDK Class for Payload to CD"""
+    """CD SDK Class for HB Payload to CD"""
 
     payload = {}  # Payload to send to CP
     values = {}  # Non-None values in class
@@ -73,6 +66,11 @@ class CDHBSDK:
         if not json_payload["Telematics_Partner_Message_ID"]:
 
             json_payload["Telematics_Partner_Message_ID"] = get_message_id()
+
+        if not json_payload["Sent_Date_Time"]:
+
+            json_payload["Sent_Date_Time"] = json_payload["Occurrence_Date_Time"] if "Occurrence_Date_Time" \
+                                                                                     in json_payload else ""
 
         print("NEW HB JSON Payload:", json_payload)
 

@@ -2,6 +2,7 @@ import csv
 import boto3
 import json
 import os
+import requests
 
 s3 = boto3.client('s3')
 cp_post_bucket = os.environ["CPPostBucket"]
@@ -11,93 +12,101 @@ s3_client = boto3.client('s3')
 
 
 def process_ss(ss_rows, ss_dict, ngdi_json_template, ss_converted_prot_header,
-               ss_raw_prot_header, ss_converted_device_parameters):
-    ss_values = ss_rows[1]
-
-    print(" ")
-    print("<------------------------------------------NEW SS SAMPLE--------------------------------------------->")
-    print(" ")
-
-    print("Single Sample Values:", ss_values)
-
-    json_sample_head = ngdi_json_template
-
-    print("Received Json Body in SS Handler:", json_sample_head)
-
-    parameters = {}
-
-    ss_sample = {"convertedDeviceParameters": {}, "convertedEquipmentParameters": []}
-
-    print("Single Sample Converted Protocol Header:", ss_converted_prot_header)
-
-    converted_prot_header = ss_converted_prot_header.split("~")
-
-    print("Converted Protocol Header Array:", converted_prot_header)
-
+               ss_converted_device_parameters):
     try:
-        protocol = converted_prot_header[1]
 
-        print("protocol:", protocol)
+        ss_values = ss_rows[1]  # Get the SS Values row
 
-        network_id = converted_prot_header[2]
+        print("<------------------------------------------NEW SS SAMPLE--------------------------------------------->")
 
-        print("network_id:", network_id)
+        print("Single Sample Values:", ss_values)
 
-        address = converted_prot_header[3]
+        json_sample_head = ngdi_json_template
 
-        print("address:", address)
+        print("Received Json Body in SS Handler:", json_sample_head)
 
-    except IndexError as e:
+        parameters = {}
 
-        print("An exception occurred while trying to retrieve the AS protocols network_id and Address:", e)
+        ss_sample = {"convertedDeviceParameters": {}, "convertedEquipmentParameters": []}
 
-        return
+        print("Single Sample Converted Protocol Header:", ss_converted_prot_header)
 
-    print("Handling the device metadata headers in SS:", ss_converted_device_parameters)
+        converted_prot_header = ss_converted_prot_header.split("~")
 
-    for key in ss_converted_device_parameters:
+        print("Converted Protocol Header Array:", converted_prot_header)
 
-        if key:
+        try:
+            protocol = converted_prot_header[1]
 
-            print("Processing", key)
+            print("protocol:", protocol)
 
-            if "messageid" in key:
+            network_id = converted_prot_header[2]
 
-                ss_sample["convertedDeviceParameters"][key] = ss_values[ss_dict[key]]
+            print("network_id:", network_id)
 
-            else:
+            address = converted_prot_header[3]
 
-                json_sample_head[key] = ss_values[ss_dict[key]]
+            print("address:", address)
 
-        del ss_dict[key]
+        except IndexError as e:
 
-    conv_eq_obj = {"protocol": protocol, "networkId": network_id, "deviceId": address}
+            print("An exception occurred while trying to retrieve the AS protocols network_id and Address:", e)
 
-    print("Json Sample Head after metadata retrieval:", json_sample_head)
-    print("Converted Equipment Object:", conv_eq_obj)
+            return
 
-    for param in ss_dict:
+        print("Handling the device metadata headers in SS:", ss_converted_device_parameters)
 
-        if param:
-            parameters[param] = ss_values[ss_dict[param]]
+        for key in ss_converted_device_parameters:
 
-    print("SS Parameters:", parameters)
+            if key:
 
-    conv_eq_obj["parameters"] = parameters
+                print("Processing", key)
 
-    print("Converted Equipment Object with Parameters:", conv_eq_obj)
+                if "messageid" in key.lower():
 
-    ss_sample["convertedEquipmentParameters"].append(conv_eq_obj)
+                    ss_sample["convertedDeviceParameters"][key] = ss_values[ss_dict[key]]
 
-    print("Single Sample:", ss_sample)
+                else:
 
-    json_sample_head["samples"].append(ss_sample)
+                    json_sample_head[key] = ss_values[ss_dict[key]]
 
-    return json_sample_head
+            del ss_dict[key]
+
+        conv_eq_obj = {"protocol": protocol, "networkId": network_id, "deviceId": address}
+
+        print("Json Sample Head after metadata retrieval:", json_sample_head)
+        print("Converted Equipment Object:", conv_eq_obj)
+
+        for param in ss_dict:
+
+            if "datetimestamp" in param.lower():
+
+                ss_sample["dateTimestamp"] = ss_values[ss_dict[param]]
+
+            elif param:
+                parameters[param] = ss_values[ss_dict[param]]
+
+        print("SS Parameters:", parameters)
+
+        conv_eq_obj["parameters"] = parameters
+
+        print("Converted Equipment Object with Parameters:", conv_eq_obj)
+
+        ss_sample["convertedEquipmentParameters"].append(conv_eq_obj)
+
+        print("Single Sample:", ss_sample)
+
+        json_sample_head["samples"].append(ss_sample)
+
+        return json_sample_head
+
+    except Exception as e:
+
+        print("An exception occurred while handling the Single Sample:", e)
 
 
 def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
-               as_raw_prot_header, as_converted_device_parameters):
+               as_converted_device_parameters):
     old_as_dict = as_dict
 
     json_sample_head = ngdi_json_template
@@ -138,9 +147,7 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
         sample = {"convertedDeviceParameters": {}, "rawEquipmentParameters": [], "convertedEquipmentParameters": [],
                   "convertedEquipmentFaultCodes": []}
 
-        print(" ")
         print("<------------------------------------------NEW AS SAMPLE--------------------------------------------->")
-        print(" ")
 
         print("OLD AS DICT:", old_as_dict)
         print("AS DICT:", new_as_dict)
@@ -148,14 +155,7 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
         for key in as_converted_device_parameters:
 
             if key:
-
-                if "datetimestamp" in key.lower():
-
-                    sample[key] = values[new_as_dict[key]]
-
-                else:
-
-                    sample["convertedDeviceParameters"][key] = values[new_as_dict[key]]
+                sample["convertedDeviceParameters"][key] = values[new_as_dict[key]]
 
             del new_as_dict[key]
 
@@ -169,7 +169,11 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
 
             if param:
 
-                if param != "activeFaultCodes" and param != "inactiveFaultCodes" and param != "pendingFaultCodes":
+                if "datetimestamp" in param.lower():
+
+                    sample["dateTimestamp"] = values[new_as_dict[param]]
+
+                elif param != "activeFaultCodes" and param != "inactiveFaultCodes" and param != "pendingFaultCodes":
                     parameters[param] = values[new_as_dict[param]]
 
         conv_eq_obj["parameters"] = parameters
@@ -193,14 +197,14 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
 
                     if fc:
 
-                        fcObj = {}
+                        fc_obj = {}
 
-                        fcArr = fc.split("~")
+                        fc_arr = fc.split("~")
 
-                        for fcVal in fcArr:
-                            fcObj[fcVal.split(":")[0]] = fcVal.split(":")[1]
+                        for fcVal in fc_arr:
+                            fc_obj[fcVal.split(":")[0]] = fcVal.split(":")[1]
 
-                        conv_eq_fc_obj["activeFaultCodes"].append(fcObj)
+                        conv_eq_fc_obj["activeFaultCodes"].append(fc_obj)
 
         if "inactiveFaultCodes" in new_as_dict:
 
@@ -214,14 +218,14 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
 
                     if fc:
 
-                        fcObj = {}
+                        fc_obj = {}
 
-                        fcArr = fc.split("~")
+                        fc_arr = fc.split("~")
 
-                        for fcVal in fcArr:
-                            fcObj[fcVal.split(":")[0]] = fcVal.split(":")[1]
+                        for fcVal in fc_arr:
+                            fc_obj[fcVal.split(":")[0]] = fcVal.split(":")[1]
 
-                        conv_eq_fc_obj["inactiveFaultCodes"].append(fcObj)
+                        conv_eq_fc_obj["inactiveFaultCodes"].append(fc_obj)
 
         if "pendingFaultCodes" in new_as_dict:
 
@@ -235,14 +239,14 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
 
                     if fc:
 
-                        fcObj = {}
+                        fc_obj = {}
 
-                        fcArr = fc.split("~")
+                        fc_arr = fc.split("~")
 
-                        for fcVal in fcArr:
-                            fcObj[fcVal.split(":")[0]] = fcVal.split(":")[1]
+                        for fcVal in fc_arr:
+                            fc_obj[fcVal.split(":")[0]] = fcVal.split(":")[1]
 
-                        conv_eq_fc_obj["pendingFaultCodes"].append(fcObj)
+                        conv_eq_fc_obj["pendingFaultCodes"].append(fc_obj)
 
         sample["convertedEquipmentFaultCodes"].append(conv_eq_fc_obj)
 
@@ -253,8 +257,58 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
     return json_sample_head
 
 
+def get_device_id(ngdi_json_template):
+    if "telematicsDeviceId" in ngdi_json_template:
+        return ngdi_json_template["telematicsDeviceId"]
+
+    return False
+
+
+def get_tsp_and_cust_ref(device_id):
+
+    print("Device ID:", device_id)
+
+    get_tsp_cust_ref_payload = {
+
+        "method": "get",
+        "query": "select cust_ref, device_owner from da_edge_olympus.device_information WHERE device_id = :devId;",
+        "input": {
+            "Params": [
+                {
+                    "name": "devId",
+                    "value": {
+
+                        "stringValue": device_id
+                    }
+                }
+            ]
+        }
+    }
+
+    print("Get TSP and Cust_Ref payload:", get_tsp_cust_ref_payload)
+
+    get_tsp_cust_ref_response = requests.post(url=get_tsp_cust_ref_payload)
+
+    get_tsp_cust_ref_response_body = get_tsp_cust_ref_response.json()[0]
+    get_tsp_cust_ref_response_code = get_tsp_cust_ref_response.status_code
+
+    print("Get TSP and Cust_Ref response body:", get_tsp_cust_ref_response_body)
+    print("Get TSP and Cust_Ref response code:", get_tsp_cust_ref_response_code)
+
+    if get_tsp_cust_ref_response_body and get_tsp_cust_ref_response_code == 200:
+
+        if "cust_ref" in get_tsp_cust_ref_response_body and get_tsp_cust_ref_response_body["cust_ref"]:
+
+            if "device_owner" in get_tsp_cust_ref_response_body and get_tsp_cust_ref_response_body["device_owner"]:
+
+                return get_tsp_cust_ref_response_body
+
+    return {}
+
+
 def lambda_handler(lambda_event, context):
     print("Event:", json.dumps(lambda_event))
+    print("Context:", context)
 
     bucket_name = lambda_event['Records'][0]['s3']['bucket']['name']
     file_key = lambda_event['Records'][0]['s3']['object']['key']
@@ -295,7 +349,7 @@ def lambda_handler(lambda_event, context):
 
     for row in csv_rows:
 
-        if (not ss_row) and (not seen_ss):
+        if not ss_row and not seen_ss:
 
             if "messageFormatVersion" in row:
 
@@ -329,16 +383,31 @@ def lambda_handler(lambda_event, context):
 
             elif "ssDateTimestamp" in row:
 
+                # Found the Single Sample Row. Append the row as Single Sample row.
+
                 print("ssDateTimestamp Header row:", row)
 
                 ss_row = True
                 seen_ss = True
                 ss_rows.append(row)
 
+            elif "asDateTimestamp" in row:
+
+                # If there are no Single Samples, append the row as an All Sample row and stop looking for SS rows
+
+                print("No Single Samples!")
+                print("asDateTimestamp Header row:", row)
+
+                as_rows.append(row)
+
+                ss_row = False
+                seen_ss = True
+                ss_rows.append(row)
+
         elif ss_row:
 
             if "asDateTimestamp" in row:
-                print("Missing the Single Sample Values. ERROR")
+                print("ERROR! Missing the Single Sample Values.")
 
                 return
 
@@ -352,8 +421,10 @@ def lambda_handler(lambda_event, context):
 
             as_rows.append(row)
 
-    if not seen_ss or (not as_rows):
-        print("Missing the Single Sample Values or the All Samples Values. Both are MANDATORY. ERROR!")
+    # Make sure that we received values in the AS (as_rows > 1) and/or SS
+
+    if not seen_ss or (not as_rows) or len(as_rows) < 2:
+        print("ERROR! Missing the Single Sample Values or the All Samples Values.")
         return
 
     print("NGDI Template after main metadata addition --->", ngdi_json_template)
@@ -362,15 +433,15 @@ def lambda_handler(lambda_event, context):
     as_dict = {}
     ss_converted_prot_header = ""
     as_converted_prot_header = ""
-    ss_raw_prot_header = ""
-    as_raw_prot_header = ""
+    # ss_raw_prot_header = ""
+    # as_raw_prot_header = ""
 
     count = 0
 
-    ss_headers = ss_rows[0]
+    ss_headers = ss_rows[0] if ss_rows else []
     print("SS Headers:", ss_headers)
 
-    as_headers = as_rows[0]
+    as_headers = as_rows[0] if as_rows else []
     print("AS Headers:", as_headers)
 
     ss_converted_device_parameters = []
@@ -383,19 +454,21 @@ def lambda_handler(lambda_event, context):
     seen_as_j1939_params = False
     seen_as_raw_params = False
 
-    mandatory_ss_parameter_list = MandatoryParameters["ss"].split(",") if "ss" in MandatoryParameters else None
+    # mandatory_ss_parameter_list = MandatoryParameters["ss"].split(",") if "ss" in MandatoryParameters else None
 
-    print("Mandatory SS Headers: ", mandatory_ss_parameter_list)
+    # print("Mandatory SS Headers: ", mandatory_ss_parameter_list)
 
-    if mandatory_ss_parameter_list:
+    # if mandatory_ss_parameter_list:
+    #
+    #     for ss_param in mandatory_ss_parameter_list:
+    #
+    #         if ss_param not in ss_headers:
+    #             print("Some of the SS mandatory headers are missing! Headers ",
+    #                   mandatory_ss_parameter_list, " are mandatory! ERROR")
+    #
+    #             return
 
-        for ss_param in mandatory_ss_parameter_list:
-
-            if ss_param not in ss_headers:
-                print("Some of the SS mandatory headers are missing! Headers ",
-                      mandatory_ss_parameter_list, " are mandatory! ERROR")
-
-                return
+    # For each of the headers in the SS row, map the index to the header value
 
     for head in ss_headers:
 
@@ -403,7 +476,7 @@ def lambda_handler(lambda_event, context):
             seen_ss_dev_params = True
 
         if 'j1939' in head.lower() and 'raw' in head.lower():
-            ss_raw_prot_header = head
+            # ss_raw_prot_header = head
             seen_ss_raw_params = True
 
         if 'j1939' in head.lower() and 'converted' in head.lower():
@@ -411,10 +484,14 @@ def lambda_handler(lambda_event, context):
             seen_ss_j1939_params = True
 
         if '~' in head:
+
             count = count + 1
+
         elif "datetimestamp" in head.lower():
+
             ss_dict["dateTimeStamp"] = count
             count = count + 1
+
         else:
 
             if seen_ss_dev_params and not seen_ss_raw_params and not seen_ss_j1939_params:
@@ -428,19 +505,21 @@ def lambda_handler(lambda_event, context):
 
     count = 0
 
-    mandatory_as_parameter_list = MandatoryParameters["as"].split(",") if "as" in MandatoryParameters else None
+    # mandatory_as_parameter_list = MandatoryParameters["as"].split(",") if "as" in MandatoryParameters else None
 
-    print("Mandatory AS Headers: ", mandatory_as_parameter_list)
+    # print("Mandatory AS Headers: ", mandatory_as_parameter_list)
+    #
+    # if mandatory_as_parameter_list:
+    #
+    #     for as_param in mandatory_as_parameter_list:
+    #
+    #         if as_param not in as_headers:
+    #             print("Some of the AS mandatory headers are missing! Headers ",
+    #                   mandatory_as_parameter_list, " are mandatory! ERROR")
+    #
+    #             return
 
-    if mandatory_as_parameter_list:
-
-        for as_param in mandatory_as_parameter_list:
-
-            if as_param not in as_headers:
-                print("Some of the AS mandatory headers are missing! Headers ",
-                      mandatory_as_parameter_list, " are mandatory! ERROR")
-
-                return
+    # For each of the headers in the SS row, map the index to the header value
 
     for head in as_headers:
 
@@ -449,53 +528,87 @@ def lambda_handler(lambda_event, context):
             seen_as_j1939_params = True
 
         if 'j1939' in head.lower() and 'raw' in head.lower():
-            as_raw_prot_header = head
+            # as_raw_prot_header = head
             seen_as_raw_params = True
 
         if 'converted' in head.lower() and 'device' in head.lower():
             seen_as_dev_params = True
 
         if '~' in head:
+
             count = count + 1
+
         elif "datetimestamp" in head.lower():
+
             as_dict["dateTimeStamp"] = count
             count = count + 1
+
         else:
+
             if seen_as_dev_params and not seen_as_raw_params and not seen_as_j1939_params:
                 as_converted_device_parameters.append(head)
+
             as_dict[head] = count
             count = count + 1
 
     print("AS_DICT:", as_dict)
     print("AS Device Parameters:", as_converted_device_parameters)
 
-    del as_rows[0]
+    # Get rid of the AS header row since we have already stored the index of each header
+    if as_rows:
+        del as_rows[0]
 
-    print(" ")
     print("<xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx---Handling Single Samples---xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>")
-    print(" ")
 
     ngdi_json_template = process_ss(ss_rows, ss_dict, ngdi_json_template, ss_converted_prot_header,
-                                    ss_raw_prot_header, ss_converted_device_parameters)
+                                    ss_converted_device_parameters) if ss_rows else ngdi_json_template
 
     print("NGDI JSON Template after SS handling:", ngdi_json_template)
 
-    print(" ")
     print("<xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx---Handled Single Samples---xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>")
-    print(" ")
 
-    print(" ")
     print("<xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx---Handling All Samples---xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>")
-    print(" ")
 
     ngdi_json_template = process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
-                                    as_raw_prot_header, as_converted_device_parameters)
+                                    as_converted_device_parameters)
 
     print("NGDI JSON Template after AS handling:", ngdi_json_template)
 
-    print(" ")
     print("<xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx---Handled All Samples---xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>")
-    print(" ")
+
+    print("Verifying Telematics Partner Name and Customer Reference Exists in file...")
+
+    tsp_in_file = "telematicsPartnerName" in ngdi_json_template
+    cust_ref_in_file = "customerReference" in ngdi_json_template
+
+    print("Telematics Partner Name in file:", tsp_in_file)
+    print("Customer Reference in file:", cust_ref_in_file)
+
+    if not (tsp_in_file and cust_ref_in_file):
+
+        print("Retrieve Device ID from file . . .")
+
+        device_id = get_device_id(ngdi_json_template)
+
+        if not device_id:
+            print("Error! Device ID is not in the file! Aborting!")
+
+        print("Retrieving TSP and Customer Reference from EDGE DB . . .")
+
+        got_tsp_and_cust_ref = get_tsp_and_cust_ref(device_id)
+
+        if not got_tsp_and_cust_ref:
+
+            print("Error! Could not retrieve TSP and Cust Ref. These are mandatory fields!")
+
+            return
+
+        else:
+
+            ngdi_json_template["telematicsPartnerName"] = got_tsp_and_cust_ref["device_owner"]
+            ngdi_json_template["telematicsPartnerName"] = got_tsp_and_cust_ref["cust_ref"]
+
+            print("Final file with TSP and Cust Ref:", ngdi_json_template)
 
     print("Posting file to S3...")
 
@@ -503,17 +616,21 @@ def lambda_handler(lambda_event, context):
 
     print("Filename: ", filename)
 
-    if '-' in filename.split('_')[4]:
-        date = filename.split('_')[4][:10].replace('-', '')
+    if '-' in filename.split('_')[-1]:
+        date = filename.split('_')[-1][:10].replace('-', '')
     else:
-        date = filename.split('_')[4][:8]
+        date = filename.split('_')[-1][:8]
+
+    new_file_name = "ConvertedFiles/" + ngdi_json_template['componentSerialNumber'] + '/' + \
+                    ngdi_json_template["telematicsDeviceId"] + '/' + date[:4] + '/' + date[4:6] + \
+                    '/' + date[6:8] + '/' + filename.split('.csv')[0] + '.json'
+
+    print("New Filename:", new_file_name)
 
     store_file_response = s3_client.put_object(Bucket=cp_post_bucket,
-                                    Key="ConvertedFiles/" + ngdi_json_template['componentSerialNumber'] + '/' +
-                                        ngdi_json_template["telematicsDeviceId"] + '/' + date[:4] + '/' + date[4:6] +
-                                        '/' + date[6:8] + '/' + filename.split('.csv')[0] + '.json',
-                                    Body=json.dumps(ngdi_json_template).encode(),
-                                    Metadata={'j1939type': 'FC'})
+                                               Key=new_file_name,
+                                               Body=json.dumps(ngdi_json_template).encode(),
+                                               Metadata={'j1939type': 'FC'})
 
     print("Store File Response:", store_file_response)
 
@@ -523,5 +640,5 @@ Main Method For Local Testing
 '''
 if __name__ == "__main__":
     event = ""
-    context = ""
-    lambda_handler(event, context)
+    # context = ""
+    # lambda_handler(event, context)
