@@ -247,7 +247,7 @@ Resources:
         S3Bucket: !Ref ArtifactsBucket
         S3Key: python-requests.zip
       Description: python-requests for restful API calls
-      LayerName: !Sub "python-requests"
+      LayerName: !Sub "${ApplicationName}-python-requests"
 
   PandasPythonLayer:
     Type: "AWS::Lambda::LayerVersion"
