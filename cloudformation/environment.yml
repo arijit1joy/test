@@ -588,6 +588,7 @@ Resources:
 
   EdgeNGDI2CDSDKConversion:
     Type: 'AWS::Serverless::Function'
+    DependsOn: RequestsPythonLayer
     Properties:
       Handler: conversion.lambda_handler
       FunctionName: !Sub '${ApplicationName}-EdgeNGDI2CDSDKConversion-${ApplicationEnvironmentTag}'
@@ -627,6 +628,7 @@ Resources:
           
   EdgeJ1939CSVConverter:
     Type: AWS::Serverless::Function
+    DependsOn: RequestsPythonLayer
     Properties:
       Handler: ConverterLambda.lambda_handler
       FunctionName: !Sub '${ApplicationName}-EdgeJ1939CSVConverter-${ApplicationEnvironmentTag}'
@@ -649,6 +651,7 @@ Resources:
 
   EdgeCPPTPoster:
     Type: AWS::Serverless::Function
+    DependsOn: RequestsPythonLayer
     Properties:
       Handler: PosterLambda.lambda_handler
       FunctionName: !Sub '${ApplicationName}-EdgeCPPTPoster-${ApplicationEnvironmentTag}'
