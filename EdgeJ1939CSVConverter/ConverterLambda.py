@@ -289,7 +289,7 @@ def get_tsp_and_cust_ref(device_id):
 
     get_tsp_cust_ref_response = requests.post(url=get_tsp_cust_ref_payload)
 
-    get_tsp_cust_ref_response_body = get_tsp_cust_ref_response.json()
+    get_tsp_cust_ref_response_body = get_tsp_cust_ref_response.json()[0]
     get_tsp_cust_ref_response_code = get_tsp_cust_ref_response.status_code
 
     print("Get TSP and Cust_Ref response body:", get_tsp_cust_ref_response_body)
@@ -303,7 +303,7 @@ def get_tsp_and_cust_ref(device_id):
 
                 return get_tsp_cust_ref_response_body
 
-    return False
+    return {}
 
 
 def lambda_handler(lambda_event, context):
