@@ -236,7 +236,6 @@ Resources:
                   - EdgeCPPTPosterLambdaRole
                   - Arn
                 - !Sub "{{resolve:ssm:olympus-${ApplicationEnvironmentTag}.aws.cummins.com-Olympus-AdminRoleARN:1}}"
-                - "{{resolve:ssm:Azure-user-id:1}}"
 
   RequestsPythonLayer:
     Type: "AWS::Lambda::LayerVersion"
@@ -459,7 +458,6 @@ Resources:
                   - "/NGDI/*"
             Principal:
               AWS: 
-                - "{{resolve:ssm:Azure-user-id:1}}"
                 - !Sub "{{resolve:ssm:olympus-${ApplicationEnvironmentTag}.aws.cummins.com-Olympus-AdminRoleARN:1}}"
           -
             Action: 
@@ -517,7 +515,6 @@ Resources:
                 - !GetAtt
                   - "EdgeJ1939CSVConverterLambdaRole"
                   - "Arn"
-                - "{{resolve:ssm:Azure-user-id:1}}"   
                 - !Sub "{{resolve:ssm:olympus-${ApplicationEnvironmentTag}.aws.cummins.com-Olympus-AdminRoleARN:1}}"
 
   SpnlistbucketPolicy:
@@ -644,7 +641,9 @@ Resources:
         Variables:
           NGDIBody: "{\"messageFormatVersion\": \"\", \"telematicsPartnerName\": \"\", \"customerReference\": \"\", \"componentSerialNumber\": \"\", \"equipmentId\": \"\", \"vin\": \"\", \"telematicsDeviceId\": \"\", \"dataSamplingConfigId\": \"\", \"dataEncryptionSchemeId\": \"\", \"numberOfSamples\": \"\", \"samples\": []}"
           CPPostBucket: !Sub 'edge-j1939-${ApplicationEnvironmentTag}'
-          MandatoryParameters: '{"ss":"telematicsPartnerName,customerReference,messageID"}'
+          MandatoryParameters: '{"ss":"telematicsPartnerName,customerReference"}'
+      Layers:
+        - !Ref RequestsPythonLayer
       Tags:
           Name: Edge
 
