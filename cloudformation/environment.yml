@@ -382,140 +382,140 @@ Resources:
           Key: Name
           Value: Edge
           
-  J1939StreamingBucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties: 
-      Bucket: 
-        Ref: "EdgeJ1939ProcessingBucket"
-      PolicyDocument: 
-        Statement: 
-          - 
-            Action: 
-              - "s3:PutObject"
-            Effect: "Allow"
-            Resource: 
-              Fn::Join: 
-                - ""
-                - 
-                  - "arn:aws:s3:::"
-                  - 
-                    Ref: "EdgeJ1939ProcessingBucket"
-                  - "/*"
-            Principal:
-              AWS: 
-                - !Sub "arn:aws:iam::${AWS::AccountId}:role/${ApplicationName}-${ApplicationEnvironmentTag}-J1939StreamBucket"
-                - !GetAtt
-                  - EdgeJ1939CSVConverterLambdaRole
-                  - Arn
-                - !Sub "arn:aws:iam::${AWS::AccountId}:role/da-edge-oem-${ApplicationEnvironmentTag}-LambdaRole"
-          - 
-            Action: 
-              - "s3:PutObject"
-            Effect: "Allow"
-            Resource: 
-              Fn::Join: 
-                - ""
-                - 
-                  - "arn:aws:s3:::"
-                  - 
-                    Ref: "EdgeJ1939ProcessingBucket"
-                  - "/NGDI/*"
-            Principal:
-              AWS: !GetAtt
-                  - "EdgeCPPTPosterLambdaRole"
-                  - "Arn"
-          - 
-            Action: 
-              - "s3:GetObject"
-            Effect: "Allow"
-            Resource: 
-              Fn::Join: 
-                - ""
-                - 
-                  - "arn:aws:s3:::"
-                  - 
-                    Ref: "EdgeJ1939ProcessingBucket"
-                  - "/*"
-            Principal:
-              AWS: 
-                - !GetAtt
-                  - "EdgeCPPTPosterLambdaRole"
-                  - "Arn"
-                - !GetAtt
-                  - "EdgeNGDI2CDSDKConversionLambdaRole"
-                  - "Arn"
-          - 
-            Action: 
-              - "s3:GetObject"
-            Effect: "Allow"
-            Resource: 
-              Fn::Join: 
-                - ""
-                - 
-                  - "arn:aws:s3:::"
-                  - 
-                    Ref: "EdgeJ1939ProcessingBucket"
-                  - "/NGDI/*"
-            Principal:
-              AWS: 
-                - !Sub "{{resolve:ssm:olympus-${ApplicationEnvironmentTag}.aws.cummins.com-Olympus-AdminRoleARN:1}}"
-          -
-            Action: 
-              - "s3:PutObject"
-            Effect: "Allow"
-            Resource: 
-              Fn::Join: 
-                - ""
-                - 
-                  - "arn:aws:s3:::"
-                  - 
-                    Ref: "EdgeJ1939ProcessingBucket"
-                  - "/ConvertedFiles/*"
-            Principal:
-              AWS: !GetAtt
-                  - RoleForJ1939StreamBucket
-                  - Arn 
+  # J1939StreamingBucketPolicy:
+  #   Type: AWS::S3::BucketPolicy
+  #   Properties: 
+  #     Bucket: 
+  #       Ref: "EdgeJ1939ProcessingBucket"
+  #     PolicyDocument: 
+  #       Statement: 
+  #         - 
+  #           Action: 
+  #             - "s3:PutObject"
+  #           Effect: "Allow"
+  #           Resource: 
+  #             Fn::Join: 
+  #               - ""
+  #               - 
+  #                 - "arn:aws:s3:::"
+  #                 - 
+  #                   Ref: "EdgeJ1939ProcessingBucket"
+  #                 - "/*"
+  #           Principal:
+  #             AWS: 
+  #               - !Sub "arn:aws:iam::${AWS::AccountId}:role/${ApplicationName}-${ApplicationEnvironmentTag}-J1939StreamBucket"
+  #               - !GetAtt
+  #                 - EdgeJ1939CSVConverterLambdaRole
+  #                 - Arn
+  #               - !Sub "arn:aws:iam::${AWS::AccountId}:role/da-edge-oem-${ApplicationEnvironmentTag}-LambdaRole"
+  #         - 
+  #           Action: 
+  #             - "s3:PutObject"
+  #           Effect: "Allow"
+  #           Resource: 
+  #             Fn::Join: 
+  #               - ""
+  #               - 
+  #                 - "arn:aws:s3:::"
+  #                 - 
+  #                   Ref: "EdgeJ1939ProcessingBucket"
+  #                 - "/NGDI/*"
+  #           Principal:
+  #             AWS: !GetAtt
+  #                 - "EdgeCPPTPosterLambdaRole"
+  #                 - "Arn"
+  #         - 
+  #           Action: 
+  #             - "s3:GetObject"
+  #           Effect: "Allow"
+  #           Resource: 
+  #             Fn::Join: 
+  #               - ""
+  #               - 
+  #                 - "arn:aws:s3:::"
+  #                 - 
+  #                   Ref: "EdgeJ1939ProcessingBucket"
+  #                 - "/*"
+  #           Principal:
+  #             AWS: 
+  #               - !GetAtt
+  #                 - "EdgeCPPTPosterLambdaRole"
+  #                 - "Arn"
+  #               - !GetAtt
+  #                 - "EdgeNGDI2CDSDKConversionLambdaRole"
+  #                 - "Arn"
+  #         - 
+  #           Action: 
+  #             - "s3:GetObject"
+  #           Effect: "Allow"
+  #           Resource: 
+  #             Fn::Join: 
+  #               - ""
+  #               - 
+  #                 - "arn:aws:s3:::"
+  #                 - 
+  #                   Ref: "EdgeJ1939ProcessingBucket"
+  #                 - "/NGDI/*"
+  #           Principal:
+  #             AWS: 
+  #               - !Sub "{{resolve:ssm:olympus-${ApplicationEnvironmentTag}.aws.cummins.com-Olympus-AdminRoleARN:1}}"
+  #         -
+  #           Action: 
+  #             - "s3:PutObject"
+  #           Effect: "Allow"
+  #           Resource: 
+  #             Fn::Join: 
+  #               - ""
+  #               - 
+  #                 - "arn:aws:s3:::"
+  #                 - 
+  #                   Ref: "EdgeJ1939ProcessingBucket"
+  #                 - "/ConvertedFiles/*"
+  #           Principal:
+  #             AWS: !GetAtt
+  #                 - RoleForJ1939StreamBucket
+  #                 - Arn 
 
   
-  EdgeJ1939DataLogBucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties: 
-      Bucket: 
-        Ref: "EdgeJ1939DataLogBucket"
-      PolicyDocument: 
-        Statement:  
-          - 
-            Action: 
-              - "s3:PutObject"
-            Effect: "Allow"
-            Resource: 
-              Fn::Join: 
-                - ""
-                - 
-                  - "arn:aws:s3:::"
-                  - 
-                    Ref: "EdgeJ1939DataLogBucket"
-                  - "/*"
-            Principal:
-              AWS: "{{resolve:ssm:EdgeUploadedFileProcessor:1}}" 
-          - 
-            Action: 
-              - "s3:GetObject"
-            Effect: "Allow"
-            Resource: 
-              Fn::Join: 
-                - ""
-                - 
-                  - "arn:aws:s3:::"
-                  - 
-                    Ref: "EdgeJ1939DataLogBucket"
-                  - "/*"
-            Principal:
-              AWS: 
-                - !GetAtt
-                  - "EdgeJ1939CSVConverterLambdaRole"
-                  - "Arn"
-                - !Sub "{{resolve:ssm:olympus-${ApplicationEnvironmentTag}.aws.cummins.com-Olympus-AdminRoleARN:1}}"
+  # EdgeJ1939DataLogBucketPolicy:
+  #   Type: AWS::S3::BucketPolicy
+  #   Properties: 
+  #     Bucket: 
+  #       Ref: "EdgeJ1939DataLogBucket"
+  #     PolicyDocument: 
+  #       Statement:  
+  #         - 
+  #           Action: 
+  #             - "s3:PutObject"
+  #           Effect: "Allow"
+  #           Resource: 
+  #             Fn::Join: 
+  #               - ""
+  #               - 
+  #                 - "arn:aws:s3:::"
+  #                 - 
+  #                   Ref: "EdgeJ1939DataLogBucket"
+  #                 - "/*"
+  #           Principal:
+  #             AWS: "{{resolve:ssm:EdgeUploadedFileProcessor:1}}" 
+  #         - 
+  #           Action: 
+  #             - "s3:GetObject"
+  #           Effect: "Allow"
+  #           Resource: 
+  #             Fn::Join: 
+  #               - ""
+  #               - 
+  #                 - "arn:aws:s3:::"
+  #                 - 
+  #                   Ref: "EdgeJ1939DataLogBucket"
+  #                 - "/*"
+  #           Principal:
+  #             AWS: 
+  #               - !GetAtt
+  #                 - "EdgeJ1939CSVConverterLambdaRole"
+  #                 - "Arn"
+  #               - !Sub "{{resolve:ssm:olympus-${ApplicationEnvironmentTag}.aws.cummins.com-Olympus-AdminRoleARN:1}}"
 
   SpnlistbucketPolicy:
     Type: AWS::S3::BucketPolicy
