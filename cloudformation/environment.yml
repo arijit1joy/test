@@ -235,15 +235,6 @@ Resources:
                 - !GetAtt
                   - EdgeCPPTPosterLambdaRole
                   - Arn
-            Condition: 
-              StringLike: 
-                aws:userId:
-                  - "{{resolve:ssm:Azure-user-id:1}}"
-                  - "{{resolve:ssm:olympus-admin-role:1}}"
-                  - !Ref 'AWS::AccountId'
-                  - !GetAtt
-                    - "LambdaTrustRole"
-                    - "RoleId" 
 
   RequestsPythonLayer:
     Type: "AWS::Lambda::LayerVersion"
@@ -452,21 +443,21 @@ Resources:
                 - !GetAtt
                   - "EdgeNGDI2CDSDKConversionLambdaRole"
                   - "Arn"
-          - 
-            Action: 
-              - "s3:GetObject"
-            Effect: "Allow"
-            Resource: 
-              Fn::Join: 
-                - ""
-                - 
-                  - "arn:aws:s3:::"
-                  - 
-                    Ref: "EdgeJ1939ProcessingBucket"
-                  - "/NGDI/*"
-            Principal:
-              AWS: 
-                - !Sub "{{resolve:ssm:olympus-${ApplicationEnvironmentTag}.aws.cummins.com-Olympus-AdminRoleARN:1}}"
+          # - 
+          #   Action: 
+          #     - "s3:GetObject"
+          #   Effect: "Allow"
+          #   Resource: 
+          #     Fn::Join: 
+          #       - ""
+          #       - 
+          #         - "arn:aws:s3:::"
+          #         - 
+          #           Ref: "EdgeJ1939ProcessingBucket"
+          #         - "/NGDI/*"
+          #   Principal:
+          #     AWS: 
+          #       - !Sub "{{resolve:ssm:olympus-${ApplicationEnvironmentTag}.aws.cummins.com-Olympus-AdminRoleARN:1}}"
           -
             Action: 
               - "s3:PutObject"
@@ -523,7 +514,7 @@ Resources:
                 - !GetAtt
                   - "EdgeJ1939CSVConverterLambdaRole"
                   - "Arn"
-                - !Sub "{{resolve:ssm:olympus-${ApplicationEnvironmentTag}.aws.cummins.com-Olympus-AdminRoleARN:1}}"
+                # - !Sub "{{resolve:ssm:olympus-${ApplicationEnvironmentTag}.aws.cummins.com-Olympus-AdminRoleARN:1}}"
 
   SpnlistbucketPolicy:
     Type: AWS::S3::BucketPolicy
