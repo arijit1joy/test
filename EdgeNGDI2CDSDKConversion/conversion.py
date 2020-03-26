@@ -66,6 +66,8 @@ def get_snapshot_data(params, time_stamp, address):
                                       "Value": params[param],
                                       "Parameter_Source_Address": address}]})
 
+        print("Snapshot Data:", snapshot_data)
+
         return snapshot_data
 
     except Exception as e:
@@ -77,8 +79,8 @@ def get_snapshot_data(params, time_stamp, address):
 
 def post_cd_message(data):
 
-    PARAMS = {}
-    req = requests.get(url=auth_token_url, params=PARAMS)
+    params = {}
+    req = requests.get(url=auth_token_url, params=params)
     auth_token = json.loads(req.text)
     # print('AuthToken  -- >', auth_token['authToken'])
     auth_token_info = auth_token['authToken']
@@ -164,6 +166,8 @@ def handle_hb(converted_device_params, converted_equip_params, converted_equip_f
 
                             if param == converted_device_params_var:
 
+                                print("Handling convertedDeviceParameters")
+
                                 sample_obj = samples[param]
 
                                 for val in sample_obj:
@@ -171,6 +175,8 @@ def handle_hb(converted_device_params, converted_equip_params, converted_equip_f
                                         if val in converted_device_params else ""
 
                             elif param == converted_equip_params_var:
+
+                                print("Handling convertedEquipmentParameters")
 
                                 sample_obj = samples[param][0]
 
@@ -191,6 +197,8 @@ def handle_hb(converted_device_params, converted_equip_params, converted_equip_f
                                             if equip_param in converted_equip_params else ""
 
                             else:
+
+                                print("Handling convertedEquipmentFaultCodes")
 
                                 sample_obj = samples[param][0]
 
@@ -257,6 +265,8 @@ def handle_fc(converted_device_params, converted_equip_params, converted_equip_f
 
                             if param == converted_device_params_var:
 
+                                print("Handling convertedDeviceParameters")
+
                                 sample_obj = samples[param]
 
                                 for val in sample_obj:
@@ -264,6 +274,8 @@ def handle_fc(converted_device_params, converted_equip_params, converted_equip_f
                                         if val in converted_device_params else ""
 
                             elif param == converted_equip_params_var:
+
+                                print("Handling convertedEquipmentParameters")
 
                                 sample_obj = samples[param][0]
 
@@ -285,11 +297,11 @@ def handle_fc(converted_device_params, converted_equip_params, converted_equip_f
 
                             else:
 
+                                print("Handling convertedEquipmentFaultCodes")
+
                                 sample_obj = samples[param][0]
 
                                 for fc_param in sample_obj:
-
-                                    final_fc = []
 
                                     if fc_param in converted_equip_fc and fc_param == active_fault_code_indicator:
 
@@ -457,6 +469,7 @@ def process(bucket, key):
 
 def lambda_handler(event, context):
     print("Lambda Event:", event)
+    print("Lambda Context:", context)
 
     print("NGDI JSON Object:", event['Records'][0]['s3']['object']['key'])
 
@@ -478,6 +491,5 @@ def lambda_handler(event, context):
 Main Method For Local Testing
 '''
 if __name__ == "__main__":
-    event = ""
-    context = ""
-    process()
+    lambda_event = ""
+    # context = ""
