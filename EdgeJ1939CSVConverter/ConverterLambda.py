@@ -3,6 +3,7 @@ import boto3
 import json
 import os
 import requests
+import datetime
 
 s3 = boto3.client('s3')
 cp_post_bucket = os.environ["CPPostBucket"]
@@ -265,7 +266,6 @@ def get_device_id(ngdi_json_template):
 
 
 def get_tsp_and_cust_ref(device_id):
-
     print("Device ID:", device_id)
 
     get_tsp_cust_ref_payload = {
@@ -300,7 +300,6 @@ def get_tsp_and_cust_ref(device_id):
         if "cust_ref" in get_tsp_cust_ref_response_body and get_tsp_cust_ref_response_body["cust_ref"]:
 
             if "device_owner" in get_tsp_cust_ref_response_body and get_tsp_cust_ref_response_body["device_owner"]:
-
                 return get_tsp_cust_ref_response_body
 
     return {}
@@ -616,19 +615,59 @@ def lambda_handler(lambda_event, context):
 
     print("Filename: ", filename)
 
-    if '-' in filename.split('_')[-1]:
-        date = filename.split('_')[-1][:10].replace('-', '')
-    else:
-        date = filename.split('_')[-1][:8]
+    try:
 
-    new_file_name = "ConvertedFiles/" + ngdi_json_template['componentSerialNumber'] + '/' + \
-                    ngdi_json_template["telematicsDeviceId"] + '/' + date[:4] + '/' + date[4:6] + \
-                    '/' + date[6:8] + '/' + filename.split('.csv')[0] + '.json'
+        # if '-' in filename.split('_')[-1]:
+        #     date = filename.split('_')[-1][:10].replace('-', '')
+        # else:
+        #     date = filename.split('_')[-1][:8]
+        #
+        # new_file_name = "ConvertedFiles/" + ngdi_json_template['componentSerialNumber'] + '/' + \
+        #                 ngdi_json_template["telematicsDeviceId"] + '/' + date[:4] + '/' + date[4:6] + \
+        #                 '/' + date[6:8] + '/' + filename.split('.csv')[0] + '.json'
 
-    print("New Filename:", new_file_name)
+        print("Retrieving date info for File Path from filename . . .")
+
+        file_name_array = filename.split('_')
+
+        print("Split File Name array:", file_name_array)
+
+        date_component = file_name_array[3]
+
+        print("File Name date component:", date_component)
+
+        current_datetime = datetime.datetime.strptime(date_component, "%Y%m%d%H%M%S")
+
+        print("File Name date component in datetime format:", current_datetime)
+
+        print("Year:", current_datetime.year)
+        print("Month:", current_datetime.month)
+        print("Day:", current_datetime.day)
+
+        store_file_path = "ConvertedFiles/" + ngdi_json_template['componentSerialNumber'] + '/' + \
+                          ngdi_json_template["telematicsDeviceId"] + '/' + str(current_datetime.year) + '/' + \
+                          str(current_datetime.month) + '/' + str(current_datetime.day)
+
+    except Exception as e:
+
+        print("An error occured while trying to get the file path from the file name:", e,
+              ". Using current date-time . . .")
+
+        current_datetime = datetime.datetime.now()
+
+        print("Current Date Time:", current_datetime)
+        print("Current Date Time Year:", current_datetime.year)
+        print("Current Date Time Month:", current_datetime.month)
+        print("Current Date Time Day:", current_datetime.day)
+
+        store_file_path = "ConvertedFiles/" + ngdi_json_template['componentSerialNumber'] + '/' + \
+                          ngdi_json_template["telematicsDeviceId"] + '/' + str(current_datetime.year) + '/' + \
+                          str(current_datetime.month) + '/' + str(current_datetime.day)
+
+    print("New Filename:", store_file_path)
 
     store_file_response = s3_client.put_object(Bucket=cp_post_bucket,
-                                               Key=new_file_name,
+                                               Key=store_file_path,
                                                Body=json.dumps(ngdi_json_template).encode(),
                                                Metadata={'j1939type': 'FC'})
 
