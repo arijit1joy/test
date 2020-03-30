@@ -111,18 +111,31 @@ def post_cd_message(data):
 
 def get_active_faults(fault_list, address):
 
+    print("Getting Active Faults")
+
     final_fc_list = []
 
     for fc in fault_list:
+
+        print("Handling FC:", fc)
+
         fc["Fault_Source_Address"] = address
         fc["SPN"] = fc["spn"]
         fc["FMI"] = fc["fmi"]
 
+        print("Handling Intermediate FC:", fc)
+
         del fc["spn"]
         del fc["fmi"]
-        del fc["count"]
+
+        # if "count" in fc:
+        #     del fc["count"]
+
+        print("Handling final FC:", fc)
 
         final_fc_list.append(fc)
+
+    print("Final FC list:", final_fc_list)
 
     return final_fc_list
 
@@ -348,8 +361,8 @@ def create_fc_class(fc, active_fcs, fc_index, active_fc_param, var_dict, active_
     var_dict[active_fc_param] = active_fcs
     var_dict[active_cd_parameter] = active_or_inactive
 
-    var_dict[spn_indicator.lower()] = fc["spn"]
-    var_dict[fmi_indicator.lower()] = fc["fmi"]
+    var_dict[spn_indicator.lower()] = fc["SPN"]
+    var_dict[fmi_indicator.lower()] = fc["FMI"]
     var_dict[count_indicator.lower()] = fc["count"]
 
     print("FC CD SDK Class Variable Dict:", var_dict)
