@@ -21,6 +21,9 @@ Parameters:
     Description: Conditionally creates the resources for cross account access
     Type: String
     Default: false
+  Region:
+    Type: String
+    Default: us-east-1    
 
 Conditions:
   AddCodeBuildResource: !Equals [ !Ref CrossAccountCondition, true ]
@@ -65,6 +68,12 @@ Resources:
           -
             Effect: Allow
             Action:
+              - secretsmanager:GetSecretValue
+            Resource:
+             - !Sub arn:aws:secretsmanager:${Region}:${DevAccount}:secret:/da-sca-sonar*
+          -
+            Effect: Allow
+            Action:
               - logs:CreateLogGroup
               - logs:CreateLogStream
               - logs:PutLogEvents
@@ -93,6 +102,7 @@ Resources:
             Value: !Ref CMKARN
       Source:
         Type: CODEPIPELINE
+        BuildSpec: buildspec-dev.yaml
       Tags:
         - Key: Name
           Value: !Sub ${ProjectName}-BuildProject
