@@ -6,7 +6,7 @@
         "ApiBasePath": "v1",
         "VersionId": "empty",
         "ArtifactsBucket": "da-edge-pre-reqs-j1939-src-prod-artifactbucket-s1k3x04rn96t",
-        "CurrentProductURL": "https://connectedsolutions-pv.cummins.com/",
+        "CurrentProductURL": "https://connectedsolutions-prod.cummins.com/",
         "AppRegistrationURL": "appRegistration/v2/capability/capabilityAnalysisData?AuthToken=",
         "UDSResultsURL": "v3/uds/udsResults/{ESN}/{Address}/{BoxID}",
         "CDFAssestLib": "https://fkl5e7l02k.execute-api.us-east-2.amazonaws.com/Prod/",
