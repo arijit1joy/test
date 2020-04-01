@@ -1,0 +1,187 @@
+version:      0.2 
+
+env:
+   secrets-manager:
+    SONAR_LOGIN: /da-sca-sonar/sonar/sonar-common-token:sonar_common_token
+    SONAR_HOST: /da-sca-sonar/sonar/sonar-common-token:sonar_host_https_url
+
+phases: 
+ 
+  install:  
+    commands:  
+    - sudo apt-get update 
+    - pip install awscli==1.16.141 
+    - sudo apt-get install zip 
+    - sudo apt-get install unzip 
+    - sudo apt-get install jq 
+    - curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash - 
+    - sudo apt-get install nodejs -y 
+    - sudo npm install -g yarnpkg 
+    - pip install pytest coverage pytest-cov
+    - nodejs --version 
+    - npm --version 
+    - yarn --version 
+    - sudo npm config set user 0 
+    - sudo npm config set unsafe-perm true 
+    - sudo npm install --global del-cli 
+    - sudo npm install -g typescript 
+    - sudo npm install --global make-dir-cli 
+    - curr_dir=$(pwd) 
+    - mkdir "$curr_dir/target" 
+    - cd cloudformation
+    - versionId=$(date +"%m-%d-%Y-%H-%M-%S") 
+    - echo $versionId
+    - for paramsFile in ./Param*.json ;  
+      do  
+        echo $paramsFile;  
+        tmp=$(mktemp); 
+        sed "s/"empty"/${versionId}/g" $paramsFile > "$tmp" && mv "$tmp" $paramsFile; 
+      done; 
+    - cp *.json .. 
+    - cd ..
+ 
+  build: 
+    commands: 
+      - echo Starting build in $(pwd) 
+      - echo Build started on $(date) 
+      - echo ${S3Bucket} 
+      - echo ${KMSKey} 
+      - echo HOME ${HOME} 
+      - mkdir /opt/sonarscanner 
+      - cd /opt/sonarscanner 
+      - wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.2.0.1227-linux.zip 
+      - unzip sonar-scanner-cli-3.2.0.1227-linux.zip 
+      - rm sonar-scanner-cli-3.2.0.1227-linux.zip 
+      - ln -s /opt/sonarscanner/sonar-scanner-3.2.0.1227-linux/bin/sonar-scanner /usr/local/bin/sonar-scanner 
+      - pip install pypika
+      - cd $curr_dir
+      # build project folder and package build file 
+      - ls -lrt "$curr_dir"
+      - x=$(ls "$(pwd)")
+      - for d in $x ;
+        do
+          mydir=${d};   
+          if [ $mydir != "EdgeJ1939-bdd" ] && [ $mydir != "cloudformation" ] && [ $mydir != ".settings" ] && [ $mydir != "libraries" ] && [ $mydir != "target" ] && [ $mydir != "edge.iot.topic_rules" ] && [ -d "$mydir" ]; then 
+              cd "$mydir"; 
+              echo "Processing - $mydir"; 
+              echo "Current dir - $(pwd)";
+                echo "Entering the DCS build stage.";
+                yarn install --silent;
+                echo "Build Dev stage.";
+                yarn build:dev >/dev/null;
+                if [ -d "$curr_dir/$mydir/dist" ]; then          
+                  cd dist; 
+                  echo "Build succeeded for dev, putting in bucket"; 
+                  aws s3 cp $curr_dir/$mydir/dist/bundle.js s3://${DEV_BUCKET}/bundle.js;
+                  echo "Build succeeded for dev, already put in bucket"; 
+                  cd ..;   
+                else 
+                  echo "Build Failed for $mydir"; 
+                fi;
+                echo "Build test stage.";
+                yarn build:test >/dev/null;
+                if [ -d "$curr_dir/$mydir/dist" ]; then          
+                  cd dist;  
+                  echo "Build succeeded for test, putting in bucket"; 
+                  aws s3 cp $curr_dir/$mydir/dist/bundle.js s3://${TEST_BUCKET}/bundle.js;
+                  echo "Build succeeded for test, already put in bucket"; 
+                  cd ..;   
+                else 
+                  echo "Build Failed for $mydir"; 
+                fi;
+                echo "Build Stage stage.";
+                yarn build:stage >/dev/null;
+                if [ -d "$curr_dir/$mydir/dist" ]; then          
+                  cd dist; 
+                  echo "Build succeeded for stage, putting in bucket"; 
+                  aws s3 cp $curr_dir/$mydir/dist/bundle.js s3://${STAGE_BUCKET}/bundle.js;
+                  echo "Build succeeded for Stage, already put in bucket"; 
+                  cd ..;   
+                else 
+                  echo "Build Failed for $mydir"; 
+                fi;
+                yarn build --silent;
+                ls -lrt "$curr_dir/$mydir";
+                echo "Build path = $curr_dir/$mydir/dist";
+                if [ -d "$curr_dir/$mydir/dist" ]; then           
+                  cd dist;           
+                  zip -r "$mydir.zip" .;           
+                  cp "$mydir.zip" "$curr_dir/target";
+                  cd ..;   
+                else 
+                  echo "Build Failed for $mydir"; 
+                fi;    
+              if [ -f pom.xml ]; then 
+                if [ $mydir = "edge.eal.datascale" ]; then 
+                  mvn install:install-file -Dfile=../libraries/ctp_common-0.0.2.jar -DgroupId=com.cummins.ctp.common -DartifactId=com.cummins.ctp.common -Dversion=0.0.2 -Dpackaging=jar;           
+                fi; 
+                mvn install -DskipTests=true sonar:sonar -Dsonar.login=$SONAR_LOGIN -Dsonar.host.url=$SONAR_HOST;
+                mvn package -DskipTests;    
+                ls -lrt "$curr_dir/$mydir";  
+                echo "Build path = $curr_dir/$mydir/target"; 
+                if [ -d "$curr_dir/$mydir/target" ]; then       
+                  cd "target";           
+                  jarFile=`find . -type f \( -iname "*.jar" ! -iname "original*.jar" \)`; 
+                  echo "JAR FILE NAME = $jarFile";     
+                  cp "$jarFile" "$curr_dir/target"; 
+                  ls -lrt "$curr_dir/target";  
+                  cd ..; 
+                  pwd;
+                else 
+                  echo "Build Failed for $mydir"; 
+                fi;   
+              elif [ -f requirements.txt ]; then
+                if [ $mydir = "Features" ]; then
+                  pip install behave -t .;
+                fi;
+                zip -r "$mydir.zip" .;
+                pytest --cov-report xml:coverage.xml --cov=tests/ ;
+                sonar-scanner -X -Dsonar.login=$SONAR_LOGIN -Dsonar.host.url=$SONAR_HOST -Dsonar.python.coverage.reportPath="/coverage.xml";                                     
+                cp "$mydir.zip" "$curr_dir/target";        
+              elif [ -f package.json ]; then           
+                npm cache clean;           
+                npm config set strict-ssl false;           
+                npm config set registry="http://registry.npmjs.org/";           
+                npm install npm -g;           
+                npm install --silent;        
+                npm run build; 
+                ls -lrt "$curr_dir/$mydir";  
+                echo "Build path = $curr_dir/$mydir/dist"; 
+                if [ -d "$curr_dir/$mydir/dist" ]; then           
+                  cd dist;           
+                  zip -r "$mydir.zip" .;    
+                  cp "$mydir.zip" "$curr_dir/target";            
+                  cd ..;   
+                else 
+                  echo "Build Failed for $mydir"; 
+                fi;       
+              else           
+                echo "unknown platform"; 
+                break;        
+              fi;        
+              cd ..;     
+          fi;  
+        done || exit 1 
+      - ls -lrt "$curr_dir/target" 
+      - aws s3 cp "$curr_dir/target" s3://${S3Bucket}/$versionId --recursive
+      - pwd 
+      - ls -lrt 
+      - cd $curr_dir 
+      - aws cloudformation package 
+        --template-file cloudformation/environment.yml 
+        --s3-bucket ${S3Bucket} 
+        --s3-prefix builds 
+        --kms-key-id ${KMSKey} 
+        --output-template-file transformed-template.yml
+  post_build: 
+    commands: 
+      - echo Build completed on `date` 
+ 
+# Below is required by CodePipeline, do not change.  
+artifacts: 
+  files:  
+  - transformed-template.yml
+  - Parameters-dev.json 
+  - Parameters-test.json 
+  - Parameters-stage.json 
+  - Parameters-prod.json
