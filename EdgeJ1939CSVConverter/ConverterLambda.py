@@ -645,9 +645,9 @@ def lambda_handler(lambda_event, context):
         print("Day:", current_datetime.day)
 
         store_file_path = "ConvertedFiles/" + ngdi_json_template['componentSerialNumber'] + '/' + \
-                          ngdi_json_template["telematicsDeviceId"] + '/' + ("%02d" % str(current_datetime.year)) + '/' \
+                          ngdi_json_template["telematicsDeviceId"] + '/' + ("%02d" % current_datetime.year) + '/' \
                           + \
-                          ("%02d" % str(current_datetime.month)) + '/' + ("%02d" % str(current_datetime.day)) + '/' +\
+                          ("%02d" % current_datetime.month) + '/' + ("%02d" % current_datetime.day) + '/' +\
                           filename.split('.csv')[0] + '.json'
 
     except Exception as e:
@@ -663,9 +663,9 @@ def lambda_handler(lambda_event, context):
         print("Current Date Time Day:", current_datetime.day)
 
         store_file_path = "ConvertedFiles/" + ngdi_json_template['componentSerialNumber'] + '/' + \
-                          ngdi_json_template["telematicsDeviceId"] + '/' + ("%02d" % str(current_datetime.year)) + '/' \
+                          ngdi_json_template["telematicsDeviceId"] + '/' + ("%02d" % current_datetime.year) + '/' \
                           + \
-                          ("%02d" % str(current_datetime.month)) + '/' + ("%02d" % str(current_datetime.day)) + '/' +\
+                          ("%02d" % current_datetime.month) + '/' + ("%02d" % current_datetime.day) + '/' +\
                           filename.split('.csv')[0] + '.json'
 
     print("New Filename:", store_file_path)
