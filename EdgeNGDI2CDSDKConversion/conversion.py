@@ -322,9 +322,9 @@ def handle_fc(converted_device_params, converted_equip_params, converted_equip_f
 
                                         fc_index = 0
 
-                                        for fc in all_fcs:
+                                        final_fc = get_active_faults(all_fcs, address)
 
-                                            final_fc = get_active_faults(all_fcs, address)
+                                        for fc in all_fcs:
 
                                             create_fc_class(fc, final_fc, fc_index, sample_obj[fc_param], var_dict, 1)
 
@@ -340,9 +340,9 @@ def handle_fc(converted_device_params, converted_equip_params, converted_equip_f
 
                                             fc_index = 0
 
-                                            for fc in all_inactive_fcs:
+                                            final_fc = get_active_faults(all_fcs, address)
 
-                                                final_fc = get_active_faults(all_fcs, address)
+                                            for fc in all_inactive_fcs:
 
                                                 create_fc_class(fc, final_fc, fc_index, sample_obj[fc_param],
                                                                 var_dict, 0)
@@ -354,9 +354,16 @@ def handle_fc(converted_device_params, converted_equip_params, converted_equip_f
         print("Error! The following Exception occurred while handling this sample:", e)
 
 
-def create_fc_class(fc, active_fcs, fc_index, active_fc_param, var_dict, active_or_inactive):
+def create_fc_class(fc, active_fcodes, fc_index, active_fc_param, var_dict, active_or_inactive):
 
-    del active_fcs[fc_index]
+    print("Current FC Index:", fc_index)
+
+    active_fcs = active_fcodes.copy()
+
+    active_fcs.pop(fc_index)
+
+    print("Old active faults:", active_fcodes)
+    print("Old active faults:", active_fcs)
 
     var_dict[active_fc_param] = active_fcs
     var_dict[active_cd_parameter] = active_or_inactive
