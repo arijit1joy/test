@@ -298,7 +298,6 @@ Resources:
           Key: Name
           Value: Edge
 
-
   EdgeJ1939ProcessingBucket:
     Type: AWS::S3::Bucket
     DependsOn: 
@@ -410,6 +409,7 @@ Resources:
                   - EdgeJ1939CSVConverterLambdaRole
                   - Arn
                 - !Sub "arn:aws:iam::${AWS::AccountId}:role/da-edge-oem-${ApplicationEnvironmentTag}-LambdaRole"
+                - !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-HBMessageLambdaWorkerPolicy"
           - 
             Action: 
               - "s3:PutObject"
