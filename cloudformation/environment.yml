@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: '2010-09-09' 
 Transform: AWS::Serverless-2016-10-31
 Description: The AWS CloudFormation template for deployment of the Edge Services. Version 2.0
 Parameters:
@@ -409,7 +409,7 @@ Resources:
                   - EdgeJ1939CSVConverterLambdaRole
                   - Arn
                 - !Sub "arn:aws:iam::${AWS::AccountId}:role/da-edge-oem-${ApplicationEnvironmentTag}-LambdaRole"
-                - !Sub "arn:aws:iam::${AWS::AccountId}:role/da-edge-oem-HBMessageLambdaRole-${ApplicationEnvironmentTag}"
+                - !Sub "arn:aws:iam::${AWS::AccountId}:role/da-edge-device-HBMessageLambdaRole-${ApplicationEnvironmentTag}"
           - 
             Action: 
               - "s3:PutObject"
