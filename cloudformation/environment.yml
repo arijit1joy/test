@@ -409,7 +409,7 @@ Resources:
                   - EdgeJ1939CSVConverterLambdaRole
                   - Arn
                 - !Sub "arn:aws:iam::${AWS::AccountId}:role/da-edge-oem-${ApplicationEnvironmentTag}-LambdaRole"
-                - !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-HBMessageLambdaWorkerPolicy"
+                - !Sub "${ApplicationName}-HBMessageLambdaRole-${ApplicationEnvironmentTag}"
           - 
             Action: 
               - "s3:PutObject"
