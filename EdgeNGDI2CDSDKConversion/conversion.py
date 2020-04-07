@@ -300,7 +300,7 @@ def handle_fc(converted_device_params, converted_equip_params, converted_equip_f
                                     if equip_param == param_indicator:
 
                                         var_dict[sample_obj[equip_param]] = get_snapshot_data(
-                                            converted_equip_params[equip_param], time_stamp, address) \
+                                            converted_equip_params[equip_param].copy(), time_stamp, address) \
                                             if equip_param in converted_equip_params else ""
 
                                     else:
@@ -318,7 +318,7 @@ def handle_fc(converted_device_params, converted_equip_params, converted_equip_f
 
                                     if fc_param in converted_equip_fc and fc_param == active_fault_code_indicator:
 
-                                        all_fcs = converted_equip_fc[fc_param]
+                                        all_fcs = converted_equip_fc[fc_param].copy()
 
                                         fc_index = 0
 
@@ -331,11 +331,11 @@ def handle_fc(converted_device_params, converted_equip_params, converted_equip_f
                                             fc_index = fc_index + 1
 
                                     else:
-                                        if fc_param in converted_equip_fc:
+                                        if fc_param in converted_equip_fc and fc_param == inactive_fault_code_indicator:
 
-                                            all_inactive_fcs = converted_equip_fc[fc_param]
+                                            all_inactive_fcs = converted_equip_fc[fc_param].copy()
 
-                                            all_fcs = converted_equip_fc[active_fault_code_indicator] if \
+                                            all_fcs = converted_equip_fc[active_fault_code_indicator].copy() if \
                                                 active_fault_code_indicator in converted_equip_fc else []
 
                                             fc_index = 0
@@ -363,7 +363,7 @@ def create_fc_class(fc, active_fcodes, fc_index, active_fc_param, var_dict, acti
     active_fcs.pop(fc_index)
 
     print("Old active faults:", active_fcodes)
-    print("Old active faults:", active_fcs)
+    print("New active faults:", active_fcs)
 
     var_dict[active_fc_param] = active_fcs
     var_dict[active_cd_parameter] = active_or_inactive
