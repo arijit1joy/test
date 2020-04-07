@@ -217,8 +217,8 @@ Resources:
         Statement: 
           - 
             Action: 
-              - "s3:PutObject"
-              - "s3:GetObject"
+              - "s3:Put*"
+              - "s3:Get*"
               - "s3:List*"
             Effect: "Allow"
             Resource: 
@@ -390,8 +390,8 @@ Resources:
         Statement: 
           - 
             Action: 
-              - "s3:PutObject"
-              - "s3:GetObject"
+              - "s3:Put*"
+              - "s3:Get*"
               - "s3:List*"              
             Effect: "Allow"
             Resource: 
@@ -412,7 +412,9 @@ Resources:
                 - !Sub "arn:aws:iam::${AWS::AccountId}:role/da-edge-device-HBMessageLambdaRole-${ApplicationEnvironmentTag}"
           - 
             Action: 
-              - "s3:PutObject"
+              - "s3:Put*"
+              - "s3:Get*"
+              - "s3:List*"  
             Effect: "Allow"
             Resource: 
               Fn::Join: 
@@ -428,7 +430,9 @@ Resources:
                   - "Arn"
           - 
             Action: 
-              - "s3:GetObject"
+              - "s3:Put*"
+              - "s3:Get*"
+              - "s3:List*"
             Effect: "Allow"
             Resource: 
               Fn::Join: 
@@ -463,7 +467,9 @@ Resources:
           #       - !Sub "{{resolve:ssm:olympus-${ApplicationEnvironmentTag}.aws.cummins.com-Olympus-AdminRoleARN:1}}"
           -
             Action: 
-              - "s3:PutObject"
+              - "s3:Put*"
+              - "s3:Get*"
+              - "s3:List*"  
             Effect: "Allow"
             Resource: 
               Fn::Join: 
@@ -487,9 +493,9 @@ Resources:
         Statement:  
           - 
             Action: 
-              - "s3:PutObject"
-              - "s3:GetObject"
-              - "s3:List*"                
+              - "s3:Put*"
+              - "s3:Get*"
+              - "s3:List*"              
             Effect: "Allow"
             Resource: 
               Fn::Join: 
@@ -503,7 +509,9 @@ Resources:
               AWS: "{{resolve:ssm:EdgeUploadedFileProcessor:1}}" 
           - 
             Action: 
-              - "s3:GetObject"
+              - "s3:Put*"
+              - "s3:Get*"
+              - "s3:List*"
             Effect: "Allow"
             Resource: 
               Fn::Join: 
@@ -529,7 +537,9 @@ Resources:
         Statement:                   
           - 
             Action: 
-              - "s3:GetObject"
+              - "s3:Put*"
+              - "s3:Get*"
+              - "s3:List*"
             Effect: "Allow"
             Resource: 
               Fn::Join: 
