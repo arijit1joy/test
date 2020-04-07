@@ -318,34 +318,44 @@ def handle_fc(converted_device_params, converted_equip_params, converted_equip_f
 
                                     if fc_param in converted_equip_fc and fc_param == active_fault_code_indicator:
 
-                                        all_fcs = converted_equip_fc[fc_param].copy()
+                                        print("These are active Fault Codes")
+
+                                        all_active_fcs = converted_equip_fc[fc_param].copy()
 
                                         fc_index = 0
 
-                                        final_fc = get_active_faults(all_fcs, address)
+                                        final_fc = get_active_faults(all_active_fcs, address)
 
-                                        for fc in all_fcs:
+                                        print("Total Number of fcs:", len(all_active_fcs))
+
+                                        for fc in all_active_fcs:
 
                                             create_fc_class(fc, final_fc, fc_index, sample_obj[fc_param], var_dict, 1)
 
                                             fc_index = fc_index + 1
 
                                     else:
+
                                         if fc_param in converted_equip_fc and fc_param == inactive_fault_code_indicator:
+
+                                            print("These are inactive Fault Codes")
 
                                             all_inactive_fcs = converted_equip_fc[fc_param].copy()
 
-                                            all_fcs = converted_equip_fc[active_fault_code_indicator].copy() if \
+                                            all_active_fcs = converted_equip_fc[active_fault_code_indicator].copy() if \
                                                 active_fault_code_indicator in converted_equip_fc else []
 
                                             fc_index = 0
 
-                                            final_fc = get_active_faults(all_fcs, address)
+                                            inactive_final_fc = get_active_faults(all_inactive_fcs, address)
+                                            active_final_fc = get_active_faults(all_active_fcs, address)
+
+                                            print("Total Number of fcs:", len(all_inactive_fcs))
 
                                             for fc in all_inactive_fcs:
 
-                                                create_fc_class(fc, final_fc, fc_index, sample_obj[fc_param],
-                                                                var_dict, 0)
+                                                create_fc_class(fc, inactive_final_fc, fc_index, sample_obj[fc_param],
+                                                                var_dict, 0, active_final_fc)
 
                                                 fc_index = fc_index + 1
 
@@ -354,18 +364,19 @@ def handle_fc(converted_device_params, converted_equip_params, converted_equip_f
         print("Error! The following Exception occurred while handling this sample:", e)
 
 
-def create_fc_class(fc, active_fcodes, fc_index, active_fc_param, var_dict, active_or_inactive):
+def create_fc_class(fc, f_codes, fc_index, fc_param, var_dict,
+                    active_or_inactive, active_fault_array=None):
 
     print("Current FC Index:", fc_index)
 
-    active_fcs = active_fcodes.copy()
+    fcs = f_codes.copy()
 
-    active_fcs.pop(fc_index)
+    fcs.pop(fc_index)
 
-    print("Old active faults:", active_fcodes)
-    print("New active faults:", active_fcs)
+    print("Old active faults:", f_codes)
+    print("New active faults:", fcs)
 
-    var_dict[active_fc_param] = active_fcs
+    var_dict[fc_param] = fcs if not active_fault_array else active_fault_array
     var_dict[active_cd_parameter] = active_or_inactive
 
     var_dict[spn_indicator.lower()] = fc["SPN"]
