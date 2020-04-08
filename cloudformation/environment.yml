@@ -612,7 +612,7 @@ Resources:
           - Arn
       Environment:
         Variables:
-          auth_token_url: !Sub "https://api.cp.${DomainName}/${ApiBasePath}/edge-device/provider-auth-token?TspName=EDGE&AuthToken="
+          auth_token_url: !Sub "https://api.cp.${DomainName}/${ApiBasePath}/edge-device/provider-auth-token?TspName={TSP-Name}"
           cd_url: "https://telematics-stg.cummins.com:8443/DataService/postData?AuthToken="
           spn_parameter_json_object: !Ref Spnlistbucket
           spn_parameter_json_object_key: 'edge_spn_parameter_name.json'

@@ -80,7 +80,20 @@ def get_snapshot_data(params, time_stamp, address):
 def post_cd_message(data):
 
     params = {}
-    req = requests.get(url=auth_token_url, params=params)
+
+    print("Retrieving the TSP name to get the Auth Token . . .")
+
+    tsp_name = data["Telematics_Partner_Name"]
+
+    print("TSP From File ---------------->", tsp_name)
+
+    print("Old AuthToken URL:", auth_token_url)
+
+    auth_url = auth_token_url.replace("{TSP-Name}", tsp_name)
+
+    print("New AuthToken URL:", auth_url)
+
+    req = requests.get(url=auth_url, params=params)
     auth_token = json.loads(req.text)
     # print('AuthToken  -- >', auth_token['authToken'])
     auth_token_info = auth_token['authToken']
@@ -376,16 +389,18 @@ def create_fc_class(fc, f_codes, fc_index, fc_param, var_dict,
     print("Old active faults:", f_codes)
     print("New active faults:", fcs)
 
-    var_dict[fc_param] = fcs if not active_fault_array else active_fault_array
-    var_dict[active_cd_parameter] = active_or_inactive
+    variable_dict = var_dict.copy()
 
-    var_dict[spn_indicator.lower()] = fc["SPN"]
-    var_dict[fmi_indicator.lower()] = fc["FMI"]
-    var_dict[count_indicator.lower()] = fc["count"]
+    variable_dict[fc_param] = fcs if not active_fault_array else active_fault_array
+    variable_dict[active_cd_parameter] = active_or_inactive
 
-    print("FC CD SDK Class Variable Dict:", var_dict)
+    variable_dict[spn_indicator.lower()] = fc["SPN"]
+    variable_dict[fmi_indicator.lower()] = fc["FMI"]
+    variable_dict[count_indicator.lower()] = fc["count"]
 
-    fc_sdk_object = fc_sdk.CDFCSDK(var_dict)
+    print("FC CD SDK Class Variable Dict:", variable_dict)
+
+    fc_sdk_object = fc_sdk.CDFCSDK(variable_dict)
 
     print("Posting Sample to CD...")
 
