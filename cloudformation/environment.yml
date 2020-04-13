@@ -228,7 +228,7 @@ Resources:
                   - "/*"
             Principal:
               AWS: 
-                - !Sub "arn:aws:iam::${AWS::AccountId}:role/da-edge-device-${ApplicationEnvironmentTag}-EdgeRegAssocLambdaRole"
+                - !Sub "arn:aws:iam::${AWS::AccountId}:role/da-edge-device-EdgeRegistrationLambdaTrustRole-${ApplicationEnvironmentTag}"
                 - !GetAtt
                   - EdgeCPPTPosterLambdaRole
                   - Arn
