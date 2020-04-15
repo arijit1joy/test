@@ -577,8 +577,8 @@ def lambda_handler(lambda_event, context):
 
     print("Verifying Telematics Partner Name and Customer Reference Exists in file...")
 
-    tsp_in_file = "telematicsPartnerName" in ngdi_json_template
-    cust_ref_in_file = "customerReference" in ngdi_json_template
+    tsp_in_file = "telematicsPartnerName" in ngdi_json_template and ngdi_json_template["telematicsPartnerName"]
+    cust_ref_in_file = "customerReference" in ngdi_json_template and ngdi_json_template["customerReference"]
 
     print("Telematics Partner Name in file:", tsp_in_file)
     print("Customer Reference in file:", cust_ref_in_file)
