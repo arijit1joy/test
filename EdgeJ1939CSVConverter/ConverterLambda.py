@@ -7,7 +7,8 @@ import datetime
 
 s3 = boto3.client('s3')
 cp_post_bucket = os.environ["CPPostBucket"]
-MandatoryParameters = json.loads(os.environ["MandatoryParameters"])
+# MandatoryParameters = json.loads(os.environ["MandatoryParameters"])
+edgeCommonAPIURL = os.environ["edgeCommonAPIURL"]
 NGDIBody = json.loads(os.environ["NGDIBody"])
 s3_client = boto3.client('s3')
 
@@ -287,7 +288,7 @@ def get_tsp_and_cust_ref(device_id):
 
     print("Get TSP and Cust_Ref payload:", get_tsp_cust_ref_payload)
 
-    get_tsp_cust_ref_response = requests.post(url=get_tsp_cust_ref_payload)
+    get_tsp_cust_ref_response = requests.post(url=edgeCommonAPIURL, json=get_tsp_cust_ref_payload)
 
     get_tsp_cust_ref_response_body = get_tsp_cust_ref_response.json()[0]
     get_tsp_cust_ref_response_code = get_tsp_cust_ref_response.status_code
@@ -591,6 +592,7 @@ def lambda_handler(lambda_event, context):
 
         if not device_id:
             print("Error! Device ID is not in the file! Aborting!")
+            return
 
         print("Retrieving TSP and Customer Reference from EDGE DB . . .")
 
