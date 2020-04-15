@@ -121,6 +121,8 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
 
     print("AS Converted Protocol Header array:", converted_prot_header)
 
+    print("All Sample Rows:", as_rows)
+
     try:
         protocol = converted_prot_header[1]
 
@@ -191,6 +193,8 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
 
             ac_fc = values[new_as_dict["activeFaultCodes"]]
 
+            print("Active Faults:", ac_fc)
+
             if ac_fc:
 
                 ac_fc_array = ac_fc.split("|")
@@ -203,8 +207,9 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
 
                         fc_arr = fc.split("~")
 
-                        for fcVal in fc_arr:
-                            fc_obj[fcVal.split(":")[0]] = fcVal.split(":")[1]
+                        for fc_val in fc_arr:
+                            print("Fault Code Value:", fc_val)
+                            fc_obj[fc_val.split(":")[0]] = fc_val.split(":")[1]
 
                         conv_eq_fc_obj["activeFaultCodes"].append(fc_obj)
 
@@ -224,8 +229,8 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
 
                         fc_arr = fc.split("~")
 
-                        for fcVal in fc_arr:
-                            fc_obj[fcVal.split(":")[0]] = fcVal.split(":")[1]
+                        for fc_val in fc_arr:
+                            fc_obj[fc_val.split(":")[0]] = fc_val.split(":")[1]
 
                         conv_eq_fc_obj["inactiveFaultCodes"].append(fc_obj)
 
@@ -245,8 +250,8 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
 
                         fc_arr = fc.split("~")
 
-                        for fcVal in fc_arr:
-                            fc_obj[fcVal.split(":")[0]] = fcVal.split(":")[1]
+                        for fc_val in fc_arr:
+                            fc_obj[fc_val.split(":")[0]] = fc_val.split(":")[1]
 
                         conv_eq_fc_obj["pendingFaultCodes"].append(fc_obj)
 
@@ -398,11 +403,9 @@ def lambda_handler(lambda_event, context):
                 print("No Single Samples!")
                 print("asDateTimestamp Header row:", row)
 
-                as_rows.append(row)
-
                 ss_row = False
                 seen_ss = True
-                ss_rows.append(row)
+                as_rows.append(row)
 
         elif ss_row:
 
@@ -556,7 +559,10 @@ def lambda_handler(lambda_event, context):
 
     # Get rid of the AS header row since we have already stored the index of each header
     if as_rows:
+
+        print("Removing AS Header Row --index '0'-- from:", as_rows)
         del as_rows[0]
+        print("New AS Rows:", as_rows)
 
     print("<xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx---Handling Single Samples---xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>")
 
