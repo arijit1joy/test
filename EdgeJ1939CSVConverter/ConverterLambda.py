@@ -607,7 +607,7 @@ def lambda_handler(lambda_event, context):
         else:
 
             ngdi_json_template["telematicsPartnerName"] = got_tsp_and_cust_ref["device_owner"]
-            ngdi_json_template["telematicsPartnerName"] = got_tsp_and_cust_ref["cust_ref"]
+            ngdi_json_template["customerReference"] = got_tsp_and_cust_ref["cust_ref"]
 
             print("Final file with TSP and Cust Ref:", ngdi_json_template)
 
