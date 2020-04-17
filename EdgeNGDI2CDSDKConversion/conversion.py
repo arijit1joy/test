@@ -78,7 +78,6 @@ def get_snapshot_data(params, time_stamp, address):
 
 
 def post_cd_message(data):
-
     params = {}
 
     print("Retrieving the TSP name to get the Auth Token . . .")
@@ -109,9 +108,16 @@ def post_cd_message(data):
     data["Sent_Date_Time"] = sent_date_time if sent_date_time else data["Occurrence_Date_Time"] \
         if "Occurrence_Date_Time" in data else ''
 
-    data["Equipment_ID"] = ""  # Permanent solution to EQUIP_ID renaming Issue on CP end - Removing "equipmentId"
-    # data["Customer_Reference"] = "Bench_Test"  # Temporary solution to Missing "Cummins" Cust_Ref
-    # data["Telematics_Partner_Name"] = "Edge"  # Temporary solution to Missing "Cummins" Telematics Partner
+    # data["Equipment_ID"] = ""  # Permanent solution to EQUIP_ID renaming Issue on CP end - Removing "equipmentId"
+
+    # TODO Temporary address to the Equipment_ID retrieval issue. Renaming to EDGE_<ESN> if not there already . . .
+
+    if "Equipment_ID" not in data:
+        print("Equipment ID is not in the file. Creating it in the format EDGE_<ESN> . . .")
+
+        data["Equipment_ID"] = "EDGE_" + data["Engine_Serial_Number"]  # Setting the Equipment ID to EDGE_<ESN>
+
+        print("New Equipment ID:", data["Equipment_ID"])
 
     print('File to send to CD   ------------------> ', data)
     print('cd_url   ------------------> ', url)
@@ -123,13 +129,11 @@ def post_cd_message(data):
 
 
 def get_active_faults(fault_list, address):
-
     print("Getting Active Faults")
 
     final_fc_list = []
 
     for fc in fault_list:
-
         print("Handling FC:", fc)
 
         fc["Fault_Source_Address"] = address
@@ -233,7 +237,6 @@ def handle_hb(converted_device_params, converted_equip_params, converted_equip_f
                                     final_fc = []
 
                                     if fc_param in converted_equip_fc:
-
                                         final_fc = get_active_faults(converted_equip_fc[fc_param], address)
 
                                     var_dict[sample_obj[fc_param]] = final_fc
@@ -252,7 +255,6 @@ def handle_hb(converted_device_params, converted_equip_params, converted_equip_f
 
 
 def handle_fc(converted_device_params, converted_equip_params, converted_equip_fc, metadata, time_stamp):
-
     var_dict = {}
     address = ""
 
@@ -342,7 +344,6 @@ def handle_fc(converted_device_params, converted_equip_params, converted_equip_f
                                         print("Total Number of fcs:", len(all_active_fcs))
 
                                         for fc in all_active_fcs:
-
                                             create_fc_class(fc, final_fc, fc_index, sample_obj[fc_param], var_dict, 1)
 
                                             fc_index = fc_index + 1
@@ -366,7 +367,6 @@ def handle_fc(converted_device_params, converted_equip_params, converted_equip_f
                                             print("Total Number of fcs:", len(all_inactive_fcs))
 
                                             for fc in all_inactive_fcs:
-
                                                 create_fc_class(fc, inactive_final_fc, fc_index, sample_obj[fc_param],
                                                                 var_dict, 0, active_final_fc)
 
@@ -379,7 +379,6 @@ def handle_fc(converted_device_params, converted_equip_params, converted_equip_f
 
 def create_fc_class(fc, f_codes, fc_index, fc_param, var_dict,
                     active_or_inactive, active_fault_array=None):
-
     print("Current FC Index:", fc_index)
 
     fcs = f_codes.copy()
@@ -450,7 +449,7 @@ def send_sample(sample, metadata, fc_or_hb):
         handle_hb(converted_device_params, converted_equip_params, converted_equip_fc, metadata, time_stamp)
 
     else:
-        
+
         print("Handling FC...")
         handle_fc(converted_device_params, converted_equip_params, converted_equip_fc, metadata, time_stamp)
 
