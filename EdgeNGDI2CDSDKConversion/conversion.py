@@ -110,6 +110,14 @@ def post_cd_message(data):
 
     # data["Equipment_ID"] = ""  # Permanent solution to EQUIP_ID renaming Issue on CP end - Removing "equipmentId"
 
+    if "VIN" in data and not data["VIN"]:
+
+        print("Vin is not in file. Setting the value of the VIN to 'None'")
+
+        data["VIN"] = None
+
+        print("New VIN:", data["VIN"])
+
     # TODO Temporary address to the Equipment_ID retrieval issue. Renaming to EDGE_<ESN> if not there already . . .
 
     if "Equipment_ID" not in data or not data["Equipment_ID"]:
@@ -257,6 +265,8 @@ def handle_hb(converted_device_params, converted_equip_params, converted_equip_f
 def handle_fc(converted_device_params, converted_equip_params, converted_equip_fc, metadata, time_stamp):
     var_dict = {}
     address = ""
+    message_id = None
+    found_fcs = False
 
     print("Retrieving parameters for creating HB SDK Class Object")
 
@@ -331,6 +341,8 @@ def handle_fc(converted_device_params, converted_equip_params, converted_equip_f
 
                                 for fc_param in sample_obj:
 
+                                    found_fcs = True
+
                                     if fc_param in converted_equip_fc and fc_param == active_fault_code_indicator:
 
                                         print("These are active Fault Codes")
@@ -348,29 +360,44 @@ def handle_fc(converted_device_params, converted_equip_params, converted_equip_f
 
                                             fc_index = fc_index + 1
 
+                                    elif fc_param in converted_equip_fc and fc_param == inactive_fault_code_indicator:
+
+                                        print("These are inactive Fault Codes")
+
+                                        all_inactive_fcs = converted_equip_fc[fc_param].copy()
+
+                                        all_active_fcs = converted_equip_fc[active_fault_code_indicator].copy() if \
+                                            active_fault_code_indicator in converted_equip_fc else []
+
+                                        fc_index = 0
+
+                                        inactive_final_fc = get_active_faults(all_inactive_fcs, address)
+                                        active_final_fc = get_active_faults(all_active_fcs, address)
+
+                                        print("Total Number of fcs:", len(all_inactive_fcs))
+
+                                        for fc in all_inactive_fcs:
+                                            create_fc_class(fc, inactive_final_fc, fc_index, sample_obj[fc_param],
+                                                            var_dict, 0, active_final_fc)
+
+                                            fc_index = fc_index + 1
+
                                     else:
 
-                                        if fc_param in converted_equip_fc and fc_param == inactive_fault_code_indicator:
+                                        # TODO Handle Pending Fault Codes.
+                                        print(
+                                            "There are either no Fault Codes in this file or "
+                                            "there are only pending FCs -- We are not handling pending FCs for now.")
 
-                                            print("These are inactive Fault Codes")
+        if found_fcs:
 
-                                            all_inactive_fcs = converted_equip_fc[fc_param].copy()
+            print("We have already processed this sample since it had fault codes. Continuing to the next sample . . .")
 
-                                            all_active_fcs = converted_equip_fc[active_fault_code_indicator].copy() if \
-                                                active_fault_code_indicator in converted_equip_fc else []
+        else:
 
-                                            fc_index = 0
+            print("This sample had no Fault Code information, checking if this is the Single Sample . . .")
 
-                                            inactive_final_fc = get_active_faults(all_inactive_fcs, address)
-                                            active_final_fc = get_active_faults(all_active_fcs, address)
 
-                                            print("Total Number of fcs:", len(all_inactive_fcs))
-
-                                            for fc in all_inactive_fcs:
-                                                create_fc_class(fc, inactive_final_fc, fc_index, sample_obj[fc_param],
-                                                                var_dict, 0, active_final_fc)
-
-                                                fc_index = fc_index + 1
 
     except Exception as e:
 
