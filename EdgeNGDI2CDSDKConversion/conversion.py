@@ -112,7 +112,7 @@ def post_cd_message(data):
 
     # TODO Temporary address to the Equipment_ID retrieval issue. Renaming to EDGE_<ESN> if not there already . . .
 
-    if "Equipment_ID" not in data:
+    if "Equipment_ID" not in data or not data["Equipment_ID"]:
         print("Equipment ID is not in the file. Creating it in the format EDGE_<ESN> . . .")
 
         data["Equipment_ID"] = "EDGE_" + data["Engine_Serial_Number"]  # Setting the Equipment ID to EDGE_<ESN>
