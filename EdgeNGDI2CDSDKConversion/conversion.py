@@ -111,7 +111,6 @@ def post_cd_message(data):
     # data["Equipment_ID"] = ""  # Permanent solution to EQUIP_ID renaming Issue on CP end - Removing "equipmentId"
 
     if "VIN" in data and not data["VIN"]:
-
         print("Vin is not in file. Setting the value of the VIN to 'None'")
 
         data["VIN"] = None
@@ -265,7 +264,6 @@ def handle_hb(converted_device_params, converted_equip_params, converted_equip_f
 def handle_fc(converted_device_params, converted_equip_params, converted_equip_fc, metadata, time_stamp):
     var_dict = {}
     address = ""
-    message_id = None
     found_fcs = False
 
     print("Retrieving parameters for creating HB SDK Class Object")
@@ -341,13 +339,17 @@ def handle_fc(converted_device_params, converted_equip_params, converted_equip_f
 
                                 for fc_param in sample_obj:
 
-                                    found_fcs = True
-
                                     if fc_param in converted_equip_fc and fc_param == active_fault_code_indicator:
+
+                                        all_active_fcs = converted_equip_fc[fc_param].copy()
+
+                                        if not all_active_fcs:
+
+                                            continue
 
                                         print("These are active Fault Codes")
 
-                                        all_active_fcs = converted_equip_fc[fc_param].copy()
+                                        found_fcs = True  # Indicating that we found Fault Codes in this file.
 
                                         fc_index = 0
 
@@ -362,9 +364,15 @@ def handle_fc(converted_device_params, converted_equip_params, converted_equip_f
 
                                     elif fc_param in converted_equip_fc and fc_param == inactive_fault_code_indicator:
 
+                                        all_inactive_fcs = converted_equip_fc[fc_param].copy()
+
+                                        if not all_inactive_fcs:
+                                            
+                                            continue
+
                                         print("These are inactive Fault Codes")
 
-                                        all_inactive_fcs = converted_equip_fc[fc_param].copy()
+                                        found_fcs = True  # Indicating that we found Fault Codes in this file.
 
                                         all_active_fcs = converted_equip_fc[active_fault_code_indicator].copy() if \
                                             active_fault_code_indicator in converted_equip_fc else []
@@ -385,9 +393,8 @@ def handle_fc(converted_device_params, converted_equip_params, converted_equip_f
                                     else:
 
                                         # TODO Handle Pending Fault Codes.
-                                        print(
-                                            "There are either no Fault Codes in this file or "
-                                            "there are only pending FCs -- We are not handling pending FCs for now.")
+                                        print("There are either no", fc_param,
+                                              "in this file -- We are not handling pending FCs for now.")
 
         if found_fcs:
 
@@ -397,7 +404,16 @@ def handle_fc(converted_device_params, converted_equip_params, converted_equip_f
 
             print("This sample had no Fault Code information, checking if this is the Single Sample . . .")
 
+            print("Variable Dict:", var_dict)
 
+            if "Telematics_Partner_Message_ID".lower() in var_dict:
+
+                print("Found Message ID:", var_dict["Telematics_Partner_Message_ID".lower()],
+                      "in this sample! This is the Single Sample. Proceeding to the next sample . . .")
+
+            else:
+
+                print("There was an Error in this FC sample. It is not the Single Sample and it does not have FC info!")
 
     except Exception as e:
 
