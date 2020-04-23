@@ -50,7 +50,7 @@ class CDFCSDK:
 
         for var in class_variables:
 
-            if class_variables[var]:
+            if class_variables[var] != 0 and class_variables[var]:
                 print("Variable:", var, "Value:", class_variables[var])
 
                 self.values[var] = class_variables[var]
