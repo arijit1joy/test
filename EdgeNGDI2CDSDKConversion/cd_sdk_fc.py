@@ -60,8 +60,7 @@ class CDFCSDK:
             if param.lower() in self.values:
                 json_payload[param] = self.values[param.lower()]
 
-        if not json_payload["Telematics_Partner_Message_ID"]:
-            json_payload["Telematics_Partner_Message_ID"] = get_message_id()
+        json_payload["Telematics_Partner_Message_ID"] = get_message_id()
 
         if not json_payload["Sent_Date_Time"]:
             json_payload["Sent_Date_Time"] = json_payload[
@@ -75,18 +74,3 @@ class CDFCSDK:
 
         print("Returning Class Payload:", self.payload)
         return self.payload
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
