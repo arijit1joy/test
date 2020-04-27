@@ -406,7 +406,7 @@ Resources:
                   - EdgeJ1939CSVConverterLambdaRole
                   - Arn
                 # - !Sub "arn:aws:iam::${AWS::AccountId}:role/da-edge-oem-${ApplicationEnvironmentTag}-LambdaRole"
-                - !Sub "arn:aws:iam::${AWS::AccountId}:role/da-edge-device-OEMLambdaTrustRole-${ApplicationEnvironmentTag}"
+                - !Sub "arn:aws:iam::${AWS::AccountId}:role/da-edge-oem-OEMLambdaTrustRole-${ApplicationEnvironmentTag}"
           - 
             Action: 
               - "s3:Put*"
