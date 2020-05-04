@@ -5,6 +5,7 @@ import os
 import boto3
 import requests
 import datetime
+from kinesis_utility import create_json_body_for_kinesis
 
 # metadata = {}
 spn_bucket = os.getenv('spn_parameter_json_object')
@@ -497,7 +498,17 @@ def send_sample(sample, metadata, fc_or_hb):
         handle_fc(converted_device_params, converted_equip_params, converted_equip_fc, metadata, time_stamp)
 
 
-def process(bucket, key):
+def get_cspec_req_id(sc_number):
+    if '-' in sc_number:
+        config_spec_name = ''.join(sc_number.split('-')[:-1])
+        req_id = sc_number.split('-')[-1]
+    else:
+        config_spec_name = sc_number
+        req_id = None
+    return config_spec_name, req_id
+
+
+def process(bucket, key, file_size):
     print("Retrieving the JSON file from the NGDI folder")
 
     j1939_file_object = s3_client.get_object(Bucket=bucket, Key=key)
@@ -509,6 +520,12 @@ def process(bucket, key):
     print("File Metadata:", file_metadata)
 
     fc_or_hb = file_metadata['j1939type'] if "j1939type" else None
+
+    uuid = file_metadata['uuid']
+
+    file_date_time = str(j1939_file_object['LastModified'])[:19]
+
+    device_id = key.split('_')[1]
 
     print("FC or HB : ", fc_or_hb)
 
@@ -522,6 +539,18 @@ def process(bucket, key):
     j1939_file = json.loads(j1939_file_stream)
 
     print("File as JSON:", j1939_file)
+
+    if fc_or_hb.lower() == 'hb':
+        esn = j1939_file['componentSerialNumber']
+        config_spec_name, req_id = get_cspec_req_id(j1939_file['dataSamplingConfigId'])
+        data_protocol = 'J1939-HB'
+    else:
+        esn = key.split('_')[2]
+        config_spec_name, req_id = get_cspec_req_id(key.split('_')[3])
+        data_protocol = 'J1939-FC'
+
+    create_json_body_for_kinesis(uuid, device_id, key, file_size, file_date_time, data_protocol,
+                                 'FILE_SENT', esn, config_spec_name, req_id)
 
     print("Retrieving Metadata from the file:", j1939_file)
 
@@ -564,6 +593,7 @@ def lambda_handler(event, context):
     # Retrieve bucket and key details
     key = event['Records'][0]['s3']['object']['key']
     bucket = event['Records'][0]['s3']['bucket']['name']
+    file_size = event['Records'][0]['s3']['object']['size']
 
     print("Bucket:", bucket)
     print("Key:", key)
@@ -572,7 +602,7 @@ def lambda_handler(event, context):
 
     print("New FileKey:", key)
 
-    process(bucket, key)
+    process(bucket, key, file_size)
 
 
 '''

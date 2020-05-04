@@ -5,6 +5,8 @@ import boto3
 import environment_params as env
 import post
 import pt_poster
+import uuid
+from kinesis_utility import create_json_body_for_kinesis
 
 
 # Retrieve the environment variables
@@ -90,6 +92,7 @@ def lambda_handler(event, context):
 
     bucket_name = event['Records'][0]['s3']['bucket']['name']
     file_key = event['Records'][0]['s3']['object']['key']
+    file_size = event['Records'][0]['s3']['object']['size']
 
     print("Bucket Name:", bucket_name)
     print("File Key:", file_key)
@@ -101,6 +104,8 @@ def lambda_handler(event, context):
     file_object = s3_client.get_object(Bucket=bucket_name, Key=file_key)
 
     print("Get File Object Response:", file_object)
+
+    file_date_time = str(file_object['LastModified'])[:19]
 
     file_object_stream = file_object['Body'].read()
 
@@ -116,9 +121,19 @@ def lambda_handler(event, context):
 
     j1939_type = file_metadata["j1939type"] if "j1939type" in file_metadata else 'HB'
 
+    fc_uuid = file_metadata["uuid"] if "uuid" in file_metadata else None
+
     print("FC or HB:", j1939_type)
 
     device_id = json_body["telematicsDeviceId"] if "telematicsDeviceId" in json_body else None
+
+    if j1939_type == 'HB':
+        hb_uuid = uuid.uuid4()
+        hb_esn = json_body['componentSerialNumber']
+        config_spec_name, req_id = post.get_cspec_req_id(json_body['dataSamplingConfigId'])
+
+        create_json_body_for_kinesis(hb_uuid, device_id, file_key, file_size, file_date_time, 'J1939-HB',
+                                     'FILE_RECEIVED', hb_esn, config_spec_name, req_id)
 
     print("Device ID sending the file:", device_id)
 
@@ -144,8 +159,11 @@ def lambda_handler(event, context):
 
                 if business_partner == "EBU":
 
-                    post.send_to_cd(bucket_name, file_key, JSONFormat, s3_client, j1939_type,
-                                    EndpointBucket, endpointFile, UseEndpointBucket, json_body)
+                    config_spec_name, req_id = post.get_cspec_req_id(json_body['dataSamplingConfigId'])
+
+                    post.send_to_cd(bucket_name, file_key, file_size, file_date_time, JSONFormat, s3_client,
+                                    j1939_type, fc_uuid, EndpointBucket, endpointFile, UseEndpointBucket, json_body,
+                                    config_spec_name, req_id, hb_esn, hb_uuid)
 
                 else:
 

@@ -13,7 +13,7 @@ Parameters:
   ArtifactsBucket:
     Type: String
   CurrentProductURL:
-     Type: String          
+     Type: String
   DatabaseName:
     Type: String
     Default: "CS_PARTNER_VAL"
@@ -313,6 +313,9 @@ Resources:
                     Value: NGDI
                   - Name: suffix
                     Value: .json
+        TopicConfigurations:
+          -  Event: s3:ObjectCreated:*
+             Topic: !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:j1939_s3_bucket_trigger_${ApplicationEnvironmentTag}"
       Tags:
         -
           Key: Name
@@ -375,6 +378,7 @@ Resources:
                   - Arn
                 # - !Sub "arn:aws:iam::${AWS::AccountId}:role/da-edge-oem-${ApplicationEnvironmentTag}-LambdaRole"
                 - !Sub "arn:aws:iam::${AWS::AccountId}:role/da-edge-oem-OEMLambdaTrustRole-${ApplicationEnvironmentTag}"
+                # - !Sub "arn:aws:iam::${AWS::AccountId}:role/da-edge-aai-service-Consumer-LambdaRole-${ApplicationEnvironmentTag}"
           - 
             Action: 
               - "s3:Put*"

@@ -4,6 +4,7 @@ import json
 import os
 import requests
 import datetime
+from kinesis_utility import create_json_body_for_kinesis
 
 s3 = boto3.client('s3')
 cp_post_bucket = os.environ["CPPostBucket"]
@@ -311,12 +312,23 @@ def get_tsp_and_cust_ref(device_id):
     return {}
 
 
+def get_cspec_req_id(sc_number):
+    if '-' in sc_number:
+        config_spec_name = ''.join(sc_number.split('-')[:-1])
+        req_id = sc_number.split('-')[-1]
+    else:
+        config_spec_name = sc_number
+        req_id = None
+    return config_spec_name, req_id
+
+
 def lambda_handler(lambda_event, context):
     print("Event:", json.dumps(lambda_event))
     print("Context:", context)
 
     bucket_name = lambda_event['Records'][0]['s3']['bucket']['name']
     file_key = lambda_event['Records'][0]['s3']['object']['key']
+    file_size = lambda_event['Records'][0]['s3']['object']['size']
 
     print("Bucket:", bucket_name)
     print("File Key:", file_key)
@@ -329,6 +341,25 @@ def lambda_handler(lambda_event, context):
     csv_file = obj['Body'].read().decode('utf-8').splitlines(True)
 
     print("Csv File:", csv_file)
+
+    file_date_time = str(obj['LastModified'])[:19]
+
+    file_metadata = obj["Metadata"]
+
+    print("File Metadata:", file_metadata)
+
+    fc_uuid = file_metadata['uuid']
+
+    file_name = file_key.split('/')[-1]
+
+    device_id = file_name.split('_')[1]
+
+    esn = file_name.split('_')[2]
+
+    config_spec_name, req_id = get_cspec_req_id(file_name.split('_')[3])
+
+    create_json_body_for_kinesis(fc_uuid, device_id, file_name, file_size, file_date_time, 'J1939-FC',
+                                 'CSV_JSON_CONVERTER', esn, config_spec_name, req_id)
 
     ngdi_json_template = json.loads(os.environ["NGDIBody"])
 
