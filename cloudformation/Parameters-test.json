@@ -12,6 +12,8 @@
         "PTJ1939Header": "{\"Content-Type\":\"application/json\"}",
         "CDPTJ1939PostURL": "https://mt5afmpt32.execute-api.us-east-1.amazonaws.com/Test/ngdi",
         "CDPTJ1939Header": "{\"Content-Type\":\"application/json\"}",
+        "DeliveryStreamName": "da-edge-stage-metadata-stream",
+        "CrossAccountKinesisRoleArn": "None",
         "CDDataEndpoint": "https://telematics-stg.cummins.com:8443/DataService/postData?AuthToken="
     }
 }

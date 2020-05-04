@@ -39,6 +39,10 @@ Parameters:
     Type: String
   CDPTJ1939PostURL:
     Type: String
+  DeliveryStreamName:
+    Type: String
+  CrossAccountKinesisRoleArn:
+    Type: String
   CDPTJ1939Header:
     Type: String
   CDDataEndpoint:
@@ -591,6 +595,9 @@ Resources:
           time_stamp_param: "dateTimestamp"
           active_fault_code_indicator: "activeFaultCodes"
           param_indicator: "parameters"
+          delivery_stream_name: !Ref 'DeliveryStreamName'
+          environment: !Ref 'ApplicationEnvironmentTag'
+          cross_account_kinesis_role_arn: !Ref 'CrossAccountKinesisRoleArn'
           message_format_version_indicator: "messageFormatVersion"
           notification_version: "2.5.2"
           spn_indicator: "SPN"
@@ -622,6 +629,9 @@ Resources:
         Variables:
           NGDIBody: "{\"messageFormatVersion\": \"\", \"telematicsPartnerName\": \"\", \"customerReference\": \"\", \"componentSerialNumber\": \"\", \"equipmentId\": \"\", \"vin\": \"\", \"telematicsDeviceId\": \"\", \"dataSamplingConfigId\": \"\", \"dataEncryptionSchemeId\": \"\", \"numberOfSamples\": \"\", \"samples\": []}"
           CPPostBucket: !Sub 'edge-j1939-${ApplicationEnvironmentTag}'
+          delivery_stream_name: !Ref 'DeliveryStreamName'
+          environment: !Ref 'ApplicationEnvironmentTag'
+          cross_account_kinesis_role_arn: !Ref 'CrossAccountKinesisRoleArn'
           edgeCommonAPIURL: !Ref EdgeCommonDBAPI
       Layers:
         - !Ref RequestsPythonLayer
@@ -652,6 +662,9 @@ Resources:
           Environment: !Sub '${ApplicationEnvironmentTag}'
           JSONFormat: "SDK"
           edgeCommonAPIURL: !Ref EdgeCommonDBAPI
+          delivery_stream_name: !Ref 'DeliveryStreamName'
+          environment: !Ref 'ApplicationEnvironmentTag'
+          cross_account_kinesis_role_arn: !Ref 'CrossAccountKinesisRoleArn'
           PSBUSpecifier: "psbu"
           EBUSpecifier: "onhighway"
           PTJ1939PostURL: !Ref PTJ1939PostURL
