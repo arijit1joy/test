@@ -115,6 +115,10 @@ Resources:
             Action:
               - 'logs:*'
             Resource: 'arn:aws:logs:*:*:*'
+          - Effect: Allow
+            Action:
+            - firehose:*
+            Resource: arn:aws:firehose:*:*:*
           Version:                 '2012-10-17'
         PolicyName:                !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeNGDI2CDSDKConversionLambdaWorkerPolicy"
       RoleName:                    !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeNGDI2CDSDKConversionLambdaRole"
@@ -137,6 +141,10 @@ Resources:
             Action:
               - 'logs:*'
             Resource: 'arn:aws:logs:*:*:*'
+          - Effect: Allow
+            Action:
+            - firehose:*
+            Resource: arn:aws:firehose:*:*:*
           Version:                 '2012-10-17'
         PolicyName:                !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeJ1939CSVConverterLambdaWorkerPolicy"
       RoleName:                    !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeJ1939CSVConverterLambdaRole"
@@ -159,6 +167,10 @@ Resources:
             Action:
               - 'logs:*'
             Resource: 'arn:aws:logs:*:*:*'
+          - Effect: Allow
+            Action:
+            - firehose:*
+            Resource: arn:aws:firehose:*:*:*
           Version:                 '2012-10-17'
         PolicyName:                !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeCPPTPosterLambdaWorkerPolicy"
       RoleName:                    !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeCPPTPosterLambdaRole"
