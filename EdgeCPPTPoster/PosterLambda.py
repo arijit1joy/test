@@ -89,7 +89,7 @@ def lambda_handler(event, context):
     # json_file = open("EDGE_352953080329158_64000002_SC123_20190820045303_F2BA (3).json", "r")
 
     print("Lambda Event:", json.dumps(event))
-
+    hb_uuid = uuid.uuid4()
     bucket_name = event['Records'][0]['s3']['bucket']['name']
     file_key = event['Records'][0]['s3']['object']['key']
     file_size = event['Records'][0]['s3']['object']['size']
@@ -128,7 +128,6 @@ def lambda_handler(event, context):
     device_id = json_body["telematicsDeviceId"] if "telematicsDeviceId" in json_body else None
 
     if j1939_type == 'HB':
-        hb_uuid = uuid.uuid4()
         hb_esn = json_body['componentSerialNumber']
         config_spec_name, req_id = post.get_cspec_req_id(json_body['dataSamplingConfigId'])
 
@@ -140,7 +139,7 @@ def lambda_handler(event, context):
     device_info = get_device_info(device_id)
 
     if device_info:
-
+        hb_esn = json_body['componentSerialNumber']
         device_type = device_info["device_type"] if "device_type" in device_info else None
         device_owner = device_info["device_owner"] if "device_owner" in device_info else None
         dom = device_info["dom"] if "dom" in device_info else None
