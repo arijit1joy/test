@@ -3,6 +3,7 @@ import pt_poster
 import os
 import boto3
 from kinesis_utility import create_json_body_for_kinesis
+import traceback
 
 s3_resource = boto3.resource('s3')
 CDPTJ1939PostURL = os.environ["CDPTJ1939PostURL"]
@@ -63,7 +64,8 @@ def send_to_cd(bucket_name, key, file_size, file_date_time, json_format, client,
 
         except Exception as e:
 
-            print("ERROR! An Exception occurred while posting the file to the NGDI folder:", e)
+            print("ERROR! An Exception occurred while posting the file to the NGDI folder:", e" --> Traceback:")
+            traceback.print_exc()  # Printing the Stack Trace)
 
     elif json_format.lower() == "ngdi":
 
