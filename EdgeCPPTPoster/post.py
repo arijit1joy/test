@@ -53,7 +53,7 @@ def send_to_cd(bucket_name, key, file_size, file_date_time, json_format, client,
 
             else:
 
-                client.put_object(Bucket=bucket_name, Key=key.replace("ConvertedFiles", "NGDI"),
+                post_to_ngdi_response = client.put_object(Bucket=bucket_name, Key=key.replace("ConvertedFiles", "NGDI"),
                                   Body=json.dumps(json_body).encode(), Metadata={'j1939type': j1939_type,
                                                                                  'uuid': hb_uuid})
 
