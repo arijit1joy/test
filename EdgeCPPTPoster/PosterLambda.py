@@ -89,7 +89,7 @@ def lambda_handler(event, context):
     # json_file = open("EDGE_352953080329158_64000002_SC123_20190820045303_F2BA (3).json", "r")
 
     print("Lambda Event:", json.dumps(event))
-    hb_uuid = uuid.uuid4()
+    hb_uuid = str(uuid.uuid4())
     bucket_name = event['Records'][0]['s3']['bucket']['name']
     file_key = event['Records'][0]['s3']['object']['key']
     file_size = event['Records'][0]['s3']['object']['size']
