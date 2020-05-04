@@ -313,9 +313,6 @@ Resources:
                     Value: NGDI
                   - Name: suffix
                     Value: .json
-        TopicConfigurations:
-          -  Event: s3:ObjectCreated:*
-             Topic: !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:j1939_s3_bucket_trigger_${ApplicationEnvironmentTag}"
       Tags:
         -
           Key: Name
