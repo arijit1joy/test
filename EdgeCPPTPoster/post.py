@@ -64,7 +64,7 @@ def send_to_cd(bucket_name, key, file_size, file_date_time, json_format, client,
 
         except Exception as e:
 
-            print("ERROR! An Exception occurred while posting the file to the NGDI folder:", e" --> Traceback:")
+            print("ERROR! An Exception occurred while posting the file to the NGDI folder:", e, " --> Traceback:")
             traceback.print_exc()  # Printing the Stack Trace)
 
     elif json_format.lower() == "ngdi":
