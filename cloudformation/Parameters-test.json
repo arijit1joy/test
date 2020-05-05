@@ -14,7 +14,7 @@
         "CDPTJ1939Header": "{\"Content-Type\":\"application/json\"}",
         "DeliveryStreamName": "da-edge-stage-metadata-stream",
         "CrossAccountKinesisRoleArn": "None",
-        "KinesisLayerVersion": "1",
+        "KinesisLayerVersion": "2",
         "CDDataEndpoint": "https://telematics-stg.cummins.com:8443/DataService/postData?AuthToken="
     }
 }
