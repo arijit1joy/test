@@ -5,7 +5,7 @@ import os
 import boto3
 import requests
 import datetime
-from kinesis_utility import create_json_body_for_kinesis
+from kinesis_utility import build_metadata_and_write
 
 # metadata = {}
 spn_bucket = os.getenv('spn_parameter_json_object')
@@ -549,7 +549,7 @@ def process(bucket, key, file_size):
         config_spec_name, req_id = get_cspec_req_id(key.split('_')[3])
         data_protocol = 'J1939-FC'
 
-    create_json_body_for_kinesis(uuid, device_id, key, file_size, file_date_time, data_protocol,
+    build_metadata_and_write(uuid, device_id, key, file_size, file_date_time, data_protocol,
                                  'FILE_SENT', esn, config_spec_name, req_id)
 
     print("Retrieving Metadata from the file:", j1939_file)

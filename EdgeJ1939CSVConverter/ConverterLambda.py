@@ -4,7 +4,7 @@ import json
 import os
 import requests
 import datetime
-from kinesis_utility import create_json_body_for_kinesis
+from kinesis_utility import build_metadata_and_write
 
 s3 = boto3.client('s3')
 cp_post_bucket = os.environ["CPPostBucket"]
@@ -358,8 +358,8 @@ def lambda_handler(lambda_event, context):
 
     config_spec_name, req_id = get_cspec_req_id(file_name.split('_')[3])
 
-    create_json_body_for_kinesis(fc_uuid, device_id, file_name, file_size, file_date_time, 'J1939-FC',
-                                 'CSV_JSON_CONVERTER', esn, config_spec_name, req_id)
+    build_metadata_and_write(fc_uuid, device_id, file_name, file_size, file_date_time, 'J1939-FC',
+                                 'CSV_JSON_CONVERTED', esn, config_spec_name, req_id)
 
     ngdi_json_template = json.loads(os.environ["NGDIBody"])
 

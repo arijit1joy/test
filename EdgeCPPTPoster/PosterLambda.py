@@ -6,7 +6,7 @@ import environment_params as env
 import post
 import pt_poster
 import uuid
-from kinesis_utility import create_json_body_for_kinesis
+from kinesis_utility import build_metadata_and_write
 
 
 # Retrieve the environment variables
@@ -131,7 +131,7 @@ def lambda_handler(event, context):
         hb_esn = json_body['componentSerialNumber']
         config_spec_name, req_id = post.get_cspec_req_id(json_body['dataSamplingConfigId'])
 
-        create_json_body_for_kinesis(hb_uuid, device_id, file_key, file_size, file_date_time, 'J1939-HB',
+        build_metadata_and_write(hb_uuid, device_id, file_key, file_size, file_date_time, 'J1939-HB',
                                      'FILE_RECEIVED', hb_esn, config_spec_name, req_id)
 
     print("Device ID sending the file:", device_id)
