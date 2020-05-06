@@ -35,7 +35,7 @@ def send_to_cd(bucket_name, key, file_size, file_date_time, json_format, client,
 
         try:
 
-            if fc_uuid and j1939_type.lower() == "fc":
+            if j1939_type.lower() == "fc":
 
                 config_spec_name_fc, req_id_fc = get_cspec_req_id(key.split('_')[3])
 
