@@ -127,12 +127,13 @@ def lambda_handler(event, context):
 
     device_id = json_body["telematicsDeviceId"] if "telematicsDeviceId" in json_body else None
 
+    esn = json_body['componentSerialNumber'] if 'componentSerialNumber' in json_body else None
+
     if j1939_type == 'HB':
-        hb_esn = json_body['componentSerialNumber']
         config_spec_name, req_id = post.get_cspec_req_id(json_body['dataSamplingConfigId'])
 
         build_metadata_and_write(hb_uuid, device_id, file_key, file_size, file_date_time, 'J1939-HB',
-                                     'FILE_RECEIVED', hb_esn, config_spec_name, req_id)
+                                     'FILE_RECEIVED', esn, config_spec_name, req_id)
 
     print("Device ID sending the file:", device_id)
 
@@ -162,7 +163,7 @@ def lambda_handler(event, context):
 
                     post.send_to_cd(bucket_name, file_key, file_size, file_date_time, JSONFormat, s3_client,
                                     j1939_type, fc_uuid, EndpointBucket, endpointFile, UseEndpointBucket, json_body,
-                                    config_spec_name, req_id, hb_esn, hb_uuid)
+                                    config_spec_name, req_id, device_id, esn, hb_uuid)
 
                 else:
 

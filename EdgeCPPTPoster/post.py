@@ -25,14 +25,10 @@ def get_cspec_req_id(sc_number):
 
 
 def send_to_cd(bucket_name, key, file_size, file_date_time, json_format, client, j1939_type, fc_uuid, endpoint_bucket,
-               endpoint_file, use_endpoint_bucket, json_body, config_spec_name, req_id, hb_esn, hb_uuid):
+               endpoint_file, use_endpoint_bucket, json_body, config_spec_name, req_id, device_id, esn, hb_uuid):
     print("Received CD file for posting!")
 
     file_key = key.split('/')[-1]
-
-    device_id = file_key.split('_')[1]
-
-    esn = file_key.split('_')[2]
 
     if json_format.lower() == "sdk":
         print("Posting to the NGDI folder for posting to CD Pipeline...")
@@ -58,7 +54,7 @@ def send_to_cd(bucket_name, key, file_size, file_date_time, json_format, client,
                                                                                  'uuid': hb_uuid})
 
                 build_metadata_and_write(hb_uuid, device_id, file_key, file_size, file_date_time, 'J1939-HB',
-                                             'CD_PT_POSTED', hb_esn, config_spec_name, req_id)
+                                             'CD_PT_POSTED', esn, config_spec_name, req_id)
 
             print("Post CD File to NGDI Folder Response:", post_to_ngdi_response)
 
