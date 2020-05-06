@@ -129,7 +129,7 @@ def lambda_handler(event, context):
 
     esn = json_body['componentSerialNumber'] if 'componentSerialNumber' in json_body else None
 
-    if j1939_type == 'HB':
+    if j1939_type.lower() == 'hb':
         config_spec_name, req_id = post.get_cspec_req_id(json_body['dataSamplingConfigId'])
 
         build_metadata_and_write(hb_uuid, device_id, file_key, file_size, file_date_time, 'J1939-HB',
