@@ -712,7 +712,7 @@ def lambda_handler(lambda_event, context):
     store_file_response = s3_client.put_object(Bucket=cp_post_bucket,
                                                Key=store_file_path,
                                                Body=json.dumps(ngdi_json_template).encode(),
-                                               Metadata={'j1939type': 'FC'})
+                                               Metadata={'j1939type': 'FC', 'uuid': fc_uuid})
 
     print("Store File Response:", store_file_response)
 
