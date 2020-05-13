@@ -608,7 +608,7 @@ def lambda_handler(event, context):
 
 
 '''
-Main Method For Local Testing
+Function to get Health Parameter and store into Redshift Table
 '''
 
 
