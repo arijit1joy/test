@@ -6,6 +6,7 @@ import boto3
 import requests
 import datetime
 from kinesis_utility import build_metadata_and_write
+from kinesis_utility import write_health_parameter_to_kinesis
 
 # metadata = {}
 spn_bucket = os.getenv('spn_parameter_json_object')
@@ -488,7 +489,7 @@ def send_sample(sample, metadata, fc_or_hb):
     print("New converted_equip_fc:", converted_equip_fc)
 
     if fc_or_hb.lower() == "hb":
-
+        store_health_parameters_into_redshift(converted_device_params)
         print("Handling HB...")
         handle_hb(converted_device_params, converted_equip_params, converted_equip_fc, metadata, time_stamp)
 
@@ -604,6 +605,35 @@ def lambda_handler(event, context):
 
     process(bucket, key, file_size)
 
+
+
+'''
+Main Method For Local Testing
+'''
+
+
+def store_health_parameters_into_redshift(converted_device_params):
+    for device_parameter in converted_device_params
+        messageID = device_parameter['messageID'] if 'messageID' in device_parameter else "Null"
+        cpuTemperature = device_parameter['CPU_temperature']
+        pmicTemperature = device_parameter['PMIC_temperature']
+        latitude = device_parameter['Latitude']
+        longitude = device_parameter['Longitude']
+        altitude = device_parameter['Altitude']
+        pdop = device_parameter['PDOP']
+        satellitesUsed = device_parameter['Satellites_Used']
+        lteRSSI = device_parameter['LTE_RSSI']
+        lteRSCP = device_parameter['LTE_RSCP']
+        lteRSRQ = device_parameter['LTE_RSRQ']
+        lteRSRP = device_parameter['LTE_RSRP']
+        cpuUsageLevel = device_parameter['CPU_Usage_Level']
+        ramUsageLevel = device_parameter['RAM_Usage_Level']
+        snrPerSatellite = device_parameter['SNR_per_Satellite']
+        write_health_parameter_to_kinesis(messageID, cpuTemperature, pmicTemperature, latitude,
+                                                              longitude, altitude, pdop,
+                                                              satellitesUsed, lteRSSI, lteRSCP, lteRSRQ, lteRSRP,
+                                                              cpuUsageLevel, ramUsageLevel,
+                                                              snrPerSatellite)
 
 '''
 Main Method For Local Testing
