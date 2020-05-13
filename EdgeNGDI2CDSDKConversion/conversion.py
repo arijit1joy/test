@@ -346,7 +346,6 @@ def handle_fc(converted_device_params, converted_equip_params, converted_equip_f
                                         all_active_fcs = converted_equip_fc[fc_param].copy()
 
                                         if not all_active_fcs:
-
                                             continue
 
                                         print("These are active Fault Codes")
@@ -369,7 +368,6 @@ def handle_fc(converted_device_params, converted_equip_params, converted_equip_f
                                         all_inactive_fcs = converted_equip_fc[fc_param].copy()
 
                                         if not all_inactive_fcs:
-                                            
                                             continue
 
                                         print("These are inactive Fault Codes")
@@ -551,7 +549,7 @@ def process(bucket, key, file_size):
         data_protocol = 'J1939-FC'
 
     build_metadata_and_write(uuid, device_id, key, file_size, file_date_time, data_protocol,
-                                 'FILE_SENT', esn, config_spec_name, req_id)
+                             'FILE_SENT', esn, config_spec_name, req_id)
 
     print("Retrieving Metadata from the file:", j1939_file)
 
@@ -606,11 +604,9 @@ def lambda_handler(event, context):
     process(bucket, key, file_size)
 
 
-
 '''
 Function to get Health Parameter and store into Redshift Table
 '''
-
 
 def store_health_parameters_into_redshift(converted_device_params):
     for device_parameter in converted_device_params
@@ -630,10 +626,11 @@ def store_health_parameters_into_redshift(converted_device_params):
         ramUsageLevel = device_parameter['RAM_Usage_Level']
         snrPerSatellite = device_parameter['SNR_per_Satellite']
         write_health_parameter_to_kinesis(messageID, cpuTemperature, pmicTemperature, latitude,
-                                                              longitude, altitude, pdop,
-                                                              satellitesUsed, lteRSSI, lteRSCP, lteRSRQ, lteRSRP,
-                                                              cpuUsageLevel, ramUsageLevel,
-                                                              snrPerSatellite)
+                                          longitude, altitude, pdop,
+                                          satellitesUsed, lteRSSI, lteRSCP, lteRSRQ, lteRSRP,
+                                          cpuUsageLevel, ramUsageLevel,
+                                          snrPerSatellite)
+
 
 '''
 Main Method For Local Testing
