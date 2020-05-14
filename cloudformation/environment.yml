@@ -652,6 +652,7 @@ Resources:
           environment: !Ref 'ApplicationEnvironmentTag'
           cross_account_kinesis_role_arn: !Ref 'CrossAccountKinesisRoleArn'
           edgeCommonAPIURL: !Ref EdgeCommonDBAPI
+          Region: !Sub ${AWS::Region}
       Layers:
         - !Ref RequestsPythonLayer
         - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:kinesis_utility:${KinesisLayerVersion}
@@ -693,6 +694,7 @@ Resources:
           CDPTJ1939Header: !Ref CDPTJ1939PostURL
           UseEndpointBucket: "Y"
           PowerGenValue: "powerGen"
+          Region: !Sub ${AWS::Region}
       Layers:
         - !Ref RequestsPythonLayer
         - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:kinesis_utility:${KinesisLayerVersion}
