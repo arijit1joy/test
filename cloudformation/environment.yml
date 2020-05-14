@@ -41,6 +41,8 @@ Parameters:
     Type: String
   DeliveryStreamName:
     Type: String
+  DeviceHealthDeliveryStream:
+    Type: String
   CrossAccountKinesisRoleArn:
     Type: String
   CDPTJ1939Header:
@@ -618,12 +620,13 @@ Resources:
           fmi_indicator: "FMI"
           count_indicator: "Occurrence_Count"
           active_cd_parameter: "active"
+          device_health_delivery_stream: !Ref DeviceHealthDeliveryStream
           inactive_fault_code_indicator: "inactiveFaultCodes"
           class_arg_map: '{"messageFormatVersion": "notification_version", "telematicsPartnerName": "telematics_partner_name", "customerReference": "customer_reference", "componentSerialNumber": "engine_serial_number", "equipmentId": "equipment_id", "vin": "vin", "telematicsDeviceId": "telematics_box_id", "samples": {"dateTimestamp": "occurrence_date_time", "convertedDeviceParameters": {"messageID": "telematics_partner_message_id", "Latitude": "latitude", "Longitude": "longitude", "Altitude": "altitude", "Direction_Heading": "direction_heading", "Vehicle_Distance": "vehicle_distance", "Location_Text_Description": "location_text_description", "GPS_Vehicle_Speed": "gps_vehicle_speed"}, "convertedEquipmentParameters": [{"protocol": "datalink_bus", "deviceId": "source_address", "parameters": "snapshots"}], "convertedEquipmentFaultCodes": [{"activeFaultCodes": "active_faults", "inactiveFaultCodes": ""}]}}'
       Layers:
         - !Ref PandasPythonLayer
         - !Ref RequestsPythonLayer
-        - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:kinesis_utility:${KinesisLayerVersion}
+        - Fn::ImportValue: 'KinesisUtilityLayer'
       Tags:
           Name: Edge
           

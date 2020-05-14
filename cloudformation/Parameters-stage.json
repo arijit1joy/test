@@ -15,6 +15,7 @@
         "DeliveryStreamName": "kinesis-cross-account-testing",
         "CrossAccountKinesisRoleArn": "arn:aws:iam::732927748536:role/da-edge-cross-account-lambda-firehose-testing",
         "KinesisLayerVersion": "2",
-        "CDDataEndpoint": "https://telematics-stg.cummins.com:8443/DataService/postData?AuthToken="
+        "CDDataEndpoint": "https://telematics-stg.cummins.com:8443/DataService/postData?AuthToken=",
+        "DeviceHealthDeliveryStream": "da-edge-aai-service-heartbeat-data-stream"
     }
 }

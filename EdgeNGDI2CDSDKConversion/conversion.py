@@ -610,26 +610,26 @@ Function to get Health Parameter and store into Redshift Table
 
 def store_health_parameters_into_redshift(converted_device_params):
     for device_parameter in converted_device_params
-        messageID = device_parameter['messageID'] if 'messageID' in device_parameter else "Null"
-        cpuTemperature = device_parameter['CPU_temperature']
-        pmicTemperature = device_parameter['PMIC_temperature']
+        message_id = device_parameter['messageID'] if 'messageID' in device_parameter else "Null"
+        cpu_temperature = device_parameter['CPU_temperature']
+        pmic_temperature = device_parameter['PMIC_temperature']
         latitude = device_parameter['Latitude']
         longitude = device_parameter['Longitude']
         altitude = device_parameter['Altitude']
         pdop = device_parameter['PDOP']
-        satellitesUsed = device_parameter['Satellites_Used']
-        lteRSSI = device_parameter['LTE_RSSI']
-        lteRSCP = device_parameter['LTE_RSCP']
-        lteRSRQ = device_parameter['LTE_RSRQ']
-        lteRSRP = device_parameter['LTE_RSRP']
-        cpuUsageLevel = device_parameter['CPU_Usage_Level']
-        ramUsageLevel = device_parameter['RAM_Usage_Level']
-        snrPerSatellite = device_parameter['SNR_per_Satellite']
-        write_health_parameter_to_kinesis(messageID, cpuTemperature, pmicTemperature, latitude,
+        satellites_used = device_parameter['Satellites_Used']
+        lte_rssi = device_parameter['LTE_RSSI']
+        lte_rscp = device_parameter['LTE_RSCP']
+        lte_rsrq = device_parameter['LTE_RSRQ']
+        lte_rsrp = device_parameter['LTE_RSRP']
+        cpu_usage_level = device_parameter['CPU_Usage_Level']
+        ram_usage_level = device_parameter['RAM_Usage_Level']
+        snr_per_satellite = device_parameter['SNR_per_Satellite']
+        write_health_parameter_to_kinesis(message_id, cpu_temperature, pmic_temperature, latitude,
                                           longitude, altitude, pdop,
-                                          satellitesUsed, lteRSSI, lteRSCP, lteRSRQ, lteRSRP,
-                                          cpuUsageLevel, ramUsageLevel,
-                                          snrPerSatellite)
+                                          satellites_used, lte_rssi, lte_rscp, lte_rsrq, lte_rsrp,
+                                          cpu_usage_level, ram_usage_level,
+                                          snr_per_satellite)
 
 
 '''
