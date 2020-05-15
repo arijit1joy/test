@@ -627,7 +627,7 @@ Resources:
       Layers:
         - !Ref PandasPythonLayer
         - !Ref RequestsPythonLayer
-        # - Fn::ImportValue: 'KinesisUtilityLayer'
+        - Fn::ImportValue: 'KinesisUtilityLayer'
       Tags:
           Name: Edge
           
