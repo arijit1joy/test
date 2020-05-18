@@ -487,7 +487,7 @@ def send_sample(sample, metadata, fc_or_hb):
     print("New converted_equip_fc:", converted_equip_fc)
 
     if fc_or_hb.lower() == "hb":
-        store_health_parameters_into_redshift(converted_device_params, time_stamp)
+        store_health_parameters_into_redshift(converted_device_params, time_stamp, metadata)
         print("Handling HB...")
         handle_hb(converted_device_params, converted_equip_params, converted_equip_fc, metadata, time_stamp)
 
@@ -608,28 +608,34 @@ def lambda_handler(event, context):
 Function to get Health Parameter and store into Redshift Table
 '''
 
-def store_health_parameters_into_redshift(converted_device_params, time_stamp):
-    for device_parameter in converted_device_params
-        message_id = device_parameter['messageID'] if 'messageID' in device_parameter else None
-        cpu_temperature = device_parameter['CPU_temperature'] if 'CPU_temperature' in device_parameter else None
-        pmic_temperature = device_parameter['PMIC_temperature'] if 'PMIC_temperature' in device_parameter else None
-        latitude = device_parameter['Latitude'] if 'Latitude' in device_parameter else None
-        longitude = device_parameter['Longitude'] if 'Longitude' in device_parameter else None
-        altitude = device_parameter['Altitude'] if 'Altitude' in device_parameter else None
-        pdop = device_parameter['PDOP'] if 'PDOP' in device_parameter else None
-        satellites_used = device_parameter['Satellites_Used'] if 'Satellites_Used' in device_parameter else None
-        lte_rssi = device_parameter['LTE_RSSI'] if 'LTE_RSSI' in device_parameter else None
-        lte_rscp = device_parameter['LTE_RSCP'] if 'LTE_RSCP' in device_parameter else None
-        lte_rsrq = device_parameter['LTE_RSRQ'] if 'LTE_RSRQ' in device_parameter else None
-        lte_rsrp = device_parameter['LTE_RSRP'] if 'LTE_RSRP' in device_parameter else None
-        cpu_usage_level = device_parameter['CPU_Usage_Level'] if 'CPU_Usage_Level' in device_parameter else None
-        ram_usage_level = device_parameter['RAM_Usage_Level'] if 'RAM_Usage_Level' in device_parameter else None
-        snr_per_satellite = device_parameter['SNR_per_Satellite'] if 'SNR_per_Satellite' in device_parameter else None
-        write_health_parameter_to_kinesis(message_id, cpu_temperature, pmic_temperature, latitude,
+def store_health_parameters_into_redshift(converted_device_params, time_stamp, j1939_file_val):
+    # converted_device_health_parameter = json.loads(converted_device_params)
+    print("Starting Kinesis Process... ")
+    if 'messageID' in converted_device_params:
+        message_id = converted_device_params['messageID']
+        cpu_temperature = converted_device_params['CPU_temperature'] if 'CPU_temperature' in converted_device_params else None
+        pmic_temperature = converted_device_params['PMIC_temperature'] if 'PMIC_temperature' in converted_device_params else None
+        latitude = converted_device_params['Latitude'] if 'Latitude' in converted_device_params else None
+        longitude = converted_device_params['Longitude'] if 'Longitude' in converted_device_params else None
+        altitude = converted_device_params['Altitude'] if 'Altitude' in converted_device_params else None
+        pdop = converted_device_params['PDOP'] if 'PDOP' in converted_device_params else None
+        satellites_used = converted_device_params['Satellites_Used'] if 'Satellites_Used' in converted_device_params else None
+        lte_rssi = converted_device_params['LTE_RSSI'] if 'LTE_RSSI' in converted_device_params else None
+        lte_rscp = converted_device_params['LTE_RSCP'] if 'LTE_RSCP' in converted_device_params else None
+        lte_rsrq = converted_device_params['LTE_RSRQ'] if 'LTE_RSRQ' in converted_device_params else None
+        lte_rsrp = converted_device_params['LTE_RSRP'] if 'LTE_RSRP' in converted_device_params else None
+        cpu_usage_level = converted_device_params['CPU_Usage_Level'] if 'CPU_Usage_Level' in converted_device_params else None
+        ram_usage_level = converted_device_params['RAM_Usage_Level'] if 'RAM_Usage_Level' in converted_device_params else None
+        snr_per_satellite = converted_device_params['SNR_per_Satellite'] if 'SNR_per_Satellite' in converted_device_params else None
+        device_id = j1939_file_val['telematicsDeviceId']
+        esn = j1939_file_val['componentSerialNumber']
+        return write_health_parameter_to_kinesis(message_id, cpu_temperature, pmic_temperature, latitude,
                                           longitude, altitude, pdop,
                                           satellites_used, lte_rssi, lte_rscp, lte_rsrq, lte_rsrp,
                                           cpu_usage_level, ram_usage_level,
-                                          snr_per_satellite, time_stamp)
+                                          snr_per_satellite, time_stamp, device_id, esn)
+    else:
+        print("There is no Converted Device Parameter")
 
 
 '''
