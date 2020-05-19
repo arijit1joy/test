@@ -609,7 +609,6 @@ Function to get Health Parameter and store into Redshift Table
 '''
 
 def store_health_parameters_into_redshift(converted_device_params, time_stamp, j1939_file_val):
-    # converted_device_health_parameter = json.loads(converted_device_params)
     print("Starting Kinesis Process... ")
     if 'messageID' in converted_device_params:
         message_id = converted_device_params['messageID']
@@ -629,11 +628,13 @@ def store_health_parameters_into_redshift(converted_device_params, time_stamp, j
         snr_per_satellite = converted_device_params['SNR_per_Satellite'] if 'SNR_per_Satellite' in converted_device_params else None
         device_id = j1939_file_val['telematicsDeviceId']
         esn = j1939_file_val['componentSerialNumber']
+        convert_timestamp = datetime.datetime.strptime(time_stamp, '%Y-%m-%dT%H:%M:%S.%fZ')
+        new_timestamp = datetime.datetime.strftime(convert_timestamp, '%Y-%m-%d %H:%M:%S')
         return write_health_parameter_to_kinesis(message_id, cpu_temperature, pmic_temperature, latitude,
                                           longitude, altitude, pdop,
                                           satellites_used, lte_rssi, lte_rscp, lte_rsrq, lte_rsrp,
                                           cpu_usage_level, ram_usage_level,
-                                          snr_per_satellite, time_stamp, device_id, esn)
+                                          snr_per_satellite, new_timestamp, device_id, esn)
     else:
         print("There is no Converted Device Parameter")
 
