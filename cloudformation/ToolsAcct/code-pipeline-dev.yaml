@@ -23,7 +23,11 @@ Parameters:
     Default: false
   Region:
     Type: String
-    Default: us-east-1    
+    Default: us-east-1
+  BranchName:
+    Description: Branch to build
+    Type: String
+    Default: dev  
 
 Conditions:
   AddCodeBuildResource: !Equals [ !Ref CrossAccountCondition, true ]
@@ -214,7 +218,7 @@ Resources:
                 Provider: CodeCommit
               Configuration:
                 RepositoryName: !Ref RepositoryName
-                BranchName: dev
+                BranchName: !Ref BranchName
               OutputArtifacts:
                 - Name: SCCheckoutArtifact
               RunOrder: 1
