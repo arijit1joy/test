@@ -12,10 +12,10 @@
         "PTJ1939Header": "{\"Content-Type\":\"application/json\"}",
         "CDPTJ1939PostURL": "https://mt5afmpt32.execute-api.us-east-1.amazonaws.com/Test/ngdi",
         "CDPTJ1939Header": "{\"Content-Type\":\"application/json\"}",
-        "DeliveryStreamName": "kinesis-cross-account-testing",
-        "CrossAccountKinesisRoleArn": "None",
-        "KinesisLayerVersion": "4",
+        "DeliveryStreamName": "da-edge-aai-service-metadata-stream",
+        "KinesisLayerVersion": "9",
         "CDDataEndpoint": "https://telematics-stg.cummins.com:8443/DataService/postData?AuthToken=",
-        "DeviceHealthDeliveryStream": "da-edge-aai-service-heartbeat-data-stream"
+        "DeviceHealthDeliveryStream": "da-edge-aai-service-heartbeat-data-stream",
+        "EdgeCoreLayerVersion": "2"
     }
 }

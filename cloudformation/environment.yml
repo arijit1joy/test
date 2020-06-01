@@ -43,13 +43,13 @@ Parameters:
     Type: String
   DeviceHealthDeliveryStream:
     Type: String
-  CrossAccountKinesisRoleArn:
-    Type: String
   CDPTJ1939Header:
     Type: String
   KinesisLayerVersion:
     Type: String
   CDDataEndpoint:
+    Type: String
+  EdgeCoreLayerVersion:
     Type: String
 
 Globals:
@@ -633,7 +633,8 @@ Resources:
       Layers:
         - !Ref PandasPythonLayer
         - !Ref RequestsPythonLayer
-        - Fn::ImportValue: 'KinesisUtilityLayer'
+        - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:kinesis_utility:${KinesisLayerVersion}
+        - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:Edge-Core:${EdgeCoreLayerVersion}
       Tags:
           Name: Edge
           
