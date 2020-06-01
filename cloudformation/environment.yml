@@ -123,6 +123,12 @@ Resources:
             Action:
             - firehose:*
             Resource: arn:aws:firehose:*:*:*
+          - Effect: Allow
+            Action:
+              - 'ssm:Describe*'
+              - 'ssm:Get*'
+              - 'ssm:List*'
+            Resource: "*"
           Version:                 '2012-10-17'
         PolicyName:                !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeNGDI2CDSDKConversionLambdaWorkerPolicy"
       RoleName:                    !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeNGDI2CDSDKConversionLambdaRole"
@@ -708,16 +714,16 @@ Resources:
       TopicRulePayload:
         RuleDisabled: "false"
         AwsIotSqlVersion: "2016-03-23"
-        Sql: "SELECT componentSerialNumber, * from '$aws/things/+/public'"
+        Sql: "SELECT componentSerialNumber,telematicsPartnerName,dataSamplingConfigId, * from '$aws/things/+/public'"
         Actions:
           -
             S3:
               BucketName: !Ref EdgeJ1939ProcessingBucket
               RoleArn: !Sub "arn:aws:iam::${AWS::AccountId}:role/${ApplicationName}-${ApplicationEnvironmentTag}-J1939StreamBucket"
-              Key: 'ConvertedFiles/$componentSerialNumber/${topic(3)}/${parse_time("yyyy", timestamp(), "UTC")}/${parse_time("MM", timestamp(), "UTC")}/${parse_time("dd", timestamp(), "UTC")}/${topic(3)}_${timestamp()}.json'
+              Key: 'ConvertedFiles/$componentSerialNumber/${topic(3)}/${parse_time("yyyy", timestamp(), "UTC")}/${parse_time("MM", timestamp(), "UTC")}/${parse_time("dd", timestamp(), "UTC")}/$telematicsPartnerName_${topic(3)}_$componentSerialNumber_$dataSamplingConfigId_${timestamp()}.json'
           -
             Lambda:
-              FunctionArn: "arn:aws:lambda:us-east-1:732927748536:function:EdgePostHBToTATA-dev"
+              FunctionArn: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:EdgePostHBToTATA-${ApplicationEnvironmentTag}"
   
   EdgeJ1939Bucket: 
     Type: "AWS::SSM::Parameter"
