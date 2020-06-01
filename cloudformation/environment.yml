@@ -619,7 +619,6 @@ Resources:
           param_indicator: "parameters"
           delivery_stream_name: !Ref 'DeliveryStreamName'
           environment: !Ref 'ApplicationEnvironmentTag'
-          cross_account_kinesis_role_arn: !Ref 'CrossAccountKinesisRoleArn'
           message_format_version_indicator: "messageFormatVersion"
           notification_version: "2.5.2"
           spn_indicator: "SPN"
