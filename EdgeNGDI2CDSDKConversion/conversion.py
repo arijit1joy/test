@@ -373,7 +373,7 @@ def process(bucket, key, file_size):
         esn = key.split('_')[2]
         config_spec_name = key.split('_')[3]
         data_protocol = 'J1939_FC'
-    updated_file_name = "%_" + device_id + "_" + esn + "_" + config_spec_name + "%"
+    updated_file_name = "%_" + device_id + "_" + esn + "_%"
     edge_data_consumption_vw = Table('da_edge_olympus.edge_data_consumption_vw')
     query = Query.from_(edge_data_consumption_vw).select(edge_data_consumption_vw.request_id,
                                                          edge_data_consumption_vw.consumption_per_request).where(

@@ -131,9 +131,7 @@ phases:
                   echo "Build Failed for $mydir"; 
                 fi;   
               elif [ -f requirements.txt ]; then
-                if [ $mydir = "Features" ]; then
-                  pip install behave -t .;
-                fi;
+                pip install -r requirements.txt -t ./lib ;
                 zip -r "$mydir.zip" .;
                 pytest --cov-report xml:coverage.xml --cov=tests/ ;
                 sonar-scanner -X -Dsonar.login=$SONAR_LOGIN -Dsonar.host.url=$SONAR_HOST -Dsonar.python.coverage.reportPath="/coverage.xml";                                     
