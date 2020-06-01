@@ -721,7 +721,7 @@ Resources:
               Key: 'ConvertedFiles/$componentSerialNumber/${topic(3)}/${parse_time("yyyy", timestamp(), "UTC")}/${parse_time("MM", timestamp(), "UTC")}/${parse_time("dd", timestamp(), "UTC")}/$telematicsPartnerName_${topic(3)}_$componentSerialNumber_$dataSamplingConfigId_${timestamp()}.json'
           -
             Lambda:
-              FunctionArn: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:EdgePostHBToTATA-${ApplicationEnvironmentTag}"
+              FunctionArn: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-edge-oem-HBMessage-${ApplicationEnvironmentTag}"
   
   EdgeJ1939Bucket: 
     Type: "AWS::SSM::Parameter"
