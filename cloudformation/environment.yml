@@ -656,7 +656,6 @@ Resources:
           CPPostBucket: !Sub 'edge-j1939-${ApplicationEnvironmentTag}'
           delivery_stream_name: !Ref 'DeliveryStreamName'
           environment: !Ref 'ApplicationEnvironmentTag'
-          cross_account_kinesis_role_arn: !Ref 'CrossAccountKinesisRoleArn'
           edgeCommonAPIURL: !Ref EdgeCommonDBAPI
           Region: !Sub ${AWS::Region}
       Layers:
@@ -691,7 +690,6 @@ Resources:
           edgeCommonAPIURL: !Ref EdgeCommonDBAPI
           delivery_stream_name: !Ref 'DeliveryStreamName'
           environment: !Ref 'ApplicationEnvironmentTag'
-          cross_account_kinesis_role_arn: !Ref 'CrossAccountKinesisRoleArn'
           PSBUSpecifier: "psbu"
           EBUSpecifier: "onhighway"
           PTJ1939PostURL: !Ref PTJ1939PostURL
