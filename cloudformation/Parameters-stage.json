@@ -13,9 +13,9 @@
         "CDPTJ1939PostURL": "https://mt5afmpt32.execute-api.us-east-1.amazonaws.com/Test/ngdi",
         "CDPTJ1939Header": "{\"Content-Type\":\"application/json\"}",
         "DeliveryStreamName": "da-edge-aai-service-metadata-stream",
-        "KinesisLayerVersion": "9",
+        "KinesisLayerVersion": "5",
         "CDDataEndpoint": "https://telematics-stg.cummins.com:8443/DataService/postData?AuthToken=",
         "DeviceHealthDeliveryStream": "da-edge-aai-service-heartbeat-data-stream",
-        "EdgeCoreLayerVersion": "2"
+        "EdgeCoreLayerVersion": "3"
     }
 }
