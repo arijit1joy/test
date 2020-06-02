@@ -15,7 +15,8 @@
         "DeliveryStreamName": "da-edge-stage-metadata-stream",
         "KinesisLayerVersion": "4",
         "CDDataEndpoint": "https://telematics-stg.cummins.com:8443/DataService/postData?AuthToken=",
-        "DeviceHealthDeliveryStream": "da-edge-aai-service-heartbeat-data-stream",
-        "EdgeCoreLayerVersion": "1"
+        "EdgeCoreLayerVersion": "1",
+        "DeviceHealthDeliveryStream": "da-edge-aai-service-heartbeat-data-stream"
+        
     }
 }
