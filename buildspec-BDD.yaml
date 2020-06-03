@@ -1,0 +1,26 @@
+version: 0.2
+
+
+phases:
+  install:
+    commands:
+      - echo $path
+      - pip install --upgrade pip
+      - pip install behave    
+      - curr_dir=$(pwd)
+      - echo 'current directory - $curr_dir'
+
+  build:
+    commands:
+        - cd EDGE-J1939-BDD
+        - new_curr_dir=$(pwd)
+        - echo 'BDD directory - $new_curr_dir'
+        - pip install -r requirements.txt;
+        - python -m behave
+
+
+reports: 
+  SurefireReports: 
+    files:
+      - '**/*'
+    base-directory: 'EDGE-J1939-BDD/reports'
