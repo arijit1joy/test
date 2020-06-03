@@ -129,6 +129,18 @@ Resources:
           -
             Effect: Allow
             Action:
+              - "s3:*"
+            Resource:
+             - !Join ['',['arn:aws:s3:::',!Ref S3Bucket, '/*']]
+             - !Join ['',['arn:aws:s3:::',!Ref S3Bucket]]
+          -
+            Effect: Allow
+            Action:
+              - kms:*
+            Resource: !Ref CMKARN
+          -
+            Effect: Allow
+            Action:
               - s3:*
             Resource:
               - !Join ['',['arn:aws:s3:::',!Ref DeviceUploadBucket, '/*']]
