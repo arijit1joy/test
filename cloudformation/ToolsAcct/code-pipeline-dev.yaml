@@ -138,6 +138,11 @@ Resources:
             Action:
               - kms:*
             Resource: !Ref CMKARN
+          - 
+            Effect: Allow
+            Action:
+              - 'ssm:*'
+            Resource: 'arn:aws:ssm:${Region}:${DevAccount}:parameter/*'
           -
             Effect: Allow
             Action:

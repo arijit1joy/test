@@ -125,6 +125,10 @@ Resources:
             Resource: arn:aws:firehose:*:*:*
           - Effect: Allow
             Action:
+              - 'ssm:*'
+            Resource: 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
+          - Effect: Allow
+            Action:
               - 'ssm:Describe*'
               - 'ssm:Get*'
               - 'ssm:List*'
@@ -177,6 +181,10 @@ Resources:
             Action:
               - 'logs:*'
             Resource: 'arn:aws:logs:*:*:*'
+          - Effect: Allow
+            Action:
+              - 'ssm:*'
+            Resource: 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
           - Effect: Allow
             Action:
             - firehose:*

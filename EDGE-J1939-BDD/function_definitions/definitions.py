@@ -4,17 +4,6 @@ import traceback
 import file_handler.handler as handler
 
 
-# def get_json_file(file_name):
-#
-#     print("X-----We are in the 'definitions' class "
-#           "and we are in a function retrieving a JSON file named 'test_steps_tester_file.json'-----X")
-#
-#     test_json_file = handler.get_json_file("test_steps_tester_file.json")
-#
-#     print("X-----We have retrieved the file. Printing it . . .")
-#     print(test_json_file)
-#
-#     return test_json_file
 from function_definitions import components
 
 
