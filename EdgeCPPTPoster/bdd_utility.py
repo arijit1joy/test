@@ -8,7 +8,9 @@ def update_bdd_parameter(value):
     try:
         ssm_client.put_parameter(
             Name="da-edge-j1939-services-bdd-parameter",
-            Value=value
+            Value=value,
+            Type="String",
+            Overwrite=True
         )
     except Exception as e:
         print("An Exception occurred! Error:", e)
