@@ -7,7 +7,8 @@ import post
 import pt_poster
 import uuid
 from kinesis_utility import build_metadata_and_write
-
+import bdd_utility
+from system_variables import InternalResponse
 
 # Retrieve the environment variables
 
@@ -71,7 +72,6 @@ def get_device_info(device_id):
 
 
 def get_business_partner(device_type):
-
     if device_type.lower() == EBUSpecifier:
 
         return "EBU"
@@ -133,7 +133,7 @@ def lambda_handler(event, context):
         config_spec_name, req_id = post.get_cspec_req_id(json_body['dataSamplingConfigId'])
 
         build_metadata_and_write(hb_uuid, device_id, file_key, file_size, file_date_time, 'J1939-HB',
-                                     'FILE_RECEIVED', esn, config_spec_name, req_id, None)
+                                 'FILE_RECEIVED', esn, config_spec_name, req_id, None)
 
     print("Device ID sending the file:", device_id)
 
@@ -176,31 +176,31 @@ def lambda_handler(event, context):
                         else:
 
                             print("This is a PSBU device, but it is PCC, cannot send to PT")
-
+                            bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDFormatError)
                             return
 
                     else:
 
                         print("Error! The boxApplication value is not recorded in the EDGE DB!")
-
+                        bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDPSBUDeviceInfoError)
                         return
 
             else:
 
                 print("Error! This is not an EBU or PSBU device")
-
+                bdd_utility.update_bdd_parameter(InternalResponse.J1939BUDeviceInfoError)
                 return
 
         else:
 
             print("ERROR! The device_type value is missing for the device:", device_id)
-
+            bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDDeviceTypeError)
             return
 
     else:
 
         print("ERROR! The device_info value is missing for the device:", device_info)
-
+        bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDDeviceInfoError)
         return
 
 

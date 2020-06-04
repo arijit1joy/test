@@ -27,7 +27,22 @@ Parameters:
   BranchName:
     Description: Branch to build
     Type: String
-    Default: dev  
+    Default: dev    
+  ApplicationEnvironment:
+    Type: String
+    Default: dev
+  DeviceUploadBucket:
+    Type: String
+    Default: device-data-log-dev
+  UncompressBucket:
+    Type: String
+    Default: device-data-log-uncompressed-files-dev
+  DatalogBucket:
+    Type: String
+    Default: da-edge-j1939-datalog-files-dev
+  J1939EndBucket:
+    Type: String
+    Default: edge-j1939-dev
 
 Conditions:
   AddCodeBuildResource: !Equals [ !Ref CrossAccountCondition, true ]
@@ -49,6 +64,23 @@ Resources:
             Action:
               - sts:AssumeRole
       Path: /
+
+  BDDBuildProjectRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${ProjectName}-BDD-CodeBuildRole
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          -
+            Effect: Allow
+            Principal:
+              Service:
+                - codebuild.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+
   BuildProjectPolicy:
     Type: AWS::IAM::Policy
     DependsOn: S3BucketPolicy
@@ -86,6 +118,59 @@ Resources:
         -
           !Ref BuildProjectRole
 
+  BDDBuildProjectPolicy:
+    Type: AWS::IAM::Policy
+    DependsOn: S3BucketPolicy
+    Properties:
+      PolicyName: !Sub ${ProjectName}-BDD-CodeBuildPolicy
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          -
+            Effect: Allow
+            Action:
+              - "s3:*"
+            Resource:
+             - !Join ['',['arn:aws:s3:::',!Ref S3Bucket, '/*']]
+             - !Join ['',['arn:aws:s3:::',!Ref S3Bucket]]
+          -
+            Effect: Allow
+            Action:
+              - kms:*
+            Resource: !Ref CMKARN
+          -
+            Effect: Allow
+            Action:
+              - s3:*
+            Resource:
+              - !Join ['',['arn:aws:s3:::',!Ref DeviceUploadBucket, '/*']]
+              - !Join ['',['arn:aws:s3:::',!Ref DeviceUploadBucket]]
+              - !Join ['',['arn:aws:s3:::',!Ref UncompressBucket, '/*']]
+              - !Join ['',['arn:aws:s3:::',!Ref UncompressBucket]]
+              - !Join ['',['arn:aws:s3:::',!Ref DatalogBucket, '/*']]
+              - !Join ['',['arn:aws:s3:::',!Ref DatalogBucket]]
+              - !Join ['',['arn:aws:s3:::',!Ref J1939EndBucket, '/*']]
+              - !Join ['',['arn:aws:s3:::',!Ref J1939EndBucket]]
+          -
+            Effect: Allow
+            Action:
+              - logs:*
+            Resource: arn:aws:logs:*:*:*
+          -
+            Effect: Allow
+            Action:
+              - iot:*
+            Resource: !Sub arn:aws:iot:${Region}:${DevAccount}:topic/$aws/things/*/public
+          -
+            Effect: Allow
+            Action:
+              - codebuild:*
+            Resource: arn:aws:codebuild:*:*:*
+      Roles:
+        -
+          !Ref BDDBuildProjectRole
+
+
   BuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
@@ -110,6 +195,34 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub ${ProjectName}-BuildProject
+
+  BDDBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub ${ProjectName}-BDD-BuildProject
+      Description: !Sub ${ProjectName}-BDD-BuildProject
+      EncryptionKey: !Ref CMKARN
+      ServiceRole: !GetAtt BDDBuildProjectRole.Arn
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        Type: linuxContainer
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/standard:1.0-1.8.0
+        EnvironmentVariables:
+          - Name: S3Bucket
+            Value: !Ref S3Bucket
+          - Name: KMSKey
+            Value: !Ref CMKARN
+          - Name: Application_Environment
+            Value: !Ref ApplicationEnvironment  
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: buildspec-BDD.yaml
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName}-BDD-BuildProject     
+
 
   PipeLineRole:
     Type: AWS::IAM::Role
@@ -293,26 +406,22 @@ Resources:
                   - AddCodeBuildResource
                   - !Sub arn:aws:iam::${DevAccount}:role/${ProjectName}-CodePipelineCloudFormationRole-dev
                   - !Ref AWS::NoValue
-        # - 
-        #   Name: BDDTestExecution
-        #   Actions:
-        #   - 
-        #     Name: ExecuteBDDScripts
-        #     ActionTypeId:
-        #       Category: Invoke
-        #       Owner: AWS
-        #       Provider: Lambda
-        #       Version: '1'
-        #     InputArtifacts:
-        #       - Name: BuildOutput
-        #     Configuration:
-        #       FunctionName: EDGE_732927748536_DEV_COMMON_BDD-EXECUTION-PYTHON
-        #       UserParameters: !Sub |
-        #       {
-        #         "Parameter":"Is a parameter"
-        #       } 
-        #     RunOrder: '1'
-        #     Region: us-east-1
+        -
+          Name: BDD_Test
+          Actions:
+          -
+            Name: BDD_Test
+            ActionTypeId:
+              Category: Build
+              Owner: AWS
+              Version: 1
+              Provider: CodeBuild
+            Configuration:
+              ProjectName: !Ref BDDBuildProject
+            RunOrder: 1
+            InputArtifacts:
+              - Name: SCCheckoutArtifact      
+
       ArtifactStores:
         -
           Region: us-east-1
