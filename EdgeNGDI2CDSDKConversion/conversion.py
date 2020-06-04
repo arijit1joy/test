@@ -139,8 +139,14 @@ def post_cd_message(data):
     cp_response = r.text
     print('response ------------> ', cp_response)
 
+    '''
+        ***************** The below is important for J1939 BDD functionality. Please do not modify! *********************
+    '''
     if is_bdd and cp_response == InternalResponse.J1939CPPostSuccess.value:
         bdd_utility.update_bdd_parameter(InternalResponse.J1939CPPostSuccess.value)
+    '''
+        ***************** The above is important for J1939 BDD functionality. Please do not modify! *********************
+    '''
 
 
 def get_active_faults(fault_list, address):
