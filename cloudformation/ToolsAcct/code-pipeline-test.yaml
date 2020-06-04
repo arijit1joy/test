@@ -227,7 +227,7 @@ Resources:
                 Provider: CodeCommit
               Configuration:
                 RepositoryName: !Ref RepositoryName
-                BranchName: test
+                BranchName: master
               OutputArtifacts:
                 - Name: SCCheckoutArtifact
               RunOrder: 1
@@ -248,6 +248,16 @@ Resources:
               - Name: SCCheckoutArtifact
             OutputArtifacts:
               - Name: BuildOutput
+        - 
+          Name: ApprovetoStage
+          Actions:
+            - Name: DeploymentApproval
+              ActionTypeId:
+                Category: Approval
+                Owner: AWS
+                Provider: Manual
+                Version: 1
+              RunOrder: 1
         - 
           Name: DeployToTest
           Actions:
