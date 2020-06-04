@@ -8,33 +8,35 @@ import datetime
 from kinesis_utility import build_metadata_and_write
 from kinesis_utility import write_health_parameter_to_kinesis
 import edge_core as edge
+from system_variables import InternalResponse
+import bdd_utility
 
 import sys
 
 sys.path.insert(1, './lib')
 from pypika import Query, Table
 
-'''
-Getting the Values from SSM Parameter Store
+'''Getting the Values from SSM Parameter Store
 '''
 
 ssm = boto3.client('ssm')
 
 
-def setParameters():
-    params = {
+def set_parameters():
+    ssm_params = {
         "Names": ["EDGECommonAPI"],
         "WithDecryption": False
     }
-    return params
+    return ssm_params
 
 
-params = setParameters()
+params = set_parameters()
 name = params['Names']
 response = ssm.get_parameters(Names=name, WithDecryption=False)
 api_url = response['Parameters'][0]['Value']
 
 # metadata = {}
+
 spn_bucket = os.getenv('spn_parameter_json_object')
 spn_bucket_key = os.getenv('spn_parameter_json_object_key')
 auth_token_url = os.getenv('auth_token_url')
@@ -124,13 +126,21 @@ def post_cd_message(data):
         data["Equipment_ID"] = "EDGE_" + data["Engine_Serial_Number"]  # Setting the Equipment ID to EDGE_<ESN>
         print("New Equipment ID:", data["Equipment_ID"])
 
+    is_bdd = False
+    if data["Telematics_Box_ID"] in InternalResponse.J1939BDDValidDevices.value.split(","):
+        print("This is a BDD execution!")
+        is_bdd = True
+
     print('File to send to CD   ------------------> ', data)
     print('cd_url   ------------------> ', url)
     print('Type of message:', type(data))
 
     r = requests.post(url=url, json=data)
-    response = r.text
-    print('response ------------> ', response)
+    cp_response = r.text
+    print('response ------------> ', cp_response)
+
+    if is_bdd and cp_response == InternalResponse.J1939CPPostSuccess.value:
+        bdd_utility.update_bdd_parameter(InternalResponse.J1939CPPostSuccess.value)
 
 
 def get_active_faults(fault_list, address):
