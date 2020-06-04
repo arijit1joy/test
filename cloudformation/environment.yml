@@ -126,7 +126,7 @@ Resources:
           - Effect: Allow
             Action:
               - 'ssm:*'
-            Resource: 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
+            Resource: !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
           - Effect: Allow
             Action:
               - 'ssm:Describe*'
@@ -184,7 +184,7 @@ Resources:
           - Effect: Allow
             Action:
               - 'ssm:*'
-            Resource: 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
+            Resource: !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
           - Effect: Allow
             Action:
             - firehose:*
