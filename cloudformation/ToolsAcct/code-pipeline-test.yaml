@@ -227,7 +227,7 @@ Resources:
                 Provider: CodeCommit
               Configuration:
                 RepositoryName: !Ref RepositoryName
-                BranchName: test
+                BranchName: master
               OutputArtifacts:
                 - Name: SCCheckoutArtifact
               RunOrder: 1

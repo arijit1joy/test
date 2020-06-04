@@ -27,7 +27,7 @@ Parameters:
   BranchName:
     Description: Branch to build
     Type: String
-    Default: dev    
+    Default: dev_stg    
   ApplicationEnvironment:
     Type: String
     Default: dev

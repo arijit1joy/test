@@ -227,9 +227,19 @@ Resources:
                 Provider: CodeCommit
               Configuration:
                 RepositoryName: !Ref RepositoryName
-                BranchName: stage
+                BranchName: dev_stg
               OutputArtifacts:
                 - Name: SCCheckoutArtifact
+              RunOrder: 1
+        - 
+          Name: ApprovetoStage
+          Actions:
+            - Name: DeploymentApproval
+              ActionTypeId:
+                Category: Approval
+                Owner: AWS
+                Provider: Manual
+                Version: 1
               RunOrder: 1
         -
           Name: Build
