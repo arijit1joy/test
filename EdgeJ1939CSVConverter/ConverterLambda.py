@@ -631,7 +631,6 @@ def lambda_handler(lambda_event, context):
 
         if not device_id:
             print("Error! Device ID is not in the file! Aborting!")
-            bdd_utility.update_bdd_parameter()
             return
 
         print("Retrieving TSP and Customer Reference from EDGE DB . . .")
@@ -718,6 +717,9 @@ def lambda_handler(lambda_event, context):
                                                Metadata={'j1939type': 'FC', 'uuid': fc_uuid})
 
     print("Store File Response:", store_file_response)
+
+    if store_file_response["ResponseMetadata"]["HTTPStatusCode"] == 200:
+        bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDCSVConvertSuccess.value)
 
 
 '''

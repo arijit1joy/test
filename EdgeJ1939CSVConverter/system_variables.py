@@ -9,3 +9,4 @@ class InternalResponse(Enum):
     J1939BDDDeviceTypeError = "DeviceType Error"
     J1939BDDValidDevices = "152400000000000,152400000000001,InvalidDeviceID"
     J1939CPPostSuccess = '"Successfully Received The Message"'
+    J1939BDDCSVConvertSuccess = "Successfully Converted NGDI CSV to NGDI JSON"
