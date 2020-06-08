@@ -1,0 +1,11 @@
+messageFormatVersion,1.1.1,,,,,,,,
+dataEncryptionSchemeId,ES1,,,,,,,,
+telematicsBoxId,152400000000000,,,,,,,,
+componentSerialNumber,15240000,,,,,,,,
+dataSamplingConfigId,BDD0000,,,,,,,,
+startingEventDateTimestamps,2020-06-05T18:14:28.718812,2020-06-05T18:14:28.718812,,,,,,,
+endingEventDateTimestamps,2020-06-05T18:15:28.718812,2020-06-05T18:15:28.718812,,,,,,,
+This data file is the property of Cummins Inc.  Any use or sale of the data by non-Cummins employees constitutes theft which is prosecutable as a crime.  If this data has inadvertently come into your possession please destroy it and notify Cummins at 812-377-xxxx.,,,,,,,,,
+,,,,,,,,,
+ssDateTimestamp,converted~device~~~,telematicsPartnerName,customerReference,equipmentId,vin,messageID,converted~J1939~CAN1~0~,3242,4765
+2020-06-05T18:14:28.718812,,Cummins,Cummins,EDGE_15240000,BDDTEST00000000,7dc53df5-703e-49b3-8670-b1c468f47f1f,,1766.96875,1766.96875
