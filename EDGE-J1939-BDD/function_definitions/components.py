@@ -3,8 +3,6 @@ import traceback
 import requests
 import json
 import boto3
-import uuid
-from function_definitions import definitions
 
 '''
 
@@ -105,9 +103,10 @@ def iot_publish_topic(topic, payload):
 
 def s3_put_json_object(bucket_name, key, body, metadata=None):
     try:
-        print("Key tto put (json):", key, " <----> Bucket:", bucket_name)
-        s3_put_response = s3_client.put_object(Bucket=bucket_name, Key=key, Body=json.dumps(body).encode()) if metadata \
-            else s3_client.put_object(Bucket=bucket_name, Key=key, Body=json.dumps(body).encode())
+        print("Key to put (json):", key, " <----> Bucket:", bucket_name)
+        s3_put_response = s3_client.put_object(Bucket=bucket_name, Key=key, Body=json.dumps(body).encode(),
+                                               Metadata=metadata) if metadata else \
+            s3_client.put_object(Bucket=bucket_name, Key=key, Body=json.dumps(body).encode())
         print('S3 Put object Response:', s3_put_response)
         if s3_put_response["ResponseMetadata"]["HTTPStatusCode"] == 200:
             response = get_response_json('Successfully put the object into the bucket: ' + bucket_name, 200, 'Success')
@@ -130,7 +129,7 @@ def s3_put_csv_object(bucket_name, key, body, metadata=None):
     try:
         print("Key to put (csv):", key, " <----> Bucket:", bucket_name)
         s3_put_response = s3_client.put_object(Bucket=bucket_name, Key=key, Body=body,
-                                               ExtraArgs={"Metadata": metadata}) if metadata else \
+                                               Metadata=metadata) if metadata else \
             s3_client.put_object(Bucket=bucket_name, Key=key, Body=body)
         print('S3 Put object Response:', s3_put_response)
         if s3_put_response["ResponseMetadata"]["HTTPStatusCode"] == 200:
@@ -209,8 +208,10 @@ def s3_check_if_key_exists(bucket_name, key, required_metadata=None, matches_jso
                 if matches_json:
                     s3_object_info = s3_object_info if s3_object_info else \
                         s3_get_object(bucket_name, key_element['Key'])
-                    s3_object_body = s3_object_info['Body'].read()
+                    s3_object_body = s3_object_info['response_body']['object_string']
                     json_body = json.loads(s3_object_body)
+                    # Please Leave the below - even though commented - for future debugging
+                    # print("Comparing the JSON ---->", json_body, "to JSON ---->", matches_json, sep="\n")
                     if Counter(json_body) != Counter(matches_json):
                         response = get_response_json('Key exists, but the format is not as expected', 500, 'Error')
                         break

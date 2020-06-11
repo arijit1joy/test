@@ -9,3 +9,7 @@ class InternalResponse(Enum):
     J1939BDDDeviceTypeError = "DeviceType Error"
     J1939BDDValidDevices = "152400000000000,152400000000001,InvalidDeviceID,"
     J1939CPPostSuccess = '"Successfully Received The Message"'
+
+
+class CDSDK(Enum):
+    CDSDKBDDVariables = "da-edge-j1939-services-cd-sdk-bdd-parameter"

@@ -18,6 +18,7 @@ def before_all(context):
 
 def before_scenario(context, scenario):
     context.scenario = scenario
+    context.cd_sdk_file = None
 
 
 def after_scenario(context, scenario):
@@ -44,7 +45,7 @@ def after_scenario(context, scenario):
     except Exception as e:
         print("An Exception occurred while cleaning up NGDI folder:", e)
     try:
-        definitions.clean_up_bucket(context.j1939_csv_bucket, context.csv_file_name, recursive=True)
+        definitions.clean_up_bucket(context.j1939_csv_bucket, context.fc_csv_file_name, recursive=False)
     except Exception as e:
         print("An Exception occurred while cleaning up CSV bucket:", e)
     try:

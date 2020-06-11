@@ -8,7 +8,7 @@ import datetime
 from kinesis_utility import build_metadata_and_write
 from kinesis_utility import write_health_parameter_to_kinesis
 import edge_core as edge
-from system_variables import InternalResponse
+from system_variables import InternalResponse, CDSDK
 import bdd_utility
 
 import sys
@@ -108,7 +108,7 @@ def post_cd_message(data):
     auth_token_info = auth_token['authToken']
     url = cd_url + auth_token_info
     print('Auth Token ---------------->', auth_token_info)
-    sent_date_time = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+    sent_date_time = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ')[:-4]+"Z"
     print('Sent_Date_Time  ------------------> ', sent_date_time)
     data["Sent_Date_Time"] = sent_date_time if sent_date_time else data["Occurrence_Date_Time"] \
         if "Occurrence_Date_Time" in data else ''
@@ -132,6 +132,17 @@ def post_cd_message(data):
         is_bdd = True
 
     print('File to send to CD   ------------------> ', data)
+
+    '''
+        ***************** The below is important for J1939 BDD functionality. Please do not modify! ********************
+    '''
+    if is_bdd:
+        bdd_utility.update_bdd_parameter("<---**--->".join([json.dumps(data), data["Telematics_Partner_Message_ID"],
+                                                            sent_date_time]), param_name=CDSDK.CDSDKBDDVariables.value)
+    '''
+        ***************** The above is important for J1939 BDD functionality. Please do not modify! ********************
+    '''
+
     print('cd_url   ------------------> ', url)
     print('Type of message:', type(data))
 
@@ -140,12 +151,12 @@ def post_cd_message(data):
     print('response ------------> ', cp_response)
 
     '''
-        ***************** The below is important for J1939 BDD functionality. Please do not modify! *********************
+        ***************** The below is important for J1939 BDD functionality. Please do not modify! ********************
     '''
     if is_bdd and cp_response == InternalResponse.J1939CPPostSuccess.value:
         bdd_utility.update_bdd_parameter(InternalResponse.J1939CPPostSuccess.value)
     '''
-        ***************** The above is important for J1939 BDD functionality. Please do not modify! *********************
+        ***************** The above is important for J1939 BDD functionality. Please do not modify! ********************
     '''
 
 

@@ -19,3 +19,10 @@ class FCCSVCase(Enum):
     ValidFCCSVInvalidDeviceID = "j1939_fc_152400000000000_valid_fc_invalid_device_id"
     InvalidFCCSVNoDeviceID = "j1939_fc_152400000000000_invalid_fc_no_device_id"
     InvalidFCCSVNoAS = "j1939_fc_152400000000000_invalid_fc_no_as"
+
+
+class CDSDK(Enum):
+    ValidFCCSV = "j1939_fc_152400000000000_valid_fc_cd_sdk"
+    ValidFCCSVNoDeviceParams = "j1939_fc_152400000000000_valid_fc_no_device_params_cd_sdk"
+    ValidFCCSVNoSS = "j1939_fc_152400000000000_valid_fc_no_ss_cd_sdk"
+    CDSDKBDDVariables = "da-edge-j1939-services-cd-sdk-bdd-parameter"
