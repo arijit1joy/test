@@ -1,6 +1,7 @@
 import json
+import subprocess
 
-import function_definitions.definitions as definitions
+from function_definitions import components, definitions, bdd_utility
 
 
 def before_all(context):
@@ -15,6 +16,39 @@ def before_all(context):
     context.j1939_csv_bucket = context.config.userdata["csv_bucket"]
 
 
-def after_all(context):
+def before_scenario(context, scenario):
+    context.scenario = scenario
+    context.cd_sdk_file = None
 
-    print("X-------This is After All function. This happens after the BDD for every feature has been executed.-------X")
+
+def after_scenario(context, scenario):
+
+    print("X-------This is After the {} Scenario. "
+          "This happens after every scenario has been executed.-------X".format(scenario))
+    pt_device_info = context.device_info["pt"]
+    ebu_device_info = context.device_info["ebu"]
+    invalid_device_info = context.device_info["invalid"]
+    try:
+        definitions.clean_up_bucket(context.j1939_final_bucket,
+                                    "ConvertedFiles/{}/".format(pt_device_info["esn"]), recursive=True)
+        definitions.clean_up_bucket(context.j1939_final_bucket,
+                                    "ConvertedFiles/{}/".format(ebu_device_info["esn"]), recursive=True)
+        definitions.clean_up_bucket(context.j1939_final_bucket,
+                                    "ConvertedFiles/{}/".format(invalid_device_info["esn"]), recursive=True)
+    except Exception as e:
+        print("An Exception occurred while cleaning up ConvertedFiles folder:", e)
+    try:
+        definitions.clean_up_bucket(context.j1939_final_bucket,
+                                    "NGDI/{}/".format(pt_device_info["esn"]), recursive=True)
+        definitions.clean_up_bucket(context.j1939_final_bucket,
+                                    "NGDI/{}/".format(ebu_device_info["esn"]), recursive=True)
+    except Exception as e:
+        print("An Exception occurred while cleaning up NGDI folder:", e)
+    try:
+        definitions.clean_up_bucket(context.j1939_csv_bucket, context.fc_csv_file_name, recursive=False)
+    except Exception as e:
+        print("An Exception occurred while cleaning up CSV bucket:", e)
+    try:
+        bdd_utility.update_bdd_parameter("Null")
+    except Exception as e:
+        print("An Exception occurred while cleaning up the BDD parameter:", e)

@@ -1,0 +1,97 @@
+{
+  "Notification_Version": "2.5.2",
+  "Message_Type": "FC",
+  "Telematics_Box_ID": "152400000000000",
+  "Telematics_Partner_Message_ID": "e67cdb5a-0ee0-4426-8246-5734bf4eb122",
+  "Telematics_Partner_Name": "Cummins",
+  "Customer_Reference": "Cummins",
+  "Equipment_ID": "EDGE_15240000",
+  "Engine_Serial_Number": "15240000",
+  "VIN": null,
+  "Occurrence_Date_Time": "2020-06-05T18:14:28.718Z",
+  "Sent_Date_Time": "2020-06-10T13:35:48.778Z",
+  "Active": 1,
+  "Datalink_Bus": "J1939",
+  "Source_Address": "0",
+  "SPN": "91",
+  "FMI": "4",
+  "Occurrence_Count": "1",
+  "Latitude": "-39.3456789",
+  "Longitude": "30.9876543",
+  "Altitude": "1234.123456",
+  "Direction_Heading": "225.83",
+  "Vehicle_Distance": "650450",
+  "Location_Text_Description": "In Columbus IN near I-65",
+  "GPS_Vehicle_Speed": "100",
+  "Software_Identification": "",
+  "Active_Faults": "",
+  "Customer_Equipment_Group": {},
+  "Calibration_Identification": [],
+  "Calibration_Verification_Number": [],
+  "Number_of_Software_Identification_Fields": [],
+  "Make": "",
+  "Model": "",
+  "Unit_number": "",
+  "Snapshots": [
+    {
+      "Snapshot_DateTimestamp": "2020-06-05T18:14:28.718Z",
+      "Parameter": [
+        {
+          "Name": "Actual Engine - Percent Torque (Fractional)",
+          "Value": "0.25",
+          "Parameter_Source_Address": "0"
+        }
+      ]
+    },
+    {
+      "Snapshot_DateTimestamp": "2020-06-05T18:14:28.718Z",
+      "Parameter": [
+        {
+          "Name": "Driver's Demand Engine - Percent Torque",
+          "Value": "1",
+          "Parameter_Source_Address": "0"
+        }
+      ]
+    },
+    {
+      "Snapshot_DateTimestamp": "2020-06-05T18:14:28.718Z",
+      "Parameter": [
+        {
+          "Name": "Actual Engine - Percent Torque",
+          "Value": "3",
+          "Parameter_Source_Address": "0"
+        }
+      ]
+    },
+    {
+      "Snapshot_DateTimestamp": "2020-06-05T18:14:28.718Z",
+      "Parameter": [
+        {
+          "Name": "Engine Torque Mode",
+          "Value": "7",
+          "Parameter_Source_Address": "0"
+        }
+      ]
+    },
+    {
+      "Snapshot_DateTimestamp": "2020-06-05T18:14:28.718Z",
+      "Parameter": [
+        {
+          "Name": "Accelerator Pedal Position 1",
+          "Value": "101.6",
+          "Parameter_Source_Address": "0"
+        }
+      ]
+    },
+    {
+      "Snapshot_DateTimestamp": "2020-06-05T18:14:28.718Z",
+      "Parameter": [
+        {
+          "Name": "Engine Percent Load At Current Speed",
+          "Value": "0",
+          "Parameter_Source_Address": "0"
+        }
+      ]
+    }
+  ]
+}

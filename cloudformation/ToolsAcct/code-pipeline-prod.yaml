@@ -228,8 +228,8 @@ Resources:
               OutputArtifacts:
                 - Name: SCCheckoutArtifact
               RunOrder: 1
-        - 
-          Name: ApprovetoStage
+        -
+          Name: ApprovetoProd
           Actions:
             - Name: DeploymentApproval
               ActionTypeId:

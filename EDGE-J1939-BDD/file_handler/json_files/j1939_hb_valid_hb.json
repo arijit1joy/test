@@ -2,41 +2,14 @@
   "messageFormatVersion": "1.1.1",
   "telematicsPartnerName": "Cummins",
   "customerReference": "Cummins",
-  "componentSerialNumber": "15240000",
+  "componentSerialNumber": "InvalidESN",
   "equipmentId": "EDGE_{}",
-  "vin": "BDDTEST00000000",
-  "telematicsDeviceId": "152400000000000",
+  "vin": "InvalidVIN",
+  "telematicsDeviceId": "InvalidDeviceID",
   "dataSamplingConfigId": "BDD0000",
   "dataEncryptionSchemeId": "ES1",
-  "numberOfSamples": 2,
+  "numberOfSamples": 1,
   "samples": [
-    {
-      "dateTimestamp": "2014-08-27T14:26:58.456Z",
-      "convertedDeviceParameters": {
-        "messageID": "7dc53df5-703e-49b3-8670-b1c468f47e0e"
-      },
-      "convertedEquipmentParameters": [
-        {
-          "protocol": "J1939",
-          "networkId": "CAN1",
-          "deviceId": "0",
-          "parameters": {
-            "544": "560",
-            "588": "78787878*",
-            "237": "1VIN9876543219876*",
-            "1635": [
-              "EF23447.13"
-            ],
-            "1634": "2651152004",
-            "965": "7",
-            "234": "05288411*03210018*052013140400*09200005*G1*BDR*09200004*",
-            "586": "CMMNS",
-            "587": "6X1u13D150",
-            "233": "1234567890"
-          }
-        }
-      ]
-    },
     {
       "dateTimestamp": "2014-08-27T14:26:58.389Z",
       "convertedDeviceParameters": {

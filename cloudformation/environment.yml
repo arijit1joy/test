@@ -125,6 +125,10 @@ Resources:
             Resource: arn:aws:firehose:*:*:*
           - Effect: Allow
             Action:
+              - 'ssm:*'
+            Resource: !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
+          - Effect: Allow
+            Action:
               - 'ssm:Describe*'
               - 'ssm:Get*'
               - 'ssm:List*'
@@ -155,6 +159,10 @@ Resources:
             Action:
             - firehose:*
             Resource: arn:aws:firehose:*:*:*
+          - Effect: Allow
+            Action:
+              - 'ssm:*'
+            Resource: !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
           Version:                 '2012-10-17'
         PolicyName:                !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeJ1939CSVConverterLambdaWorkerPolicy"
       RoleName:                    !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeJ1939CSVConverterLambdaRole"
@@ -177,6 +185,10 @@ Resources:
             Action:
               - 'logs:*'
             Resource: 'arn:aws:logs:*:*:*'
+          - Effect: Allow
+            Action:
+              - 'ssm:*'
+            Resource: !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
           - Effect: Allow
             Action:
             - firehose:*

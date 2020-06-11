@@ -6,6 +6,9 @@ import requests
 import datetime
 from kinesis_utility import build_metadata_and_write
 
+import bdd_utility
+from system_variables import InternalResponse
+
 s3 = boto3.client('s3')
 cp_post_bucket = os.environ["CPPostBucket"]
 # MandatoryParameters = json.loads(os.environ["MandatoryParameters"])
@@ -359,7 +362,7 @@ def lambda_handler(lambda_event, context):
     config_spec_name, req_id = get_cspec_req_id(file_name.split('_')[3])
 
     build_metadata_and_write(fc_uuid, device_id, file_name, file_size, file_date_time, 'J1939-FC',
-                                 'CSV_JSON_CONVERTED', esn, config_spec_name, req_id)
+                             'CSV_JSON_CONVERTED', esn, config_spec_name, req_id)
 
     ngdi_json_template = json.loads(os.environ["NGDIBody"])
 
@@ -590,7 +593,6 @@ def lambda_handler(lambda_event, context):
 
     # Get rid of the AS header row since we have already stored the index of each header
     if as_rows:
-
         print("Removing AS Header Row --index '0'-- from:", as_rows)
         del as_rows[0]
         print("New AS Rows:", as_rows)
@@ -686,7 +688,7 @@ def lambda_handler(lambda_event, context):
         store_file_path = "ConvertedFiles/" + ngdi_json_template['componentSerialNumber'] + '/' + \
                           ngdi_json_template["telematicsDeviceId"] + '/' + ("%02d" % current_datetime.year) + '/' \
                           + \
-                          ("%02d" % current_datetime.month) + '/' + ("%02d" % current_datetime.day) + '/' +\
+                          ("%02d" % current_datetime.month) + '/' + ("%02d" % current_datetime.day) + '/' + \
                           filename.split('.csv')[0] + '.json'
 
     except Exception as e:
@@ -704,7 +706,7 @@ def lambda_handler(lambda_event, context):
         store_file_path = "ConvertedFiles/" + ngdi_json_template['componentSerialNumber'] + '/' + \
                           ngdi_json_template["telematicsDeviceId"] + '/' + ("%02d" % current_datetime.year) + '/' \
                           + \
-                          ("%02d" % current_datetime.month) + '/' + ("%02d" % current_datetime.day) + '/' +\
+                          ("%02d" % current_datetime.month) + '/' + ("%02d" % current_datetime.day) + '/' + \
                           filename.split('.csv')[0] + '.json'
 
     print("New Filename:", store_file_path)
@@ -715,6 +717,9 @@ def lambda_handler(lambda_event, context):
                                                Metadata={'j1939type': 'FC', 'uuid': fc_uuid})
 
     print("Store File Response:", store_file_response)
+
+    if store_file_response["ResponseMetadata"]["HTTPStatusCode"] == 200:
+        bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDCSVConvertSuccess.value)
 
 
 '''

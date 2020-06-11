@@ -176,31 +176,31 @@ def lambda_handler(event, context):
                         else:
 
                             print("This is a PSBU device, but it is PCC, cannot send to PT")
-                            bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDFormatError)
+                            bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDFormatError.value)
                             return
 
                     else:
 
                         print("Error! The boxApplication value is not recorded in the EDGE DB!")
-                        bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDPSBUDeviceInfoError)
+                        bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDPSBUDeviceInfoError.value)
                         return
 
             else:
 
                 print("Error! This is not an EBU or PSBU device")
-                bdd_utility.update_bdd_parameter(InternalResponse.J1939BUDeviceInfoError)
+                bdd_utility.update_bdd_parameter(InternalResponse.J1939BUDeviceInfoError.value)
                 return
 
         else:
 
             print("ERROR! The device_type value is missing for the device:", device_id)
-            bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDDeviceTypeError)
+            bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDDeviceTypeError.value)
             return
 
     else:
 
         print("ERROR! The device_info value is missing for the device:", device_info)
-        bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDDeviceInfoError)
+        bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDDeviceInfoError.value)
         return
 
 
