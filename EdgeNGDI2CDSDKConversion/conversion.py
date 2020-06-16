@@ -5,7 +5,7 @@ import os
 import boto3
 import requests
 import datetime
-from kinesis_utility import build_metadata_and_write
+from metadata_utility import build_metadata_and_write
 from kinesis_utility import write_health_parameter_to_kinesis
 import edge_core as edge
 from system_variables import InternalResponse, CDSDK
@@ -412,8 +412,9 @@ def process(bucket, key, file_size):
         print("Response:", get_response)
     except Exception as exception:
         return edge.server_error(str(exception))
-    request_id = get_response[0]['request_id']
-    consumption_per_request = get_response[0]['consumption_per_request']
+    request_id = get_response[0]['request_id'] if "request_id" in get_response[0] else None
+    consumption_per_request = get_response[0]['consumption_per_request'] if "consumption_per_request" in \
+                                                                            get_response[0] else None
     build_metadata_and_write(uuid, device_id, key, file_size, file_date_time, data_protocol,
                              'FILE_SENT', esn, config_spec_name, request_id, consumption_per_request)
     print("Retrieving Metadata from the file:", j1939_file)

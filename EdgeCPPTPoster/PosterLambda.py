@@ -6,7 +6,7 @@ import environment_params as env
 import post
 import pt_poster
 import uuid
-from kinesis_utility import build_metadata_and_write
+from metadata_utility import build_metadata_and_write
 import bdd_utility
 from system_variables import InternalResponse
 
