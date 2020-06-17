@@ -48,6 +48,8 @@ class CDFCSDK:
 
         print("FC JSON Payload:", json_payload)
 
+        self.values = {}
+
         for var in class_variables:
 
             if class_variables[var] != 0 and class_variables[var]:
