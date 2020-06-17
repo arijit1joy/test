@@ -11,6 +11,7 @@ from system_variables import InternalResponse
 
 s3 = boto3.client('s3')
 cp_post_bucket = os.environ["CPPostBucket"]
+# MandatoryParameters = json.loads(os.environ["MandatoryParameters"])
 edgeCommonAPIURL = os.environ["edgeCommonAPIURL"]
 NGDIBody = json.loads(os.environ["NGDIBody"])
 s3_client = boto3.client('s3')
