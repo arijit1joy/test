@@ -416,7 +416,7 @@ def process(bucket, key, file_size):
     consumption_per_request = get_response[0]['consumption_per_request'] if "consumption_per_request" in \
                                                                             get_response[0] else None
     build_metadata_and_write(uuid, device_id, key, file_size, file_date_time, data_protocol,
-                             'FILE_SENT', esn, config_spec_name, request_id, consumption_per_request)
+                             'FILE_SENT', esn, config_spec_name, request_id, consumption_per_request, os.environ["edgeCommonAPIURL"])
     print("Retrieving Metadata from the file:", j1939_file)
     print("Retrieving Samples from the file:", j1939_file)
     samples = j1939_file["samples"] if "samples" in j1939_file else None
