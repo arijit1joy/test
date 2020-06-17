@@ -648,7 +648,7 @@ Resources:
         - !Ref RequestsPythonLayer
         - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:kinesis_utility:${KinesisLayerVersion}
         - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:Edge-Core:${EdgeCoreLayerVersion}
-        # - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:database_utility:${DatabaseLayerVersion}
+        - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:database_utility:${DatabaseLayerVersion}
       Tags:
           Name: Edge
           
@@ -676,6 +676,7 @@ Resources:
       Layers:
         - !Ref RequestsPythonLayer
         - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:kinesis_utility:${KinesisLayerVersion}
+        - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:database_utility:${DatabaseLayerVersion}
       Tags:
           Name: Edge
 
@@ -717,6 +718,7 @@ Resources:
       Layers:
         - !Ref RequestsPythonLayer
         - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:kinesis_utility:${KinesisLayerVersion}
+        - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:database_utility:${DatabaseLayerVersion}
       Tags:
           Name: Edge
 
