@@ -2,7 +2,7 @@ import json
 import pt_poster
 import os
 import boto3
-from kinesis_utility import build_metadata_and_write
+from metadata_utility import build_metadata_and_write
 import traceback
 
 s3_resource = boto3.resource('s3')
@@ -45,7 +45,7 @@ def send_to_cd(bucket_name, key, file_size, file_date_time, json_format, client,
                                                           Metadata={'j1939type': j1939_type, 'uuid': fc_uuid})
 
                 build_metadata_and_write(fc_uuid, device_id, file_key, file_size, file_date_time, 'J1939-FC',
-                                             'CD_PT_POSTED', esn, config_spec_name_fc, req_id_fc, None)
+                                             'CD_PT_POSTED', esn, config_spec_name_fc, req_id_fc, None, os.environ["edgeCommonAPIURL"])
 
             else:
 
@@ -54,7 +54,7 @@ def send_to_cd(bucket_name, key, file_size, file_date_time, json_format, client,
                                                                                  'uuid': hb_uuid})
 
                 build_metadata_and_write(hb_uuid, device_id, file_key, file_size, file_date_time, 'J1939-HB',
-                                             'CD_PT_POSTED', esn, config_spec_name, req_id, None )
+                                             'CD_PT_POSTED', esn, config_spec_name, req_id, None, os.environ["edgeCommonAPIURL"])
 
             print("Post CD File to NGDI Folder Response:", post_to_ngdi_response)
 
