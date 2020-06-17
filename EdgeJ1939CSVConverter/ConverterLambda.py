@@ -4,7 +4,7 @@ import json
 import os
 import requests
 import datetime
-from kinesis_utility import build_metadata_and_write
+from metadata_utility import build_metadata_and_write
 
 import bdd_utility
 from system_variables import InternalResponse
@@ -362,7 +362,7 @@ def lambda_handler(lambda_event, context):
     config_spec_name, req_id = get_cspec_req_id(file_name.split('_')[3])
 
     build_metadata_and_write(fc_uuid, device_id, file_name, file_size, file_date_time, 'J1939-FC',
-                             'CSV_JSON_CONVERTED', esn, config_spec_name, req_id,None)
+                             'CSV_JSON_CONVERTED', esn, config_spec_name, req_id, None)
 
     ngdi_json_template = json.loads(os.environ["NGDIBody"])
 
