@@ -6,7 +6,7 @@ import boto3
 import requests
 import datetime
 from metadata_utility import build_metadata_and_write
-from kinesis_utility import write_health_parameter_to_kinesis
+from metadata_utility import write_health_parameter_to_database
 import edge_core as edge
 from system_variables import InternalResponse, CDSDK
 import bdd_utility
@@ -108,7 +108,7 @@ def post_cd_message(data):
     auth_token_info = auth_token['authToken']
     url = cd_url + auth_token_info
     print('Auth Token ---------------->', auth_token_info)
-    sent_date_time = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ')[:-4]+"Z"
+    sent_date_time = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ')[:-4] + "Z"
     print('Sent_Date_Time  ------------------> ', sent_date_time)
     data["Sent_Date_Time"] = sent_date_time if sent_date_time else data["Occurrence_Date_Time"] \
         if "Occurrence_Date_Time" in data else ''
@@ -412,11 +412,12 @@ def process(bucket, key, file_size):
         print("Response:", get_response)
     except Exception as exception:
         return edge.server_error(str(exception))
-    request_id = get_response[0]['request_id'] if "request_id" in get_response[0] else None
-    consumption_per_request = get_response[0]['consumption_per_request'] if "consumption_per_request" in \
-                                                                            get_response[0] else None
+    request_id = get_response[0]['request_id'] if get_response and "request_id" in get_response[0] else None
+    consumption_per_request = get_response[0]['consumption_per_request'] if \
+        get_response and "consumption_per_request" in get_response[0] else None
     build_metadata_and_write(uuid, device_id, key, file_size, file_date_time, data_protocol,
-                             'FILE_SENT', esn, config_spec_name, request_id, consumption_per_request, os.environ["edgeCommonAPIURL"])
+                             'FILE_SENT', esn, config_spec_name, request_id, consumption_per_request,
+                             os.environ["edgeCommonAPIURL"])
     print("Retrieving Metadata from the file:", j1939_file)
     print("Retrieving Samples from the file:", j1939_file)
     samples = j1939_file["samples"] if "samples" in j1939_file else None
@@ -483,10 +484,9 @@ def store_health_parameters_into_redshift(converted_device_params, time_stamp, j
         esn = j1939_file_val['componentSerialNumber']
         convert_timestamp = datetime.datetime.strptime(time_stamp, '%Y-%m-%dT%H:%M:%S.%fZ')
         new_timestamp = datetime.datetime.strftime(convert_timestamp, '%Y-%m-%d %H:%M:%S')
-        return write_health_parameter_to_kinesis(message_id, cpu_temperature, pmic_temperature, latitude,
-                                                 longitude, altitude, pdop,
-                                                 satellites_used, lte_rssi, lte_rscp, lte_rsrq, lte_rsrp,
-                                                 cpu_usage_level, ram_usage_level,
-                                                 snr_per_satellite, new_timestamp, device_id, esn)
+        return write_health_parameter_to_database(message_id, cpu_temperature, pmic_temperature, latitude, longitude,
+                                                  altitude, pdop, satellites_used, lte_rssi, lte_rscp, lte_rsrq,
+                                                  lte_rsrp, cpu_usage_level, ram_usage_level, snr_per_satellite,
+                                                  new_timestamp, device_id, esn, os.environ["edgeCommonAPIURL"])
     else:
         print("There is no Converted Device Parameter")
