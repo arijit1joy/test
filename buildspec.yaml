@@ -30,7 +30,8 @@ phases:
       do  
         echo $paramsFile;  
         tmp=$(mktemp); 
-        sed "s/"empty"/${versionId}/g" $paramsFile > "$tmp" && mv "$tmp" $paramsFile; 
+        sed "s/"empty"/${versionId}/g" $paramsFile > "$tmp" && mv "$tmp" $paramsFile;
+        sh layer-helper.sh $paramsFile;
       done; 
     - cp *.json .. 
     - cd ..

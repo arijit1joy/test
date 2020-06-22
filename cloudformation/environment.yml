@@ -51,8 +51,9 @@ Parameters:
     Type: String
   EdgeCoreLayerVersion:
     Type: String
-  DatabaseLayerVersion:
+  edge_db_utility:
     Type: String
+  
 
 Globals:
   Function:
@@ -649,7 +650,7 @@ Resources:
         - !Ref RequestsPythonLayer
         - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:kinesis_utility:${KinesisLayerVersion}
         - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:Edge-Core:${EdgeCoreLayerVersion}
-        - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:edge_db_utility:${DatabaseLayerVersion}
+        - !Ref edge_db_utility
       Tags:
           Name: Edge
           
@@ -677,7 +678,7 @@ Resources:
       Layers:
         - !Ref RequestsPythonLayer
         - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:kinesis_utility:${KinesisLayerVersion}
-        - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:edge_db_utility:${DatabaseLayerVersion}
+        - !Ref edge_db_utility
       Tags:
           Name: Edge
 
@@ -719,7 +720,7 @@ Resources:
       Layers:
         - !Ref RequestsPythonLayer
         - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:kinesis_utility:${KinesisLayerVersion}
-        - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:edge_db_utility:${DatabaseLayerVersion}
+        - !Ref edge_db_utility
       Tags:
           Name: Edge
 

@@ -16,7 +16,6 @@
         "KinesisLayerVersion": "9",
         "CDDataEndpoint": "https://telematics-stg.cummins.com:8443/DataService/postData?AuthToken=",
         "DeviceHealthDeliveryStream": "da-edge-aai-service-heartbeat-data-stream",
-        "EdgeCoreLayerVersion": "2",
-        "DatabaseLayerVersion": "1"
+        "EdgeCoreLayerVersion": "2"
     }
 }
