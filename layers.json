@@ -1,1 +1,3 @@
-["edge_db_utility"]
+{
+    "EdgeDBUtility": "edge_db_utility"
+}

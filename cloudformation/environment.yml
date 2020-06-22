@@ -51,7 +51,7 @@ Parameters:
     Type: String
   EdgeCoreLayerVersion:
     Type: String
-  edge_db_utility:
+  EdgeDBUtility:
     Type: String
   
 
@@ -650,7 +650,7 @@ Resources:
         - !Ref RequestsPythonLayer
         - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:kinesis_utility:${KinesisLayerVersion}
         - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:Edge-Core:${EdgeCoreLayerVersion}
-        - !Ref edge_db_utility
+        - !Ref EdgeDBUtility
       Tags:
           Name: Edge
           
