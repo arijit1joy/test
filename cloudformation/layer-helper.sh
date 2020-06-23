@@ -12,12 +12,12 @@ do
     cftParamName=$(echo $layerName| cut -d'~' -f 1)
     echo "current layer: ${realLayerName}"
 
-    awsConfigList=$(aws config list)
+    awsConfigList=$(aws configure list)
     echo "AWS Config List 1: ${awsConfigList}"
 
     aws configure set profile.stage.role_arn arn:aws:iam::732927748536:role/da-edge-j1939-services-CodeBuildRole-stage
     aws configure set profile.stage.source_profile default
-    awsConfigList=$(aws config list)
+    awsConfigList=$(aws configure list)
     echo "AWS Config List 2: ${awsConfigList}"
 
     latestLayerResults=$(aws lambda list-layer-versions --layer-name "${realLayerName}" --region "us-east-2" --profile stage)
@@ -25,14 +25,14 @@ do
 
     aws configure set profile.stage.role_arn arn:aws:iam::170736887717:role/da-edge-j1939-services-cloudformationdeployer-stage-role
     aws configure set profile.stage.source_profile default
-    awsConfigList=$(aws config list)
+    awsConfigList=$(aws configure list)
     echo "AWS Config List 3: ${awsConfigList}"
 
     latestLayerResults=$(aws lambda list-layer-versions --layer-name "${realLayerName}" --region "us-east-2" --profile stage)
     echo "Latest layer results - Stage: ${latestLayerResults}"
 
     
-    awsConfigList=$(aws config list)
+    awsConfigList=$(aws configure list)
     echo "AWS Config List 4: ${awsConfigList}"
 
 
