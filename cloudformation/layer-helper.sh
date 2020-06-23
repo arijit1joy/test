@@ -18,7 +18,7 @@ do
     echo "AWS Config List real loc 1: $(cat AWS_DEFAULT_REGION)"
 
     aws configure set profile.stage.role_arn arn:aws:iam::732927748536:role/da-edge-j1939-services-CodeBuildRole-stage
-    # aws configure set profile.stage.source_profile default
+    aws configure set profile.stage.source_profile stage
     awsConfigList=$(aws configure list)
     echo "AWS Config List 2: ${awsConfigList}"
     echo "AWS Config List loc 2: $(cat ~/.aws/config)"
@@ -28,7 +28,7 @@ do
     echo "Latest layer results - Dev: ${latestLayerResults}"
 
     aws configure set profile.stage.role_arn arn:aws:iam::170736887717:role/da-edge-j1939-services-cloudformationdeployer-stage-role
-    # aws configure set profile.stage.source_profile default
+    aws configure set profile.stage.source_profile stage
     awsConfigList=$(aws configure list)
     echo "AWS Config List 3: ${awsConfigList}"
     echo "AWS Config List loc 3: $(cat ~/.aws/config)"
