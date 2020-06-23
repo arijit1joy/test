@@ -12,11 +12,13 @@ do
     cftParamName=$(echo $layerName| cut -d'~' -f 1)
     echo "current layer: ${realLayerName}"
     aws configure set profile.stage.role_arn arn:aws:iam::732927748536:role/da-edge-j1939-services-CodeBuildRole-stage
-    latestLayerResults=$(aws lambda list-layer-versions --layer-name "${realLayerName}")
+    aws configure set profile.stage.source_profile default
+    latestLayerResults=$(aws lambda list-layer-versions --layer-name "${realLayerName}" --profile stage)
     echo "Latest layer results - Dev: ${latestLayerResults}"
 
     aws configure set profile.stage.role_arn arn:aws:iam::170736887717:role/da-edge-j1939-services-cloudformationdeployer-stage-role
-    latestLayerResults=$(aws lambda list-layer-versions --layer-name "${realLayerName}")
+    aws configure set profile.stage.source_profile default
+    latestLayerResults=$(aws lambda list-layer-versions --layer-name "${realLayerName}" --profile stage)
     echo "Latest layer results - Dev: ${latestLayerResults}"
 
 
