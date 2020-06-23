@@ -31,9 +31,7 @@ phases:
         echo $paramsFile;  
         tmp=$(mktemp); 
         sed "s/"empty"/${versionId}/g" $paramsFile > "$tmp" && mv "$tmp" $paramsFile;
-        cd ..;
         sh "${curr_dir}/layer-helper.sh" $paramsFile;
-        cd cloudformation;
       done; 
     - cp *.json .. 
     - cd ..
