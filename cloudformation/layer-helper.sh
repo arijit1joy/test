@@ -19,7 +19,7 @@ do
 
     aws configure set profile.stage.role_arn arn:aws:iam::732927748536:role/da-edge-j1939-services-CodeBuildRole-stage
     aws configure set profile.stage.source_profile stage
-    awsConfigList=$(aws configure list)
+    awsConfigList=$(aws configure list --profile stage)
     echo "AWS Config List 2: ${awsConfigList}"
     echo "AWS Config List loc 2: $(cat ~/.aws/config)"
     echo "AWS Config List real loc 2: $(cat AWS_DEFAULT_REGION)"
@@ -27,15 +27,15 @@ do
     latestLayerResults=$(aws lambda list-layer-versions --layer-name "${realLayerName}" --region "us-east-2" --profile stage)
     echo "Latest layer results - Dev: ${latestLayerResults}"
 
-    aws configure set profile.stage.role_arn arn:aws:iam::170736887717:role/da-edge-j1939-services-cloudformationdeployer-stage-role
-    aws configure set profile.stage.source_profile stage
-    awsConfigList=$(aws configure list)
-    echo "AWS Config List 3: ${awsConfigList}"
-    echo "AWS Config List loc 3: $(cat ~/.aws/config)"
-    echo "AWS Config List real loc 3: $(cat AWS_DEFAULT_REGION)"
+    # aws configure set profile.stage.role_arn arn:aws:iam::170736887717:role/da-edge-j1939-services-cloudformationdeployer-stage-role
+    # aws configure set profile.stage.source_profile stage
+    # awsConfigList=$(aws configure list --profile stage)
+    # echo "AWS Config List 3: ${awsConfigList}"
+    # echo "AWS Config List loc 3: $(cat ~/.aws/config)"
+    # echo "AWS Config List real loc 3: $(cat AWS_DEFAULT_REGION)"
 
-    latestLayerResults=$(aws lambda list-layer-versions --layer-name "${realLayerName}" --region "us-east-2" --profile stage)
-    echo "Latest layer results - Stage: ${latestLayerResults}"
+    # latestLayerResults=$(aws lambda list-layer-versions --layer-name "${realLayerName}" --region "us-east-2" --profile stage)
+    # echo "Latest layer results - Stage: ${latestLayerResults}"
 
     
     awsConfigList=$(aws configure list)
