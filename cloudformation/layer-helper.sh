@@ -14,11 +14,15 @@ do
 
     awsConfigList=$(aws configure list)
     echo "AWS Config List 1: ${awsConfigList}"
+    echo "AWS Config List loc 1: $(cat ~/.aws/config)"
+    echo "AWS Config List real loc 1: $(cat AWS_DEFAULT_REGION)"
 
     aws configure set profile.stage.role_arn arn:aws:iam::732927748536:role/da-edge-j1939-services-CodeBuildRole-stage
     aws configure set profile.stage.source_profile default
     awsConfigList=$(aws configure list)
     echo "AWS Config List 2: ${awsConfigList}"
+    echo "AWS Config List loc 2: $(cat ~/.aws/config)"
+    echo "AWS Config List real loc 2: $(cat AWS_DEFAULT_REGION)"
 
     latestLayerResults=$(aws lambda list-layer-versions --layer-name "${realLayerName}" --region "us-east-2" --profile stage)
     echo "Latest layer results - Dev: ${latestLayerResults}"
@@ -27,6 +31,8 @@ do
     aws configure set profile.stage.source_profile default
     awsConfigList=$(aws configure list)
     echo "AWS Config List 3: ${awsConfigList}"
+    echo "AWS Config List loc 3: $(cat ~/.aws/config)"
+    echo "AWS Config List real loc 3: $(cat AWS_DEFAULT_REGION)"
 
     latestLayerResults=$(aws lambda list-layer-versions --layer-name "${realLayerName}" --region "us-east-2" --profile stage)
     echo "Latest layer results - Stage: ${latestLayerResults}"
@@ -34,6 +40,8 @@ do
     
     awsConfigList=$(aws configure list)
     echo "AWS Config List 4: ${awsConfigList}"
+    echo "AWS Config List loc 4: $(cat ~/.aws/config)"
+    echo "AWS Config List real loc 4: $(cat AWS_DEFAULT_REGION)"
 
 
     # latestLayerARN=$(echo $latestLayerResults | python -c 'import json,sys;obj=json.load(sys.stdin);print(obj["LayerVersions"][0]["LayerVersionArn"])')
