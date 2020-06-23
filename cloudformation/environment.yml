@@ -678,7 +678,7 @@ Resources:
       Layers:
         - !Ref RequestsPythonLayer
         - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:kinesis_utility:${KinesisLayerVersion}
-        - !Ref edge_db_utility
+        - !Ref EdgeDBUtility
       Tags:
           Name: Edge
 
@@ -720,7 +720,7 @@ Resources:
       Layers:
         - !Ref RequestsPythonLayer
         - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:kinesis_utility:${KinesisLayerVersion}
-        - !Ref edge_db_utility
+        - !Ref EdgeDBUtility
       Tags:
           Name: Edge
 
