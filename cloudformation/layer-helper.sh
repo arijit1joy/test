@@ -11,15 +11,29 @@ do
     realLayerName=$(echo $layerName| cut -d'~' -f 2)
     cftParamName=$(echo $layerName| cut -d'~' -f 1)
     echo "current layer: ${realLayerName}"
+
+    awsConfigList=$(aws config list)
+    echo "AWS Config List 1: ${awsConfigList}"
+
     aws configure set profile.stage.role_arn arn:aws:iam::732927748536:role/da-edge-j1939-services-CodeBuildRole-stage
     aws configure set profile.stage.source_profile default
-    latestLayerResults=$(aws lambda list-layer-versions --layer-name "${realLayerName}" --profile stage)
+    awsConfigList=$(aws config list)
+    echo "AWS Config List 2: ${awsConfigList}"
+
+    latestLayerResults=$(aws lambda list-layer-versions --layer-name "${realLayerName}" --region "us-east-2" --profile stage)
     echo "Latest layer results - Dev: ${latestLayerResults}"
 
     aws configure set profile.stage.role_arn arn:aws:iam::170736887717:role/da-edge-j1939-services-cloudformationdeployer-stage-role
     aws configure set profile.stage.source_profile default
-    latestLayerResults=$(aws lambda list-layer-versions --layer-name "${realLayerName}" --profile stage)
-    echo "Latest layer results - Dev: ${latestLayerResults}"
+    awsConfigList=$(aws config list)
+    echo "AWS Config List 3: ${awsConfigList}"
+
+    latestLayerResults=$(aws lambda list-layer-versions --layer-name "${realLayerName}" --region "us-east-2" --profile stage)
+    echo "Latest layer results - Stage: ${latestLayerResults}"
+
+    
+    awsConfigList=$(aws config list)
+    echo "AWS Config List 4: ${awsConfigList}"
 
 
     # latestLayerARN=$(echo $latestLayerResults | python -c 'import json,sys;obj=json.load(sys.stdin);print(obj["LayerVersions"][0]["LayerVersionArn"])')
