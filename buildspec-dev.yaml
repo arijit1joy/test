@@ -66,52 +66,6 @@ phases:
               cd "$mydir"; 
               echo "Processing - $mydir"; 
               echo "Current dir - $(pwd)";
-                echo "Entering the DCS build stage.";
-                yarn install --silent;
-                echo "Build Dev stage.";
-                yarn build:dev >/dev/null;
-                if [ -d "$curr_dir/$mydir/dist" ]; then          
-                  cd dist; 
-                  echo "Build succeeded for dev, putting in bucket"; 
-                  aws s3 cp $curr_dir/$mydir/dist/bundle.js s3://${DEV_BUCKET}/bundle.js;
-                  echo "Build succeeded for dev, already put in bucket"; 
-                  cd ..;   
-                else 
-                  echo "Build Failed for $mydir"; 
-                fi;
-                echo "Build test stage.";
-                yarn build:test >/dev/null;
-                if [ -d "$curr_dir/$mydir/dist" ]; then          
-                  cd dist;  
-                  echo "Build succeeded for test, putting in bucket"; 
-                  aws s3 cp $curr_dir/$mydir/dist/bundle.js s3://${TEST_BUCKET}/bundle.js;
-                  echo "Build succeeded for test, already put in bucket"; 
-                  cd ..;   
-                else 
-                  echo "Build Failed for $mydir"; 
-                fi;
-                echo "Build Stage stage.";
-                yarn build:stage >/dev/null;
-                if [ -d "$curr_dir/$mydir/dist" ]; then          
-                  cd dist; 
-                  echo "Build succeeded for stage, putting in bucket"; 
-                  aws s3 cp $curr_dir/$mydir/dist/bundle.js s3://${STAGE_BUCKET}/bundle.js;
-                  echo "Build succeeded for Stage, already put in bucket"; 
-                  cd ..;   
-                else 
-                  echo "Build Failed for $mydir"; 
-                fi;
-                yarn build --silent;
-                ls -lrt "$curr_dir/$mydir";
-                echo "Build path = $curr_dir/$mydir/dist";
-                if [ -d "$curr_dir/$mydir/dist" ]; then           
-                  cd dist;           
-                  zip -r "$mydir.zip" .;           
-                  cp "$mydir.zip" "$curr_dir/target";
-                  cd ..;   
-                else 
-                  echo "Build Failed for $mydir"; 
-                fi;    
               if [ -f pom.xml ]; then 
                 if [ $mydir = "edge.eal.datascale" ]; then 
                   mvn install:install-file -Dfile=../libraries/ctp_common-0.0.2.jar -DgroupId=com.cummins.ctp.common -DartifactId=com.cummins.ctp.common -Dversion=0.0.2 -Dpackaging=jar;           
