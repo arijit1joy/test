@@ -132,7 +132,7 @@ def lambda_handler(event, context):
     if j1939_type.lower() == 'hb':
         config_spec_name, req_id = post.get_cspec_req_id(json_body['dataSamplingConfigId'])
 
-        build_metadata_and_write(hb_uuid, device_id, file_key, file_size, file_date_time, 'J1939-HB',
+        build_metadata_and_write(hb_uuid, device_id, file_key, file_size, file_date_time, 'J1939_HB',
                                  'FILE_RECEIVED', esn, config_spec_name, req_id, None, os.environ["edgeCommonAPIURL"])
 
     print("Device ID sending the file:", device_id)
