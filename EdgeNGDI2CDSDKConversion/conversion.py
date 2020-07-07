@@ -385,6 +385,7 @@ def process(bucket, key, file_size):
     uuid = file_metadata['uuid']
     file_date_time = str(j1939_file_object['LastModified'])[:19]
     device_id = key.split('_')[1]
+    print("Device ID: ", device_id)
     print("FC or HB : ", fc_or_hb)
     if not fc_or_hb:
         print("Error! Cannot determine if this is an FC of an HB file. Check file metadata!")
