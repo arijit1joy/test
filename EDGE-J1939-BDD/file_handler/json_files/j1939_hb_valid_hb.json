@@ -1,6 +1,6 @@
 {
   "messageFormatVersion": "1.1.1",
-  "telematicsPartnerName": "Cummins",
+  "telematicsPartnerName": "EDGE",
   "customerReference": "Cummins",
   "componentSerialNumber": "InvalidESN",
   "equipmentId": "EDGE_{}",

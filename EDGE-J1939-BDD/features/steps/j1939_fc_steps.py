@@ -9,7 +9,7 @@ from function_definitions.system_variables import InternalResponse, FCCSVCase, C
 @given(u'A valid EBU FC file in CSV format')
 def step_impl(context):
     context.bu_type = "ebu"
-    context.tsp = "Cummins"
+    context.tsp = "EDGE"
     context.expects_json = True
     context.cd_sdk_file = CDSDK.ValidFCCSV.value
     context.j1939_fc_csv = definitions.get_csv_file(FCCSVCase.ValidFCCSV.value)
@@ -19,7 +19,7 @@ def step_impl(context):
 @given(u'A valid EBU FC file in CSV format containing a device ID that does not exist in the EDGE ecosystem')
 def step_impl(context):
     context.bu_type = "invalid"
-    context.tsp = "Cummins"
+    context.tsp = "EDGE"
     context.expects_json = True
     context.j1939_fc_csv = definitions.get_csv_file(FCCSVCase.ValidFCCSVInvalidDeviceID.value)
     context.j1939_fc_json = definitions.get_json_file(FCCSVCase.ValidFCCSVInvalidDeviceID.value)
@@ -28,7 +28,7 @@ def step_impl(context):
 @given(u'An invalid EBU FC file in CSV format containing no device ID value')
 def step_impl(context):
     context.bu_type = "invalid"
-    context.tsp = "Cummins"
+    context.tsp = "EDGE"
     context.expects_json = False
     context.j1939_fc_csv = definitions.get_csv_file(FCCSVCase.InvalidFCCSVNoDeviceID.value)
     context.j1939_fc_json = None
@@ -37,7 +37,7 @@ def step_impl(context):
 @given(u'A valid EBU FC message in CSV format containing a valid deviceID but missing the single sample row')
 def step_impl(context):
     context.bu_type = "ebu"
-    context.tsp = "Cummins"
+    context.tsp = "EDGE"
     context.expects_json = True
     context.cd_sdk_file = CDSDK.ValidFCCSVNoSS.value
     context.j1939_fc_csv = definitions.get_csv_file(FCCSVCase.ValidFCCSVNoSS.value)
@@ -47,7 +47,7 @@ def step_impl(context):
 @given(u'An invalid EBU FC message in CSV format containing a valid deviceID but missing the all sample row')
 def step_impl(context):
     context.bu_type = "ebu"
-    context.tsp = "Cummins"
+    context.tsp = "EDGE"
     context.expects_json = False
     context.j1939_fc_csv = definitions.get_csv_file(FCCSVCase.InvalidFCCSVNoAS.value)
     context.j1939_fc_json = None
@@ -56,7 +56,7 @@ def step_impl(context):
 @given(u'A valid EBU FC message in CSV format containing no device parameters in the all sample rows')
 def step_impl(context):
     context.bu_type = "ebu"
-    context.tsp = "Cummins"
+    context.tsp = "EDGE"
     context.expects_json = True
     context.cd_sdk_file = CDSDK.ValidFCCSVNoDeviceParams.value
     context.j1939_fc_csv = definitions.get_csv_file(FCCSVCase.ValidFCCSVNoDeviceParams.value)
