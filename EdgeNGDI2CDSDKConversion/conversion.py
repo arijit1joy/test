@@ -384,8 +384,8 @@ def process(bucket, key, file_size):
     fc_or_hb = file_metadata['j1939type'] if "j1939type" else None
     uuid = file_metadata['uuid']
     file_date_time = str(j1939_file_object['LastModified'])[:19]
-    device_id = key.split('_')[1]
-    print("Device ID: ", device_id)
+    file_name = key.split('/')[-1]
+    device_id = file_name.split('_')[1]
     print("FC or HB : ", fc_or_hb)
     if not fc_or_hb:
         print("Error! Cannot determine if this is an FC of an HB file. Check file metadata!")
@@ -416,7 +416,7 @@ def process(bucket, key, file_size):
     request_id = get_response[0]['request_id'] if get_response and "request_id" in get_response[0] else None
     consumption_per_request = get_response[0]['consumption_per_request'] if \
         get_response and "consumption_per_request" in get_response[0] else None
-    build_metadata_and_write(uuid, device_id, key, file_size, file_date_time, data_protocol,
+    build_metadata_and_write(uuid, device_id, file_name, file_size, file_date_time, data_protocol,
                              'FILE_SENT', esn, config_spec_name, request_id, consumption_per_request,
                              os.environ["edgeCommonAPIURL"])
     print("Retrieving Metadata from the file:", j1939_file)
@@ -447,7 +447,7 @@ def lambda_handler(event, context):
     file_size = event['Records'][0]['s3']['object']['size']
     print("Bucket:", bucket)
     print("Key:", key)
-    key = key.split('/')[-1]
+    key = key.replace("%3A", ":")
     print("New FileKey:", key)
     process(bucket, key, file_size)
 
