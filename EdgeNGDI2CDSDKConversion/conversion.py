@@ -446,7 +446,7 @@ def lambda_handler(event, context):
     file_size = event['Records'][0]['s3']['object']['size']
     print("Bucket:", bucket)
     print("Key:", key)
-    key = key.replace("%3A", ":")
+    key = key.split('/')[-1]
     print("New FileKey:", key)
     process(bucket, key, file_size)
 
