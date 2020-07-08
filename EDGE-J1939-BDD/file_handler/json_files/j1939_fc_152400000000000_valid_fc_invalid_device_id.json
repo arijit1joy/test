@@ -1,1 +1,75 @@
-{"messageFormatVersion": "1.1.1", "telematicsPartnerName": "EDGE", "customerReference": "Cummins", "componentSerialNumber": "InvalidESN", "equipmentId": "EDGE_InvalidESN", "vin": "BDDTEST00000000", "telematicsDeviceId": "InvalidDeviceID", "dataSamplingConfigId": "BDD0000", "dataEncryptionSchemeId": "ES1", "numberOfSamples": 1, "samples": [{"convertedDeviceParameters": {"messageID": "7dc53df5-703e-49b3-8670-b1c468f47f1f"}, "convertedEquipmentParameters": [{"protocol": "J1939", "networkId": "CAN1", "deviceId": "0", "parameters": {"3242": "1766.96875", "4765": "1766.96875"}}], "dateTimestamp": "2020-06-05T18:14:28.718Z"}, {"convertedDeviceParameters": {"Latitude": "-39.3456789", "Longitude": "30.9876543", "Altitude": "1234.123456", "Direction_Heading": "225.83", "Vehicle_Distance": "650450", "Location_Text_Description": "In Columbus IN near I-65", "GPS_Vehicle_Speed": "100"}, "rawEquipmentParameters": [], "convertedEquipmentParameters": [{"protocol": "J1939", "networkId": "CAN1", "deviceId": "0", "parameters": {"4154": "0.25", "512": "1", "513": "3", "899": "7", "91": "101.6", "92": "0"}}], "convertedEquipmentFaultCodes": [{"protocol": "J1939", "networkId": "CAN1", "deviceId": "0", "activeFaultCodes": [{"spn": "91", "fmi": "4", "count": "1"}], "inactiveFaultCodes": [], "pendingFaultCodes": []}], "dateTimestamp": "2020-06-05T18:14:28.718Z"}]}
+{
+  "messageFormatVersion": "1.1.1",
+  "telematicsPartnerName": "Cummins",
+  "customerReference": "Cummins",
+  "componentSerialNumber": "InvalidESN",
+  "equipmentId": "EDGE_InvalidESN",
+  "vin": "BDDTEST00000000",
+  "telematicsDeviceId": "InvalidDeviceID",
+  "dataSamplingConfigId": "BDD0000",
+  "dataEncryptionSchemeId": "ES1",
+  "numberOfSamples": 1,
+  "samples": [
+    {
+      "convertedDeviceParameters": {
+        "messageID": "7dc53df5-703e-49b3-8670-b1c468f47f1f"
+      },
+      "convertedEquipmentParameters": [
+        {
+          "protocol": "J1939",
+          "networkId": "CAN1",
+          "deviceId": "0",
+          "parameters": {
+            "3242": "1766.96875",
+            "4765": "1766.96875"
+          }
+        }
+      ],
+      "dateTimestamp": "2020-06-05T18:14:28.718Z"
+    },
+    {
+      "convertedDeviceParameters": {
+        "Latitude": "-39.3456789",
+        "Longitude": "30.9876543",
+        "Altitude": "1234.123456",
+        "Direction_Heading": "225.83",
+        "Vehicle_Distance": "650450",
+        "Location_Text_Description": "In Columbus IN near I-65",
+        "GPS_Vehicle_Speed": "100"
+      },
+      "rawEquipmentParameters": [],
+      "convertedEquipmentParameters": [
+        {
+          "protocol": "J1939",
+          "networkId": "CAN1",
+          "deviceId": "0",
+          "parameters": {
+            "4154": "0.25",
+            "512": "1",
+            "513": "3",
+            "899": "7",
+            "91": "101.6",
+            "92": "0"
+          }
+        }
+      ],
+      "convertedEquipmentFaultCodes": [
+        {
+          "protocol": "J1939",
+          "networkId": "CAN1",
+          "deviceId": "0",
+          "activeFaultCodes": [
+            {
+              "spn": "91",
+              "fmi": "4",
+              "count": "1"
+            }
+          ],
+          "inactiveFaultCodes": [],
+          "pendingFaultCodes": []
+        }
+      ],
+      "dateTimestamp": "2020-06-05T18:14:28.718Z"
+    }
+  ]
+}
