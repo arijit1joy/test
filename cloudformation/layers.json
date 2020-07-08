@@ -1,3 +1,9 @@
 {
-    "EdgeDBUtility": "edge_db_utility"
+    "dev": "732927748536",
+    "test": "732927748536",
+    "stage": "170736887717",
+    "prod": "902121398960",
+    "layers": {
+        "EdgeDBUtility": "edge_db_utility"
+    }
 }
