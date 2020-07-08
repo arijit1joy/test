@@ -22,7 +22,7 @@ do
         echo "Getting the latest layer for the Environment: ${environment}"
         latestLayerVersion=${currentEnvironmentARN##*:}
         echo "Latest Layer Version: ${latestLayerVersion}"
-        currentEnvironmentARN=${currentEnvironmentARN//732927748536/$accountId};
+        currentEnvironmentARN=${currentEnvironmentARN/732927748536/$accountId};
         currentEnvironmentARN=${currentEnvironmentARN/us-east-1/us-east-2};
         echo "Latest ${environment} layer ARN: ${currentEnvironmentARN}"
         while !(latestLayerResults=$(aws lambda get-layer-version-by-arn --arn "${currentEnvironmentARN}" --region "us-east-2")) && (($latestLayerVersion > 0));
