@@ -14,6 +14,7 @@ cp_post_bucket = os.environ["CPPostBucket"]
 # MandatoryParameters = json.loads(os.environ["MandatoryParameters"])
 edgeCommonAPIURL = os.environ["edgeCommonAPIURL"]
 NGDIBody = json.loads(os.environ["NGDIBody"])
+mapTspFromOwner = os.environ["mapTspFromOwner"]
 s3_client = boto3.client('s3')
 
 
@@ -644,8 +645,13 @@ def lambda_handler(lambda_event, context):
             return
 
         else:
-
-            ngdi_json_template["telematicsPartnerName"] = got_tsp_and_cust_ref["device_owner"]
+            TSP_Owners = json.loads(mapTspFromOwner)
+            TSP_name = TSP_Owners[str(got_tsp_and_cust_ref["device_owner"])] if str(got_tsp_and_cust_ref["device_owner"]) in TSP_Owners else "NA"
+            if TSP_name != "NA":
+               ngdi_json_template["telematicsPartnerName"] = TSP_name
+            else: 
+               print("Error! Could not retrieve TSP. This is mandatory field!")
+               return
             ngdi_json_template["customerReference"] = got_tsp_and_cust_ref["cust_ref"]
 
             print("Final file with TSP and Cust Ref:", ngdi_json_template)
