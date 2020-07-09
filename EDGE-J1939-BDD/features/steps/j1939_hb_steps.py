@@ -11,8 +11,7 @@ from function_definitions.system_variables import InternalResponse, CDSDK
 def step_impl(context, bu_type):
     context.bu_type = bu_type.lower()
     context.j1939_hb_valid_hb = definitions.get_hb_file(context)
-    context.tsp = context.j1939_hb_valid_hb["telematicsPartnerName"] if "telematicsPartnerName" in \
-                                                                        context.j1939_hb_valid_hb else ""
+    context.tsp = "EDGE"
     context.cust_ref = context.j1939_hb_valid_hb["customerReference"] if "customerReference" in \
                                                                          context.j1939_hb_valid_hb else ""
     print("{} HB File:".format(bu_type), context.j1939_hb_valid_hb, sep="\n")
@@ -117,8 +116,7 @@ def step_impl(context):
 def step_impl(context):
     context.bu_type = "invalid"
     context.j1939_hb_valid_hb = definitions.get_hb_file(context)
-    context.tsp = context.j1939_hb_valid_hb["telematicsPartnerName"] if "telematicsPartnerName" in \
-                                                                        context.j1939_hb_valid_hb else ""
+    context.tsp = "EDGE"
     context.cust_ref = context.j1939_hb_valid_hb["customerReference"] if "customerReference" in \
                                                                          context.j1939_hb_valid_hb else ""
     print("EBU HB File:", context.j1939_hb_valid_hb, sep="\n")
@@ -181,8 +179,7 @@ def step_impl(context):
     hb_file = definitions.get_hb_file(context)
     hb_file.pop("telematicsPartnerName")
     hb_file.pop("customerReference")
-    context.tsp = context.j1939_hb_valid_hb["telematicsPartnerName"] if "telematicsPartnerName" in \
-                                                                        context.j1939_hb_valid_hb else ""
+    context.tsp = "EDGE"
     context.cust_ref = context.j1939_hb_valid_hb["customerReference"] if "customerReference" in \
                                                                          context.j1939_hb_valid_hb else ""
     context.j1939_hb_valid_hb = hb_file
@@ -218,8 +215,7 @@ def step_impl(context):
     hb_file = definitions.get_hb_file(context)
     hb_file["telematicsPartnerName"] = "InvalidTSP"
     hb_file["customerReference"] = "InvalidCustRef"
-    context.tsp = context.j1939_hb_valid_hb["telematicsPartnerName"] if "telematicsPartnerName" in \
-                                                                        context.j1939_hb_valid_hb else ""
+    context.tsp = "EDGE"
     context.cust_ref = context.j1939_hb_valid_hb["customerReference"] if "customerReference" in \
                                                                          context.j1939_hb_valid_hb else ""
     context.j1939_hb_valid_hb = hb_file

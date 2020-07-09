@@ -100,12 +100,12 @@ def get_csv_key(context, has_json=None):
     esn = bu_info_json["esn"]
     device_id = bu_info_json["device_id"]
     context.publish_time = datetime.utcnow()
-    context.fc_csv_file_name = "Cummins_{}_{}_BDD0000_{}_{}_BDD0.csv".format(device_id, esn,
+    context.fc_csv_file_name = "EDGE_{}_{}_BDD0000_{}_{}_BDD0.csv".format(device_id, esn,
                                                                              context.publish_time.strftime(
                                                                                  "%Y%m%d%H%M%S"),
                                                                              context.publish_time.strftime(
                                                                                  "%Y-%m-%dT%H:%M:%S.%f"))
-    context.fc_json_file_name = "Cummins_{}_{}_BDD0000_{}_{}_BDD0.json".format(device_id, esn,
+    context.fc_json_file_name = "EDGE_{}_{}_BDD0000_{}_{}_BDD0.json".format(device_id, esn,
                                                                                context.publish_time.strftime(
                                                                                    "%Y%m%d%H%M%S"),
                                                                                context.publish_time.strftime(
