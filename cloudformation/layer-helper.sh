@@ -1,53 +1,49 @@
 #!/bin/bash
 
-# echo "Getting latest layer versions from the System Manager Parameter Store and replacing it in the parameter files . . ."
-# paramFile=$1
-# echo "Param File: ${paramFile}"
-# # environment=$(echo $paramFile| cut -d'-' -f 2)
-# layerNames=$(python -c 'import json;layer_names=json.load(open("layers.json"));keys=list(layer_names.keys());vals=list(layer_names.values());print(" ".join([i+"~"+j for i,j in zip(keys, vals)]))')
-# echo $layerNames
-# for layerName in $layerNames;
-# do
-#     realLayerName=$(echo $layerName| cut -d'~' -f 2)
-#     cftParamName=$(echo $layerName| cut -d'~' -f 1)
-#     echo "current layer: ${realLayerName}"
+# NOTE: Please Do Not Delete This File! It is for Future Implementation
 
-#     awsConfigList=$(aws configure list)
-#     echo "AWS Config List 1: ${awsConfigList}"
-#     echo "AWS Config List loc 1: $(cat ~/.aws/config)"
-#     echo "AWS Config List real loc 1: $(cat AWS_DEFAULT_REGION)"
-
-#     aws configure set profile.stage.role_arn arn:aws:iam::732927748536:role/da-edge-j1939-services-CodeBuildRole-stage
-#     aws configure set profile.stage.source_profile stage
-#     awsConfigList=$(aws configure list --profile stage)
-#     echo "AWS Config List 2: ${awsConfigList}"
-#     echo "AWS Config List loc 2: $(cat ~/.aws/config)"
-#     echo "AWS Config List real loc 2: $(cat AWS_DEFAULT_REGION)"
-
-#     latestLayerResults=$(aws lambda list-layer-versions --layer-name "${realLayerName}" --region "us-east-2" --profile stage)
-#     echo "Latest layer results - Dev: ${latestLayerResults}"
-
-#     # aws configure set profile.stage.role_arn arn:aws:iam::170736887717:role/da-edge-j1939-services-cloudformationdeployer-stage-role
-#     # aws configure set profile.stage.source_profile stage
-#     # awsConfigList=$(aws configure list --profile stage)
-#     # echo "AWS Config List 3: ${awsConfigList}"
-#     # echo "AWS Config List loc 3: $(cat ~/.aws/config)"
-#     # echo "AWS Config List real loc 3: $(cat AWS_DEFAULT_REGION)"
-
-#     # latestLayerResults=$(aws lambda list-layer-versions --layer-name "${realLayerName}" --region "us-east-2" --profile stage)
-#     # echo "Latest layer results - Stage: ${latestLayerResults}"
-
-    
-#     awsConfigList=$(aws configure list)
-#     echo "AWS Config List 4: ${awsConfigList}"
-#     echo "AWS Config List loc 4: $(cat ~/.aws/config)"
-#     echo "AWS Config List real loc 4: $(cat AWS_DEFAULT_REGION)"
-
-
-#     # latestLayerARN=$(echo $latestLayerResults | python -c 'import json,sys;obj=json.load(sys.stdin);print(obj["LayerVersions"][0]["LayerVersionArn"])')
-#     # echo "Latest layer ARN: ${latestLayerARN}"
-#     # latestLayerVersion=${latestLayerARN##*:}
-#     # aws lambda remove-layer-version-permission --layer-name "${realLayerName}" --version-number "${latestLayerVersion}" --statement-id "${realLayerName}_layer_CA_permission_SID"
-#     # aws lambda add-layer-version-permission --layer-name "${realLayerName}" --statement-id "${realLayerName}_layer_CA_permission_SID" --action lambda:GetLayerVersion --principal 170736887717 --version-number "${latestLayerVersion}" --output json
-#     # echo "${cftParamName}*-*${latestLayerARN}*-*${paramFile}" | python -c 'import json,sys;layer_obj=sys.stdin.read();layer_names=json.load(open("layers.json"));param_values=layer_obj.strip().split("*-*");parameter_file=json.load(open(param_values[2]));parameter_file["Parameters"][param_values[0]]=param_values[1];json.dump(parameter_file, open(param_values[2], "w"))'
-# done;
+echo "Getting latest layer versions from the System Manager Parameter Store and replacing it in the parameter files . . ."
+paramFile=$1
+echo "Param File: ${paramFile}"
+environment=$(echo $paramFile| cut -d'.' -f 2| cut -d'/' -f 2| cut -d'-' -f 2)
+echo "Environment: ${environment}"
+accountId=$(echo $environment| python -c 'import json,sys;environment=sys.stdin.read().strip();account_id=json.load(open("layers.json"))[environment];print(account_id)')
+echo "AccountID: ${accountId}"
+layerNames=$(python -c 'import json;layer_names=json.load(open("layers.json"))["layers"];keys=list(layer_names.keys());vals=list(layer_names.values());print(" ".join([i+"~"+j for i,j in zip(keys, vals)]))')
+echo $layerNames
+for layerName in $layerNames;
+do
+    realLayerName=$(echo $layerName| cut -d'~' -f 2)
+    cftParamName=$(echo $layerName| cut -d'~' -f 1)
+    echo "current layer: ${realLayerName}"
+    latestLayerResults=$(aws lambda list-layer-versions --layer-name "${realLayerName}")
+    currentEnvironmentARN=$(echo $latestLayerResults | python -c 'import json,sys;obj=json.load(sys.stdin);print(obj["LayerVersions"][0]["LayerVersionArn"])')
+    echo "Latest layer results: ${latestLayerResults}"
+    echo "Latest Dev layer ARN: ${currentEnvironmentARN}"
+    if [ $environment != "dev" ] ; then 
+        echo "Getting the latest layer for the Environment: ${environment}"
+        latestLayerVersion=${currentEnvironmentARN##*:}
+        echo "Latest Layer Version: ${latestLayerVersion}"
+        currentEnvironmentARN=$(echo $currentEnvironmentARN | sed "s/732927748536/${accountId}/");
+        currentEnvironmentARN=$(echo $currentEnvironmentARN | sed "s/us-east-1/us-east-2/");
+        echo "Latest ${environment} layer ARN: ${currentEnvironmentARN}"
+        while !(latestLayerResults=$(aws lambda get-layer-version-by-arn --arn "${currentEnvironmentARN}" --region "us-east-2")) && (($latestLayerVersion > 0));
+        do
+            echo "Could not find this layer version: ${currentEnvironmentARN}!"
+            latestLayerVersion=$((latestLayerVersion - 1))
+            currentEnvironmentARN="${currentEnvironmentARN::-1}${latestLayerVersion}"
+            echo "New current Layer Version ARN to check for: ${currentEnvironmentARN}"
+        done;
+        if (($latestLayerVersion > 0)); then
+            latestLayerResults=$(aws lambda get-layer-version-by-arn --arn "${currentEnvironmentARN}" --region "us-east-2")
+            echo "Latest Layer Results: ${latestLayerResults}"
+        else
+            echo "The layer does not exist in the ${environment} environment"
+        fi;
+        if latestLayerARN=$(echo $latestLayerResults | python -c 'import json,sys;obj=json.load(sys.stdin);print(obj["LayerVersionArn"])'); then
+            echo "${cftParamName}*-*${latestLayerARN}*-*${paramFile}" | python -c 'import json,sys;layer_obj=sys.stdin.read();layer_names=json.load(open("layers.json"));param_values=layer_obj.strip().split("*-*");parameter_file=json.load(open(param_values[2]));parameter_file["Parameters"][param_values[0]]=param_values[1];json.dump(parameter_file, open(param_values[2], "w"))'
+        fi;
+    else
+        echo "${cftParamName}*-*${currentEnvironmentARN}*-*${paramFile}" | python -c 'import json,sys;layer_obj=sys.stdin.read();layer_names=json.load(open("layers.json"));param_values=layer_obj.strip().split("*-*");parameter_file=json.load(open(param_values[2]));parameter_file["Parameters"][param_values[0]]=param_values[1];json.dump(parameter_file, open(param_values[2], "w"))'
+    fi;
+done;

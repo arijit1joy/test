@@ -14,9 +14,6 @@ Parameters:
     Type: String
   CurrentProductURL:
      Type: String
-  DatabaseName:
-    Type: String
-    Default: "CS_PARTNER_VAL"
   DatabaseUser:
     Type: String
     Default: "CS_PARTNER_APP"
@@ -53,6 +50,7 @@ Parameters:
     Type: String
   EdgeDBUtility:
     Type: String
+    Default: ""
   AuthToken:
     Type: String
   
