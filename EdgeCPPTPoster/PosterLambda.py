@@ -48,8 +48,7 @@ def get_device_info(device_id):
 
         get_device_info_body = response.json()
         get_device_info_code = response.status_code
-
-        print("Get device info response code: " + str(get_device_info_code) + " Get device info response body: " + str(get_device_info_body))
+        print("Get device info response code:", get_device_info_code, "Get device info response body:", get_device_info_body, sep="\n")
 
         if get_device_info_code == 200 and get_device_info_body:
 
@@ -95,9 +94,7 @@ def lambda_handler(event, context):
     bucket_name = event['Records'][0]['s3']['bucket']['name']
     file_key = event['Records'][0]['s3']['object']['key']
     file_size = event['Records'][0]['s3']['object']['size']
-
-    print("Bucket Name:" + str(bucket_name) +" File Key: " +str(file_key))
-
+    print("Bucket Name:", bucket_name, "File Key:", file_key, sep="\n")
     file_key = file_key.replace("%3A", ":")
 
     print("New FileKey:", file_key)
@@ -144,9 +141,8 @@ def lambda_handler(event, context):
         hb_esn = json_body['componentSerialNumber']
         device_owner = device_info["device_owner"] if "device_owner" in device_info else None
         dom = device_info["dom"] if "dom" in device_info else None
-
-
-        print("device_owner: " + str(device_owner) + " dom: "+ str(dom))
+        
+        print("device_owner:", device_owner, "dom:", dom, sep="\n")
 
         if device_owner in json.loads(os.environ["cd_device_owners"]):
 
