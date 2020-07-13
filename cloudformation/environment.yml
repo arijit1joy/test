@@ -48,9 +48,6 @@ Parameters:
     Type: String
   EdgeCoreLayerVersion:
     Type: String
-  EdgeDBUtility:
-    Type: String
-    Default: ""
   AuthToken:
     Type: String
   

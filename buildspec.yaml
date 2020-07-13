@@ -26,6 +26,7 @@ phases:
     - cd cloudformation 
     - versionId=$(date +"%m-%d-%Y-%H-%M-%S") 
     - echo $versionId
+    - pip install ruamel.yaml
     - for paramsFile in ./Param*.json ;  
       do  
         echo $paramsFile;  

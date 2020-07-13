@@ -17,7 +17,6 @@
         "CDDataEndpoint": "https://telematics.cummins.com:8443/DataService/postData?AuthToken=",
         "EdgeCoreLayerVersion": "1",
         "DeviceHealthDeliveryStream": "da-edge-aai-service-heartbeat-data-stream",
-        "EdgeDBUtility": "arn:aws:lambda:us-east-2:902121398960:layer:edge_db_utility:2",
         "AuthToken": "https://api.edge.awsprd.cummins.com/v3/edge-device/provider-auth-token?TspName={TSP-Name}"
     }
 }

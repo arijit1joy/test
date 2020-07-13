@@ -2,6 +2,21 @@
 
 # NOTE: Please Do Not Delete This File! It is for Future Implementation
 
+#This function populates the environment.yml file with the name of the layer variable in the parameter file
+function populateEnvironmentYaml (){
+python - $1 <<END
+import json, sys
+from ruamel.yaml import YAML
+
+with YAML() as yaml:
+    data = yaml.load(open("environment.yml"))
+
+env_file = yaml.load(open("environment.yml"));
+env_file["Parameters"].insert(len(env_file["Parameters"]), sys.argv[1], {"Type": "String"})
+yaml.dump(env_file, open("environment.yml","w"));
+END
+}
+
 echo "Getting latest layer versions from the System Manager Parameter Store and replacing it in the parameter files . . ."
 paramFile=$1
 echo "Param File: ${paramFile}"
@@ -42,8 +57,10 @@ do
         fi;
         if latestLayerARN=$(echo $latestLayerResults | python -c 'import json,sys;obj=json.load(sys.stdin);print(obj["LayerVersionArn"])'); then
             echo "${cftParamName}*-*${latestLayerARN}*-*${paramFile}" | python -c 'import json,sys;layer_obj=sys.stdin.read();layer_names=json.load(open("layers.json"));param_values=layer_obj.strip().split("*-*");parameter_file=json.load(open(param_values[2]));parameter_file["Parameters"][param_values[0]]=param_values[1];json.dump(parameter_file, open(param_values[2], "w"))'
+            populateEnvironmentYaml $cftParamName
         fi;
     else
         echo "${cftParamName}*-*${currentEnvironmentARN}*-*${paramFile}" | python -c 'import json,sys;layer_obj=sys.stdin.read();layer_names=json.load(open("layers.json"));param_values=layer_obj.strip().split("*-*");parameter_file=json.load(open(param_values[2]));parameter_file["Parameters"][param_values[0]]=param_values[1];json.dump(parameter_file, open(param_values[2], "w"))'
+        populateEnvironmentYaml $cftParamName
     fi;
 done;
