@@ -10,7 +10,7 @@ phases:
   install:  
     commands:  
     - sudo apt-get update 
-    - pip install awscli==1.16.141 
+    - pip install awscli==1.16.209 
     - sudo apt-get install zip 
     - sudo apt-get install unzip 
     - sudo apt-get install jq 
