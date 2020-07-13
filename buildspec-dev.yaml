@@ -10,7 +10,7 @@ phases:
   install:  
     commands:  
     - sudo apt-get update 
-    - pip install awscli==1.16.141 
+    - pip install awscli==1.16.209 
     - sudo apt-get install zip 
     - sudo apt-get install unzip 
     - sudo apt-get install jq 
@@ -31,6 +31,7 @@ phases:
     - cd cloudformation
     - versionId=$(date +"%m-%d-%Y-%H-%M-%S") 
     - echo $versionId
+    - pip install ruamel.yaml
     - for paramsFile in ./Param*.json ;  
       do  
         echo $paramsFile;  
