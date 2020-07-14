@@ -25,6 +25,7 @@ PTJ1939PostURL = os.environ["PTJ1939PostURL"]
 PTJ1939Header = os.environ["PTJ1939Header"]
 PowerGenValue = os.environ["PowerGenValue"]
 
+
 s3_client = boto3.client('s3')
 
 
@@ -47,9 +48,7 @@ def get_device_info(device_id):
 
         get_device_info_body = response.json()
         get_device_info_code = response.status_code
-
-        print("Get device info response code:", get_device_info_code)
-        print("Get device info response body:", get_device_info_body)
+        print("Get device info response code:", get_device_info_code, "Get device info response body:", get_device_info_body, sep="\n")
 
         if get_device_info_code == 200 and get_device_info_body:
 
@@ -85,6 +84,8 @@ def get_business_partner(device_type):
         return False
 
 
+
+
 def lambda_handler(event, context):
     # json_file = open("EDGE_352953080329158_64000002_SC123_20190820045303_F2BA (3).json", "r")
 
@@ -93,10 +94,7 @@ def lambda_handler(event, context):
     bucket_name = event['Records'][0]['s3']['bucket']['name']
     file_key = event['Records'][0]['s3']['object']['key']
     file_size = event['Records'][0]['s3']['object']['size']
-
-    print("Bucket Name:", bucket_name)
-    print("File Key:", file_key)
-
+    print("Bucket Name:", bucket_name, "File Key:", file_key, sep="\n")
     file_key = file_key.replace("%3A", ":")
 
     print("New FileKey:", file_key)
@@ -141,49 +139,38 @@ def lambda_handler(event, context):
 
     if device_info:
         hb_esn = json_body['componentSerialNumber']
-        device_type = device_info["device_type"] if "device_type" in device_info else None
         device_owner = device_info["device_owner"] if "device_owner" in device_info else None
         dom = device_info["dom"] if "dom" in device_info else None
+        
+        print("device_owner:", device_owner, "dom:", dom, sep="\n")
 
-        print("device_type:", device_type)
-        print("device_owner:", device_owner)
-        print("dom:", dom)
+        if device_owner in json.loads(os.environ["cd_device_owners"]):
 
-        if device_type:
+            config_spec_name, req_id = post.get_cspec_req_id(json_body['dataSamplingConfigId'])
 
-            business_partner = get_business_partner(device_type)
+            post.send_to_cd(bucket_name, file_key, file_size, file_date_time, JSONFormat, s3_client,
+                            j1939_type, fc_uuid, EndpointBucket, endpointFile, UseEndpointBucket, json_body,
+                            config_spec_name, req_id, device_id, esn, hb_uuid)
 
-            if business_partner:
+        else:
 
-                print("This is a(n)", business_partner, "device!")
+            if dom:
 
-                if business_partner == "EBU":
+                if dom.lower() is not PowerGenValue.lower():
 
-                    config_spec_name, req_id = post.get_cspec_req_id(json_body['dataSamplingConfigId'])
-
-                    post.send_to_cd(bucket_name, file_key, file_size, file_date_time, JSONFormat, s3_client,
-                                    j1939_type, fc_uuid, EndpointBucket, endpointFile, UseEndpointBucket, json_body,
-                                    config_spec_name, req_id, device_id, esn, hb_uuid)
+                    pt_poster.send_to_pt(PTJ1939PostURL, PTJ1939Header, json_body)
 
                 else:
 
-                    if dom:
+                    print("This is a PSBU device, but it is PCC, cannot send to PT")
+                    bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDFormatError.value)
+                    return
 
-                        if dom.lower() is not PowerGenValue.lower():
+            else:
 
-                            pt_poster.send_to_pt(PTJ1939PostURL, PTJ1939Header, json_body)
-
-                        else:
-
-                            print("This is a PSBU device, but it is PCC, cannot send to PT")
-                            bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDFormatError.value)
-                            return
-
-                    else:
-
-                        print("Error! The boxApplication value is not recorded in the EDGE DB!")
-                        bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDPSBUDeviceInfoError.value)
-                        return
+                print("Error! The boxApplication value is not recorded in the EDGE DB!")
+                bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDPSBUDeviceInfoError.value)
+                return
 
             else:
 

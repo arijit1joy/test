@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: '2010-09-09' 
 Transform: AWS::Serverless-2016-10-31
 Description: The AWS CloudFormation template for deployment of the Edge Services.
   Version 2.0
@@ -53,7 +53,7 @@ Parameters:
     Type: String
   AuthToken:
     Type: String
-
+  
 
 Globals:
   Function:
@@ -215,11 +215,11 @@ Resources:
 
   EndpointBucketPolicy:
     Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket:
+    Properties: 
+      Bucket: 
         Ref: EndpointBucket
-      PolicyDocument:
-        Statement:
+      PolicyDocument: 
+        Statement: 
         - Action:
           - s3:Put*
           - s3:Get*
@@ -277,7 +277,7 @@ Resources:
 
   EdgeJ1939DataLogBucket:
     Type: AWS::S3::Bucket
-    DependsOn:
+    DependsOn: 
     - LambdaInvokePermissionJ1939Converter
     Properties:
       BucketName: !Sub 'da-edge-j1939-datalog-files-${ApplicationEnvironmentTag}'
@@ -299,7 +299,7 @@ Resources:
 
   EdgeJ1939ProcessingBucket:
     Type: AWS::S3::Bucket
-    DependsOn:
+    DependsOn: 
     - LambdaInvokePermissionJ1939ProcessingBucket
     - LambdaInvokeNGDI2CDSDKPermission
     Properties:
@@ -350,7 +350,7 @@ Resources:
       Tags:
       - Key: Name
         Value: Edge
-
+  
   EndpointBucket:
     Type: AWS::S3::Bucket
     Properties:
@@ -363,7 +363,7 @@ Resources:
       Tags:
       - Key: Name
         Value: Edge
-
+  
   Spnlistbucket:
     Type: AWS::S3::Bucket
     Properties:
@@ -376,14 +376,14 @@ Resources:
       Tags:
       - Key: Name
         Value: Edge
-
+          
   J1939StreamingBucketPolicy:
     Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket:
+    Properties: 
+      Bucket: 
         Ref: EdgeJ1939ProcessingBucket
-      PolicyDocument:
-        Statement:
+      PolicyDocument: 
+        Statement: 
         - Action:
           - s3:Put*
           - s3:Get*
@@ -454,11 +454,11 @@ Resources:
             - Arn
   EdgeJ1939DataLogBucketPolicy:
     Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket:
+    Properties: 
+      Bucket: 
         Ref: EdgeJ1939DataLogBucket
-      PolicyDocument:
-        Statement:
+      PolicyDocument: 
+        Statement:  
         - Action:
           - s3:Put*
           - s3:Get*
@@ -490,11 +490,11 @@ Resources:
               - Arn
   SpnlistbucketPolicy:
     Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket:
+    Properties: 
+      Bucket: 
         Ref: Spnlistbucket
-      PolicyDocument:
-        Statement:
+      PolicyDocument: 
+        Statement:                   
         - Action:
           - s3:Put*
           - s3:Get*
@@ -612,7 +612,7 @@ Resources:
       - !Ref EdgeDBUtility
       Tags:
         Name: Edge
-
+          
   EdgeJ1939CSVConverter:
     Type: AWS::Serverless::Function
     DependsOn: RequestsPythonLayer
@@ -637,6 +637,7 @@ Resources:
           environment: !Ref 'ApplicationEnvironmentTag'
           edgeCommonAPIURL: !Ref EdgeCommonDBAPI
           Region: !Sub ${AWS::Region}
+          mapTspFromOwner: '{"EBU": "cummins", "PSBU": "cummins" ,"TATA": "India_Edge", "Navistar": "Navistar", "N2": "Navistar" ,"Paccar":"Paccar"}'
       Layers:
       - !Ref RequestsPythonLayer
       - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:kinesis_utility:${KinesisLayerVersion}
@@ -681,6 +682,7 @@ Resources:
           UseEndpointBucket: Y
           PowerGenValue: powerGen
           Region: !Sub ${AWS::Region}
+          cd_device_owners: '{"EBU": "EBU", "TATA": "TATA"}'
       Layers:
       - !Ref RequestsPythonLayer
       - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:kinesis_utility:${KinesisLayerVersion}
@@ -706,27 +708,27 @@ Resources:
               timestamp(), "UTC")}/EDGE_${topic(3)}_$componentSerialNumber_$dataSamplingConfigId_${timestamp()}.json
         - Lambda:
             FunctionArn: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-edge-oem-HBMessage-${ApplicationEnvironmentTag}"
-  EdgeJ1939Bucket:
+  EdgeJ1939Bucket: 
     Type: AWS::SSM::Parameter
-    Properties:
+    Properties: 
       Description: Storing the j1939 bucket name
       Name: da-edge-j1939-datalog-bucket
       Tier: Standard
       Type: String
       Value: !Ref EdgeJ1939DataLogBucket
-
-  EdgeEndpointJ1939Bucket:
+  
+  EdgeEndpointJ1939Bucket: 
     Type: AWS::SSM::Parameter
-    Properties:
+    Properties: 
       Description: Endpoint j1939 bucket name
       Name: da-edge-j1939-endpoint-bucket
       Tier: Standard
       Type: String
       Value: !Ref EndpointBucket
 
-  EdgeJ1939ProcessingBucketSSM:
+  EdgeJ1939ProcessingBucketSSM: 
     Type: AWS::SSM::Parameter
-    Properties:
+    Properties: 
       Description: j1939 Processing bucket name
       Name: da-edge-j1939-processing-bucket
       Tier: Standard
