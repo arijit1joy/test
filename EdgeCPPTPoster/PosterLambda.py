@@ -25,7 +25,6 @@ PTJ1939PostURL = os.environ["PTJ1939PostURL"]
 PTJ1939Header = os.environ["PTJ1939Header"]
 PowerGenValue = os.environ["PowerGenValue"]
 
-
 s3_client = boto3.client('s3')
 
 
@@ -48,7 +47,8 @@ def get_device_info(device_id):
 
         get_device_info_body = response.json()
         get_device_info_code = response.status_code
-        print("Get device info response code:", get_device_info_code, "Get device info response body:", get_device_info_body, sep="\n")
+        print("Get device info response code:", get_device_info_code, "Get device info response body:",
+              get_device_info_body, sep="\n")
 
         if get_device_info_code == 200 and get_device_info_body:
 
@@ -82,8 +82,6 @@ def get_business_partner(device_type):
     else:
 
         return False
-
-
 
 
 def lambda_handler(event, context):
@@ -138,10 +136,9 @@ def lambda_handler(event, context):
     device_info = get_device_info(device_id)
 
     if device_info:
-        hb_esn = json_body['componentSerialNumber']
         device_owner = device_info["device_owner"] if "device_owner" in device_info else None
         dom = device_info["dom"] if "dom" in device_info else None
-        
+
         print("device_owner:", device_owner, "dom:", dom, sep="\n")
 
         if device_owner in json.loads(os.environ["cd_device_owners"]):
@@ -172,26 +169,13 @@ def lambda_handler(event, context):
                 bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDPSBUDeviceInfoError.value)
                 return
 
-            else:
-
-                print("Error! This is not an EBU or PSBU device")
-                bdd_utility.update_bdd_parameter(InternalResponse.J1939BUDeviceInfoError.value)
-                return
-
-        else:
-
-            print("ERROR! The device_type value is missing for the device:", device_id)
-            bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDDeviceTypeError.value)
-            return
-
     else:
-
         print("ERROR! The device_info value is missing for the device:", device_info)
         bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDDeviceInfoError.value)
         return
 
-
 # Local Test Main
+
 
 if __name__ == '__main__':
     lambda_handler("", "")
