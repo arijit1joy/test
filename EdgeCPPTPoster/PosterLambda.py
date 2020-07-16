@@ -124,11 +124,12 @@ def lambda_handler(event, context):
     device_id = json_body["telematicsDeviceId"] if "telematicsDeviceId" in json_body else None
 
     esn = json_body['componentSerialNumber'] if 'componentSerialNumber' in json_body else None
+    file_name = file_key.split('/')[-1]
 
     if j1939_type.lower() == 'hb':
         config_spec_name, req_id = post.get_cspec_req_id(json_body['dataSamplingConfigId'])
 
-        build_metadata_and_write(hb_uuid, device_id, file_key, file_size, file_date_time, 'J1939_HB',
+        build_metadata_and_write(hb_uuid, device_id, file_name, file_size, file_date_time, 'J1939_HB',
                                  'FILE_RECEIVED', esn, config_spec_name, req_id, None, os.environ["edgeCommonAPIURL"])
 
     print("Device ID sending the file:", device_id)
