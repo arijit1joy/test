@@ -146,6 +146,15 @@ def lambda_handler(event, context):
 
             config_spec_name, req_id = post.get_cspec_req_id(json_body['dataSamplingConfigId'])
 
+            #Get Cust Ref, VIN, EquipmentID from EDGEDB and update in the json before posting to CD
+            if "cust_ref" in device_info:
+                json_body['customerReference'] = device_info["cust_ref"]
+            if "equip_id" in device_info:
+                json_body['equipmentId'] = device_info["equip_id"]
+            if "vin" in device_info:
+                json_body['vin'] = device_info["vin"]
+
+            print(" After Update json :", json_body)
             post.send_to_cd(bucket_name, file_key, file_size, file_date_time, JSONFormat, s3_client,
                             j1939_type, fc_uuid, EndpointBucket, endpointFile, UseEndpointBucket, json_body,
                             config_spec_name, req_id, device_id, esn, hb_uuid)
