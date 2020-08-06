@@ -14,7 +14,7 @@ import bdd_utility
 import sys
 
 sys.path.insert(1, './lib')
-from pypika import Query, Table
+from pypika import Query, Table, Order
 
 '''Getting the Values from SSM Parameter Store
 '''
@@ -406,7 +406,8 @@ def process(bucket, key, file_size):
     query = Query.from_(edge_data_consumption_vw).select(edge_data_consumption_vw.request_id,
                                                          edge_data_consumption_vw.consumption_per_request).where(
         edge_data_consumption_vw.data_config_filename.like(updated_file_name)).where(
-        edge_data_consumption_vw.data_type == data_protocol)
+        edge_data_consumption_vw.data_type == data_protocol).orderby(edge_data_consumption_vw.request_id,
+                                                                     order=Order.desc).limit(1)
     print(query.get_sql(quote_char=None))
     try:
         get_response = edge.api_request(api_url, "get", query.get_sql(quote_char=None))
@@ -414,8 +415,9 @@ def process(bucket, key, file_size):
     except Exception as exception:
         return edge.server_error(str(exception))
     request_id = get_response[0]['request_id'] if get_response and "request_id" in get_response[0] else None
-    consumption_per_request = get_response[0]['consumption_per_request'] if get_response and get_response[0]['consumption_per_request'] else None
-    
+    consumption_per_request = get_response[0]['consumption_per_request'] if get_response and get_response[0][
+        'consumption_per_request'] else None
+
     build_metadata_and_write(uuid, device_id, file_name, file_size, file_date_time, data_protocol,
                              'FILE_SENT', esn, config_spec_name, request_id, consumption_per_request,
                              os.environ["edgeCommonAPIURL"])
