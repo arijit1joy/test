@@ -14,7 +14,7 @@ import bdd_utility
 import sys
 
 sys.path.insert(1, './lib')
-from pypika import Query, Table, Order
+from pypika import Query, Table, Order, functions as fn
 
 '''Getting the Values from SSM Parameter Store
 '''
@@ -403,11 +403,14 @@ def process(bucket, key, file_size):
         data_protocol = 'J1939_FC'
     updated_file_name = '_'.join(key.split('/')[-1].split('_')[0:3]) + "%"
     edge_data_consumption_vw = Table('da_edge_olympus.edge_data_consumption_vw')
-    query = Query.from_(edge_data_consumption_vw).select(edge_data_consumption_vw.request_id,
-                                                         edge_data_consumption_vw.consumption_per_request).where(
+    query = Query.from_(edge_data_consumption_vw).select(
+        fn.Cast(fn.Substring(edge_data_consumption_vw.request_id, 4, fn.Length(edge_data_consumption_vw.request_id)),
+                'Integer', alias='request_id_int'), edge_data_consumption_vw.request_id,
+        edge_data_consumption_vw.consumption_per_request).where(
         edge_data_consumption_vw.data_config_filename.like(updated_file_name)).where(
-        edge_data_consumption_vw.data_type == data_protocol).orderby(edge_data_consumption_vw.request_id,
-                                                                     order=Order.desc).limit(1)
+        edge_data_consumption_vw.data_type == data_protocol).orderby(edge_data_consumption_vw.request_id_int,
+                                                                     order=Order.desc
+                                                                     ).limit(1)
     print(query.get_sql(quote_char=None))
     try:
         get_response = edge.api_request(api_url, "get", query.get_sql(quote_char=None))
