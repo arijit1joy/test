@@ -683,6 +683,7 @@ Resources:
           PowerGenValue: powerGen
           Region: !Sub ${AWS::Region}
           cd_device_owners: '{"EBU": "EBU", "TATA": "TATA"}'
+          psbu_device_owner: '{"PSBU": "PSBU"}'
       Layers:
       - !Ref RequestsPythonLayer
       - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:kinesis_utility:${KinesisLayerVersion}

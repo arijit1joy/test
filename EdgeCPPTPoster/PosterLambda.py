@@ -141,43 +141,39 @@ def lambda_handler(event, context):
         dom = device_info["dom"] if "dom" in device_info else None
 
         print("device_owner:", device_owner, "dom:", dom, sep="\n")
+        
+        #Get Cust Ref, VIN, EquipmentID from EDGEDB and update in the json before posting to CD and PT
+        if "cust_ref" in device_info:
+            json_body['customerReference'] = device_info["cust_ref"]
+        if "equip_id" in device_info:
+            json_body['equipmentId'] = device_info["equip_id"]
+        if "vin" in device_info:
+            json_body['vin'] = device_info["vin"]
 
         if device_owner in json.loads(os.environ["cd_device_owners"]):
 
             config_spec_name, req_id = post.get_cspec_req_id(json_body['dataSamplingConfigId'])
-
-            #Get Cust Ref, VIN, EquipmentID from EDGEDB and update in the json before posting to CD
-            if "cust_ref" in device_info:
-                json_body['customerReference'] = device_info["cust_ref"]
-            if "equip_id" in device_info:
-                json_body['equipmentId'] = device_info["equip_id"]
-            if "vin" in device_info:
-                json_body['vin'] = device_info["vin"]
 
             print(" After Update json :", json_body)
             post.send_to_cd(bucket_name, file_key, file_size, file_date_time, JSONFormat, s3_client,
                             j1939_type, fc_uuid, EndpointBucket, endpointFile, UseEndpointBucket, json_body,
                             config_spec_name, req_id, device_id, esn, hb_uuid)
 
+        elif device_owner in json.loads(os.environ["psbu_device_owner"]):
+
+            pt_poster.send_to_pt(PTJ1939PostURL, PTJ1939Header, json_body)
+
+                # else:
+
+                #     print("This is a PSBU device, but it is PCC, cannot send to PT")
+                #     bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDFormatError.value)
+                #     return
+
         else:
 
-            if dom:
-
-                if dom.lower() is not PowerGenValue.lower():
-
-                    pt_poster.send_to_pt(PTJ1939PostURL, PTJ1939Header, json_body)
-
-                else:
-
-                    print("This is a PSBU device, but it is PCC, cannot send to PT")
-                    bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDFormatError.value)
-                    return
-
-            else:
-
-                print("Error! The boxApplication value is not recorded in the EDGE DB!")
-                bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDPSBUDeviceInfoError.value)
-                return
+            print("Error! The boxApplication value is not recorded in the EDGE DB!")
+            bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDPSBUDeviceInfoError.value)
+            return
 
     else:
         print("ERROR! The device_info value is missing for the device:", device_info)
