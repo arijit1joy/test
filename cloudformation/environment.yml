@@ -676,7 +676,7 @@ Resources:
           PSBUSpecifier: psbu
           EBUSpecifier: onhighway
           PTJ1939PostURL: !Ref PTJ1939PostURL
-          PTJ1939Header: !Ref PTJ1939PostURL
+          PTJ1939Header: !Ref PTJ1939Header
           CDPTJ1939PostURL: !Ref CDPTJ1939PostURL
           CDPTJ1939Header: !Ref CDPTJ1939PostURL
           UseEndpointBucket: Y
