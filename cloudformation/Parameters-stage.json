@@ -1,6 +1,7 @@
 {
     "Parameters": {
         "ApplicationEnvironmentTag": "stage",
+	"OlympusApplicationEnvironmentTag" : "stage",
         "ApplicationName": "da-edge-j1939",
         "DomainName": "aws.cummins.com",
         "ApiBasePath": "v1",

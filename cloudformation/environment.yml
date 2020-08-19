@@ -53,8 +53,9 @@ Parameters:
     Type: String
   AuthToken:
     Type: String
+	OlympusApplicationEnvironmentTag:
+    Type: String
   
-
 Globals:
   Function:
     Timeout: 300
@@ -347,9 +348,31 @@ Resources:
                 Value: NGDI
               - Name: suffix
                 Value: .json
+          - Function: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-EDGE-Olympus-BL-DataQuality-${OlympusApplicationEnvironmentTag}'
+            Event: "s3:ObjectCreated:*"
+            Filter:
+              S3Key:
+                Rules:
+                  - Name: suffix
+                    Value: .json
+                  - Name: prefix
+                    Value: ConvertedFiles/
       Tags:
       - Key: Name
         Value: Edge
+
+  OlympusDataQualityLambdaInvokePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-EDGE-Olympus-BL-DataQuality-${OlympusApplicationEnvironmentTag}'
+      Action: 'lambda:InvokeFunction'
+      Principal: s3.amazonaws.com
+      SourceAccount: !Ref 'AWS::AccountId'
+      SourceArn: !Join
+        - ''
+        - - 'arn:aws:s3:::'
+          - !Sub 'edge-j1939-${ApplicationEnvironmentTag}'
+
   
   EndpointBucket:
     Type: AWS::S3::Bucket
