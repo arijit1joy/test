@@ -53,7 +53,7 @@ Parameters:
     Type: String
   AuthToken:
     Type: String
-	OlympusApplicationEnvironmentTag:
+  OlympusApplicationEnvironmentTag:
     Type: String
   
 Globals:
@@ -348,15 +348,15 @@ Resources:
                 Value: NGDI
               - Name: suffix
                 Value: .json
-          - Function: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-EDGE-Olympus-BL-DataQuality-${OlympusApplicationEnvironmentTag}'
-            Event: "s3:ObjectCreated:*"
-            Filter:
-              S3Key:
-                Rules:
-                  - Name: suffix
-                    Value: .json
-                  - Name: prefix
-                    Value: ConvertedFiles/
+        - Function: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-EDGE-Olympus-BL-DataQuality-${OlympusApplicationEnvironmentTag}'
+          Event: "s3:ObjectCreated:*"
+          Filter:
+            S3Key:
+              Rules:
+                - Name: suffix
+                  Value: .json
+                - Name: prefix
+                  Value: ConvertedFiles/
       Tags:
       - Key: Name
         Value: Edge

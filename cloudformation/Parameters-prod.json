@@ -1,7 +1,7 @@
 {
     "Parameters": {
         "ApplicationEnvironmentTag": "prod",
-	"OlympusApplicationEnvironmentTag" : "Prod",
+		"OlympusApplicationEnvironmentTag" : "Prod",
         "ApplicationName": "da-edge-j1939",
         "DomainName": "awsprd.cummins.com",
         "ApiBasePath": "v1",
