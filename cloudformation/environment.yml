@@ -53,7 +53,8 @@ Parameters:
     Type: String
   AuthToken:
     Type: String
-  
+  OlympusApplicationEnvironmentTag:
+    Type: String
 
 Globals:
   Function:
@@ -195,6 +196,11 @@ Resources:
             Action:
             - firehose:*
             Resource: arn:aws:firehose:*:*:*
+          - Effect: Allow
+            Action:
+                - secretsmanager:GetSecretValue
+            Resource: 
+                - !Sub 'arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pt_xapi_key-??????'
           Version: '2012-10-17'
         PolicyName: !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeCPPTPosterLambdaWorkerPolicy"
       RoleName: !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeCPPTPosterLambdaRole"
@@ -212,6 +218,18 @@ Resources:
             Service:
             - iot.amazonaws.com
       RoleName: !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-J1939StreamBucket"
+
+  EDGECPPTAPISecret:
+    Type: AWS::SecretsManager::Secret
+    Properties: 
+      Description: "PT x-API key"
+      Name: "pt_xapi_key"
+      SecretString: '{"x-api-key":"x-api-key"}'
+      Tags:
+        - Key: Name
+          Value: !Sub ${ApplicationName}
+        - Key: ApplicationEnvironment
+          Value: !Ref 'ApplicationEnvironmentTag'
 
   EndpointBucketPolicy:
     Type: AWS::S3::BucketPolicy
@@ -347,9 +365,31 @@ Resources:
                 Value: NGDI
               - Name: suffix
                 Value: .json
+        - Function: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-EDGE-Olympus-BL-DataQuality-${OlympusApplicationEnvironmentTag}'
+          Event: "s3:ObjectCreated:*"
+          Filter:
+            S3Key:
+              Rules:
+                - Name: suffix
+                  Value: .json
+                - Name: prefix
+                  Value: ConvertedFiles/
       Tags:
       - Key: Name
         Value: Edge
+  
+  OlympusDataQualityLambdaInvokePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-EDGE-Olympus-BL-DataQuality-${OlympusApplicationEnvironmentTag}'
+      Action: 'lambda:InvokeFunction'
+      Principal: s3.amazonaws.com
+      SourceAccount: !Ref 'AWS::AccountId'
+      SourceArn: !Join
+        - ''
+        - - 'arn:aws:s3:::'
+          - !Sub 'edge-j1939-${ApplicationEnvironmentTag}'
+
   
   EndpointBucket:
     Type: AWS::S3::Bucket
@@ -676,13 +716,15 @@ Resources:
           PSBUSpecifier: psbu
           EBUSpecifier: onhighway
           PTJ1939PostURL: !Ref PTJ1939PostURL
-          PTJ1939Header: !Ref PTJ1939PostURL
+          PTJ1939Header: !Ref PTJ1939Header
           CDPTJ1939PostURL: !Ref CDPTJ1939PostURL
           CDPTJ1939Header: !Ref CDPTJ1939PostURL
           UseEndpointBucket: Y
           PowerGenValue: powerGen
           Region: !Sub ${AWS::Region}
           cd_device_owners: '{"EBU": "EBU", "TATA": "TATA"}'
+          psbu_device_owner: '{"PSBU": "PSBU"}'
+          PTxAPIKey: 'pt_xapi_key'
       Layers:
       - !Ref RequestsPythonLayer
       - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:kinesis_utility:${KinesisLayerVersion}
