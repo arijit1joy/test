@@ -20,7 +20,6 @@ def send_to_pt(post_url, headers, json_body):
         get_secret_value_response = sec_client.get_secret_value(SecretId=secret_name)
         if 'SecretString' in get_secret_value_response:
             secret = get_secret_value_response['SecretString']
-            print("Secret Value Response Secret",secret)
             secret = json.loads(secret)
             api_key = secret['x-api-key']
         else:
