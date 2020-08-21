@@ -1,9 +1,11 @@
 import json
 import boto3
+import os
 import requests
 import traceback
 
-secret_name = os.environ['pt_xapi_key']
+secret_name = os.environ['PTxAPIKey']
+region_name = os.environ['Region']
 
 # Create a Secrets Manager client
 session = boto3.session.Session()
