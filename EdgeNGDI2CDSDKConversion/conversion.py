@@ -420,6 +420,8 @@ def process(bucket, key, file_size):
     request_id = get_response[0]['request_id'] if get_response and "request_id" in get_response[0] else None
     consumption_per_request = get_response[0]['consumption_per_request'] if get_response and get_response[0][
         'consumption_per_request'] else None
+    if consumption_per_request == 'null':
+        consumption_per_request = None
 
     build_metadata_and_write(uuid, device_id, file_name, file_size, file_date_time, data_protocol,
                              'FILE_SENT', esn, config_spec_name, request_id, consumption_per_request,
