@@ -776,3 +776,13 @@ Resources:
       Tier: Standard
       Type: String
       Value: !Ref EdgeJ1939ProcessingBucket
+  
+  EdgeJ1939PTSSM: 
+    Type: AWS::SSM::Parameter
+    Properties: 
+      Description: j1939 PT FC and Periodic Datacontent Spec values
+      Name: da-edge-j1939-content-spec-value
+      Tier: Standard
+      Type: String
+      Value: '{"FC" : "Event1_5", "Periodic" : "Periodic1_9"}'
+  
