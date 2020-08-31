@@ -784,5 +784,5 @@ Resources:
       Name: da-edge-j1939-content-spec-value
       Tier: Standard
       Type: String
-      Value: '{"FC" : "Event1_5", "Periodic" : "Periodic1_9"}'
+      Value: '{"FC" : "Event1_5", "Periodic" : "Periodic1_9","PT_TSP": "Cummins"}'
   

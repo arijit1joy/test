@@ -169,6 +169,8 @@ def lambda_handler(event, context):
             else:
                 json_body['dataSamplingConfigId'] = config_spec_value['Periodic']
 
+            json_body['telematicsPartnerName'] = config_spec_name['PT_TSP']
+
 
 
             pt_poster.send_to_pt(PTJ1939PostURL, PTJ1939Header, json_body)
