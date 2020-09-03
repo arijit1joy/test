@@ -26,7 +26,7 @@ PTJ1939Header = os.environ["PTJ1939Header"]
 PowerGenValue = os.environ["PowerGenValue"]
 
 s3_client = boto3.client('s3')
-
+ssm_client = boto3.client('ssm')
 
 def get_device_info(device_id):
     headers = {'Content-Type': 'application/json', 'x-api-key': currentProductAPIKey}
@@ -160,6 +160,18 @@ def lambda_handler(event, context):
                             config_spec_name, req_id, device_id, esn, hb_uuid)
 
         elif device_owner in json.loads(os.environ["psbu_device_owner"]):
+            
+            parameter = client.get_parameter(Name='da-edge-j1939-content-spec-value', WithDecryption=False)
+            print(parameter)
+            config_spec_value = json.loads(parameter['Parameter']['Value'])
+            if j1939_type is 'FC':
+                json_body['dataSamplingConfigId'] = config_spec_value['FC']
+            else:
+                json_body['dataSamplingConfigId'] = config_spec_value['Periodic']
+
+            json_body['telematicsPartnerName'] = config_spec_name['PT_TSP']
+
+
 
             pt_poster.send_to_pt(PTJ1939PostURL, PTJ1939Header, json_body)
 
