@@ -161,7 +161,7 @@ def lambda_handler(event, context):
 
         elif device_owner in json.loads(os.environ["psbu_device_owner"]):
             
-            parameter = client.get_parameter(Name='da-edge-j1939-content-spec-value', WithDecryption=False)
+            parameter = ssm_client.get_parameter(Name='da-edge-j1939-content-spec-value', WithDecryption=False)
             print(parameter)
             config_spec_value = json.loads(parameter['Parameter']['Value'])
             if j1939_type is 'FC':
@@ -169,7 +169,7 @@ def lambda_handler(event, context):
             else:
                 json_body['dataSamplingConfigId'] = config_spec_value['Periodic']
 
-            json_body['telematicsPartnerName'] = config_spec_name['PT_TSP']
+            json_body['telematicsPartnerName'] = config_spec_value['PT_TSP']
 
 
 
