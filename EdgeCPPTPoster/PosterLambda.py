@@ -174,9 +174,10 @@ def lambda_handler(event, context):
             for element in json_body['samples']:
                 if "convertedEquipmentFaultCodes" in element:
                     fault_codes = element['convertedEquipmentFaultCodes']
-                    for fault_code in fault_codes:
-                        fault_code.pop('inactiveFaultCodes')
-                        fault_code.pop('pendingFaultCodes')
+                    if fault_codes != None:
+                        for fault_code in fault_codes:
+                            fault_code.pop('inactiveFaultCodes')
+                            fault_code.pop('pendingFaultCodes')
                         
             json_string = json.dumps(json_body)
             #print(" Json after converting into String:",json_string)
