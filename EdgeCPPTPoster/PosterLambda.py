@@ -164,7 +164,7 @@ def lambda_handler(event, context):
             parameter = ssm_client.get_parameter(Name='da-edge-j1939-content-spec-value', WithDecryption=False)
             print(parameter)
             config_spec_value = json.loads(parameter['Parameter']['Value'])
-            if j1939_type is 'FC':
+            if j1939_type.lower() == 'fc':
                 json_body['dataSamplingConfigId'] = config_spec_value['FC']
             else:
                 json_body['dataSamplingConfigId'] = config_spec_value['Periodic']
