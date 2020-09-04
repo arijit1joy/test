@@ -171,8 +171,18 @@ def lambda_handler(event, context):
 
             json_body['telematicsPartnerName'] = config_spec_value['PT_TSP']
 
-
-
+            for element in json_body['samples']:
+                if "convertedEquipmentFaultCodes" in element:
+                    fault_codes = element['convertedEquipmentFaultCodes']
+                    for fault_code in fault_codes:
+                        fault_code.pop('inactiveFaultCodes')
+                        fault_code.pop('pendingFaultCodes')
+                        
+            json_string = json.dumps(json_body)
+            #print(" Json after converting into String:",json_string)
+            json_body = json.loads(json_string.replace('count','occurenceCount'))
+            print("After replacing count: ",json_body)
+            
             pt_poster.send_to_pt(PTJ1939PostURL, PTJ1939Header, json_body)
 
                 # else:
