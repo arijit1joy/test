@@ -27,9 +27,9 @@ def check_bdd_parameter(expected_value, param_name=None, get_parameter=False):
         print("Get SSM Parameter Response:", get_ssm_param_response)
         received_value = get_ssm_param_response["Parameter"]["Value"]
         # Please Leave the below - even though commented - for future debugging
-        print("Comparing the Value ---->", received_value, "to Value ---->", expected_value, sep="\n")
+        print("Comparing the Value ---->", str(received_value), "to Value ---->", str(expected_value), sep="\n")
         if expected_value:
-            assert received_value == expected_value
+            assert received_value == expected_value, "The SSM value was not what was expected"
         return True if not get_parameter else received_value
     except Exception as e:
         print("An Exception occurred! Error:", e)

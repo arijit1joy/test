@@ -16,6 +16,16 @@ def step_impl(context):
     context.j1939_fc_json = definitions.get_json_file(FCCSVCase.ValidFCCSV.value)
 
 
+@given(u'A valid PSBU FC file in CSV format')
+def step_impl(context):
+    context.bu_type = "pt"
+    context.tsp = "EDGE"
+    context.expects_json = True
+    context.cd_sdk_file = CDSDK.ValidFCCSV.value
+    context.j1939_fc_csv = definitions.get_csv_file(FCCSVCase.ValidPSBUFCCSV.value)
+    context.j1939_fc_json = definitions.get_json_file(FCCSVCase.ValidPSBUFCCSV.value)
+
+
 @given(u'A valid EBU FC file in CSV format containing a device ID that does not exist in the EDGE ecosystem')
 def step_impl(context):
     context.bu_type = "invalid"

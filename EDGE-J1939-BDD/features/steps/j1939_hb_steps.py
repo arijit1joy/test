@@ -19,10 +19,12 @@ def step_impl(context, bu_type):
 
 @when(u'The HB is posted to the /public topic')
 def step_impl(context):
-    print("Received BU Type:", context.bu_type)
+    print("\nX===========================================================================X\n\n"
+          "Received BU Type:", context.bu_type)
     publish_topic = context.j1939_topic_template.replace("<device_id>",
                                                          context.device_info[context.bu_type]["device_id"])
-    print("Publishing the HB file to the topic:", publish_topic, ". . .")
+    print("\nX===========================================================================X\n\n"
+          "Publishing the HB file to the topic:", publish_topic, ". . .")
     hb_file = context.j1939_hb_valid_hb
     publish_response = components.iot_publish_topic(publish_topic, hb_file)
     context.publish_time = datetime.utcnow()
@@ -39,7 +41,8 @@ def step_impl(context, fc_metadata_step, hb_or_fc_message, hb_or_fc):
         sleep(5)  # 5 Second Delay
         retry_count += 1
         fc = meta = {"j1939type": "FC"} if hb_or_fc == "fc" else None
-        print("Template variables: hb_or_fc --> {}, hb_or_fc_message --> {}, "
+        print("\nX===========================================================================X\n\n"
+              "Template variables: hb_or_fc --> {}, hb_or_fc_message --> {}, "
               "fc_metadata_step --> {}".format(hb_or_fc, hb_or_fc_message, fc_metadata_step))
         try:
             assert definitions.verify_hb_s3_json_exists(context, "ConvertedFiles", required_metadata=meta, fc=fc) is \
@@ -47,7 +50,8 @@ def step_impl(context, fc_metadata_step, hb_or_fc_message, hb_or_fc):
         except AssertionError as assert_error:
             if retry_count == 3:
                 raise AssertionError('An error occurred while handling: {}'.format(context.scenario))
-            print("There was an assertion failure: {} on try #{}. Trying Again . . .".format(assert_error, retry_count))
+            print("\nX===========================================================================X\n\n"
+                  "There was an assertion failure: {} on try #{}. Trying Again . . .".format(assert_error, retry_count))
             continue
         break
 
@@ -61,7 +65,8 @@ def step_impl(context, further_step, fc_metadata_step, hb_or_fc_message, hb_or_f
         sleep(5)  # 5 Second Delay
         retry_count += 1
         fc = meta = {"j1939type": "FC"} if hb_or_fc == "fc" else None
-        print("Template variables: further_step --> {}, hb_or_fc --> {}, hb_or_fc_message --> {}, "
+        print("\nX===========================================================================X\n\n"
+              "Template variables: further_step --> {}, hb_or_fc --> {}, hb_or_fc_message --> {}, "
               "fc_metadata_step --> {}".format(further_step, hb_or_fc, hb_or_fc_message, fc_metadata_step))
         try:
             assert definitions.verify_hb_s3_json_exists(context, "NGDI", required_metadata=meta, fc=fc) is True, \
@@ -69,9 +74,11 @@ def step_impl(context, further_step, fc_metadata_step, hb_or_fc_message, hb_or_f
         except AssertionError as assert_error:
             if retry_count == 3:
                 raise AssertionError('An error occurred while handling: {}'.format(context.scenario))
-            print("There was an assertion failure: {} on try #{}. Trying Again . . .".format(assert_error, retry_count))
+            print("\nX===========================================================================X\n\n"
+                  "There was an assertion failure: {} on try #{}. Trying Again . . .".format(assert_error, retry_count))
             continue
-        print("Next Steps as a Sub-step:", further_step)
+        print("\nX===========================================================================X\n\n"
+              "Next Steps as a Sub-step:", further_step)
         context.execute_steps(
             '''
                 Then {}
@@ -92,14 +99,14 @@ def step_impl(context):
         except AssertionError as assert_error:
             if retry_count == 3:
                 raise AssertionError('An error occurred while handling: {}'.format(context.scenario))
-            print("There was an assertion failure: {} on try #{}. Trying Again . . .".format(assert_error, retry_count))
+            print("\nX===========================================================================X\n\n"
+                  "There was an assertion failure: {} on try #{}. Trying Again . . .".format(assert_error, retry_count))
             continue
         if context.cd_sdk_file:
             cd_sdk_variables = bdd_utility.check_bdd_parameter(None, param_name=CDSDK.CDSDKBDDVariables.value,
                                                                get_parameter=True).split("<---**--->")
             bdd_utility.update_bdd_parameter(cd_sdk_variables[0], param_name=CDSDK.CDSDKBDDVariables.value)
             expected_cd_file = definitions.get_json_file(context.cd_sdk_file)
-            print("Expected C")
             expected_cd_file["Telematics_Partner_Message_ID"] = cd_sdk_variables[1]
             expected_cd_file["Sent_Date_Time"] = cd_sdk_variables[2]
             assert bdd_utility.check_bdd_parameter(json.dumps(expected_cd_file),
@@ -119,7 +126,8 @@ def step_impl(context):
     context.tsp = "EDGE"
     context.cust_ref = context.j1939_hb_valid_hb["customerReference"] if "customerReference" in \
                                                                          context.j1939_hb_valid_hb else ""
-    print("EBU HB File:", context.j1939_hb_valid_hb, sep="\n")
+    print("\nX===========================================================================X\n\n"
+          "EBU HB File:", context.j1939_hb_valid_hb, sep="\n")
 
 
 @then(u'No JSON file is created with the {hb_or_fc_message} as its content and is stored in the edge-j1939-<env> '
@@ -131,7 +139,8 @@ def step_impl(context, further_step, hb_or_fc_message, hb_or_fc, converted_files
         sleep(5)  # 5 Second Delay
         retry_count += 1
         fc = True if hb_or_fc == "fc" else False
-        print("Template variables: further_step --> {}, hb_or_fc --> {}, hb_or_fc_message --> {}, converted_files_"
+        print("\nX===========================================================================X\n\n"
+              "Template variables: further_step --> {}, hb_or_fc --> {}, hb_or_fc_message --> {}, converted_files_"
               "or_ngdi --> {}".format(further_step, hb_or_fc, hb_or_fc_message, converted_files_or_ngdi))
         try:
             assert definitions.verify_hb_s3_json_does_not_exist(context, converted_files_or_ngdi, fc=fc) is True, \
@@ -139,9 +148,11 @@ def step_impl(context, further_step, hb_or_fc_message, hb_or_fc, converted_files
         except AssertionError as assert_error:
             if retry_count == 3:
                 raise AssertionError('An error occurred while handling: {}'.format(context.scenario))
-            print("There was an assertion failure: {} on try #{}. Trying Again . . .".format(assert_error, retry_count))
+            print("\nX===========================================================================X\n\n"
+                  "There was an assertion failure: {} on try #{}. Trying Again . . .".format(assert_error, retry_count))
             continue
-        print("Next Steps as a Sub-step:", further_step)
+        print("\nX===========================================================================X\n\n"
+              "Next Steps as a Sub-step:", further_step)
         context.execute_steps(
             '''
                 Then {}
@@ -162,7 +173,8 @@ def step_impl(context):
         except AssertionError as assert_error:
             if retry_count == 3:
                 raise AssertionError('An error occurred while handling: {}'.format(context.scenario))
-            print("There was an assertion failure: {} on try #{}. Trying Again . . .".format(assert_error, retry_count))
+            print("\nX===========================================================================X\n\n"
+                  "There was an assertion failure: {} on try #{}. Trying Again . . .".format(assert_error, retry_count))
             continue
         context.execute_steps(
             '''
@@ -183,7 +195,8 @@ def step_impl(context):
     context.cust_ref = context.j1939_hb_valid_hb["customerReference"] if "customerReference" in \
                                                                          context.j1939_hb_valid_hb else ""
     context.j1939_hb_valid_hb = hb_file
-    print("EBU HB File:", context.j1939_hb_valid_hb, sep="\n")
+    print("\nX===========================================================================X\n\n"
+          "EBU HB File:", context.j1939_hb_valid_hb, sep="\n")
 
 
 @then(u'There is no CP post success recorded')
@@ -198,7 +211,8 @@ def step_impl(context):
         except AssertionError as assert_error:
             if retry_count == 3:
                 raise AssertionError('An error occurred while handling: {}'.format(context.scenario))
-            print("There was an assertion failure: {} on try #{}. Trying Again . . .".format(assert_error, retry_count))
+            print("\nX===========================================================================X\n\n"
+                  "There was an assertion failure: {} on try #{}. Trying Again . . .".format(assert_error, retry_count))
             continue
         context.execute_steps(
             '''
@@ -222,6 +236,30 @@ def step_impl(context):
     print("EBU HB File:", context.j1939_hb_valid_hb, sep="\n")
 
 
+@then(u'PT Posting Success is recorded')
+def step_impl(context):
+    retry_count = 0
+    while True:
+        sleep(5)  # 5 Second Delay
+        retry_count += 1
+        try:
+            assert bdd_utility.check_bdd_parameter(InternalResponse.J1939BDDPTPostSuccess.value) is True, \
+                'An error occurred while handling: {}'.format(context.scenario)
+        except AssertionError as assert_error:
+            if retry_count == 3:
+                raise AssertionError('An error occurred while handling: {}'.format(context.scenario))
+            print("\nX===========================================================================X\n\n"
+                  "There was an assertion failure: {} on try #{}. Trying Again . . .".format(assert_error, retry_count))
+            continue
+        context.execute_steps(
+            '''
+                Then Success Message
+            '''
+        )
+        break
+
+
 @then(u'Success Message')
 def step_impl(context):
-    print("Successfully Verified the Scenario!")
+    print("\nX===========================================================================X\n\n"
+          "Successfully Verified the Scenario!")

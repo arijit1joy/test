@@ -4,6 +4,9 @@ import os
 import requests
 import traceback
 
+import bdd_utility
+from system_variables import InternalResponse
+
 secret_name = os.environ['PTxAPIKey']
 region_name = os.environ['Region']
 
@@ -33,12 +36,15 @@ def send_to_pt(post_url, headers, json_body):
 
         pt_response = requests.post(url=post_url, data=json.dumps(final_json_body), headers=headers_json)
 
-        print("Get device info response as text:", pt_response.text)
+        print("Post to PT response as text:", pt_response.text)
 
         pt_response_body = pt_response.json()
         pt_response_code = pt_response.status_code
-        print("Get device info response code:", pt_response_code)
-        print("Get device info response body:", pt_response_body)
+        print("Post to PT response code:", pt_response_code)
+        print("Post to PT response body:", pt_response_body)
+
+        if pt_response_code != 200:
+            bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDPTPostSuccess.value)
 
     except Exception as e:
         traceback.print_exc()

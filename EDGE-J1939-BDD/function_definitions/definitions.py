@@ -101,14 +101,14 @@ def get_csv_key(context, has_json=None):
     device_id = bu_info_json["device_id"]
     context.publish_time = datetime.utcnow()
     context.fc_csv_file_name = "EDGE_{}_{}_BDD0000_{}_{}_BDD0.csv".format(device_id, esn,
-                                                                             context.publish_time.strftime(
-                                                                                 "%Y%m%d%H%M%S"),
-                                                                             context.publish_time.strftime(
-                                                                                 "%Y-%m-%dT%H:%M:%S.%f"))
+                                                                          context.publish_time.strftime(
+                                                                              "%Y%m%d%H%M%S"),
+                                                                          context.publish_time.strftime(
+                                                                              "%Y-%m-%dT%H:%M:%S.%f"))
     context.fc_json_file_name = "EDGE_{}_{}_BDD0000_{}_{}_BDD0.json".format(device_id, esn,
-                                                                               context.publish_time.strftime(
-                                                                                   "%Y%m%d%H%M%S"),
-                                                                               context.publish_time.strftime(
-                                                                                   "%Y-%m-%dT%H:%M:%S.%f")) if has_json\
+                                                                            context.publish_time.strftime(
+                                                                                "%Y%m%d%H%M%S"),
+                                                                            context.publish_time.strftime(
+                                                                                "%Y-%m-%dT%H:%M:%S.%f")) if has_json \
         else None
     return context.fc_csv_file_name
