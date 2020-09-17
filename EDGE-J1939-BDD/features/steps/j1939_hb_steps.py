@@ -12,7 +12,6 @@ def step_impl(context, bu_type):
     context.bu_type = bu_type.lower()
     context.j1939_hb_valid_hb = definitions.get_hb_file(context)
     context.tsp = "EDGE"
-    context.config_id = context.j1939_hb_valid_hb["dataSamplingConfigId"]
     context.cust_ref = context.j1939_hb_valid_hb["customerReference"] if "customerReference" in \
                                                                          context.j1939_hb_valid_hb else ""
     print("{} HB File:".format(bu_type), context.j1939_hb_valid_hb, sep="\n")
