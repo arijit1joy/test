@@ -677,7 +677,7 @@ Resources:
           environment: !Ref 'ApplicationEnvironmentTag'
           edgeCommonAPIURL: !Ref EdgeCommonDBAPI
           Region: !Sub ${AWS::Region}
-          mapTspFromOwner: '{"EBU": "cummins", "PSBU": "cummins" ,"TATA": "India_Edge", "Navistar": "Navistar", "N2": "Navistar" ,"Paccar":"Paccar"}'
+          mapTspFromOwner: '{"EBU": "Cummins", "PSBU": "Cummins" ,"TATA": "India_Edge", "Navistar": "Navistar", "N2": "Navistar" ,"Paccar":"Paccar"}'
       Layers:
       - !Ref RequestsPythonLayer
       - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:kinesis_utility:${KinesisLayerVersion}
