@@ -30,6 +30,8 @@ def step_impl(context):
     publish_response = components.iot_publish_topic(publish_topic, hb_file)
     context.publish_time = datetime.utcnow()
     print("Publish Response:", publish_response)
+
+    definitions.set_s3_file_name(context, is_hb=True)
     assert publish_response["response_status_code"] != 500, \
         'An error occurred while handling: {}'.format(context.scenario)
 
