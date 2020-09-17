@@ -100,6 +100,5 @@ def set_s3_file_name(context, has_json=None, is_hb=False):
             .format(device_id, esn, context.publish_time.strftime("%Y%m%d%H%M%S"),
                     context.publish_time.strftime("%Y-%m-%dT%H:%M:%S.%f")) if has_json else None
     else:
-        context.hb_json_file_name = "EDGE_{}_{}_BDD0000_{}.json" \
-            .format(device_id, esn, int(datetime.strptime(context.publish_time.strftime('%Y-%m-%d %H:%M'),
-                                                          '%Y-%m-%d %H:%M').timestamp()))
+        context.hb_json_file_name = "EDGE_{}_{}_BDD0000.json" \
+            .format(device_id, esn)
