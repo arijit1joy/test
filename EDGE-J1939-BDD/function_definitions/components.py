@@ -127,7 +127,8 @@ https://stackoverflow.com/questions/48399871/saving-csv-file-to-s3-using-boto3/4
 '''
 
 
-def s3_put_csv_object(bucket_name, key, body, metadata=None):
+def s3_put_csv_object(context, bucket_name, body, metadata=None):
+    key = context.fc_csv_file_name
     try:
         print("\nX===========================================================================X\n\n"
               "Key to put (csv):", key, " <----> Bucket:", bucket_name)
@@ -188,7 +189,7 @@ def s3_get_object(bucket_name, key):
     return response
 
 
-def s3_check_if_key_exists(bucket_name, key, required_metadata=None, matches_json=None):
+def s3_check_if_key_exists(bucket_name, key, required_metadata=None, matches_json=None, is_hb=False):
     try:
         print("\nX===========================================================================X\n\n"
               "Key to find:", key, " <----> Bucket:", bucket_name)
@@ -198,33 +199,39 @@ def s3_check_if_key_exists(bucket_name, key, required_metadata=None, matches_jso
             'Key': key}, 200, 'Success')
 
         try:
-            s3_object_info = s3_client.get_object(Bucket=bucket_name, Key=key)
-            print("S3 Get Response:", s3_object_info)
-            from collections import Counter
-            if required_metadata:
-                s3_object_metadata = s3_object_info["Metadata"]
-                key_match_list = [meta for meta in list(required_metadata.keys()) if
-                                  meta in list(s3_object_metadata.keys())]
-                key_match_dict = {key: s3_object_metadata[key] for key in
-                                  [meta for meta in list(required_metadata.keys()) if
-                                   meta in list(s3_object_metadata.keys())]}
-                if len(key_match_list) != len(list(required_metadata.keys())) or \
-                        Counter(key_match_dict) != Counter(required_metadata):
-                    response = get_response_json('Key exists, but is missing metadata requirement', 500,
-                                                 'Error')
-            if matches_json:
-                s3_object_body = s3_object_info["Body"].read().decode("utf-8")
-                json_body = json.loads(s3_object_body)
-                # Please Leave the below - even though commented - for future debugging
-                print("\nX===========================================================================X\n\n"
-                      "Comparing the JSON ---->", json_body, "to JSON ---->", matches_json, sep="\n")
-                if Counter(json_body) != Counter(matches_json):
-                    response = get_response_json('Key exists, but the format is not as expected', 500, 'Error')
+            key_object = s3_client.list_objects_v2(Bucket=bucket_name, Prefix=key, Delimiter='/')
+            if "Contents" in key_object:
+                key = key_object["Contents"][0]["Key"]
+                s3_object_info = s3_client.get_object(Bucket=bucket_name, Key=key)
+                print("S3 Get Response:", s3_object_info)
+                from collections import Counter
+                if required_metadata:
+                    s3_object_metadata = s3_object_info["Metadata"]
+                    key_match_list = [meta for meta in list(required_metadata.keys()) if
+                                      meta in list(s3_object_metadata.keys())]
+                    key_match_dict = {key: s3_object_metadata[key] for key in
+                                      [meta for meta in list(required_metadata.keys()) if
+                                       meta in list(s3_object_metadata.keys())]}
+                    if len(key_match_list) != len(list(required_metadata.keys())) or \
+                            Counter(key_match_dict) != Counter(required_metadata):
+                        response = get_response_json('Key exists, but is missing metadata requirement', 500,
+                                                     'Error')
+                if matches_json:
+                    s3_object_body = s3_object_info["Body"].read().decode("utf-8")
+                    json_body = json.loads(s3_object_body)
+                    # Please Leave the below - even though commented - for future debugging
+                    print("\nX===========================================================================X\n\n"
+                          "Comparing the JSON ---->", json_body, "to JSON ---->", matches_json, sep="\n")
+                    if Counter(json_body) != Counter(matches_json):
+                        response = get_response_json('Key exists, but the format is not as expected', 500, 'Error')
+            else:
+                response = get_response_json('Key path does not exist!', 500, 'Error')
         except botocore.exceptions.ClientError as e:
             if e.response['Error']['Code'] == "NoSuchKey":
                 response = get_response_json('Key does not exist in the bucket', 500, 'Error')
             else:
-                print("Some other error occurred while getting the object:", e)
+                print("Some error occurred while getting the object:", e)
+                response = get_response_json('Error occurred while checking if key exists!', 500, 'Error')
     except Exception as e:
         traceback.print_exc()
         response = get_response_json(str(e), 500, 'Error')

@@ -76,8 +76,8 @@ def step_impl(context):
 @when(u'The FC file is uploaded to the da-edge-j1939-datalog-files-<env> bucket')
 def step_impl(context):
     import uuid
-    assert components.s3_put_csv_object(context.j1939_csv_bucket,
-                                        definitions.get_csv_key(context, has_json=context.expects_json),
+    definitions.set_s3_file_name(context, has_json=context.expects_json),
+    assert components.s3_put_csv_object(context, context.j1939_csv_bucket,
                                         context.j1939_fc_csv, metadata={"uuid": str(uuid.uuid4())}) != 500, \
         'An error occurred while handling: {}'.format(context.scenario)
 

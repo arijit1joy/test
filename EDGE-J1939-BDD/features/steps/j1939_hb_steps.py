@@ -12,6 +12,7 @@ def step_impl(context, bu_type):
     context.bu_type = bu_type.lower()
     context.j1939_hb_valid_hb = definitions.get_hb_file(context)
     context.tsp = "EDGE"
+    context.config_id = context.j1939_hb_valid_hb["dataSamplingConfigId"]
     context.cust_ref = context.j1939_hb_valid_hb["customerReference"] if "customerReference" in \
                                                                          context.j1939_hb_valid_hb else ""
     print("{} HB File:".format(bu_type), context.j1939_hb_valid_hb, sep="\n")
@@ -40,12 +41,12 @@ def step_impl(context, fc_metadata_step, hb_or_fc_message, hb_or_fc):
     while retry_count < 3:
         sleep(5)  # 5 Second Delay
         retry_count += 1
-        fc = meta = {"j1939type": "FC"} if hb_or_fc == "fc" else None
+        fc = meta = {"j1939type": "FC"} if hb_or_fc == "fc" else False
         print("\nX===========================================================================X\n\n"
               "Template variables: hb_or_fc --> {}, hb_or_fc_message --> {}, "
               "fc_metadata_step --> {}".format(hb_or_fc, hb_or_fc_message, fc_metadata_step))
         try:
-            assert definitions.verify_hb_s3_json_exists(context, "ConvertedFiles", required_metadata=meta, fc=fc) is \
+            assert definitions.verify_s3_json_exists(context, "ConvertedFiles", required_metadata=meta, fc=fc) is \
                    True, 'An error occurred while handling: {}'.format(context.scenario)
         except AssertionError as assert_error:
             if retry_count == 3:
@@ -64,12 +65,12 @@ def step_impl(context, further_step, fc_metadata_step, hb_or_fc_message, hb_or_f
     while retry_count < 3:
         sleep(5)  # 5 Second Delay
         retry_count += 1
-        fc = meta = {"j1939type": "FC"} if hb_or_fc == "fc" else None
+        fc = meta = {"j1939type": "FC"} if hb_or_fc == "fc" else False
         print("\nX===========================================================================X\n\n"
               "Template variables: further_step --> {}, hb_or_fc --> {}, hb_or_fc_message --> {}, "
               "fc_metadata_step --> {}".format(further_step, hb_or_fc, hb_or_fc_message, fc_metadata_step))
         try:
-            assert definitions.verify_hb_s3_json_exists(context, "NGDI", required_metadata=meta, fc=fc) is True, \
+            assert definitions.verify_s3_json_exists(context, "NGDI", required_metadata=meta, fc=fc) is True, \
                 'An error occurred while handling: {}'.format(context.scenario)
         except AssertionError as assert_error:
             if retry_count == 3:
