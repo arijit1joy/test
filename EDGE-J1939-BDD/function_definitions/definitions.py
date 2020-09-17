@@ -34,13 +34,17 @@ def verify_s3_json_exists(context, converted_or_ngdi, required_metadata=None, fc
         year = "%02d" % context.publish_time.year
         month = "%02d" % context.publish_time.month
         day = "%02d" % context.publish_time.day
-        file = context.fc_json_file_name if fc else context.hb_json_file_name
+        file_name = context.fc_json_file_name if fc else context.hb_json_file_name
         match = context.j1939_fc_json if fc else None
+
+        if converted_or_ngdi.lower == "ngdi" and fc:
+            match["vin"] = "BDDTEST00000000"
+            match["equipmentId"] = "EDGE_15240000"
 
         key_exists_response = components.s3_check_if_key_exists(
             context.j1939_final_bucket,
             "{}/{}/{}/{}/{}/{}/{}"
-            .format(converted_or_ngdi, esn, device_id, year, month, day, file),
+            .format(converted_or_ngdi, esn, device_id, year, month, day, file_name),
             required_metadata=required_metadata, matches_json=match)
 
         print("Key Exists Response:", key_exists_response)
@@ -62,10 +66,10 @@ def verify_s3_json_does_not_exist(context, converted_or_ngdi, fc=False):
         year = "%02d" % context.publish_time.year
         month = "%02d" % context.publish_time.month
         day = "%02d" % context.publish_time.day
-        file = context.hb_json_file_name if not fc else context.fc_json_file_name
+        file_name = context.hb_json_file_name if not fc else context.fc_json_file_name
         key_exists_response = components.s3_check_if_key_exists(
             context.j1939_final_bucket,
-            "{}/{}/{}/{}/{}/{}/{}".format(converted_or_ngdi, esn, device_id, year, month, day, file))
+            "{}/{}/{}/{}/{}/{}/{}".format(converted_or_ngdi, esn, device_id, year, month, day, file_name))
         print("Key Exists Response:", key_exists_response)
         assert key_exists_response["response_status_code"] == 500, "An error occurred while verifying that the HB " \
                                                                    "Json does not exist!"
@@ -97,5 +101,5 @@ def set_s3_file_name(context, has_json=None, is_hb=False):
                     context.publish_time.strftime("%Y-%m-%dT%H:%M:%S.%f")) if has_json else None
     else:
         context.hb_json_file_name = "EDGE_{}_{}_BDD0000_{}.json" \
-            .format(device_id, esn, datetime.strptime(context.publish_time.strftime('%Y-%m-%d %H:%M'),
-                                                      '%Y-%m-%d %H:%M').timestamp())
+            .format(device_id, esn, int(datetime.strptime(context.publish_time.strftime('%Y-%m-%d %H:%M'),
+                                                          '%Y-%m-%d %H:%M').timestamp()))

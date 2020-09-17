@@ -214,8 +214,7 @@ def s3_check_if_key_exists(bucket_name, key, required_metadata=None, matches_jso
                                        meta in list(s3_object_metadata.keys())]}
                     if len(key_match_list) != len(list(required_metadata.keys())) or \
                             Counter(key_match_dict) != Counter(required_metadata):
-                        response = get_response_json('Key exists, but is missing metadata requirement', 500,
-                                                     'Error')
+                        response = get_response_json('Key exists, but is missing metadata requirement', 500, 'Error')
                 if matches_json:
                     s3_object_body = s3_object_info["Body"].read().decode("utf-8")
                     json_body = json.loads(s3_object_body)

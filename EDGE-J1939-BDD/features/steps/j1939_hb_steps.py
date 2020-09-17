@@ -111,6 +111,8 @@ def step_impl(context):
             expected_cd_file = definitions.get_json_file(context.cd_sdk_file)
             expected_cd_file["Telematics_Partner_Message_ID"] = cd_sdk_variables[1]
             expected_cd_file["Sent_Date_Time"] = cd_sdk_variables[2]
+            expected_cd_file["VIN"] = cd_sdk_variables[3]
+            expected_cd_file["Equipment_ID"] = cd_sdk_variables[4]
             assert bdd_utility.check_bdd_parameter(json.dumps(expected_cd_file),
                                                    param_name=CDSDK.CDSDKBDDVariables.value) is True
         context.execute_steps(
