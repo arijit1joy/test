@@ -189,7 +189,7 @@ def s3_get_object(bucket_name, key):
     return response
 
 
-def s3_check_if_key_exists(bucket_name, key, required_metadata=None, matches_json=None, is_hb=False):
+def s3_check_if_key_exists(bucket_name, key, required_metadata=None, matches_json=None):
     try:
         print("\nX===========================================================================X\n\n"
               "Key to find:", key, " <----> Bucket:", bucket_name)

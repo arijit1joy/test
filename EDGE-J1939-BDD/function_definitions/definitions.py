@@ -34,25 +34,18 @@ def verify_s3_json_exists(context, converted_or_ngdi, required_metadata=None, fc
         year = "%02d" % context.publish_time.year
         month = "%02d" % context.publish_time.month
         day = "%02d" % context.publish_time.day
+        file = context.fc_json_file_name if fc else context.hb_json_file_name
+        match = context.j1939_fc_json if fc else None
+
         key_exists_response = components.s3_check_if_key_exists(
             context.j1939_final_bucket,
             "{}/{}/{}/{}/{}/{}/{}"
-            .format(converted_or_ngdi, esn, device_id, year, month, day, context.hb_json_file_name),
-            required_metadata=required_metadata
-        ) if not fc else components.s3_check_if_key_exists(
-            context.j1939_final_bucket,
-            "{}/{}/{}/{}/{}/{}/{}"
-            .format(converted_or_ngdi, esn, device_id, year, month, day, context.fc_json_file_name),
-            required_metadata=required_metadata,
-            matches_json=context.j1939_fc_json
-        )
+            .format(converted_or_ngdi, esn, device_id, year, month, day, file),
+            required_metadata=required_metadata, matches_json=match)
+
         print("Key Exists Response:", key_exists_response)
         assert key_exists_response["response_status_code"] != 500, "An error occurred while verifying that the file" \
                                                                    " exists!"
-        if converted_or_ngdi.lower() in "convertedfiles":
-            context.converted_files = key_exists_response["response_body"]["Key"]
-        elif converted_or_ngdi.lower() in "ngdi":
-            context.converted_files = key_exists_response["response_body"]["Key"]
         return True
     except Exception as e:
         print("An Exception occurred! Error: ", e)
@@ -60,7 +53,7 @@ def verify_s3_json_exists(context, converted_or_ngdi, required_metadata=None, fc
         return False
 
 
-def verify_hb_s3_json_does_not_exist(context, converted_or_ngdi, fc=False):
+def verify_s3_json_does_not_exist(context, converted_or_ngdi, fc=False):
     try:
         bu_info_json = context.device_info[context.bu_type]
         print("Current BU Information for BU -", context.bu_type, ":", bu_info_json)
@@ -69,15 +62,10 @@ def verify_hb_s3_json_does_not_exist(context, converted_or_ngdi, fc=False):
         year = "%02d" % context.publish_time.year
         month = "%02d" % context.publish_time.month
         day = "%02d" % context.publish_time.day
-        tsp = context.tsp
+        file = context.hb_json_file_name if not fc else context.fc_json_file_name
         key_exists_response = components.s3_check_if_key_exists(
             context.j1939_final_bucket,
-            "{}/{}/{}/{}/{}/{}/{}".format(converted_or_ngdi, esn, device_id, year, month, day, tsp, device_id)
-        ) if not fc else components.s3_check_if_key_exists(
-            context.j1939_final_bucket,
-            "{}/{}/{}/{}/{}/{}/{}".format(converted_or_ngdi, esn, device_id, year, month, day,
-                                          context.fc_json_file_name)
-        )
+            "{}/{}/{}/{}/{}/{}/{}".format(converted_or_ngdi, esn, device_id, year, month, day, file))
         print("Key Exists Response:", key_exists_response)
         assert key_exists_response["response_status_code"] == 500, "An error occurred while verifying that the HB " \
                                                                    "Json does not exist!"

@@ -145,7 +145,7 @@ def step_impl(context, further_step, hb_or_fc_message, hb_or_fc, converted_files
               "Template variables: further_step --> {}, hb_or_fc --> {}, hb_or_fc_message --> {}, converted_files_"
               "or_ngdi --> {}".format(further_step, hb_or_fc, hb_or_fc_message, converted_files_or_ngdi))
         try:
-            assert definitions.verify_hb_s3_json_does_not_exist(context, converted_files_or_ngdi, fc=fc) is True, \
+            assert definitions.verify_s3_json_does_not_exist(context, converted_files_or_ngdi, fc=fc) is True, \
                 'An error occurred while handling: {}'.format(context.scenario)
         except AssertionError as assert_error:
             if retry_count == 3:
