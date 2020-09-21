@@ -1,10 +1,15 @@
-Feature: J1939 Heart Beat Processing
+Feature: J1939 Fault Code Processing
 
-  Scenario: FC file is received to EDGE cloud
-    Given A valid EBU FC file in CSV format
+  Scenario Outline: FC file is received to EDGE cloud
+    Given A valid <Business Unit> FC file in CSV format
     When The FC file is uploaded to the da-edge-j1939-datalog-files-<env> bucket
     Then A JSON file is created with the FC message in NGDI JSON format as its content and is stored in the edge-j1939-<env> bucket under the file path ConvertedFiles/esn/deviceID/yyyy/MM/dd/fc_file.json with a metadata called j1939type whose value is FC
-    And A JSON file is created with the FC message in NGDI JSON format as its content and is stored in the edge-j1939-<env> bucket under the file path NGDI/esn/device ID/yyyy/MM/dd/fc_file.json with a metadata called j1939type whose value is FC and CP Post Success Message is recorded
+    And <Further Action>
+
+    Examples:
+    | Business Unit | Further Action |
+    | EBU           | A JSON file is created with the FC message in NGDI JSON format as its content and is stored in the edge-j1939-<env> bucket under the file path NGDI/esn/device ID/yyyy/MM/dd/fc_file.json with a metadata called j1939type whose value is FC and CP Post Success Message is recorded |
+    | PSBU          | PT Posting Success is recorded |
 
   Scenario: FC file is received to EDGE cloud for a device ID that does not exist in the EDGE ecosystem
     Given A valid EBU FC file in CSV format containing a device ID that does not exist in the EDGE ecosystem

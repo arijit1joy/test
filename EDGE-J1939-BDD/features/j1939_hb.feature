@@ -9,7 +9,7 @@ Feature: J1939 Heart Beat Processing
     Examples: EBU/PT Variables
       | Business unit         | Further Action|
       | EBU                   | A JSON file is created with the HB message as its content and is stored in the edge-j1939-<env> bucket under the file path NGDI/esn/device ID/yyyy/MM/dd/hb_file.json with no metadata and CP Post Success Message is recorded|
-      | PT                    | Success Message                                                                                                                                                                                              |
+      | PT                    | PT Posting Success is recorded                                                                                                                                                                                              |
 
   Scenario: HB message is received to EDGE cloud for a device ID that does not exist in the EDGE ecosystem
     Given An valid EBU HB message in JSON format containing a device ID that does not exist in the EDGE ecosystem

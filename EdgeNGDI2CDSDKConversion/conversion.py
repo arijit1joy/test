@@ -138,7 +138,8 @@ def post_cd_message(data):
     '''
     if is_bdd:
         bdd_utility.update_bdd_parameter("<---**--->".join([json.dumps(data), data["Telematics_Partner_Message_ID"],
-                                                            sent_date_time]), param_name=CDSDK.CDSDKBDDVariables.value)
+                                                            sent_date_time, data["VIN"], data["Equipment_ID"]]),
+                                         param_name=CDSDK.CDSDKBDDVariables.value)
     '''
         ***************** The above is important for J1939 BDD functionality. Please do not modify! ********************
     '''

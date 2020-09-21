@@ -3,12 +3,13 @@ import traceback
 import requests
 import json
 import boto3
+import botocore
 
 '''
 
-    *Do not modify the code without authorization! It is the reusable components! Please update the metadata below!*
-    Last Modified: 04/03/2020
-    Modified By: PX267 - Joshua Imarhiagbe
+    *Do not modify the code without authorization! It are the reusable components! Please update the metadata below!*
+    Last Modified: 09/21/2020
+    Modified By: PX267 - Joshua Imarhiagbe (px267@cummins.com)
 
 '''
 
@@ -103,7 +104,8 @@ def iot_publish_topic(topic, payload):
 
 def s3_put_json_object(bucket_name, key, body, metadata=None):
     try:
-        print("Key to put (json):", key, " <----> Bucket:", bucket_name)
+        print("\nX===========================================================================X\n\n"
+              "Key to put (json):", key, " <----> Bucket:", bucket_name)
         s3_put_response = s3_client.put_object(Bucket=bucket_name, Key=key, Body=json.dumps(body).encode(),
                                                Metadata=metadata) if metadata else \
             s3_client.put_object(Bucket=bucket_name, Key=key, Body=json.dumps(body).encode())
@@ -125,9 +127,11 @@ https://stackoverflow.com/questions/48399871/saving-csv-file-to-s3-using-boto3/4
 '''
 
 
-def s3_put_csv_object(bucket_name, key, body, metadata=None):
+def s3_put_csv_object(context, bucket_name, body, metadata=None):
+    key = context.fc_csv_file_name
     try:
-        print("Key to put (csv):", key, " <----> Bucket:", bucket_name)
+        print("\nX===========================================================================X\n\n"
+              "Key to put (csv):", key, " <----> Bucket:", bucket_name)
         s3_put_response = s3_client.put_object(Bucket=bucket_name, Key=key, Body=body,
                                                Metadata=metadata) if metadata else \
             s3_client.put_object(Bucket=bucket_name, Key=key, Body=body)
@@ -151,7 +155,7 @@ def s3_delete_object(bucket_name, key, folder_depth=None):
             for i in range(folder_depth):
                 key_array.append(key_split[i])
             key = "/".join(key_array)
-        print("Key to delete:", key, " <----> Bucket:", bucket_name)
+        print("\nX===========================================================================X\n\nKey to delete:", key, " <----> Bucket:", bucket_name)
         s3_delete_response = s3_client.delete_object(Bucket=bucket_name, Key=key)
         print("S3 Delete Response:", s3_delete_response)
         if s3_delete_response["ResponseMetadata"]["HTTPStatusCode"] in [200, 204]:
@@ -166,7 +170,8 @@ def s3_delete_object(bucket_name, key, folder_depth=None):
 
 def s3_get_object(bucket_name, key):
     try:
-        print("Key to get:", key, " <----> Bucket:", bucket_name)
+        print("\nX===========================================================================X\n\n"
+              "Key to get:", key, " <----> Bucket:", bucket_name)
         requested_file = s3_client.get_object(Bucket=bucket_name, Key=key)
         print("S3 Get Response:", requested_file)
         if requested_file['ResponseMetadata']['HTTPStatusCode'] == 200:
@@ -186,16 +191,22 @@ def s3_get_object(bucket_name, key):
 
 def s3_check_if_key_exists(bucket_name, key, required_metadata=None, matches_json=None):
     try:
-        print("Key to find:", key, " <----> Bucket:", bucket_name)
-        s3_list_response = s3_client.list_objects_v2(Bucket=bucket_name)
-        response = get_response_json('Key does not exist in the bucket', 500, 'Error')
-        s3_object_info = None
-        for key_element in s3_list_response['Contents']:
-            if key.lower() in key_element['Key'].lower():
+        print("\nX===========================================================================X\n\n"
+              "Key to find:", key, " <----> Bucket:", bucket_name)
+
+        response = get_response_json({
+            'Message': 'Validated that the given key exists in the bucket',
+            'Key': key}, 200, 'Success')
+
+        try:
+            key_object = s3_client.list_objects_v2(Bucket=bucket_name, Prefix=key, Delimiter='/')
+            if "Contents" in key_object:
+                key = key_object["Contents"][0]["Key"]
+                s3_object_info = s3_client.get_object(Bucket=bucket_name, Key=key)
+                print("S3 Get Response:", s3_object_info)
                 from collections import Counter
                 if required_metadata:
-                    s3_object_info = s3_get_object(bucket_name, key_element['Key'])
-                    s3_object_metadata = s3_object_info["response_body"]["metadata"]
+                    s3_object_metadata = s3_object_info["Metadata"]
                     key_match_list = [meta for meta in list(required_metadata.keys()) if
                                       meta in list(s3_object_metadata.keys())]
                     key_match_dict = {key: s3_object_metadata[key] for key in
@@ -204,21 +215,22 @@ def s3_check_if_key_exists(bucket_name, key, required_metadata=None, matches_jso
                     if len(key_match_list) != len(list(required_metadata.keys())) or \
                             Counter(key_match_dict) != Counter(required_metadata):
                         response = get_response_json('Key exists, but is missing metadata requirement', 500, 'Error')
-                        break
                 if matches_json:
-                    s3_object_info = s3_object_info if s3_object_info else \
-                        s3_get_object(bucket_name, key_element['Key'])
-                    s3_object_body = s3_object_info['response_body']['object_string']
+                    s3_object_body = s3_object_info["Body"].read().decode("utf-8")
                     json_body = json.loads(s3_object_body)
                     # Please Leave the below - even though commented - for future debugging
-                    # print("Comparing the JSON ---->", json_body, "to JSON ---->", matches_json, sep="\n")
+                    print("\nX===========================================================================X\n\n"
+                          "Comparing the JSON ---->", json_body, "to JSON ---->", matches_json, sep="\n")
                     if Counter(json_body) != Counter(matches_json):
                         response = get_response_json('Key exists, but the format is not as expected', 500, 'Error')
-                        break
-                response = get_response_json({
-                            'Message': 'Validated that the given key exists in the bucket',
-                            'Key': key_element['Key']}, 200, 'Success')
-                break
+            else:
+                response = get_response_json('Key path does not exist!', 500, 'Error')
+        except botocore.exceptions.ClientError as e:
+            if e.response['Error']['Code'] == "NoSuchKey":
+                response = get_response_json('Key does not exist in the bucket', 500, 'Error')
+            else:
+                print("Some error occurred while getting the object:", e)
+                response = get_response_json('Error occurred while checking if key exists!', 500, 'Error')
     except Exception as e:
         traceback.print_exc()
         response = get_response_json(str(e), 500, 'Error')
