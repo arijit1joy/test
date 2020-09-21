@@ -71,8 +71,9 @@ def step_impl(context, further_step, fc_metadata_step, hb_or_fc_message, hb_or_f
               "Template variables: further_step --> {}, hb_or_fc --> {}, hb_or_fc_message --> {}, "
               "fc_metadata_step --> {}".format(further_step, hb_or_fc, hb_or_fc_message, fc_metadata_step))
         try:
-            context.j1939_fc_json["vin"] = context.device_info[context.bu_type]["vin"]
-            context.j1939_fc_json["equipmentId"] = "EDGE_{}".format(context.device_info[context.bu_type]["esn"])
+            if fc:
+                context.j1939_fc_json["vin"] = context.device_info[context.bu_type]["vin"]
+                context.j1939_fc_json["equipmentId"] = "EDGE_{}".format(context.device_info[context.bu_type]["esn"])
             assert definitions.verify_s3_json_exists(context, "NGDI", required_metadata=meta, fc=fc) is True, \
                 'An error occurred while handling: {}'.format(context.scenario)
         except AssertionError as assert_error:

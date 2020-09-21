@@ -28,6 +28,7 @@ PowerGenValue = os.environ["PowerGenValue"]
 s3_client = boto3.client('s3')
 ssm_client = boto3.client('ssm')
 
+
 def get_device_info(device_id):
     headers = {'Content-Type': 'application/json', 'x-api-key': currentProductAPIKey}
 
@@ -141,8 +142,8 @@ def lambda_handler(event, context):
         dom = device_info["dom"] if "dom" in device_info else None
 
         print("device_owner:", device_owner, "dom:", dom, sep="\n")
-        
-        #Get Cust Ref, VIN, EquipmentID from EDGEDB and update in the json before posting to CD and PT
+
+        # Get Cust Ref, VIN, EquipmentID from EDGEDB and update in the json before posting to CD and PT
         if "cust_ref" in device_info:
             json_body['customerReference'] = device_info["cust_ref"]
         if "equip_id" in device_info:
@@ -160,7 +161,7 @@ def lambda_handler(event, context):
                             config_spec_name, req_id, device_id, esn, hb_uuid)
 
         elif device_owner in json.loads(os.environ["psbu_device_owner"]):
-            
+
             parameter = ssm_client.get_parameter(Name='da-edge-j1939-content-spec-value', WithDecryption=False)
             print(parameter)
             config_spec_value = json.loads(parameter['Parameter']['Value'])
@@ -176,21 +177,23 @@ def lambda_handler(event, context):
                     fault_codes = element['convertedEquipmentFaultCodes']
                     if fault_codes != None:
                         for fault_code in fault_codes:
-                            fault_code.pop('inactiveFaultCodes')
-                            fault_code.pop('pendingFaultCodes')
-                        
+                            if "inactiveFaultCodes" in fault_code:
+                                fault_code.pop('inactiveFaultCodes')
+                            if "pendingFaultCodes" in fault_code:
+                                fault_code.pop('pendingFaultCodes')
+
             json_string = json.dumps(json_body)
-            #print(" Json after converting into String:",json_string)
-            json_body = json.loads(json_string.replace('count','occurenceCount'))
-            print("After replacing count: ",json_body)
-            
+            # print(" Json after converting into String:",json_string)
+            json_body = json.loads(json_string.replace('count', 'occurenceCount'))
+            print("After replacing count: ", json_body)
+
             pt_poster.send_to_pt(PTJ1939PostURL, PTJ1939Header, json_body)
 
-                # else:
+            # else:
 
-                #     print("This is a PSBU device, but it is PCC, cannot send to PT")
-                #     bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDFormatError.value)
-                #     return
+            #     print("This is a PSBU device, but it is PCC, cannot send to PT")
+            #     bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDFormatError.value)
+            #     return
 
         else:
 
@@ -202,6 +205,7 @@ def lambda_handler(event, context):
         print("ERROR! The device_info value is missing for the device:", device_info)
         bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDDeviceInfoError.value)
         return
+
 
 # Local Test Main
 
