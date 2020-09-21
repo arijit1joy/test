@@ -13,10 +13,10 @@ import botocore
 
 '''
 
-s3_client = boto3.client('s3', verify=False)
-iot_client = boto3.client('iot', verify=False)
-iot_data_client = boto3.client('iot-data', verify=False)
-lambda_client = boto3.client('lambda', verify=False)
+s3_client = boto3.client('s3')
+iot_client = boto3.client('iot')
+iot_data_client = boto3.client('iot-data')
+lambda_client = boto3.client('lambda')
 
 
 def get_response_json(response_body, status_code, status):

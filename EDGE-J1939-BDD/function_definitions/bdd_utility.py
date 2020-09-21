@@ -4,7 +4,7 @@ import boto3
 
 
 def update_bdd_parameter(value, param_name=None):
-    ssm_client = boto3.client("ssm", verify=False)
+    ssm_client = boto3.client("ssm")
     try:
         set_ssm_parameter_response = ssm_client.put_parameter(
             Name="da-edge-j1939-services-bdd-parameter" if not param_name else param_name,
@@ -19,7 +19,7 @@ def update_bdd_parameter(value, param_name=None):
 
 
 def check_bdd_parameter(expected_value, param_name=None, get_parameter=False):
-    ssm_client = boto3.client("ssm", verify=False)
+    ssm_client = boto3.client("ssm")
     try:
         get_ssm_param_response = ssm_client.get_parameter(
             Name="da-edge-j1939-services-bdd-parameter" if not param_name else param_name,
