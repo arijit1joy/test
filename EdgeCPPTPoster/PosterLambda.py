@@ -175,7 +175,7 @@ def lambda_handler(event, context):
             for element in json_body['samples']:
                 if "convertedEquipmentFaultCodes" in element:
                     fault_codes = element['convertedEquipmentFaultCodes']
-                    if fault_codes != None:
+                    if not fault_codes:
                         for fault_code in fault_codes:
                             if "inactiveFaultCodes" in fault_code:
                                 fault_code.pop('inactiveFaultCodes')

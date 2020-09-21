@@ -21,7 +21,7 @@ Feature: J1939 Heart Beat Processing
     Given An invalid EBU HB message in JSON format containing a valid deviceID but missing the telematicsPartnerName and customerReference
     When The HB is posted to the /public topic
     Then A JSON file is created with the HB message as its content and is stored in the edge-j1939-<env> bucket under the file path ConvertedFiles/esn/deviceID/yyyy/MM/dd/hb_file.json with no metadata
-    And A JSON file is created with the HB message as its content and is stored in the edge-j1939-<env> bucket under the file path NGDI/esn/device ID/yyyy/MM/dd/hb_file.json with no metadata and CP Post Success Message is recorded
+    And A JSON file is created with the HB message as its content and is stored in the edge-j1939-<env> bucket under the file path NGDI/esn/device ID/yyyy/MM/dd/hb_file.json with no metadata and There is no CP post success recorded
 
   Scenario: HB message is received to EDGE cloud for an invalid HB file having incorrect values for the telematicsPartnerName and customerReference
     Given An invalid EBU HB message in JSON format containing a valid deviceID but having incorrect values for the telematicsPartnerName and customerReference
