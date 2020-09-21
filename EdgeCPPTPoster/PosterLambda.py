@@ -24,6 +24,7 @@ UseEndpointBucket = os.environ["UseEndpointBucket"]
 PTJ1939PostURL = os.environ["PTJ1939PostURL"]
 PTJ1939Header = os.environ["PTJ1939Header"]
 PowerGenValue = os.environ["PowerGenValue"]
+mapTspFromOwner = os.environ["mapTspFromOwner"]
 
 s3_client = boto3.client('s3')
 ssm_client = boto3.client('ssm')
@@ -150,12 +151,21 @@ def lambda_handler(event, context):
             json_body['equipmentId'] = device_info["equip_id"]
         if "vin" in device_info:
             json_body['vin'] = device_info["vin"]
+        if "telematicsPartnerName" not in json_body or not json_body["telematicsPartnerName"]:
+            print("TSP is missing in the payload, retrieving it . . .")
+            tsp_owners = json.loads(mapTspFromOwner)
+            tsp_name = tsp_owners[device_owner] if device_owner in tsp_owners else None
+            if tsp_name:
+                json_body["telematicsPartnerName"] = tsp_name
+            else:
+                print("Error! Could not retrieve TSP. This is mandatory field!")
+                return
 
         if device_owner in json.loads(os.environ["cd_device_owners"]):
 
             config_spec_name, req_id = post.get_cspec_req_id(json_body['dataSamplingConfigId'])
 
-            print(" After Update json :", json_body)
+            print("After Update json :", json_body)
             post.send_to_cd(bucket_name, file_key, file_size, file_date_time, JSONFormat, s3_client,
                             j1939_type, fc_uuid, EndpointBucket, endpointFile, UseEndpointBucket, json_body,
                             config_spec_name, req_id, device_id, esn, hb_uuid)
