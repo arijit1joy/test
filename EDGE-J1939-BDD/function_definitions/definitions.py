@@ -82,8 +82,8 @@ def verify_s3_json_does_not_exist(context, converted_or_ngdi, fc=False):
 
 def clean_up_bucket(bucket, path, recursive=False):
     print("Cleaning up the path: '{}' from the bucket: '{}'".format(path, bucket))
-    subprocess.call("aws s3 rm s3://{}/{} --recursive".format(bucket, path), shell=True) if recursive else \
-        subprocess.call("aws s3 rm s3://{}/{}".format(bucket, path), shell=True)
+    subprocess.call("aws s3 rm s3://{}/{} --recursive --no-verify-ssl".format(bucket, path), shell=True) if recursive else \
+        subprocess.call("aws s3 rm s3://{}/{} --no-verify-ssl".format(bucket, path), shell=True)
 
 
 def set_s3_file_name(context, has_json=None, is_hb=False):
@@ -100,5 +100,5 @@ def set_s3_file_name(context, has_json=None, is_hb=False):
             .format(device_id, esn, context.publish_time.strftime("%Y%m%d%H%M%S"),
                     context.publish_time.strftime("%Y-%m-%dT%H:%M:%S.%f")) if has_json else None
     else:
-        context.hb_json_file_name = "EDGE_{}_{}_BDD0000.json" \
+        context.hb_json_file_name = "EDGE_{}_{}_BDD0000" \
             .format(device_id, esn)
