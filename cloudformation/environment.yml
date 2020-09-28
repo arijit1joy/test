@@ -196,6 +196,11 @@ Resources:
             Action:
             - firehose:*
             Resource: arn:aws:firehose:*:*:*
+          - Effect: Allow
+            Action:
+              - 'lambda:InvokeFunction'
+              - 'lambda:InvokeAsync'
+            Resource: "*"
           Version: '2012-10-17'
         PolicyName: !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeCPPTPosterLambdaWorkerPolicy"
       RoleName: !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeCPPTPosterLambdaRole"

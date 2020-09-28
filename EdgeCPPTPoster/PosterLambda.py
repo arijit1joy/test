@@ -24,6 +24,7 @@ UseEndpointBucket = os.environ["UseEndpointBucket"]
 PTJ1939PostURL = os.environ["PTJ1939PostURL"]
 PTJ1939Header = os.environ["PTJ1939Header"]
 PowerGenValue = os.environ["PowerGenValue"]
+data_quality_lambda = os.environ["DataQualityLambda"]
 
 s3_client = boto3.client('s3')
 
@@ -87,7 +88,16 @@ def get_business_partner(device_type):
 def lambda_handler(event, context):
     # json_file = open("EDGE_352953080329158_64000002_SC123_20190820045303_F2BA (3).json", "r")
 
-    print("Lambda Event:", json.dumps(event))
+    event_json = json.dumps(event)
+    print("Lambda Event:", event_json)
+
+    # Invoke data quality lambda - start
+    try:
+        data_quality(event_json)
+    except Exception as e:
+        print("ERROR Invoking data quality - ",  e)
+    # Invoke data quality lambda - end
+
     hb_uuid = str(uuid.uuid4())
     bucket_name = event['Records'][0]['s3']['bucket']['name']
     file_key = event['Records'][0]['s3']['object']['key']
@@ -183,6 +193,24 @@ def lambda_handler(event, context):
         print("ERROR! The device_info value is missing for the device:", device_info)
         bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDDeviceInfoError.value)
         return
+
+
+'''
+invoke content spec association API
+'''
+def data_quality(event):
+
+    lambda_client = boto3.client('lambda')
+    response = lambda_client.invoke(
+        FunctionName=data_quality_lambda,
+        InvocationType='Event',
+        Payload=event
+    )
+    if response['StatusCode'] != 202:
+        raise Exception
+    print("Data Quality invoked")
+
+
 
 # Local Test Main
 
