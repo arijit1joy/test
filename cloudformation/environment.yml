@@ -55,7 +55,7 @@ Parameters:
     Type: String
   OlympusApplicationEnvironmentTag:
     Type: String
-  
+
 Globals:
   Function:
     Timeout: 300
@@ -201,6 +201,9 @@ Resources:
               - 'lambda:InvokeFunction'
               - 'lambda:InvokeAsync'
             Resource: "*"
+                - secretsmanager:GetSecretValue
+            Resource: 
+                - !Sub 'arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pt_xapi_key-??????'
           Version: '2012-10-17'
         PolicyName: !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeCPPTPosterLambdaWorkerPolicy"
       RoleName: !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeCPPTPosterLambdaRole"
@@ -218,6 +221,18 @@ Resources:
             Service:
             - iot.amazonaws.com
       RoleName: !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-J1939StreamBucket"
+
+  EDGECPPTAPISecret:
+    Type: AWS::SecretsManager::Secret
+    Properties: 
+      Description: "PT x-API key"
+      Name: "pt_xapi_key"
+      SecretString: '{"x-api-key":"x-api-key"}'
+      Tags:
+        - Key: Name
+          Value: !Sub ${ApplicationName}
+        - Key: ApplicationEnvironment
+          Value: !Ref 'ApplicationEnvironmentTag'
 
   EndpointBucketPolicy:
     Type: AWS::S3::BucketPolicy
@@ -353,30 +368,30 @@ Resources:
                 Value: NGDI
               - Name: suffix
                 Value: .json
-        - Function: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-EDGE-Olympus-BL-DataQuality-${OlympusApplicationEnvironmentTag}'
-          Event: "s3:ObjectCreated:*"
-          Filter:
-            S3Key:
-              Rules:
-                - Name: suffix
-                  Value: .json
-                - Name: prefix
-                  Value: ConvertedFiles/
+        # - Function: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-EDGE-Olympus-BL-DataQuality-${OlympusApplicationEnvironmentTag}'
+        #   Event: "s3:ObjectCreated:*"
+        #   Filter:
+        #     S3Key:
+        #       Rules:
+        #         - Name: suffix
+        #           Value: .json
+        #         - Name: prefix
+        #           Value: ConvertedFiles/
       Tags:
       - Key: Name
         Value: Edge
-
-  OlympusDataQualityLambdaInvokePermission:
-    Type: 'AWS::Lambda::Permission'
-    Properties:
-      FunctionName: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-EDGE-Olympus-BL-DataQuality-${OlympusApplicationEnvironmentTag}'
-      Action: 'lambda:InvokeFunction'
-      Principal: s3.amazonaws.com
-      SourceAccount: !Ref 'AWS::AccountId'
-      SourceArn: !Join
-        - ''
-        - - 'arn:aws:s3:::'
-          - !Sub 'edge-j1939-${ApplicationEnvironmentTag}'
+  
+  # OlympusDataQualityLambdaInvokePermission:
+  #   Type: 'AWS::Lambda::Permission'
+  #   Properties:
+  #     FunctionName: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-EDGE-Olympus-BL-DataQuality-${OlympusApplicationEnvironmentTag}'
+  #     Action: 'lambda:InvokeFunction'
+  #     Principal: s3.amazonaws.com
+  #     SourceAccount: !Ref 'AWS::AccountId'
+  #     SourceArn: !Join
+  #       - ''
+  #       - - 'arn:aws:s3:::'
+  #         - !Sub 'edge-j1939-${ApplicationEnvironmentTag}'
 
   
   EndpointBucket:
@@ -665,7 +680,7 @@ Resources:
           environment: !Ref 'ApplicationEnvironmentTag'
           edgeCommonAPIURL: !Ref EdgeCommonDBAPI
           Region: !Sub ${AWS::Region}
-          mapTspFromOwner: '{"EBU": "cummins", "PSBU": "cummins" ,"TATA": "India_Edge", "Navistar": "Navistar", "N2": "Navistar" ,"Paccar":"Paccar"}'
+          mapTspFromOwner: '{"EBU": "Cummins", "PSBU": "Cummins" ,"TATA": "India_Edge", "Navistar": "Navistar", "N2": "Navistar" ,"Paccar":"Paccar"}'
       Layers:
       - !Ref RequestsPythonLayer
       - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:kinesis_utility:${KinesisLayerVersion}
@@ -704,13 +719,16 @@ Resources:
           PSBUSpecifier: psbu
           EBUSpecifier: onhighway
           PTJ1939PostURL: !Ref PTJ1939PostURL
-          PTJ1939Header: !Ref PTJ1939PostURL
+          PTJ1939Header: !Ref PTJ1939Header
           CDPTJ1939PostURL: !Ref CDPTJ1939PostURL
           CDPTJ1939Header: !Ref CDPTJ1939PostURL
           UseEndpointBucket: Y
           PowerGenValue: powerGen
           Region: !Sub ${AWS::Region}
           cd_device_owners: '{"EBU": "EBU", "TATA": "TATA"}'
+          psbu_device_owner: '{"PSBU": "PSBU"}'
+          PTxAPIKey: 'pt_xapi_key'
+          mapTspFromOwner: '{"EBU": "Cummins", "PSBU": "Cummins" ,"TATA": "India_Edge", "Navistar": "Navistar", "N2": "Navistar" ,"Paccar":"Paccar"}'
       Layers:
       - !Ref RequestsPythonLayer
       - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:kinesis_utility:${KinesisLayerVersion}
@@ -762,3 +780,13 @@ Resources:
       Tier: Standard
       Type: String
       Value: !Ref EdgeJ1939ProcessingBucket
+  
+  EdgeJ1939PTSSM: 
+    Type: AWS::SSM::Parameter
+    Properties: 
+      Description: j1939 PT FC and Periodic Datacontent Spec values
+      Name: da-edge-j1939-content-spec-value
+      Tier: Standard
+      Type: String
+      Value: '{"FC" : "Event1_5", "Periodic" : "Periodic1_9","PT_TSP": "Cummins"}'
+  

@@ -4,6 +4,7 @@ version: 0.2
 phases:
   install:
     commands:
+      - python --version
       - echo $path
       - pip install --upgrade pip
       - pip install behave    

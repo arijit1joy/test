@@ -10,10 +10,16 @@ class InternalResponse(Enum):
     J1939BDDValidDevices = "152400000000000,152400000000001,InvalidDeviceID"
     J1939CPPostSuccess = '"Successfully Received The Message"'
     J1939BDDCSVConvertSuccess = "Successfully Converted NGDI CSV to NGDI JSON"
+    J1939BDDPTPostSuccess = "Successfully posted message to PT"
 
 
 class FCCSVCase(Enum):
+
+    def __init__(self, bu_type):
+        self.bu_type = None
+
     ValidFCCSV = "j1939_fc_152400000000000_valid_fc"
+    ValidPSBUFCCSV = "j1939_fc_152400000000001_valid_fc"
     ValidFCCSVNoDeviceParams = "j1939_fc_152400000000000_valid_fc_no_device_params"
     ValidFCCSVNoSS = "j1939_fc_152400000000000_valid_fc_no_ss"
     ValidFCCSVInvalidDeviceID = "j1939_fc_152400000000000_valid_fc_invalid_device_id"

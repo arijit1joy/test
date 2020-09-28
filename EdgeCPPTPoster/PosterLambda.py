@@ -24,9 +24,14 @@ UseEndpointBucket = os.environ["UseEndpointBucket"]
 PTJ1939PostURL = os.environ["PTJ1939PostURL"]
 PTJ1939Header = os.environ["PTJ1939Header"]
 PowerGenValue = os.environ["PowerGenValue"]
+<<<<<<< HEAD
 data_quality_lambda = os.environ["DataQualityLambda"]
+=======
+mapTspFromOwner = os.environ["mapTspFromOwner"]
+>>>>>>> b7ed91078efaf180091714fdf5b7906108fa6313
 
 s3_client = boto3.client('s3')
+ssm_client = boto3.client('ssm')
 
 
 def get_device_info(device_id):
@@ -152,42 +157,72 @@ def lambda_handler(event, context):
 
         print("device_owner:", device_owner, "dom:", dom, sep="\n")
 
+        # Get Cust Ref, VIN, EquipmentID from EDGEDB and update in the json before posting to CD and PT
+        if "cust_ref" in device_info:
+            json_body['customerReference'] = device_info["cust_ref"]
+        if "equip_id" in device_info:
+            json_body['equipmentId'] = device_info["equip_id"]
+        if "vin" in device_info:
+            json_body['vin'] = device_info["vin"]
+        if "telematicsPartnerName" not in json_body or not json_body["telematicsPartnerName"]:
+            print("TSP is missing in the payload, retrieving it . . .")
+            tsp_owners = json.loads(mapTspFromOwner)
+            tsp_name = tsp_owners[device_owner] if device_owner in tsp_owners else None
+            if tsp_name:
+                json_body["telematicsPartnerName"] = tsp_name
+            else:
+                print("Error! Could not retrieve TSP. This is mandatory field!")
+                return
+
         if device_owner in json.loads(os.environ["cd_device_owners"]):
 
             config_spec_name, req_id = post.get_cspec_req_id(json_body['dataSamplingConfigId'])
 
-            #Get Cust Ref, VIN, EquipmentID from EDGEDB and update in the json before posting to CD
-            if "cust_ref" in device_info:
-                json_body['customerReference'] = device_info["cust_ref"]
-            if "equip_id" in device_info:
-                json_body['equipmentId'] = device_info["equip_id"]
-            if "vin" in device_info:
-                json_body['vin'] = device_info["vin"]
-
-            print(" After Update json :", json_body)
+            print("After Update json :", json_body)
             post.send_to_cd(bucket_name, file_key, file_size, file_date_time, JSONFormat, s3_client,
                             j1939_type, fc_uuid, EndpointBucket, endpointFile, UseEndpointBucket, json_body,
                             config_spec_name, req_id, device_id, esn, hb_uuid)
 
+        elif device_owner in json.loads(os.environ["psbu_device_owner"]):
+
+            parameter = ssm_client.get_parameter(Name='da-edge-j1939-content-spec-value', WithDecryption=False)
+            print(parameter)
+            config_spec_value = json.loads(parameter['Parameter']['Value'])
+            if j1939_type.lower() == 'fc':
+                json_body['dataSamplingConfigId'] = config_spec_value['FC']
+            else:
+                json_body['dataSamplingConfigId'] = config_spec_value['Periodic']
+
+            json_body['telematicsPartnerName'] = config_spec_value['PT_TSP']
+
+            for element in json_body['samples']:
+                if "convertedEquipmentFaultCodes" in element:
+                    fault_codes = element['convertedEquipmentFaultCodes']
+                    if not fault_codes:
+                        for fault_code in fault_codes:
+                            if "inactiveFaultCodes" in fault_code:
+                                fault_code.pop('inactiveFaultCodes')
+                            if "pendingFaultCodes" in fault_code:
+                                fault_code.pop('pendingFaultCodes')
+
+            json_string = json.dumps(json_body)
+            # print(" Json after converting into String:",json_string)
+            json_body = json.loads(json_string.replace('count', 'occurenceCount'))
+            print("After replacing count: ", json_body)
+
+            pt_poster.send_to_pt(PTJ1939PostURL, PTJ1939Header, json_body)
+
+            # else:
+
+            #     print("This is a PSBU device, but it is PCC, cannot send to PT")
+            #     bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDFormatError.value)
+            #     return
+
         else:
 
-            if dom:
-
-                if dom.lower() is not PowerGenValue.lower():
-
-                    pt_poster.send_to_pt(PTJ1939PostURL, PTJ1939Header, json_body)
-
-                else:
-
-                    print("This is a PSBU device, but it is PCC, cannot send to PT")
-                    bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDFormatError.value)
-                    return
-
-            else:
-
-                print("Error! The boxApplication value is not recorded in the EDGE DB!")
-                bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDPSBUDeviceInfoError.value)
-                return
+            print("Error! The boxApplication value is not recorded in the EDGE DB!")
+            bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDPSBUDeviceInfoError.value)
+            return
 
     else:
         print("ERROR! The device_info value is missing for the device:", device_info)
@@ -195,6 +230,7 @@ def lambda_handler(event, context):
         return
 
 
+<<<<<<< HEAD
 '''
 invoke content spec association API
 '''
@@ -212,6 +248,8 @@ def data_quality(event):
 
 
 
+=======
+>>>>>>> b7ed91078efaf180091714fdf5b7906108fa6313
 # Local Test Main
 
 

@@ -44,17 +44,20 @@ def send_to_cd(bucket_name, key, file_size, file_date_time, json_format, client,
                                                           Body=json.dumps(json_body).encode(),
                                                           Metadata={'j1939type': j1939_type, 'uuid': fc_uuid})
 
-                build_metadata_and_write(fc_uuid, device_id, file_key, file_size, file_date_time, 'J1939_FC',
-                                             'CD_PT_POSTED', esn, config_spec_name_fc, req_id_fc, None, os.environ["edgeCommonAPIURL"])
+                build_metadata_and_write(
+                    fc_uuid, device_id, file_key, file_size, file_date_time, 'J1939_FC', 'CD_PT_POSTED',
+                    esn, config_spec_name_fc, req_id_fc, None, os.environ["edgeCommonAPIURL"])
 
             else:
 
                 post_to_ngdi_response = client.put_object(Bucket=bucket_name, Key=key.replace("ConvertedFiles", "NGDI"),
-                                  Body=json.dumps(json_body).encode(), Metadata={'j1939type': j1939_type,
-                                                                                 'uuid': hb_uuid})
+                                                          Body=json.dumps(json_body).encode(),
+                                                          Metadata={'j1939type': j1939_type,
+                                                                    'uuid': hb_uuid})
 
-                build_metadata_and_write(hb_uuid, device_id, file_key, file_size, file_date_time, 'J1939_HB',
-                                             'CD_PT_POSTED', esn, config_spec_name, req_id, None, os.environ["edgeCommonAPIURL"])
+                build_metadata_and_write(
+                    hb_uuid, device_id, file_key, file_size, file_date_time, 'J1939_HB', 'CD_PT_POSTED', esn,
+                    config_spec_name, req_id, None, os.environ["edgeCommonAPIURL"])
 
             print("Post CD File to NGDI Folder Response:", post_to_ngdi_response)
 
