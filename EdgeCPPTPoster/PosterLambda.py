@@ -24,12 +24,8 @@ UseEndpointBucket = os.environ["UseEndpointBucket"]
 PTJ1939PostURL = os.environ["PTJ1939PostURL"]
 PTJ1939Header = os.environ["PTJ1939Header"]
 PowerGenValue = os.environ["PowerGenValue"]
-<<<<<<< HEAD
-data_quality_lambda = os.environ["DataQualityLambda"]
-=======
 mapTspFromOwner = os.environ["mapTspFromOwner"]
->>>>>>> b7ed91078efaf180091714fdf5b7906108fa6313
-
+data_quality_lambda = os.environ["DataQualityLambda"]
 s3_client = boto3.client('s3')
 ssm_client = boto3.client('ssm')
 
@@ -229,13 +225,10 @@ def lambda_handler(event, context):
         bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDDeviceInfoError.value)
         return
 
-
-<<<<<<< HEAD
 '''
 invoke content spec association API
 '''
 def data_quality(event):
-
     lambda_client = boto3.client('lambda')
     response = lambda_client.invoke(
         FunctionName=data_quality_lambda,
@@ -246,10 +239,6 @@ def data_quality(event):
         raise Exception
     print("Data Quality invoked")
 
-
-
-=======
->>>>>>> b7ed91078efaf180091714fdf5b7906108fa6313
 # Local Test Main
 
 
