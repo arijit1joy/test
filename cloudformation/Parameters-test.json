@@ -19,6 +19,7 @@
         "EdgeCoreLayerVersion": "1",
         "DeviceHealthDeliveryStream": "da-edge-aai-service-heartbeat-data-stream",
         "AuthToken": "https://api.edge-test.aws.cummins.com/v3/edge-device/provider-auth-token?TspName={TSP-Name}",
-        "EdgeDBUtility": "arn:aws:lambda:us-east-2:732927748536:layer:edge_db_utility:4"
+        "EdgeDBUtility": "arn:aws:lambda:us-east-2:732927748536:layer:edge_db_utility:4",
+		"DataQualityLambda":"da-EDGE-Olympus-BL-DataQuality"
     }
 }
