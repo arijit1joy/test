@@ -714,6 +714,7 @@ Resources:
       Layers:
       - !Ref RequestsPythonLayer
       - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:kinesis_utility:${KinesisLayerVersion}
+      - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:Edge-Core:${EdgeCoreLayerVersion}
       - !Ref EdgeDBUtility
       Tags:
         Name: Edge
