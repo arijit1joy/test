@@ -10,7 +10,7 @@ from metadata_utility import write_health_parameter_to_database
 import edge_core as edge
 from system_variables import InternalResponse, CDSDK
 import bdd_utility
-from update_scheduler import update_scheduler_table
+
 
 import sys
 
@@ -428,8 +428,6 @@ def process(bucket, key, file_size):
     build_metadata_and_write(uuid, device_id, file_name, file_size, file_date_time, data_protocol,
                              'FILE_SENT', esn, config_spec_name, request_id, consumption_per_request,
                              os.environ["edgeCommonAPIURL"])
-    if request_id :
-        update_scheduler_table(request_id)
     print("Retrieving Metadata from the file:", j1939_file)
     print("Retrieving Samples from the file:", j1939_file)
     samples = j1939_file["samples"] if "samples" in j1939_file else None
