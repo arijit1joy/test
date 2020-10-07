@@ -1,6 +1,6 @@
 import unittest
 from unittest import mock
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 import update_scheduler
 
 
@@ -33,8 +33,3 @@ def test_update_scheduler_function_return_exception(mock_get_update_scheduler_qu
     result = update_scheduler.update_scheduler_table('REQ1233')
     mock_get_update_scheduler_query.assert_called()
     mock_api_request.assert_called()
-
-
-
-
-

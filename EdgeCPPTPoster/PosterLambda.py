@@ -144,6 +144,7 @@ def lambda_handler(event, context):
 
         build_metadata_and_write(hb_uuid, device_id, file_name, file_size, file_date_time, 'J1939_HB',
                                  'FILE_RECEIVED', esn, config_spec_name, req_id, None, os.environ["edgeCommonAPIURL"])
+    # Updating scheduler lambda based on the request_id
     if req_id :
         update_scheduler_table(req_id)
     print("Device ID sending the file:", device_id)
