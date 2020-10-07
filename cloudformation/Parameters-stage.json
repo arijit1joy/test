@@ -2,11 +2,8 @@
     "Parameters": {
         "ApplicationEnvironmentTag": "stage",
         "ApplicationName": "da-edge-j1939",
-        "DomainName": "aws.cummins.com",
-        "ApiBasePath": "v1",
         "VersionId": "empty",
         "ArtifactsBucket": "da-edge-pre-reqs-j1939-src-stage-artifactbucket-1kq3yi9198kdj",
-        "CurrentProductURL": "https://connectedsolutions-pv.cummins.com/",
         "EdgeCommonDBAPI": "https://api.edge-stage.aws.cummins.com/v3/EdgeDBLambda",
         "PTJ1939PostURL": "https://preventech-test.aws.cummins.com/Test/ngdi",
         "PTJ1939Header": "{\"Content-Type\": \"application/json\", \"Prefer\": \"param=single-object\", \"x-api-key\": \"\"}",
@@ -18,7 +15,7 @@
         "EdgeCoreLayerVersion": "3",
         "DeviceHealthDeliveryStream": "da-edge-aai-service-heartbeat-data-stream",
         "AuthToken": "https://api.edge-stage.aws.cummins.com/v3/edge-device/provider-auth-token?TspName={TSP-Name}",
-        "EdgeDBUtility": "arn:aws:lambda:us-east-2:170736887717:layer:edge_db_utility:4",
+        "EdgeDBUtilityLayerVersion": "4",
 		"DataQualityLambda":"da-EDGE-Olympus-BL-DataQuality"
     }
 }
