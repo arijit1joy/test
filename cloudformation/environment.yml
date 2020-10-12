@@ -49,44 +49,7 @@ Globals:
         region: !Sub ${AWS::Region}
 
 Resources:
-  # IAM role for lambda to assume 
-  LambdaTrustRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Statement:
-        - Action: sts:AssumeRole
-          Effect: Allow
-          Principal:
-            Service:
-            - lambda.amazonaws.com
-      ManagedPolicyArns:
-      - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
-      # These should be reviewed and only added for services this lambda app needs function
-      - arn:aws:iam::aws:policy/AmazonS3FullAccess
-      - arn:aws:iam::aws:policy/AmazonSSMReadOnlyAccess
-      - arn:aws:iam::aws:policy/AmazonSNSFullAccess
-      - arn:aws:iam::aws:policy/AmazonAPIGatewayInvokeFullAccess
-      - arn:aws:iam::aws:policy/AWSLambdaFullAccess
-      - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
-      Path: /
-      Policies:
-      - PolicyDocument:
-          Statement:
-          - Action:
-            - logs:*
-            - ec2:CreateNetworkInterface
-            - ec2:DescribeNetworkInterfaces
-            - ec2:DeleteNetworkInterface
-            - cloudformation:Describe*
-            - lambda:Invoke*
-            - iot:Publish
-            Effect: Allow
-            Resource: '*'
-          Version: '2012-10-17'
-        PolicyName: !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-LambdaWorkerPolicy"
-      RoleName: !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-LambdaRole"
-
+  # IAM role for lambda to assume
   EdgeNGDI2CDSDKConversionLambdaRole:
     Type: AWS::IAM::Role
     Properties:
@@ -443,7 +406,6 @@ Resources:
               - EdgeJ1939CSVConverterLambdaRole
               - Arn
             - !Sub "arn:aws:iam::${AWS::AccountId}:role/da-edge-oem-OEMLambdaTrustRole-${ApplicationEnvironmentTag}"
-                # - !Sub "arn:aws:iam::${AWS::AccountId}:role/da-edge-aai-service-Consumer-LambdaRole-${ApplicationEnvironmentTag}"
         - Action:
           - s3:Put*
           - s3:Get*
