@@ -1,2 +1,4 @@
-/*/.idea
-edge_core.py
+*.idea*
+*__pycache__*
+*.coverage*
+*edge_core.py*

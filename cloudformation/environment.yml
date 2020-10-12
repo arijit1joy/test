@@ -49,7 +49,7 @@ Parameters:
     Type: String
   EdgeCoreLayerVersion:
     Type: String
-  EdgeDBUtility:
+  EdgeDBUtilityLayerVersion:
     Type: String
   AuthToken:
     Type: String
@@ -170,6 +170,7 @@ Resources:
           Version: '2012-10-17'
         PolicyName: !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeJ1939CSVConverterLambdaWorkerPolicy"
       RoleName: !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeJ1939CSVConverterLambdaRole"
+
   EdgeCPPTPosterLambdaRole:
     Type: AWS::IAM::Role
     Properties:
@@ -209,6 +210,39 @@ Resources:
           Version: '2012-10-17'
         PolicyName: !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeCPPTPosterLambdaWorkerPolicy"
       RoleName: !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeCPPTPosterLambdaRole"
+
+  ObfuscateGPSCoordinatesLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+      Path: /
+      Policies:
+      - PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action:
+              - logs:*
+            Resource: arn:aws:logs:*:*:*
+          - Effect: Allow
+            Action:
+              - s3:Put*
+              - s3:Get*
+              - s3:List*
+            Resource: !Sub ${EdgeJ1939ProcessingBucket.Arn}
+          - Effect: Allow
+            Action:
+              - 'lambda:InvokeFunction'
+              - 'lambda:InvokeAsync'
+            Resource: "*"
+          Version: '2012-10-17'
+        PolicyName: !Sub "${ApplicationName}-ObfuscateGPSCoordinatesLambdaPolicy-${ApplicationEnvironmentTag}"
+      RoleName: !Sub "${ApplicationName}-ObfuscateGPSCoordinatesLambdaRole-${ApplicationEnvironmentTag}"
 
   RoleForJ1939StreamBucket:
     Type: AWS::IAM::Role
@@ -260,6 +294,7 @@ Resources:
             - !GetAtt
               - EdgeCPPTPosterLambdaRole
               - Arn
+
   RequestsPythonLayer:
     Type: AWS::Lambda::LayerVersion
     Properties:
@@ -282,7 +317,7 @@ Resources:
         S3Bucket: !Ref ArtifactsBucket
         S3Key: python_pandas.zip
       Description: python-requests for restful API calls
-      LayerName: !Sub "pandas-requests"
+      LayerName: "pandas-requests"
 
   LambdaInvokePermissionJ1939Converter:
     Type: AWS::Lambda::Permission
@@ -474,8 +509,9 @@ Resources:
               - /ConvertedFiles/*
           Principal:
             AWS: !GetAtt
-            - RoleForJ1939StreamBucket
+            - ObfuscateGPSCoordinatesLambdaRole
             - Arn
+
   EdgeJ1939DataLogBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties: 
@@ -512,6 +548,7 @@ Resources:
             - !GetAtt
               - EdgeJ1939CSVConverterLambdaRole
               - Arn
+
   SpnlistbucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties: 
@@ -535,6 +572,8 @@ Resources:
             - !GetAtt
               - EdgeNGDI2CDSDKConversionLambdaRole
               - Arn
+
+  # Lambda Invoke Permissions
   LambdaInvokePermissionJ1939ProcessingBucket:
     Type: AWS::Lambda::Permission
     Properties:
@@ -577,8 +616,19 @@ Resources:
       - - 'arn:aws:s3:::'
         - !Sub 'edge-j1939-${ApplicationEnvironmentTag}'
 
-  #Functions
+  LambdaInvokeObfuscateGPSCoordinatesPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: "ObfuscateGPSCoordinatesLambda"
+      Action: "lambda:InvokeFunction"
+      Principal: "iot.amazonaws.com"
+      SourceArn:
+        Fn::GetAtt:
+          - "EdgePublicDataIoTTopicRule"
+          - "Arn"
 
+  # Functions
   EdgeNGDI2CDSDKConversion:
     Type: AWS::Serverless::Function
     DependsOn: RequestsPythonLayer
@@ -633,7 +683,7 @@ Resources:
       - !Ref RequestsPythonLayer
       - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:kinesis_utility:${KinesisLayerVersion}
       - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:Edge-Core:${EdgeCoreLayerVersion}
-      - !Ref EdgeDBUtility
+      - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:edge_db_utility:${EdgeDBUtilityLayerVersion}
       Tags:
         Name: Edge
           
@@ -665,7 +715,7 @@ Resources:
       Layers:
       - !Ref RequestsPythonLayer
       - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:kinesis_utility:${KinesisLayerVersion}
-      - !Ref EdgeDBUtility
+      - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:edge_db_utility:${EdgeDBUtilityLayerVersion}
       Tags:
         Name: Edge
 
@@ -702,7 +752,7 @@ Resources:
           PTJ1939PostURL: !Ref PTJ1939PostURL
           PTJ1939Header: !Ref PTJ1939Header
           CDPTJ1939PostURL: !Ref CDPTJ1939PostURL
-          CDPTJ1939Header: !Ref CDPTJ1939PostURL
+          CDPTJ1939Header: !Ref CDPTJ1939Header
           UseEndpointBucket: Y
           PowerGenValue: powerGen
           Region: !Sub ${AWS::Region}
@@ -715,7 +765,28 @@ Resources:
       - !Ref RequestsPythonLayer
       - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:kinesis_utility:${KinesisLayerVersion}
       - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:Edge-Core:${EdgeCoreLayerVersion}
-      - !Ref EdgeDBUtility
+      - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:edge_db_utility:${EdgeDBUtilityLayerVersion}
+      Tags:
+        Name: Edge
+
+  ObfuscateGPSCoordinatesLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambda_function.lambda_handler
+      FunctionName: !Sub '${ApplicationName}-ObfuscateGPSCoordinates-${ApplicationEnvironmentTag}'
+      Role: !GetAtt
+      - ObfuscateGPSCoordinatesLambdaRole
+      - Arn
+      Runtime: python3.7
+      CodeUri:
+        Bucket: !Ref ArtifactsBucket
+        Key: !Sub '${VersionId}/da-edge-obfuscate-gps-coordinates.zip'
+      Environment:
+        Variables:
+          j1939_end_bucket: !Ref EdgeJ1939ProcessingBucket 
+      Layers:
+      - !Ref RequestsPythonLayer
+      - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:edge_db_utility:${EdgeDBUtilityLayerVersion}
       Tags:
         Name: Edge
 
@@ -724,7 +795,7 @@ Resources:
     Properties:
       RuleName: !Sub "da_edge_j1939_EdgeIotRulePublicDataDataLogger_${ApplicationEnvironmentTag}"
       TopicRulePayload:
-        RuleDisabled: 'false'
+        RuleDisabled: False
         AwsIotSqlVersion: '2016-03-23'
         Sql: SELECT componentSerialNumber,telematicsPartnerName,dataSamplingConfigId,
           * from '$aws/things/+/public'
@@ -737,6 +808,9 @@ Resources:
               timestamp(), "UTC")}/EDGE_${topic(3)}_$componentSerialNumber_$dataSamplingConfigId_${timestamp()}.json
         - Lambda:
             FunctionArn: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-edge-oem-HBMessage-${ApplicationEnvironmentTag}"
+        - Lambda:
+            FunctionArn: !Sub ${ObfuscateGPSCoordinatesLambda.Arn}
+  
   EdgeJ1939Bucket: 
     Type: AWS::SSM::Parameter
     Properties: 

@@ -10,6 +10,7 @@ from metadata_utility import write_health_parameter_to_database
 import edge_core as edge
 from system_variables import InternalResponse, CDSDK
 import bdd_utility
+from obfuscate_gps_utility import deobfuscate_gps_coordinates
 
 
 import sys
@@ -131,6 +132,12 @@ def post_cd_message(data):
     if data["Telematics_Box_ID"] in InternalResponse.J1939BDDValidDevices.value.split(","):
         print("This is a BDD execution!")
         is_bdd = True
+
+    # de-obfuscate GPS co-ordinates
+    if "Latitude" in data and "Longitude" in data:
+        latitude = data["Latitude"]
+        longitude = data["Longitude"]
+        data["Latitude"], data["Longitude"] = deobfuscate_gps_coordinates(latitude, longitude)
 
     print('File to send to CD   ------------------> ', data)
 
