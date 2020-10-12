@@ -7,26 +7,8 @@ Parameters:
     Type: String
   ApplicationName:
     Type: String
-  ApiBasePath:
-    Type: String
-  DomainName:
-    Type: String
   ArtifactsBucket:
     Type: String
-  CurrentProductURL:
-    Type: String
-  DatabaseUser:
-    Type: String
-    Default: CS_PARTNER_APP
-  DatabasePassword:
-    Type: String
-    Default: QH6xV9v3u5aVBydd
-  DatabaseRestInterval:
-    Type: String
-    Default: '5'
-  DatabaseURL:
-    Type: String
-    Default: jdbc:mysql://aurora-partner-databasecluster-1885wpht46wyz.cluster-ct55tiipixxn.us-east-1.rds.amazonaws.com:3306
   VersionId:
     Type: String
   EdgeCommonDBAPI:
@@ -631,7 +613,6 @@ Resources:
   # Functions
   EdgeNGDI2CDSDKConversion:
     Type: AWS::Serverless::Function
-    DependsOn: RequestsPythonLayer
     Properties:
       Handler: conversion.lambda_handler
       FunctionName: !Sub '${ApplicationName}-EdgeNGDI2CDSDKConversion-${ApplicationEnvironmentTag}'
@@ -689,7 +670,6 @@ Resources:
           
   EdgeJ1939CSVConverter:
     Type: AWS::Serverless::Function
-    DependsOn: RequestsPythonLayer
     Properties:
       Handler: ConverterLambda.lambda_handler
       FunctionName: !Sub '${ApplicationName}-EdgeJ1939CSVConverter-${ApplicationEnvironmentTag}'
@@ -721,7 +701,6 @@ Resources:
 
   EdgeCPPTPoster:
     Type: AWS::Serverless::Function
-    DependsOn: RequestsPythonLayer
     Properties:
       Handler: PosterLambda.lambda_handler
       FunctionName: !Sub '${ApplicationName}-EdgeCPPTPoster-${ApplicationEnvironmentTag}'
@@ -806,8 +785,6 @@ Resources:
             Key: ConvertedFiles/$componentSerialNumber/${topic(3)}/${parse_time("yyyy",
               timestamp(), "UTC")}/${parse_time("MM", timestamp(), "UTC")}/${parse_time("dd",
               timestamp(), "UTC")}/EDGE_${topic(3)}_$componentSerialNumber_$dataSamplingConfigId_${timestamp()}.json
-        - Lambda:
-            FunctionArn: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-edge-oem-HBMessage-${ApplicationEnvironmentTag}"
         - Lambda:
             FunctionArn: !Sub ${ObfuscateGPSCoordinatesLambda.Arn}
   
