@@ -144,7 +144,7 @@ def lambda_handler(event, context):
         data_config_filename = '_'.join(['EDGE', device_id, esn, config_spec_name])
         request_id = get_request_id_from_consumption_view('J1939_HB', data_config_filename)
         build_metadata_and_write(hb_uuid, device_id, file_name, file_size, file_date_time, 'J1939_HB',
-                                 'FILE_RECEIVED', esn, config_spec_name, req_id, None, os.environ["edgeCommonAPIURL"])
+                                 'FILE_RECEIVED', esn, config_spec_name, request_id, None, os.environ["edgeCommonAPIURL"])
         # Updating scheduler lambda based on the request_id
         if request_id :
             update_scheduler_table(request_id, device_id)
