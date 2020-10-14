@@ -9,7 +9,7 @@ import uuid
 from metadata_utility import build_metadata_and_write
 import bdd_utility
 from system_variables import InternalResponse
-from update_scheduler import update_scheduler_table
+from update_scheduler import update_scheduler_table, get_request_id_from_consumption_view
 from pypika import Query, Table
 
 # Retrieve the environment variables
@@ -141,12 +141,14 @@ def lambda_handler(event, context):
 
     if j1939_type.lower() == 'hb':
         config_spec_name, req_id = post.get_cspec_req_id(json_body['dataSamplingConfigId'])
-
+        data_config_filename = '_'.join(['EDGE', device_id, esn, config_spec_name])
+        request_id = get_request_id_from_consumption_view('J1939_HB', data_config_filename)
         build_metadata_and_write(hb_uuid, device_id, file_name, file_size, file_date_time, 'J1939_HB',
                                  'FILE_RECEIVED', esn, config_spec_name, req_id, None, os.environ["edgeCommonAPIURL"])
-    # Updating scheduler lambda based on the request_id
-    if req_id :
-        update_scheduler_table(req_id)
+        # Updating scheduler lambda based on the request_id
+        if request_id :
+            update_scheduler_table(request_id, device_id)
+                        
     print("Device ID sending the file:", device_id)
 
     device_info = get_device_info(device_id)
