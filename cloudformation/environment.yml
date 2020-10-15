@@ -31,6 +31,8 @@ Parameters:
     Type: String
   EdgeCoreLayerVersion:
     Type: String
+  SchedulerQueriesLayerVersion:
+    Type: String
   EdgeDBUtilityLayerVersion:
     Type: String
   AuthToken:
@@ -707,6 +709,7 @@ Resources:
       - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:kinesis_utility:${KinesisLayerVersion}
       - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:Edge-Core:${EdgeCoreLayerVersion}
       - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:edge_db_utility:${EdgeDBUtilityLayerVersion}
+      - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:Scheduler-queries:${SchedulerQueriesLayerVersion}
       Tags:
         Name: Edge
 

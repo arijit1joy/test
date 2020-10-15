@@ -1,6 +1,7 @@
 import boto3
 import os
 import edge_core as edge
+import scheduler_queries as scheduler_query
 from pypika import Query, Table, Order, functions as fn
 
 db_api_url = os.environ["EdgeCommonDBAPI"]
@@ -31,7 +32,7 @@ def get_request_id_from_consumption_view_query(data_protocol, data_config_filena
 
 def update_scheduler_table(req_id, device_id):
     print('updating scheduler table')
-    query = get_update_scheduler_query(req_id, device_id)
+    query = scheduler_query.get_update_scheduler_query(req_id, device_id)
     print(query)
     try:
         edge.api_request(db_api_url, "post", query)
@@ -39,11 +40,3 @@ def update_scheduler_table(req_id, device_id):
     except Exception as exception:
         print('Failed to update scheduler table')
         return edge.server_error(str(exception))
-
-
-def get_update_scheduler_query(req_id, device_id):
-    scheduler = Table('da_edge_olympus.scheduler')
-    query = Query.update(scheduler).set(scheduler.status, 'Data Rx in Progress').where(scheduler.request_id == req_id
-                                                                                       ).where(scheduler.device_id == device_id
-                                                                                       ).where(scheduler.status == 'Config Accepted')
-    return query.get_sql(quote_char=None)
