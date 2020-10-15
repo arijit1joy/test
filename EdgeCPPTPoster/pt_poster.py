@@ -6,6 +6,7 @@ import traceback
 
 import bdd_utility
 from system_variables import InternalResponse
+from obfuscate_gps_utility import deobfuscate_gps_coordinates
 
 secret_name = os.environ['PTxAPIKey']
 region_name = os.environ['Region']
@@ -30,6 +31,18 @@ def send_to_pt(post_url, headers, json_body):
         else:
             print("PT x-api-key not exist in secret manager")
         headers_json['x-api-key'] = api_key
+
+        # de-obfuscate GPS co-ordinates
+        if "samples" in json_body:
+            for sample in json_body["samples"]:
+                if "convertedDeviceParameters" in sample:
+                    converted_device_params = sample["convertedDeviceParameters"]
+                    if "Latitude" in converted_device_params and "Longitude" in converted_device_params:
+                        latitude = converted_device_params["Latitude"]
+                        longitude = converted_device_params["Longitude"]
+                        converted_device_params["Latitude"], converted_device_params["Longitude"] = \
+                            deobfuscate_gps_coordinates(latitude, longitude)
+
         final_json_body = [json_body]
         print("Posting the JSON body:", final_json_body, "to the PT Cloud through URL:",
               post_url, "with headers:", headers_json)
