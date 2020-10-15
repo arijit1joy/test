@@ -17,6 +17,6 @@
         "AuthToken": "https://api.edge-test.aws.cummins.com/v3/edge-device/provider-auth-token?TspName={TSP-Name}",
         "EdgeDBUtilityLayerVersion": "5",
 		"DataQualityLambda":"da-EDGE-Olympus-BL-DataQuality",
-        "SchedulerQueriesLayerVersion": "1"
+        "SchedulerQueriesLayerVersion": "2"
     }
 }
