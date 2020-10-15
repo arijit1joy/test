@@ -43,7 +43,7 @@ def update_scheduler_table(req_id, device_id):
 
 def get_update_scheduler_query(req_id, device_id):
     scheduler = Table('da_edge_olympus.scheduler')
-    query = Query.update(scheduler).set(scheduler.status, 'Data Rx in progress').where(scheduler.request_id == req_id
+    query = Query.update(scheduler).set(scheduler.status, 'Data Rx in Progress').where(scheduler.request_id == req_id
                                                                                        ).where(scheduler.device_id == device_id
                                                                                        ).where(scheduler.status == 'Config Accepted')
     return query.get_sql(quote_char=None)

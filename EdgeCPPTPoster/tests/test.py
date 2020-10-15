@@ -23,7 +23,7 @@ class TestEdgeCPPTPoster(unittest.TestCase):
     @patch('update_scheduler.edge.api_request')
     @patch('update_scheduler.get_update_scheduler_query')
     def test_update_scheduler_function_return_success(self, mock_get_update_scheduler_query, mock_api_request):
-        mock_get_update_scheduler_query.return_value = "update da_edge_olympus.scheduler set status = 'Data Rx in progress' where request_id = 'REQ1233' AND status='Config Accepted'"
+        mock_get_update_scheduler_query.return_value = "update da_edge_olympus.scheduler set status = 'Data Rx in Progress' where request_id = 'REQ1233' AND status='Config Accepted'"
         mock_api_request.return_value = "Successfully performed operation"
         device_id = '102900000000003'
         result = update_scheduler.update_scheduler_table('REQ1233', device_id)
