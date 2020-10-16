@@ -4,7 +4,7 @@ import edge_core as edge
 import scheduler_query as scheduler
 from pypika import Query, Table, Order, functions as fn
 
-db_api_url = os.environ["EdgeCommonDBAPI"]
+db_api_url = os.environ["edgeCommonAPIURL"]
 
 def get_request_id_from_consumption_view(data_protocol, data_config_filename):
     query = get_request_id_from_consumption_view_query(data_protocol, data_config_filename)
