@@ -1,7 +1,7 @@
 import boto3
 import os
 import edge_core as edge
-import scheduler_queries as scheduler_query
+import scheduler_query as scheduler_query
 from pypika import Query, Table, Order, functions as fn
 
 db_api_url = os.environ["EdgeCommonDBAPI"]
