@@ -1,7 +1,7 @@
 import boto3
 import os
 import edge_core as edge
-import scheduler_query as scheduler_query
+import scheduler_query as scheduler
 from pypika import Query, Table, Order, functions as fn
 
 db_api_url = os.environ["EdgeCommonDBAPI"]
@@ -32,7 +32,7 @@ def get_request_id_from_consumption_view_query(data_protocol, data_config_filena
 
 def update_scheduler_table(req_id, device_id):
     print('updating scheduler table')
-    query = scheduler_query.get_update_scheduler_query(req_id, device_id)
+    query = scheduler.get_update_scheduler_query(req_id, device_id)
     print(query)
     try:
         edge.api_request(db_api_url, "post", query)
