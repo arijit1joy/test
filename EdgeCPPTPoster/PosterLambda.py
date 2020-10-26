@@ -197,29 +197,9 @@ def lambda_handler(event, context):
 
             json_body['telematicsPartnerName'] = config_spec_value['PT_TSP']
 
-            for element in json_body['samples']:
-                if "convertedEquipmentFaultCodes" in element:
-                    fault_codes = element['convertedEquipmentFaultCodes']
-                    if not fault_codes:
-                        for fault_code in fault_codes:
-                            if "inactiveFaultCodes" in fault_code:
-                                fault_code.pop('inactiveFaultCodes')
-                            if "pendingFaultCodes" in fault_code:
-                                fault_code.pop('pendingFaultCodes')
-
-            json_string = json.dumps(json_body)
-            # print(" Json after converting into String:",json_string)
-            json_body = json.loads(json_string.replace('count', 'occurenceCount'))
-            print("After replacing count: ", json_body)
+            print("Json_body before calling SEND_TO_PT function: ", json_body)
 
             pt_poster.send_to_pt(PTJ1939PostURL, PTJ1939Header, json_body)
-
-            # else:
-
-            #     print("This is a PSBU device, but it is PCC, cannot send to PT")
-            #     bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDFormatError.value)
-            #     return
-
         else:
 
             print("Error! The boxApplication value is not recorded in the EDGE DB!")
