@@ -44,10 +44,10 @@ def handle_hb_params(converted_device_params):
 
     # Remove unnecessary params from device parameters for PT payload
     for key, value in converted_device_params.items():
-        if key.lower() not in ["latitude", "longitude", "altitude"]:
+        if key in ["Latitude", "Longitude", "Altitude"]:
+            converted_device_params[key.lower()] = value
             converted_device_params.pop(key)
         else:
-            converted_device_params[key.lower()] = value
             converted_device_params.pop(key)
     return converted_device_params
 
