@@ -31,6 +31,7 @@ def handle_fc_params(converted_fc_params):
             fc_param.pop("inactiveFaultCodes")
         if "pendingFaultCodes" in fc_param:
             fc_param.pop("pendingFaultCodes")
+    print("Converted FC Params: ", converted_fc_params)
     return converted_fc_params
 
 
@@ -43,12 +44,9 @@ def handle_hb_params(converted_device_params):
             deobfuscate_gps_coordinates(latitude, longitude)
 
     # Remove unnecessary params from device parameters for PT payload
-    for key, value in converted_device_params.items():
-        if key in ["Latitude", "Longitude", "Altitude"]:
-            converted_device_params[key.lower()] = value
-            converted_device_params.pop(key)
-        else:
-            converted_device_params.pop(key)
+    converted_device_params = {key.lower(): value for key, value in converted_device_params.items() if
+                               key in ["Latitude", "Longitude", "Altitude"]}
+    print("Converted Device Params: ", converted_device_params)
     return converted_device_params
 
 
@@ -101,12 +99,20 @@ def send_to_pt(post_url, headers, json_body):
             for sample in json_body["samples"]:
                 if "convertedEquipmentFaultCodes" in sample:
                     converted_fc_params = sample["convertedEquipmentFaultCodes"]
-                    handle_fc_params(converted_fc_params)
+                    fault_codes_params = handle_fc_params(converted_fc_params)
+                    if fault_codes_params:
+                        sample["convertedEquipmentFaultCodes"] = fault_codes_params
+                    else:
+                        sample.pop("convertedEquipmentFaultCodes")
                 if "convertedDeviceParameters" in sample:
                     converted_device_params = sample["convertedDeviceParameters"]
                     store_device_health_params(converted_device_params, sample["dateTimestamp"],
                                                json_body["telematicsDeviceId"], json_body["componentSerialNumber"])
-                    handle_hb_params(converted_device_params)
+                    device_health_params = handle_hb_params(converted_device_params)
+                    if device_health_params:
+                        sample["convertedDeviceParameters"] = device_health_params
+                    else:
+                        sample.pop("convertedDeviceParameters")
 
         final_json_body = [json_body]
         print("Posting the JSON body:", final_json_body, "to the PT Cloud through URL:",
