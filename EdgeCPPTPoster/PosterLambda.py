@@ -9,6 +9,8 @@ import uuid
 from metadata_utility import build_metadata_and_write
 import bdd_utility
 from system_variables import InternalResponse
+from update_scheduler import update_scheduler_table, get_request_id_from_consumption_view
+from pypika import Query, Table
 
 # Retrieve the environment variables
 
@@ -25,7 +27,7 @@ PTJ1939PostURL = os.environ["PTJ1939PostURL"]
 PTJ1939Header = os.environ["PTJ1939Header"]
 PowerGenValue = os.environ["PowerGenValue"]
 mapTspFromOwner = os.environ["mapTspFromOwner"]
-
+data_quality_lambda = os.environ["DataQualityLambda"]
 s3_client = boto3.client('s3')
 ssm_client = boto3.client('ssm')
 
@@ -89,7 +91,16 @@ def get_business_partner(device_type):
 def lambda_handler(event, context):
     # json_file = open("EDGE_352953080329158_64000002_SC123_20190820045303_F2BA (3).json", "r")
 
-    print("Lambda Event:", json.dumps(event))
+    event_json = json.dumps(event)
+    print("Lambda Event:", event_json)
+
+    # Invoke data quality lambda - start
+    try:
+        data_quality(event_json)
+    except Exception as e:
+        print("ERROR Invoking data quality - ",  e)
+    # Invoke data quality lambda - end
+
     hb_uuid = str(uuid.uuid4())
     bucket_name = event['Records'][0]['s3']['bucket']['name']
     file_key = event['Records'][0]['s3']['object']['key']
@@ -130,10 +141,14 @@ def lambda_handler(event, context):
 
     if j1939_type.lower() == 'hb':
         config_spec_name, req_id = post.get_cspec_req_id(json_body['dataSamplingConfigId'])
-
+        data_config_filename = '_'.join(['EDGE', device_id, esn, config_spec_name])
+        request_id = get_request_id_from_consumption_view('J1939_HB', data_config_filename)
         build_metadata_and_write(hb_uuid, device_id, file_name, file_size, file_date_time, 'J1939_HB',
-                                 'FILE_RECEIVED', esn, config_spec_name, req_id, None, os.environ["edgeCommonAPIURL"])
-
+                                 'FILE_RECEIVED', esn, config_spec_name, request_id, None, os.environ["edgeCommonAPIURL"])
+        # Updating scheduler lambda based on the request_id
+        if request_id :
+            update_scheduler_table(request_id, device_id)
+                        
     print("Device ID sending the file:", device_id)
 
     device_info = get_device_info(device_id)
@@ -182,29 +197,9 @@ def lambda_handler(event, context):
 
             json_body['telematicsPartnerName'] = config_spec_value['PT_TSP']
 
-            for element in json_body['samples']:
-                if "convertedEquipmentFaultCodes" in element:
-                    fault_codes = element['convertedEquipmentFaultCodes']
-                    if not fault_codes:
-                        for fault_code in fault_codes:
-                            if "inactiveFaultCodes" in fault_code:
-                                fault_code.pop('inactiveFaultCodes')
-                            if "pendingFaultCodes" in fault_code:
-                                fault_code.pop('pendingFaultCodes')
-
-            json_string = json.dumps(json_body)
-            # print(" Json after converting into String:",json_string)
-            json_body = json.loads(json_string.replace('count', 'occurenceCount'))
-            print("After replacing count: ", json_body)
+            print("Json_body before calling SEND_TO_PT function: ", json_body)
 
             pt_poster.send_to_pt(PTJ1939PostURL, PTJ1939Header, json_body)
-
-            # else:
-
-            #     print("This is a PSBU device, but it is PCC, cannot send to PT")
-            #     bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDFormatError.value)
-            #     return
-
         else:
 
             print("Error! The boxApplication value is not recorded in the EDGE DB!")
@@ -216,6 +211,19 @@ def lambda_handler(event, context):
         bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDDeviceInfoError.value)
         return
 
+'''
+invoke content spec association API
+'''
+def data_quality(event):
+    lambda_client = boto3.client('lambda')
+    response = lambda_client.invoke(
+        FunctionName=data_quality_lambda,
+        InvocationType='Event',
+        Payload=event
+    )
+    if response['StatusCode'] != 202:
+        raise Exception
+    print("Data Quality invoked")
 
 # Local Test Main
 
