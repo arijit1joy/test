@@ -115,13 +115,9 @@ def send_to_pt(post_url, headers, json_body):
                         sample.pop("convertedDeviceParameters")
 
         final_json_body = [json_body]
-        print("Posting the JSON body:", final_json_body, "to the PT Cloud through URL:",
-              post_url, "with headers:", headers_json)
+        print("Posting the JSON body:", final_json_body)
 
         pt_response = requests.post(url=post_url, data=json.dumps(final_json_body), headers=headers_json)
-
-        print("Post to PT response as text:", pt_response.text)
-
         pt_response_body = pt_response.json()
         pt_response_code = pt_response.status_code
         print("Post to PT response code:", pt_response_code)
