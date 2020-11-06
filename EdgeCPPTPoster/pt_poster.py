@@ -102,7 +102,6 @@ def send_to_pt(post_url, headers, json_body):
                     fault_codes_params = handle_fc_params(converted_fc_params)
                     if fault_codes_params:
                         sample["convertedEquipmentFaultCodes"] = fault_codes_params
-                        print("Posting J1939_FC Data to PT: ", sample["convertedEquipmentFaultCodes"])
                     else:
                         sample.pop("convertedEquipmentFaultCodes")
                 if "convertedDeviceParameters" in sample:
@@ -112,7 +111,6 @@ def send_to_pt(post_url, headers, json_body):
                     device_health_params = handle_hb_params(converted_device_params)
                     if device_health_params:
                         sample["convertedDeviceParameters"] = device_health_params
-                        print("Posting J1939_HB Data to PT: ", sample["convertedDeviceParameters"])
                     else:
                         sample.pop("convertedDeviceParameters")
 
