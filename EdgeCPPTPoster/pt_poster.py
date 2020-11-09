@@ -114,15 +114,17 @@ def send_to_pt(post_url, headers, json_body):
                     else:
                         sample.pop("convertedDeviceParameters")
 
-        final_json_body = [json_body]
-        pt_response = requests.post(url=post_url, data=json.dumps(final_json_body), headers=headers_json)
-        pt_response_body = pt_response.json()
-        pt_response_code = pt_response.status_code
-        print("Post to PT response code:", pt_response_code)
-        print("Post to PT response body:", pt_response_body)
+        # We are not sending payload to PT for Digital Cockpit Device
+        if not json_body["telematicsDeviceId"] == '357186082267036':
+            final_json_body = [json_body]
+            pt_response = requests.post(url=post_url, data=json.dumps(final_json_body), headers=headers_json)
+            pt_response_body = pt_response.json()
+            pt_response_code = pt_response.status_code
+            print("Post to PT response code:", pt_response_code)
+            print("Post to PT response body:", pt_response_body)
 
-        if pt_response_code != 200:
-            bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDPTPostSuccess.value)
+            if pt_response_code != 200:
+                bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDPTPostSuccess.value)
 
     except Exception as e:
         traceback.print_exc()
