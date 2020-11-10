@@ -156,7 +156,7 @@ def post_cd_message(data):
     print('Type of message:', type(data))
 
     # We are not sending payload to CD for Digital Cockpit Device
-    if not data["Telematics_Box_ID"] == '357186082267036':
+    if not data["Telematics_Box_ID"] == '192000000000101':
         r = requests.post(url=url, json=data)
         cp_response = r.text
         print('response ------------> ', cp_response)

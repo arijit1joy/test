@@ -115,7 +115,7 @@ def send_to_pt(post_url, headers, json_body):
                         sample.pop("convertedDeviceParameters")
 
         # We are not sending payload to PT for Digital Cockpit Device
-        if not json_body["telematicsDeviceId"] == '357186082267036':
+        if not json_body["telematicsDeviceId"] == '192000000000101':
             final_json_body = [json_body]
             pt_response = requests.post(url=post_url, data=json.dumps(final_json_body), headers=headers_json)
             pt_response_body = pt_response.json()
