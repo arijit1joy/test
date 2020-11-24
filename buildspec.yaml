@@ -82,7 +82,7 @@ phases:
 # Below is required by CodePipeline, do not change.  
 artifacts: 
   files:  
-  - transformed-template.
+  - transformed-template.yml
   - transformed-template-us-east-2.yml 
   - Parameters-dev.json 
   - Parameters-test.json 
