@@ -113,30 +113,30 @@ Resources:
         - Value: Edge
           Key: Name
 
-  EndpointBucketPolicy:
-    Type: 'AWS::S3::BucketPolicy'
-    DeletionPolicy: Retain
-    Properties:
-      PolicyDocument:
-        Statement:
-          - Action:
-              - 's3:Put*'
-              - 's3:Get*'
-              - 's3:List*'
-            Resource: !Join 
-              - ''
-              - - 'arn:aws:s3:::'
-                - !Ref EndpointBucket
-                - /*
-            Effect: Allow
-            Principal:
-              AWS:
-                - !Sub >-
-                  arn:aws:iam::${AWS::AccountId}:role/da-edge-device-EdgeRegistrationLambdaTrustRole-${ApplicationEnvironmentTag}
-                - !GetAtt 
-                  - EdgeCPPTPosterLambdaRole
-                  - Arn
-      Bucket: !Ref EndpointBucket
+  # EndpointBucketPolicy:
+  #   Type: 'AWS::S3::BucketPolicy'
+  #   DeletionPolicy: Retain
+  #   Properties:
+  #     PolicyDocument:
+  #       Statement:
+  #         - Action:
+  #             - 's3:Put*'
+  #             - 's3:Get*'
+  #             - 's3:List*'
+  #           Resource: !Join 
+  #             - ''
+  #             - - 'arn:aws:s3:::'
+  #               - !Ref EndpointBucket
+  #               - /*
+  #           Effect: Allow
+  #           Principal:
+  #             AWS:
+  #               - !Sub >-
+  #                 arn:aws:iam::${AWS::AccountId}:role/da-edge-device-EdgeRegistrationLambdaTrustRole-${ApplicationEnvironmentTag}
+  #               - !GetAtt 
+  #                 - EdgeCPPTPosterLambdaRole
+  #                 - Arn
+  #     Bucket: !Ref EndpointBucket
 
   EdgeJ1939Bucket:
     Type: 'AWS::SSM::Parameter'
