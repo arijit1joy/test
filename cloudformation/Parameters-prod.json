@@ -3,7 +3,7 @@
         "ApplicationEnvironmentTag": "prod",
         "ApplicationName": "da-edge-j1939",
         "VersionId": "empty",
-        "ArtifactsBucket": "da-edge-pre-reqs-j1939-src-prod-artifactbucket-s1k3x04rn96t",
+        "ArtifactsBucket": "171670492297-da-edge-platform-catalog-us-east-2",
         "EdgeCommonDBAPI": "https://api.edge.awsprd.cummins.com/v3/EdgeDBLambda",
         "PTJ1939PostURL": "https://preventech-test.aws.cummins.com/Test/ngdi",
         "PTJ1939Header": "{\"Content-Type\": \"application/json\", \"Prefer\": \"param=single-object\", \"x-api-key\": \"\"}",

@@ -8,19 +8,12 @@ phases:
     - sudo apt-get update 
     - pip install awscli==1.16.209 
     - sudo apt-get install zip 
-    - sudo apt-get install unzip 
-    - sudo apt-get install jq 
+    - sudo apt-get install unzip
     - curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash - 
     - sudo apt-get install nodejs -y 
-    - sudo npm install -g yarnpkg 
     - nodejs --version 
     - npm --version 
     - yarn --version 
-    - sudo npm config set user 0 
-    - sudo npm config set unsafe-perm true 
-    - sudo npm install --global del-cli 
-    - sudo npm install -g typescript 
-    - sudo npm install --global make-dir-cli 
     - curr_dir=$(pwd) 
     - mkdir "$curr_dir/target" 
     - cd cloudformation 
@@ -53,42 +46,11 @@ phases:
           if [ $mydir != "cloudformation" ] && [ $mydir != "EDBE-J1939-BDD" ] && [ -d "$mydir" ]; then 
               cd "$mydir"; 
               echo "Processing - $mydir"; 
-              echo "Current dir - $(pwd)";
-              if [ -f pom.xml ]; then
-                mvn package -DskipTests;    
-                ls -lrt "$curr_dir/$mydir";  
-                echo "Build path = $curr_dir/$mydir/target"; 
-                if [ -d "$curr_dir/$mydir/target" ]; then       
-                  cd "target";           
-                  jarFile=`find . -type f \( -iname "*.jar" ! -iname "original*.jar" \)`; 
-                  echo "JAR FILE NAME = $jarFile";     
-                  cp "$jarFile" "$curr_dir/target"; 
-                  ls -lrt "$curr_dir/target";  
-                  cd ..; 
-                else 
-                  echo "Build Failed for $mydir"; 
-                fi;   
-              elif [ -f requirements.txt ]; then
+              echo "Current dir - $(pwd)"; 
+              if [ -f requirements.txt ]; then
                 pip install -r requirements.txt -t ./lib ;
                 zip -r "$mydir.zip" .;               
-                cp "$mydir.zip" "$curr_dir/target";        
-              elif [ -f package.json ]; then           
-                npm cache clean;           
-                npm config set strict-ssl false;           
-                npm config set registry="http://registry.npmjs.org/";           
-                npm install npm -g;           
-                npm install --silent;        
-                npm run build; 
-                ls -lrt "$curr_dir/$mydir";  
-                echo "Build path = $curr_dir/$mydir/dist"; 
-                if [ -d "$curr_dir/$mydir/dist" ]; then           
-                  cd dist;           
-                  zip -r "$mydir.zip" .;           
-                  cp "$mydir.zip" "$curr_dir/target";            
-                  cd ..;   
-                else 
-                  echo "Build Failed for $mydir"; 
-                fi;       
+                cp "$mydir.zip" "$curr_dir/target"; 
               else           
                 echo "unknown platform"; 
                 break;        
@@ -98,17 +60,22 @@ phases:
         done || exit 1 
       - ls -lrt "$curr_dir/target" 
       - aws s3 cp "$curr_dir/target" s3://${S3Bucket}/$versionId --recursive 
+      - aws s3 cp "$curr_dir/target" s3://${CrossRegionBucket}/$versionId --recursive
       - pwd 
       - ls -lrt 
       - cd $curr_dir 
       - aws cloudformation package 
         --template-file cloudformation/environment.yml 
         --s3-bucket ${S3Bucket} 
-        --s3-prefix builds 
-        --kms-key-id ${KMSKey} 
-        --output-template-file transformed-template.yml 
-
- 
+        --s3-prefix builds
+        --kms-key-id ${KMSKey}
+        --output-template-file transformed-template.yml
+      - aws cloudformation package
+        --template-file cloudformation/environment.yml
+        --s3-bucket ${CrossRegionBucket}
+        --s3-prefix builds
+        --kms-key-id ${KMS_KEY_ProdRegion}
+        --output-template-file transformed-template-us-east-2.yml
   post_build: 
     commands: 
       - echo Build completed on `date` 
@@ -116,8 +83,9 @@ phases:
 # Below is required by CodePipeline, do not change.  
 artifacts: 
   files:  
-  - transformed-template.yml 
+  - transformed-template.
+  - transformed-template-us-east-2.yml 
   - Parameters-dev.json 
   - Parameters-test.json 
   - Parameters-stage.json 
-  - Parameters-prod.json 
+  - Parameters-prod.json
