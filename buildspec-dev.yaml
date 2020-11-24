@@ -18,7 +18,6 @@ phases:
     - pip install pytest coverage pytest-cov
     - nodejs --version 
     - npm --version 
-    - yarn --version 
     - curr_dir=$(pwd) 
     - mkdir "$curr_dir/target" 
     - cd cloudformation
