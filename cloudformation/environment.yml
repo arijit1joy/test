@@ -64,40 +64,40 @@ Resources:
         - python3.6
         - python3.7
 
-  EdgeJ1939DataLogBucketPolicy:
-    Type: 'AWS::S3::BucketPolicy'
-    DeletionPolicy: Retain
-    Properties:
-      PolicyDocument:
-        Statement:
-          - Action:
-              - 's3:Put*'
-              - 's3:Get*'
-              - 's3:List*'
-            Resource: !Join 
-              - ''
-              - - 'arn:aws:s3:::'
-                - !Ref EdgeJ1939DataLogBucket
-                - /*
-            Effect: Allow
-            Principal:
-              AWS: '{{resolve:ssm:EdgeUploadedFileProcessor:1}}'
-          - Action:
-              - 's3:Put*'
-              - 's3:Get*'
-              - 's3:List*'
-            Resource: !Join 
-              - ''
-              - - 'arn:aws:s3:::'
-                - !Ref EdgeJ1939DataLogBucket
-                - /*
-            Effect: Allow
-            Principal:
-              AWS:
-                - !GetAtt 
-                  - EdgeJ1939CSVConverterLambdaRole
-                  - Arn
-      Bucket: !Ref EdgeJ1939DataLogBucket
+  # EdgeJ1939DataLogBucketPolicy:
+  #   Type: 'AWS::S3::BucketPolicy'
+  #   DeletionPolicy: Retain
+  #   Properties:
+  #     PolicyDocument:
+  #       Statement:
+  #         - Action:
+  #             - 's3:Put*'
+  #             - 's3:Get*'
+  #             - 's3:List*'
+  #           Resource: !Join 
+  #             - ''
+  #             - - 'arn:aws:s3:::'
+  #               - !Ref EdgeJ1939DataLogBucket
+  #               - /*
+  #           Effect: Allow
+  #           Principal:
+  #             AWS: '{{resolve:ssm:EdgeUploadedFileProcessor:1}}'
+  #         - Action:
+  #             - 's3:Put*'
+  #             - 's3:Get*'
+  #             - 's3:List*'
+  #           Resource: !Join 
+  #             - ''
+  #             - - 'arn:aws:s3:::'
+  #               - !Ref EdgeJ1939DataLogBucket
+  #               - /*
+  #           Effect: Allow
+  #           Principal:
+  #             AWS:
+  #               - !GetAtt 
+  #                 - EdgeJ1939CSVConverterLambdaRole
+  #                 - Arn
+  #     Bucket: !Ref EdgeJ1939DataLogBucket
 
   Spnlistbucket:
     Type: 'AWS::S3::Bucket'
@@ -304,28 +304,28 @@ Resources:
               Service:
                 - lambda.amazonaws.com
 
-  SpnlistbucketPolicy:
-    Type: 'AWS::S3::BucketPolicy'
-    DeletionPolicy: Retain
-    Properties:
-      PolicyDocument:
-        Statement:
-          - Action:
-              - 's3:Put*'
-              - 's3:Get*'
-              - 's3:List*'
-            Resource: !Join 
-              - ''
-              - - 'arn:aws:s3:::'
-                - !Ref Spnlistbucket
-                - /*
-            Effect: Allow
-            Principal:
-              AWS:
-                - !GetAtt 
-                  - EdgeNGDI2CDSDKConversionLambdaRole
-                  - Arn
-      Bucket: !Ref Spnlistbucket
+  # SpnlistbucketPolicy:
+  #   Type: 'AWS::S3::BucketPolicy'
+  #   DeletionPolicy: Retain
+  #   Properties:
+  #     PolicyDocument:
+  #       Statement:
+  #         - Action:
+  #             - 's3:Put*'
+  #             - 's3:Get*'
+  #             - 's3:List*'
+  #           Resource: !Join 
+  #             - ''
+  #             - - 'arn:aws:s3:::'
+  #               - !Ref Spnlistbucket
+  #               - /*
+  #           Effect: Allow
+  #           Principal:
+  #             AWS:
+  #               - !GetAtt 
+  #                 - EdgeNGDI2CDSDKConversionLambdaRole
+  #                 - Arn
+  #     Bucket: !Ref Spnlistbucket
 
   EdgeJ1939DataLogBucket:
     Type: 'AWS::S3::Bucket'
@@ -675,78 +675,78 @@ Resources:
         - python3.6
         - python3.7
 
-  J1939StreamingBucketPolicy:
-    Type: 'AWS::S3::BucketPolicy'
-    DeletionPolicy: Retain
-    Properties:
-      PolicyDocument:
-        Statement:
-          - Action:
-              - 's3:Put*'
-              - 's3:Get*'
-              - 's3:List*'
-            Resource: !Join 
-              - ''
-              - - 'arn:aws:s3:::'
-                - !Ref EdgeJ1939ProcessingBucket
-                - /*
-            Effect: Allow
-            Principal:
-              AWS:
-                - !Sub >-
-                  arn:aws:iam::${AWS::AccountId}:role/${ApplicationName}-${ApplicationEnvironmentTag}-J1939StreamBucket
-                - !GetAtt 
-                  - EdgeJ1939CSVConverterLambdaRole
-                  - Arn
-                - !Sub >-
-                  arn:aws:iam::${AWS::AccountId}:role/da-edge-oem-OEMLambdaTrustRole-${ApplicationEnvironmentTag}
-          - Action:
-              - 's3:Put*'
-              - 's3:Get*'
-              - 's3:List*'
-            Resource: !Join 
-              - ''
-              - - 'arn:aws:s3:::'
-                - !Ref EdgeJ1939ProcessingBucket
-                - /NGDI/*
-            Effect: Allow
-            Principal:
-              AWS: !GetAtt 
-                - EdgeCPPTPosterLambdaRole
-                - Arn
-          - Action:
-              - 's3:Put*'
-              - 's3:Get*'
-              - 's3:List*'
-            Resource: !Join 
-              - ''
-              - - 'arn:aws:s3:::'
-                - !Ref EdgeJ1939ProcessingBucket
-                - /*
-            Effect: Allow
-            Principal:
-              AWS:
-                - !GetAtt 
-                  - EdgeCPPTPosterLambdaRole
-                  - Arn
-                - !GetAtt 
-                  - EdgeNGDI2CDSDKConversionLambdaRole
-                  - Arn
-          - Action:
-              - 's3:Put*'
-              - 's3:Get*'
-              - 's3:List*'
-            Resource: !Join 
-              - ''
-              - - 'arn:aws:s3:::'
-                - !Ref EdgeJ1939ProcessingBucket
-                - /ConvertedFiles/*
-            Effect: Allow
-            Principal:
-              AWS: !GetAtt 
-                - ObfuscateGPSCoordinatesLambdaRole
-                - Arn
-      Bucket: !Ref EdgeJ1939ProcessingBucket
+  # J1939StreamingBucketPolicy:
+  #   Type: 'AWS::S3::BucketPolicy'
+  #   DeletionPolicy: Retain
+  #   Properties:
+  #     PolicyDocument:
+  #       Statement:
+  #         - Action:
+  #             - 's3:Put*'
+  #             - 's3:Get*'
+  #             - 's3:List*'
+  #           Resource: !Join 
+  #             - ''
+  #             - - 'arn:aws:s3:::'
+  #               - !Ref EdgeJ1939ProcessingBucket
+  #               - /*
+  #           Effect: Allow
+  #           Principal:
+  #             AWS:
+  #               - !Sub >-
+  #                 arn:aws:iam::${AWS::AccountId}:role/${ApplicationName}-${ApplicationEnvironmentTag}-J1939StreamBucket
+  #               - !GetAtt 
+  #                 - EdgeJ1939CSVConverterLambdaRole
+  #                 - Arn
+  #               - !Sub >-
+  #                 arn:aws:iam::${AWS::AccountId}:role/da-edge-oem-OEMLambdaTrustRole-${ApplicationEnvironmentTag}
+  #         - Action:
+  #             - 's3:Put*'
+  #             - 's3:Get*'
+  #             - 's3:List*'
+  #           Resource: !Join 
+  #             - ''
+  #             - - 'arn:aws:s3:::'
+  #               - !Ref EdgeJ1939ProcessingBucket
+  #               - /NGDI/*
+  #           Effect: Allow
+  #           Principal:
+  #             AWS: !GetAtt 
+  #               - EdgeCPPTPosterLambdaRole
+  #               - Arn
+  #         - Action:
+  #             - 's3:Put*'
+  #             - 's3:Get*'
+  #             - 's3:List*'
+  #           Resource: !Join 
+  #             - ''
+  #             - - 'arn:aws:s3:::'
+  #               - !Ref EdgeJ1939ProcessingBucket
+  #               - /*
+  #           Effect: Allow
+  #           Principal:
+  #             AWS:
+  #               - !GetAtt 
+  #                 - EdgeCPPTPosterLambdaRole
+  #                 - Arn
+  #               - !GetAtt 
+  #                 - EdgeNGDI2CDSDKConversionLambdaRole
+  #                 - Arn
+  #         - Action:
+  #             - 's3:Put*'
+  #             - 's3:Get*'
+  #             - 's3:List*'
+  #           Resource: !Join 
+  #             - ''
+  #             - - 'arn:aws:s3:::'
+  #               - !Ref EdgeJ1939ProcessingBucket
+  #               - /ConvertedFiles/*
+  #           Effect: Allow
+  #           Principal:
+  #             AWS: !GetAtt 
+  #               - ObfuscateGPSCoordinatesLambdaRole
+  #               - Arn
+  #     Bucket: !Ref EdgeJ1939ProcessingBucket
 
   LambdaInvokeNGDI2CDSDKPermission:
     Type: 'AWS::Lambda::Permission'
