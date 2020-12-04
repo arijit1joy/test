@@ -774,7 +774,7 @@ Resources:
           Key: Name
         - Value: !Ref ApplicationEnvironmentTag
           Key: ApplicationEnvironment
-      SecretString: !Sub '{"x-api-key": ${PTJ1939ApiKey}}'
+      SecretString: !Sub '{"x-api-key": "${PTJ1939ApiKey}"}'
       Name: pt_xapi_key
       Description: PT x-API key
 
