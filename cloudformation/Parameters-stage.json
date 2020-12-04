@@ -6,6 +6,7 @@
         "ArtifactsBucket": "171670492297-da-edge-platform-catalog-us-east-2",
         "EdgeCommonDBAPI": "https://api.edge-stage.aws.cummins.com/v3/EdgeDBLambda",
         "PTJ1939PostURL": "https://preventech-test.aws.cummins.com/Test/ngdi",
+        "PTJ1939ApiKey": "U851mMzq4qVZONHOmAoE14iwKJvtpL63P8VucxS4",
         "PTJ1939Header": "{\"Content-Type\": \"application/json\", \"Prefer\": \"param=single-object\", \"x-api-key\": \"\"}",
         "CDPTJ1939PostURL": "https://mt5afmpt32.execute-api.us-east-1.amazonaws.com/Test/ngdi",
         "CDPTJ1939Header": "{\"Content-Type\":\"application/json\"}",

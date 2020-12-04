@@ -39,6 +39,8 @@ Parameters:
     Type: String
   CDPTJ1939PostURL:
     Type: String
+  PTJ1939ApiKey:
+    Type: String
 
 Resources:
   EdgeJ1939ProcessingBucketSSM:
@@ -772,7 +774,7 @@ Resources:
           Key: Name
         - Value: !Ref ApplicationEnvironmentTag
           Key: ApplicationEnvironment
-      SecretString: '{"x-api-key":"x-api-key"}'
+      SecretString: !Sub '{"x-api-key": ${PTJ1939ApiKey}}'
       Name: pt_xapi_key
       Description: PT x-API key
 
