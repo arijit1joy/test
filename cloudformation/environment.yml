@@ -258,7 +258,7 @@ Resources:
     DeletionPolicy: Retain
     Properties:
       TopicRulePayload:
-        AwsIotSqlVersion: 2016-03-23
+        AwsIotSqlVersion: '2016-03-23'
         Actions:
           - Lambda:
               FunctionArn: !Sub '${ObfuscateGPSCoordinatesLambda.Arn}'
