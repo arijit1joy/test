@@ -56,7 +56,7 @@ phases:
       - for d in $x ;
         do
           mydir=${d};
-          if [ $mydir != "EDGE-J1939-BDD" ] && [ $mydir != "cloudformation" ] && [ -d "$mydir" ]; then
+          if [ $mydir != "EDGE-J1939-BDD" ] && [ $mydir != "target" ] && [ $mydir != "cloudformation" ] && [ -d "$mydir" ]; then
               cd "$mydir";
               echo "Processing - $mydir";
               echo "Current dir - $(pwd)";
