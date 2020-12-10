@@ -7,7 +7,7 @@ import boto3
 import traceback
 import json
 
-secrets_client = boto3.client('secretsmanager', verify=False)
+secrets_client = boto3.client('secretsmanager')
 
 try:
   # Get the sonar secret from the AWS Secrets Manager
@@ -47,7 +47,7 @@ import json
 import re
 import traceback
 
-format_delimiter = f"\n#{'='*180}#\n"  # Format delimiter for console output readability
+format_delimiter = f"\n#{'~'*180}#\n"  # Format delimiter for console output readability
 projectKey = None
 
 try:

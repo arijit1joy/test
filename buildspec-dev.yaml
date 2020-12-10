@@ -59,7 +59,8 @@ phases:
           if [ $mydir != "EDGE-J1939-BDD" ] && [ $mydir != "cloudformation" ] && [ -d "$mydir" ]; then
               cd "$mydir"; 
               echo "Processing - $mydir"; 
-              echo "Current dir - $(pwd)";  
+              echo "Current dir - $(pwd)";
+              echo -e "\n#====================================================================================================================================================================================#\n";
               if [ -f requirements.txt ]; then
                 pip install -r requirements.txt -t ./lib ;
                 zip -r "$mydir.zip" .;
