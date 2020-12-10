@@ -21,8 +21,8 @@ phases:
     - curr_dir=$(pwd) 
     - mkdir "$curr_dir/target" 
     - cd cloudformation
-    - versionId=$(date +"%m-%d-%Y-%H-%M-%S") 
-    - echo $versionId
+    - versionId=$(date +"%m-%d-%Y-%H-%M-%S")
+    - echo "Current date for artifact file storage => $versionId"
     - pip install ruamel.yaml
     - for paramsFile in ./Param*.json ;  
       do  
