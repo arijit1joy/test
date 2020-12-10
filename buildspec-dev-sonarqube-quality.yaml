@@ -9,12 +9,12 @@ phases:
 
   install:
     commands:
-    - sudo apt-get update
+    - apt-get update
     - pip install awscli==1.16.209
-    - sudo apt-get install zip
-    - sudo apt-get install unzip
-    - curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
-    - sudo apt-get install nodejs -y
+    - apt-get install zip
+    - apt-get install unzip
+    - curl -sL https://deb.nodesource.com/setup_10.x | bash -
+    - apt-get install nodejs -y
     - pip install pytest coverage pytest-cov
     - nodejs --version
     - npm --version
