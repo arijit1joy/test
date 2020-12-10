@@ -7,7 +7,7 @@ import boto3
 import traceback
 import json
 
-secrets_client = boto3.client('secretsmanager', verify=False)
+secrets_client = boto3.client('secretsmanager')
 
 try:
   # Get the sonar secret from the AWS Secrets Manager
