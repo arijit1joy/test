@@ -7,7 +7,7 @@ import boto3
 import traceback
 import json
 
-secrets_client = boto3.client('secretsmanager')
+secrets_client = boto3.client('secretsmanager', verify=False)
 
 try:
   # Get the sonar secret from the AWS Secrets Manager
@@ -47,7 +47,7 @@ import json
 import re
 import traceback
 
-format_delimiter = f"\n#{'~'*180}#\n"  # Format delimiter for console output readability
+format_delimiter = f"\n#{'-'*180}#\n"  # Format delimiter for console output readability
 projectKey = None
 
 try:
@@ -68,6 +68,7 @@ try:
     warning_message = f" However, the Quality Gate status is: '{project_status}' and this needs to be fixed." if project_status.lower() != 'ok' else ''
     print(f"Project: '{project_key}' did not fail any of the Quality Gate conditions!{warning_message}")
     print(format_delimiter)
+    print(f"\n#{'<->'*60}#\n\nSonar Qube Quality Gate Check Was Successfully Completed for the project: '{project_key}'!\n\n#{'<->'*60}#\n\n")
   elif not project_status:
     raise RuntimeError(f"An error occurred while retrieving the Quality Gate report for the project: '{project_key}'! " \
                         "Please, ensure that the project exists in the Sonarqube portal.")
@@ -92,7 +93,7 @@ EOF
   return $? # Return exit status from Python script
 }
 
-echo -e "\n#====================================================================================================================================================================================#\n\nStarting Sonar Qube Quality Gate Check . . .\n\n#====================================================================================================================================================================================#\n"
+echo -e "\n#<-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><->#\n\nStarting Sonar Qube Quality Gate Check . . .\n\n#<-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><-><->#\n"
 
 # Get the SonarQube connection details from the AWS Secrets Manager
 sonarSecretID="${2}"
