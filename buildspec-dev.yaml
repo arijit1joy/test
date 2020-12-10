@@ -86,10 +86,10 @@ phases:
                   fi;
                   cd "$mydir";
                 else
-                  echo -e "\n#====================================================================================================================================================================================#\n";
+                  echo -e "\n#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#\n";
                   echo "The Sonarqube Quality Gate condition verification script ('SonarQubeQualityChecker.sh') is missing from this repo AND/OR ('sonar-project.properties') is missing from this project";
-                  echo -e "The Sonarqube Quality Gate condition verification script ('SonarQubeQualityChecker.sh') is missing from this repo AND/OR ('sonar-project.properties') is missing from this project => $mydir\n";
-                  echo -e "\n#====================================================================================================================================================================================#\n";
+                  echo -e "The Sonarqube Quality Gate condition verification script ('SonarQubeQualityChecker.sh') is missing from this repo AND/OR ('sonar-project.properties') is missing from this project -> $mydir\n";
+                  echo -e "\n#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#\n";
                 fi;
                 cp "$mydir.zip" "$curr_dir/target";
               else           
