@@ -3,7 +3,7 @@
         "ApplicationEnvironmentTag": "test",
         "ApplicationName": "da-edge-j1939",
         "VersionId": "empty",
-        "ArtifactsBucket": "edge-platform-apps-daedgej1939-1fk-artifactbucket-o9xqtwd301hn",
+        "ArtifactsBucket": "171670492297-da-edge-platform-catalog-us-east-2",
         "EdgeCommonDBAPI": "https://api.edge-test.aws.cummins.com/v3/EdgeDBLambda",
         "PTJ1939PostURL": "https://preventech-stage.aws.cummins.com/stage/ngdi",
         "PTJ1939ApiKey": "Uzuz0akv8O4wayvAr1QfZ5v76t1CmZD72rrWvSK9",
