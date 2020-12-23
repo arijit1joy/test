@@ -229,6 +229,8 @@ Resources:
       Layers:
         - !Ref RequestsPythonLayer
         - !Sub >-
+          arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:Edge-Core:${EdgeCoreLayerVersion}
+        - !Sub >-
           arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:edge_db_utility:${EdgeDBUtilityLayerVersion}
       Code:
         S3Bucket: !Ref ArtifactsBucket
@@ -625,6 +627,8 @@ Resources:
     Properties:
       Layers:
         - !Ref RequestsPythonLayer
+        - !Sub >-
+          arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:Edge-Core:${EdgeCoreLayerVersion}
         - !Sub >-
           arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:kinesis_utility:${KinesisLayerVersion}
         - !Sub >-

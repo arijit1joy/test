@@ -11,6 +11,10 @@ import bdd_utility
 from system_variables import InternalResponse
 from update_scheduler import update_scheduler_table, get_request_id_from_consumption_view
 from pypika import Query, Table
+import edge_logger as logging
+
+
+logger = logging.logging_framework("EdgeCPPTPoster.PosterLambda")
 
 # Retrieve the environment variables
 
@@ -37,39 +41,38 @@ def get_device_info(device_id):
 
     payload = env.get_dev_info_payload
 
-    print("Get device info payload:", payload)
+    logger.info(f"Get device info payload:{payload}")
 
     payload["input"]["Params"][0]["devId"] = device_id
 
-    print("Retrieving the device details from the EDGE DB...")
+    logger.info(f"Retrieving the device details from the EDGE DB...")
 
     try:
 
         response = requests.post(url=edgeCommonAPIURL, json=payload, headers=headers)
 
-        print("Get device info response as text:", response.text)
+        logger.info(f"Get device info response as text:{response.text}")
 
         get_device_info_body = response.json()
         get_device_info_code = response.status_code
-        print("Get device info response code:", get_device_info_code, "Get device info response body:",
-              get_device_info_body, sep="\n")
+        logger.info(f"Get device info response code: {get_device_info_code} Get device info response body: {get_device_info_body}")
 
         if get_device_info_code == 200 and get_device_info_body:
 
             get_device_info_body = get_device_info_body[0]
 
-            print("Get device info response body JSON:", get_device_info_body)
+            logger.info(f"Get device info response body JSON: {get_device_info_body}")
 
             return get_device_info_body
 
         else:
 
-            print("An error occurred while trying to retrieve the device's details. Check EDGE common DB logs.")
+            logger.error(f"An error occurred while trying to retrieve the device's details. Check EDGE common DB logs.")
             return False
 
     except Exception as e:
 
-        print("An exception occurred while retrieving the device details:", e)
+        logger.error(f"An exception occurred while retrieving the device details: {e}")
 
         return False
 

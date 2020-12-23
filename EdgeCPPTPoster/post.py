@@ -4,6 +4,10 @@ import os
 import boto3
 from metadata_utility import build_metadata_and_write
 import traceback
+import edge_logger as logging
+
+
+logger = logging.logging_framework("EdgeCPPTPoster.Post")
 
 s3_resource = boto3.resource('s3')
 CDPTJ1939PostURL = os.environ["CDPTJ1939PostURL"]
@@ -11,7 +15,7 @@ CDPTJ1939Header = os.environ["CDPTJ1939Header"]
 
 
 def check_endpoint_file_exists(endpoint_bucket, endpoint_file):
-    print("Checking if endpoint file exists...")
+    logger.info(f"Checking if endpoint file exists...")
 
 
 def get_cspec_req_id(sc_number):
@@ -26,12 +30,12 @@ def get_cspec_req_id(sc_number):
 
 def send_to_cd(bucket_name, key, file_size, file_date_time, json_format, client, j1939_type, fc_uuid, endpoint_bucket,
                endpoint_file, use_endpoint_bucket, json_body, config_spec_name, req_id, device_id, esn, hb_uuid):
-    print("Received CD file for posting!")
+    logger.info(f"Received CD file for posting!")
 
     file_key = key.split('/')[-1]
 
     if json_format.lower() == "sdk":
-        print("Posting to the NGDI folder for posting to CD Pipeline...")
+        logger.info(f"Posting to the NGDI folder for posting to CD Pipeline...")
 
         try:
 
@@ -59,11 +63,11 @@ def send_to_cd(bucket_name, key, file_size, file_date_time, json_format, client,
                     hb_uuid, device_id, file_key, file_size, file_date_time, 'J1939_HB', 'CD_PT_POSTED', esn,
                     config_spec_name, req_id, None, os.environ["edgeCommonAPIURL"])
 
-            print("Post CD File to NGDI Folder Response:", post_to_ngdi_response)
+            logger.info(f"Post CD File to NGDI Folder Response:{post_to_ngdi_response}")
 
         except Exception as e:
 
-            print("ERROR! An Exception occurred while posting the file to the NGDI folder:", e, " --> Traceback:")
+            logger.error(f"ERROR! An Exception occurred while posting the file to the NGDI folder: {e} --> Traceback:")
             traceback.print_exc()  # Printing the Stack Trace)
 
     elif json_format.lower() == "ngdi":

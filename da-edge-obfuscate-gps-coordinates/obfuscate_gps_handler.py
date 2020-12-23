@@ -3,6 +3,10 @@ import json
 import boto3
 from datetime import datetime
 from obfuscate_gps_utility import obfuscate_gps_coordinates
+import edge_logger as logging
+
+
+logger = logging.logging_framework("DaEdgeObfuscateGPSCoordinates.ObfuscateGPSHandler")
 
 
 def obfuscate_gps(body):
@@ -15,7 +19,7 @@ def obfuscate_gps(body):
                     longitude = converted_device_params["Longitude"]
                     converted_device_params["Latitude"], converted_device_params["Longitude"] = \
                         obfuscate_gps_coordinates(latitude, longitude)
-    print("Body: ", body)
+    logger.info(f"Body: {body}")
     send_file_to_s3(body)
 
 
@@ -30,9 +34,9 @@ def send_file_to_s3(body):
         file_name = "EDGE_{0}_{1}_{2}_{3}.json".format(device_id, esn, config_id, int(current_dt.timestamp()))
         file_key = "ConvertedFiles/{0}/{1}/{2}/{3}/{4}/{5}".format(esn, device_id, current_dt.year, current_dt.month,
                                                                    current_dt.day, file_name)
-        print("File Name: ", file_name)
-        print("File Key: ", file_key)
+        logger.info(f"File Name: {file_name}")
+        logger.info(f"File Key:  {file_key}")
         send_to_s3_response = s3_client.put_object(Bucket=bucket_name, Key=file_key, Body=json.dumps(body).encode())
-        print("Send to S3 Response: ", send_to_s3_response)
+        logger.info(f"Send to S3 Response: {send_to_s3_response}")
     except Exception as e:
-        print("An error occurred while sending file to s3: ", e)
+        logger.error(f"An error occurred while sending file to s3:  {e}")

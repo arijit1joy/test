@@ -1,7 +1,10 @@
 import traceback
 
 import boto3
+import edge_logger as logging
 
+
+logger = logging.logging_framework("EdgeJ1939CSVConverter.BddUtility")
 
 def update_bdd_parameter(value):
     ssm_client = boto3.client("ssm")
@@ -13,7 +16,7 @@ def update_bdd_parameter(value):
             Overwrite=True
         )
     except Exception as e:
-        print("An Exception occurred! Error:", e)
+        logger.error(f"An Exception occurred! Error:{e}")
         traceback.print_exc()
 
 
@@ -26,6 +29,6 @@ def check_bdd_parameter(expected_value):
         assert get_ssm_parm_response["Parameter"]["Value"] == expected_value
         return True
     except Exception as e:
-        print("An Exception occurred! Error:", e)
+        logger.error(f"An Exception occurred! Error: {e}")
         traceback.print_exc()
         return False

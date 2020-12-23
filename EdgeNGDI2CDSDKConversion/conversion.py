@@ -11,7 +11,10 @@ import edge_core as edge
 from system_variables import InternalResponse, CDSDK
 import bdd_utility
 from obfuscate_gps_utility import deobfuscate_gps_coordinates
+import edge_logger as logging
 
+
+logger = logging.logging_framework("EdgeNGDI2CDSDKConversion.Conversion")
 
 import sys
 
@@ -67,21 +70,21 @@ spn_file_json = json.loads(spn_file)
 
 def get_metadata_info(j1939_file):
     j1939_file_val = j1939_file
-    print("Removing 'samples' from the j1939 file...")
+    logger.info(f"Removing 'samples' from the j1939 file...")
     try:
         j1939_file_val.pop("samples")
-        print("j1939 file with no samples:", j1939_file_val)
+        logger.info(f"j1939 file with no samples: {j1939_file_val}")
         return j1939_file_val
 
     except Exception as e:
-        print("An exception occurred while retrieving metadata:", e)
+        logger.error(f"An exception occurred while retrieving metadata:{e}")
         return False
 
 
 def get_snapshot_data(params, time_stamp, address):
-    print("Getting snapshot data for the parameter list:", params)
+    logger.info(f"Getting snapshot data for the parameter list: {params}")
     snapshot_data = []
-    print("SPN File as JSON:", spn_file_json)
+    logger.info(f"SPN File as JSON: {spn_file_json}")
     try:
         for param in params:
             snapshot_data.append({"Snapshot_DateTimestamp": time_stamp,
@@ -89,48 +92,48 @@ def get_snapshot_data(params, time_stamp, address):
                                       "Name": spn_file_json[param],
                                       "Value": params[param],
                                       "Parameter_Source_Address": address}]})
-        print("Snapshot Data:", snapshot_data)
+        logger.info(f"Snapshot Data: {snapshot_data}")
         return snapshot_data
 
     except Exception as e:
-        print("Error! An Exception occurred when getting the snapshot data:", e)
+        logger.error(f"Error! An Exception occurred when getting the snapshot data: {e}")
         return {}
 
 
 def post_cd_message(data):
     params = {}
-    print("Retrieving the TSP name to get the Auth Token . . .")
+    logger.info(f"Retrieving the TSP name to get the Auth Token . . .")
     tsp_name = data["Telematics_Partner_Name"]
-    print("TSP From File ---------------->", tsp_name)
-    print("Old AuthToken URL:", auth_token_url)
+    logger.info(f"TSP From File ----------------> {tsp_name}")
+    logger.info(f"Old AuthToken URL:  {auth_token_url}")
     auth_url = auth_token_url.replace("{TSP-Name}", tsp_name)
-    print("New AuthToken URL:", auth_url)
+    logger.info(f"New AuthToken URL: {auth_url}")
     req = requests.get(url=auth_url, params=params)
     auth_token = json.loads(req.text)
     auth_token_info = auth_token['authToken']
     url = cd_url + auth_token_info
-    print('Auth Token ---------------->', auth_token_info)
+    logger.info(f'Auth Token ----------------> {auth_token_info}')
     sent_date_time = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ')[:-4] + "Z"
-    print('Sent_Date_Time  ------------------> ', sent_date_time)
+    logger.info(f'Sent_Date_Time  ------------------> {sent_date_time}')
     data["Sent_Date_Time"] = sent_date_time if sent_date_time else data["Occurrence_Date_Time"] \
         if "Occurrence_Date_Time" in data else ''
 
     # data["Equipment_ID"] = ""  # Permanent solution to EQUIP_ID renaming Issue on CP end - Removing "equipmentId"
 
     if "VIN" in data and not data["VIN"]:
-        print("Vin is not in file. Setting the value of the VIN to 'None'")
+        logger.info(f"Vin is not in file. Setting the value of the VIN to 'None'")
         data["VIN"] = None
-        print("New VIN:", data["VIN"])
+        logger.info(f"New VIN {data['VIN']}")
 
     # TODO Temporary address to the Equipment_ID retrieval issue. Renaming to EDGE_<ESN> if not there already . . .
     if "Equipment_ID" not in data or not data["Equipment_ID"]:
-        print("Equipment ID is not in the file. Creating it in the format EDGE_<ESN> . . .")
+        logger.info(f"Equipment ID is not in the file. Creating it in the format EDGE_<ESN> . . .")
         data["Equipment_ID"] = "EDGE_" + data["Engine_Serial_Number"]  # Setting the Equipment ID to EDGE_<ESN>
-        print("New Equipment ID:", data["Equipment_ID"])
+        logger.info(f"New Equipment ID: {data['Equipment_ID']}")
 
     is_bdd = False
     if data["Telematics_Box_ID"] in InternalResponse.J1939BDDValidDevices.value.split(","):
-        print("This is a BDD execution!")
+        logger.info(f"This is a BDD execution!")
         is_bdd = True
 
     # de-obfuscate GPS co-ordinates
@@ -139,7 +142,7 @@ def post_cd_message(data):
         longitude = data["Longitude"]
         data["Latitude"], data["Longitude"] = deobfuscate_gps_coordinates(latitude, longitude)
 
-    print('File to send to CD   ------------------> ', data)
+    logger.info(f'File to send to CD   ------------------> {data}')
 
     '''
         ***************** The below is important for J1939 BDD functionality. Please do not modify! ********************
@@ -152,14 +155,14 @@ def post_cd_message(data):
         ***************** The above is important for J1939 BDD functionality. Please do not modify! ********************
     '''
 
-    print('cd_url   ------------------> ', url)
-    print('Type of message:', type(data))
+    logger.info(f'cd_url   ------------------>  {url}')
+    logger.info(f'Type of message: {type(data)}')
 
     # We are not sending payload to CD for Digital Cockpit Device
     if not data["Telematics_Box_ID"] == '192000000000101':
         r = requests.post(url=url, json=data)
         cp_response = r.text
-        print('response ------------> ', cp_response)
+        logger.info(f'response ------------>  {cp_response}')
 
         '''
             ***************** The below is important for J1939 BDD functionality. Please do not modify! ********************
@@ -172,30 +175,30 @@ def post_cd_message(data):
 
 
 def get_active_faults(fault_list, address):
-    print("Getting Active Faults")
+    logger.info(f"Getting Active Faults")
     final_fc_list = []
     for fc in fault_list:
-        print("Handling FC:", fc)
+        logger.info(f"Handling FC: {fc}")
         fc["Fault_Source_Address"] = address
         fc["SPN"] = fc["spn"]
         fc["FMI"] = fc["fmi"]
-        print("Handling Intermediate FC:", fc)
+        logger.info(f"Handling Intermediate FC: {fc}")
         del fc["spn"]
         del fc["fmi"]
-        print("Handling final FC:", fc)
+        logger.info(f"Handling final FC: {fc}")
         final_fc_list.append(fc)
-    print("Final FC list:", final_fc_list)
+    logger.info(f"Final FC list: {final_fc_list}")
     return final_fc_list
 
 
 def handle_hb(converted_device_params, converted_equip_params, converted_equip_fc, metadata, time_stamp):
     var_dict = {}
     address = ""
-    print("Retrieving parameters for creating FC SDK Class Object")
-    print("CD SDK Arguments Map:", class_arg_map)
+    logger.info(f"Retrieving parameters for creating FC SDK Class Object")
+    logger.info(f"CD SDK Arguments Map: {class_arg_map}")
     try:
         for arg in class_arg_map:
-            print("Handling the arg:", arg)
+            logger.info(f"Handling the arg: {arg}")
             if class_arg_map[arg] and type(class_arg_map[arg]) == str:
                 if arg == message_format_version_indicator:
                     var_dict[class_arg_map[arg]] = notification_version
@@ -209,13 +212,13 @@ def handle_hb(converted_device_params, converted_equip_params, converted_equip_f
                     else:
                         if samples[param]:
                             if param == converted_device_params_var:
-                                print("Handling convertedDeviceParameters")
+                                logger.info(f"Handling convertedDeviceParameters")
                                 sample_obj = samples[param]
                                 for val in sample_obj:
                                     var_dict[sample_obj[val]] = converted_device_params[val] \
                                         if val in converted_device_params else ""
                             elif param == converted_equip_params_var:
-                                print("Handling convertedEquipmentParameters")
+                                logger.info(f"Handling convertedEquipmentParameters")
                                 sample_obj = samples[param][0]
                                 address = converted_equip_params["deviceId"] \
                                     if "deviceId" in converted_equip_params else ""
@@ -228,30 +231,30 @@ def handle_hb(converted_device_params, converted_equip_params, converted_equip_f
                                         var_dict[sample_obj[equip_param]] = converted_equip_params[equip_param] \
                                             if equip_param in converted_equip_params else ""
                             else:
-                                print("Handling convertedEquipmentFaultCodes")
+                                logger.info(f"Handling convertedEquipmentFaultCodes")
                                 sample_obj = samples[param][0]
                                 for fc_param in sample_obj:
                                     final_fc = []
                                     if fc_param in converted_equip_fc:
                                         final_fc = get_active_faults(converted_equip_fc[fc_param], address)
                                     var_dict[sample_obj[fc_param]] = final_fc
-        print("HB CD SDK Class Variable Dict:", var_dict)
+        logger.info(f"HB CD SDK Class Variable Dict: {var_dict}")
         hb_sdk_object = hb_sdk.CDHBSDK(var_dict)
-        print("Posting Sample to CD...")
+        logger.info(f"Posting Sample to CD...")
         post_cd_message(hb_sdk_object.get_payload())
     except Exception as e:
-        print("Error! The following Exception occurred while handling this sample:", e)
+        logger.error(f"Error! The following Exception occurred while handling this sample:{e}")
 
 
 def handle_fc(converted_device_params, converted_equip_params, converted_equip_fc, metadata, time_stamp):
     var_dict = {}
     address = ""
     found_fcs = False
-    print("Retrieving parameters for creating HB SDK Class Object")
-    print("CD SDK Arguments Map:", class_arg_map)
+    logger.info(f"Retrieving parameters for creating HB SDK Class Object")
+    logger.info(f"CD SDK Arguments Map:  {class_arg_map}")
     try:
         for arg in class_arg_map:
-            print("Handling the arg:", arg)
+            logger.info(f"Handling the arg: {arg}")
             if class_arg_map[arg] and type(class_arg_map[arg]) == str:
                 if arg == message_format_version_indicator:
                     var_dict[class_arg_map[arg]] = notification_version
@@ -265,13 +268,13 @@ def handle_fc(converted_device_params, converted_equip_params, converted_equip_f
                     else:
                         if samples[param]:
                             if param == converted_device_params_var:
-                                print("Handling convertedDeviceParameters")
+                                logger.info(f"Handling convertedDeviceParameters")
                                 sample_obj = samples[param]
                                 for val in sample_obj:
                                     var_dict[sample_obj[val]] = converted_device_params[val] \
                                         if val in converted_device_params else ""
                             elif param == converted_equip_params_var:
-                                print("Handling convertedEquipmentParameters")
+                                logger.info(f"Handling convertedEquipmentParameters")
                                 sample_obj = samples[param][0]
                                 address = converted_equip_params["deviceId"] \
                                     if "deviceId" in converted_equip_params else ""
@@ -284,18 +287,18 @@ def handle_fc(converted_device_params, converted_equip_params, converted_equip_f
                                         var_dict[sample_obj[equip_param]] = converted_equip_params[equip_param] \
                                             if equip_param in converted_equip_params else ""
                             else:
-                                print("Handling convertedEquipmentFaultCodes")
+                                logger.info(f"Handling convertedEquipmentFaultCodes")
                                 sample_obj = samples[param][0]
                                 for fc_param in sample_obj:
                                     if fc_param in converted_equip_fc and fc_param == active_fault_code_indicator:
                                         all_active_fcs = converted_equip_fc[fc_param].copy()
                                         if not all_active_fcs:
                                             continue
-                                        print("These are active Fault Codes")
+                                        logger.info(f"These are active Fault Codes")
                                         found_fcs = True  # Indicating that we found Fault Codes in this file.
                                         fc_index = 0
                                         final_fc = get_active_faults(all_active_fcs, address)
-                                        print("Total Number of fcs:", len(all_active_fcs))
+                                        logger.info(f"Total Number of fcs: {len(all_active_fcs)}")
                                         for fc in all_active_fcs:
                                             create_fc_class(fc, final_fc, fc_index, sample_obj[fc_param], var_dict, 1)
                                             fc_index = fc_index + 1
@@ -303,107 +306,105 @@ def handle_fc(converted_device_params, converted_equip_params, converted_equip_f
                                         all_inactive_fcs = converted_equip_fc[fc_param].copy()
                                         if not all_inactive_fcs:
                                             continue
-                                        print("These are inactive Fault Codes")
+                                        logger.info(f"These are inactive Fault Codes")
                                         found_fcs = True  # Indicating that we found Fault Codes in this file.
                                         all_active_fcs = converted_equip_fc[active_fault_code_indicator].copy() if \
                                             active_fault_code_indicator in converted_equip_fc else []
                                         fc_index = 0
                                         inactive_final_fc = get_active_faults(all_inactive_fcs, address)
                                         active_final_fc = get_active_faults(all_active_fcs, address)
-                                        print("Total Number of fcs:", len(all_inactive_fcs))
+                                        logger.info(f"Total Number of fcs: {len(all_inactive_fcs)}")
                                         for fc in all_inactive_fcs:
                                             create_fc_class(fc, inactive_final_fc, fc_index, sample_obj[fc_param],
                                                             var_dict, 0, active_final_fc)
                                             fc_index = fc_index + 1
                                     else:
                                         # TODO Handle Pending Fault Codes.
-                                        print("There are either no", fc_param,
-                                              "in this file -- We are not handling pending FCs for now.")
+                                        logger.info(f"There are either no, fc_param in this file -- We are not handling pending FCs for now.")
         if found_fcs:
-            print("We have already processed this sample since it had fault codes. Continuing to the next sample . . .")
+            logger.info(f"We have already processed this sample since it had fault codes. Continuing to the next sample . . .")
         else:
-            print("This sample had no Fault Code information, checking if this is the Single Sample . . .")
-            print("Variable Dict:", var_dict)
+            logger.info(f"This sample had no Fault Code information, checking if this is the Single Sample . . .")
+            logger.info(f"Variable Dict: {var_dict}")
             if "Telematics_Partner_Message_ID".lower() in var_dict:
-                print("Found Message ID:", var_dict["Telematics_Partner_Message_ID".lower()],
-                      "in this sample! This is the Single Sample. Proceeding to the next sample . . .")
+                logger.info(f"Found Message ID: {var_dict["Telematics_Partner_Message_ID".lower()]} in this sample! This is the Single Sample. Proceeding to the next sample . . .")
             else:
-                print("There was an Error in this FC sample. It is not the Single Sample and it does not have FC info!")
+                logger.info(f"There was an Error in this FC sample. It is not the Single Sample and it does not have FC info!")
     except Exception as e:
-        print("Error! The following Exception occurred while handling this sample:", e)
+        logger.error(f"Error! The following Exception occurred while handling this sample:{e}")
 
 
 def create_fc_class(fc, f_codes, fc_index, fc_param, var_dict,
                     active_or_inactive, active_fault_array=None):
-    print("Current FC Index:", fc_index)
+    logger.info(f"Current FC Index: {fc_index}")
     fcs = f_codes.copy()
     fcs.pop(fc_index)
-    print("Old active faults:", f_codes)
-    print("New active faults:", fcs)
+    logger.info(f"Old active faults: {f_codes}")
+    logger.info(f"New active faults: {fcs}")
     variable_dict = var_dict.copy()
     variable_dict[fc_param] = fcs if not active_fault_array else active_fault_array
     variable_dict[active_cd_parameter] = active_or_inactive
     variable_dict[spn_indicator.lower()] = fc["SPN"]
     variable_dict[fmi_indicator.lower()] = fc["FMI"]
     variable_dict[count_indicator.lower()] = fc["count"]
-    print("FC CD SDK Class Variable Dict:", variable_dict)
+    logger.info(f"FC CD SDK Class Variable Dict: {variable_dict}")
     fc_sdk_object = fc_sdk.CDFCSDK(variable_dict)
-    print("Posting Sample to CD...")
+    logger.info(f"Posting Sample to CD...")
     post_cd_message(fc_sdk_object.get_payload())
 
 
 def send_sample(sample, metadata, fc_or_hb):
-    print("Handling Sample:", sample)
+    logger.info(f"Handling Sample: {sample}")
     converted_equip_params = []
     converted_device_params = {}
     converted_equip_fc = []
     time_stamp = ""
-    print("converted_equip_params:", converted_equip_params_var)
-    print("converted_device_params:", converted_device_params_var)
-    print("converted_equip_fc:", converted_equip_fc_var)
-    print("Retrieving the params from the Sample")
+    logger.info(f"converted_equip_params: {converted_equip_params_var}")
+    logger.info(f"converted_device_params: {converted_device_params_var}")
+    logger.info(f"converted_equip_fc: {converted_equip_fc_var}")
+    logger.info(f"Retrieving the params from the Sample")
     if converted_equip_params_var in sample:
         converted_equip_params = sample[converted_equip_params_var][0] if sample[converted_equip_params_var] else []
-        print("Found", converted_equip_params_var, ":", converted_equip_params)
+        logger.info(f"Found  {converted_equip_params_var} : {converted_equip_params}")
     if converted_device_params_var in sample:
         converted_device_params = sample[converted_device_params_var] if sample[converted_device_params_var] else {}
-        print("Found", converted_device_params_var, ":", converted_device_params)
+        logger.info(f"Found {converted_device_params_var} : {converted_device_params}")
     if converted_equip_fc_var in sample:
         converted_equip_fc = sample[converted_equip_fc_var][0] if sample[converted_equip_fc_var] else []
-        print("Found", converted_equip_fc_var, ":", converted_equip_fc)
+        logger.info(f"Found {converted_equip_fc_var} : {converted_equip_fc}")
     if time_stamp_param in sample:
         time_stamp = sample[time_stamp_param]
-    print("Sample Time Stamp:", time_stamp)
-    print("New converted_equip_params:", converted_equip_params)
-    print("New converted_device_params:", converted_device_params)
-    print("New converted_equip_fc:", converted_equip_fc)
+    logger.info(f"Sample Time Stamp: {time_stamp}")
+    logger.info(f"New converted_equip_params: {converted_equip_params}")
+    logger.info(f"New converted_device_params: {converted_device_params}")
+    logger.info(f"New converted_equip_fc , {converted_equip_fc}")
     if fc_or_hb.lower() == "hb":
         store_health_parameters_into_redshift(converted_device_params, time_stamp, metadata)
-        print("Handling HB...")
+        logger.info(f"Handling HB...")
         handle_hb(converted_device_params, converted_equip_params, converted_equip_fc, metadata, time_stamp)
     else:
-        print("Handling FC...")
+        logger.info(f"Handling FC...")
         handle_fc(converted_device_params, converted_equip_params, converted_equip_fc, metadata, time_stamp)
 
 
 def process(bucket, key, file_size):
-    print("Retrieving the JSON file from the NGDI folder")
+    logger.info(f"Retrieving the JSON file from the NGDI folder")
     j1939_file_object = s3_client.get_object(Bucket=bucket, Key=key)
-    print("Checking if this is HB or FC...")
+    logger.info(f"Checking if this is HB or FC...")
     file_metadata = j1939_file_object["Metadata"]
-    print("File Metadata:", file_metadata)
+    logger.info(f"File Metadata: {file_metadata}")
     fc_or_hb = file_metadata['j1939type'] if "j1939type" else None
     uuid = file_metadata['uuid']
     file_date_time = str(j1939_file_object['LastModified'])[:19]
     file_name = key.split('/')[-1]
     device_id = file_name.split('_')[1]
-    print("FC or HB : ", fc_or_hb)
+    logger.info(f"FC or HB  {fc_or_hb}")
     if not fc_or_hb:
-        print("Error! Cannot determine if this is an FC of an HB file. Check file metadata!")
+        logger.error(f"Error! Cannot determine if this is an FC of an HB file. Check file metadata!")
         return
     j1939_file_stream = j1939_file_object['Body'].read()
     j1939_file = json.loads(j1939_file_stream)
-    print("File as JSON:", j1939_file)
+    logger.info(f"File as JSON: {j1939_file}")
     if fc_or_hb.lower() == 'hb':
         esn = j1939_file['componentSerialNumber']
         config_spec_name = j1939_file['dataSamplingConfigId']
@@ -422,10 +423,10 @@ def process(bucket, key, file_size):
         edge_data_consumption_vw.data_type == data_protocol).orderby(edge_data_consumption_vw.request_id_int,
                                                                      order=Order.desc
                                                                      ).limit(1)
-    print(query.get_sql(quote_char=None))
+    logger.info(f"{query.get_sql(quote_char=None)}")
     try:
         get_response = edge.api_request(api_url, "get", query.get_sql(quote_char=None))
-        print("Response:", get_response)
+        logger.info(f"Response: {get_response}")
     except Exception as exception:
         return edge.server_error(str(exception))
     request_id = get_response[0]['request_id'] if get_response and "request_id" in get_response[0] else None
@@ -437,36 +438,36 @@ def process(bucket, key, file_size):
     build_metadata_and_write(uuid, device_id, file_name, file_size, file_date_time, data_protocol,
                              'FILE_SENT', esn, config_spec_name, request_id, consumption_per_request,
                              os.environ["edgeCommonAPIURL"])
-    print("Retrieving Metadata from the file:", j1939_file)
-    print("Retrieving Samples from the file:", j1939_file)
+    logger.info(f"Retrieving Metadata from the file: {j1939_file}")
+    logger.info(f"Retrieving Samples from the file: {j1939_file}")
     samples = j1939_file["samples"] if "samples" in j1939_file else None
-    print("File Samples:", samples)
+    logger.info(f"File Samples: {samples}")
     metadata = get_metadata_info(j1939_file)
     if metadata:
         if samples:
-            print("Sending samples for CD processing . . .")
+            logger.info(f"Sending samples for CD processing . . .")
             for sample in samples:
                 send_sample(sample, metadata, fc_or_hb)
         else:
-            print("Error! There are no samples in this file!")
+            logger.info(f"Error! There are no samples in this file!")
             return
     else:
-        print("Error! Metadata retrieval failed! See logs.")
+        logger.info(f"Error! Metadata retrieval failed! See logs.")
         return
 
 
 def lambda_handler(event, context):
-    print("Lambda Event:", event)
-    print("Lambda Context:", context)
-    print("NGDI JSON Object:", event['Records'][0]['s3']['object']['key'])
+    logger.info(f"Lambda Event: {event}")
+    logger.info(f"Lambda Context: {context}")
+    logger.info(f"NGDI JSON Object: {event['Records'][0]['s3']['object']['key']}")
     # Retrieve bucket and key details
     key = event['Records'][0]['s3']['object']['key']
     bucket = event['Records'][0]['s3']['bucket']['name']
     file_size = event['Records'][0]['s3']['object']['size']
-    print("Bucket:", bucket)
-    print("Key:", key)
+    logger.info(f"Bucket: {bucket}")
+    logger.info(f"Key: {key}")
     key = key.replace("%3A", ":")
-    print("New FileKey:", key)
+    logger.info(f"New FileKey: {key}")
     process(bucket, key, file_size)
 
 
@@ -476,7 +477,7 @@ Function to get Health Parameter and store into Redshift Table
 
 
 def store_health_parameters_into_redshift(converted_device_params, time_stamp, j1939_file_val):
-    print("Starting Kinesis Process... ")
+    logger.info(f"Starting Kinesis Process... ")
     if 'messageID' in converted_device_params:
         message_id = converted_device_params['messageID']
         cpu_temperature = converted_device_params[
@@ -508,4 +509,4 @@ def store_health_parameters_into_redshift(converted_device_params, time_stamp, j
                                                   lte_rsrp, cpu_usage_level, ram_usage_level, snr_per_satellite,
                                                   new_timestamp, device_id, esn, os.environ["edgeCommonAPIURL"])
     else:
-        print("There is no Converted Device Parameter")
+        logger.info(f"There is no Converted Device Parameter")
