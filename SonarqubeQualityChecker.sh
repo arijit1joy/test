@@ -1,6 +1,7 @@
 #!/bin/bash
 
 function getSonarSecrets() {
+  # shellcheck disable=SC2046
   read -r sonarToken sonarHost <<<$(python - <<-EOF
 import sys
 import boto3
@@ -49,6 +50,21 @@ import traceback
 
 format_delimiter = f"\n#{'-'*180}#\n"  # Format delimiter for console output readability
 projectKey = None
+skip_metric_keys = ["new_coverage"]
+
+
+def print_success_messages(project_status, project_key):
+  warning_message = f" However, the Quality Gate status is: '{project_status}' and this needs to be fixed." if project_status.lower() != 'ok' else ''
+  print(f"Project: '{project_key}' did not fail any of the Quality Gate conditions!{warning_message}")
+  print(format_delimiter)
+  print(f"\n#{'<->'*60}#\n\nSonar Qube Quality Gate Check Was Successfully Completed for the project: '{project_key}'!\n\n#{'<->'*60}#\n\n")
+
+
+def should_fail_build(error_metric_keys):
+  for metric_key in error_metric_keys:
+    if(metric_key not in skip_metric_keys):
+      return True
+  return False
 
 try:
 #  print(f"Arguments to Python Script => \n{sys.argv}")
@@ -65,10 +81,7 @@ try:
   print(format_delimiter)
 
   if project_status and project_status.lower() != "error":
-    warning_message = f" However, the Quality Gate status is: '{project_status}' and this needs to be fixed." if project_status.lower() != 'ok' else ''
-    print(f"Project: '{project_key}' did not fail any of the Quality Gate conditions!{warning_message}")
-    print(format_delimiter)
-    print(f"\n#{'<->'*60}#\n\nSonar Qube Quality Gate Check Was Successfully Completed for the project: '{project_key}'!\n\n#{'<->'*60}#\n\n")
+    print_success_messages(project_status, project_key)
   elif not project_status:
     raise RuntimeError(f"An error occurred while retrieving the Quality Gate report for the project: '{project_key}'! " \
                         "Please, ensure that the project exists in the Sonarqube portal.")
@@ -76,13 +89,21 @@ try:
     failure_message = f"Project: '{project_key}' failed one or more Quality Gate condition(s)"
     print(f"{failure_message}!\nPrinting failed gate conditions . . .\n")
 
+    error_metric_keys = []
+
     # Print out all the failing Quality Gate conditions
     for condition in quality_gate_report["projectStatus"]["conditions"]:
       if condition["status"].lower() != "ok":
         print(f"\t{condition}")
-    print(format_delimiter)
+        # Add the current "condition"'s metricKey to an array
+        error_metric_keys.append(condition["metricKey"])
 
-    raise RuntimeError(f"{failure_message}!")
+    if should_fail_build(error_metric_keys):
+      build_fail_error_metric_keys = [metric_key for metric_key in error_metric_keys if metric_key not in skip_metric_keys]
+      print(f"Aborting build due to errors in these metrics: '{build_fail_error_metric_keys}'")
+      print(format_delimiter)
+      raise RuntimeError(f"{failure_message}!")
+
 except Exception as quality_checker_error:
   print(f"An exception ('{quality_checker_error}') occurred while checking the Sonarqube Quality Gate status for the project: '{project_key}'.")
   if type(quality_checker_error) != RuntimeError:
