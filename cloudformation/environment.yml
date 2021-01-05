@@ -45,7 +45,6 @@ Parameters:
 Resources:
   EdgeJ1939ProcessingBucketSSM:
     Type: 'AWS::SSM::Parameter'
-    DeletionPolicy: Retain
     Properties:
       Tier: Standard
       Type: String
@@ -55,7 +54,6 @@ Resources:
 
   RequestsPythonLayer:
     Type: 'AWS::Lambda::LayerVersion'
-    DeletionPolicy: Retain
     Properties:
       Content:
         S3Bucket: !Ref ArtifactsBucket
@@ -68,7 +66,6 @@ Resources:
 
   EdgeJ1939DataLogBucketPolicy:
     Type: 'AWS::S3::BucketPolicy'
-    DeletionPolicy: Retain
     Properties:
       PolicyDocument:
         Statement:
@@ -103,7 +100,6 @@ Resources:
 
   Spnlistbucket:
     Type: 'AWS::S3::Bucket'
-    DeletionPolicy: Retain
     Properties:
       AccessControl: BucketOwnerFullControl
       BucketEncryption:
@@ -117,7 +113,6 @@ Resources:
 
   EndpointBucketPolicy:
     Type: 'AWS::S3::BucketPolicy'
-    DeletionPolicy: Retain
     Properties:
       PolicyDocument:
         Statement:
@@ -142,7 +137,6 @@ Resources:
 
   EdgeJ1939Bucket:
     Type: 'AWS::SSM::Parameter'
-    DeletionPolicy: Retain
     Properties:
       Tier: Standard
       Type: String
@@ -152,7 +146,6 @@ Resources:
 
   EdgeNGDI2CDSDKConversionLambdaRole:
     Type: 'AWS::IAM::Role'
-    DeletionPolicy: Retain
     Properties:
       RoleName: !Sub >-
         ${ApplicationName}-${ApplicationEnvironmentTag}-EdgeNGDI2CDSDKConversionLambdaRole
@@ -191,7 +184,6 @@ Resources:
 
   EdgeJ1939CSVConverterLambdaRole:
     Type: 'AWS::IAM::Role'
-    DeletionPolicy: Retain
     Properties:
       RoleName: !Sub >-
         ${ApplicationName}-${ApplicationEnvironmentTag}-EdgeJ1939CSVConverterLambdaRole
@@ -224,7 +216,6 @@ Resources:
 
   ObfuscateGPSCoordinatesLambda:
     Type: 'AWS::Lambda::Function'
-    DeletionPolicy: Retain
     Properties:
       Layers:
         - !Ref RequestsPythonLayer
@@ -255,7 +246,6 @@ Resources:
 
   EdgePublicDataIoTTopicRule:
     Type: 'AWS::IoT::TopicRule'
-    DeletionPolicy: Retain
     Properties:
       TopicRulePayload:
         AwsIotSqlVersion: '2016-03-23'
@@ -272,7 +262,6 @@ Resources:
 
   ObfuscateGPSCoordinatesLambdaRole:
     Type: 'AWS::IAM::Role'
-    DeletionPolicy: Retain
     Properties:
       RoleName: !Sub >-
         ${ApplicationName}-ObfuscateGPSCoordinatesLambdaRole-${ApplicationEnvironmentTag}
@@ -308,7 +297,6 @@ Resources:
 
   SpnlistbucketPolicy:
     Type: 'AWS::S3::BucketPolicy'
-    DeletionPolicy: Retain
     Properties:
       PolicyDocument:
         Statement:
@@ -331,7 +319,6 @@ Resources:
 
   EdgeJ1939DataLogBucket:
     Type: 'AWS::S3::Bucket'
-    DeletionPolicy: Retain
     Properties:
       AccessControl: BucketOwnerFullControl
       BucketEncryption:
@@ -353,7 +340,6 @@ Resources:
 
   RoleForJ1939StreamBucket:
     Type: 'AWS::IAM::Role'
-    DeletionPolicy: Retain
     Properties:
       RoleName: !Sub '${ApplicationName}-${ApplicationEnvironmentTag}-J1939StreamBucket'
       AssumeRolePolicyDocument:
@@ -368,7 +354,6 @@ Resources:
 
   LambdaInvokePermissionJ1939ProcessingBucket:
     Type: 'AWS::Lambda::Permission'
-    DeletionPolicy: Retain
     Properties:
       Action: 'lambda:InvokeFunction'
       SourceAccount: !Ref 'AWS::AccountId'
@@ -383,7 +368,6 @@ Resources:
 
   EdgeNGDI2CDSDKConversion:
     Type: 'AWS::Lambda::Function'
-    DeletionPolicy: Retain
     Properties:
       Layers:
         - !Ref PandasPythonLayer
@@ -458,7 +442,6 @@ Resources:
 
   LambdaInvokePermissionJ1939Bucket:
     Type: 'AWS::Lambda::Permission'
-    DeletionPolicy: Retain
     Properties:
       Action: 'lambda:InvokeFunction'
       SourceAccount: !Ref 'AWS::AccountId'
@@ -473,7 +456,6 @@ Resources:
 
   EdgeCPPTPosterLambdaRole:
     Type: 'AWS::IAM::Role'
-    DeletionPolicy: Retain
     Properties:
       RoleName: !Sub '${ApplicationName}-${ApplicationEnvironmentTag}-EdgeCPPTPosterLambdaRole'
       Path: /
@@ -516,7 +498,6 @@ Resources:
 
   EdgeJ1939ProcessingBucket:
     Type: 'AWS::S3::Bucket'
-    DeletionPolicy: Retain
     Properties:
       AccessControl: BucketOwnerFullControl
       CorsConfiguration:
@@ -571,7 +552,6 @@ Resources:
 
   EdgeJ1939PTSSM:
     Type: 'AWS::SSM::Parameter'
-    DeletionPolicy: Retain
     Properties:
       Tier: Standard
       Type: String
@@ -581,7 +561,6 @@ Resources:
 
   LambdaInvokePermissionJ1939Converter:
     Type: 'AWS::Lambda::Permission'
-    DeletionPolicy: Retain
     Properties:
       Action: 'lambda:InvokeFunction'
       SourceAccount: !Ref 'AWS::AccountId'
@@ -596,7 +575,6 @@ Resources:
 
   EndpointBucket:
     Type: 'AWS::S3::Bucket'
-    DeletionPolicy: Retain
     Properties:
       AccessControl: BucketOwnerFullControl
       BucketEncryption:
@@ -610,7 +588,6 @@ Resources:
 
   LambdaInvokeObfuscateGPSCoordinatesPermission:
     Type: 'AWS::Lambda::Permission'
-    DeletionPolicy: Retain
     Properties:
       Action: 'lambda:InvokeFunction'
       FunctionName: !Ref ObfuscateGPSCoordinatesLambda
@@ -621,7 +598,6 @@ Resources:
 
   EdgeJ1939CSVConverter:
     Type: 'AWS::Lambda::Function'
-    DeletionPolicy: Retain
     Properties:
       Layers:
         - !Ref RequestsPythonLayer
@@ -666,7 +642,6 @@ Resources:
 
   PandasPythonLayer:
     Type: 'AWS::Lambda::LayerVersion'
-    DeletionPolicy: Retain
     Properties:
       Content:
         S3Bucket: !Ref ArtifactsBucket
@@ -679,7 +654,6 @@ Resources:
 
   J1939StreamingBucketPolicy:
     Type: 'AWS::S3::BucketPolicy'
-    DeletionPolicy: Retain
     Properties:
       PolicyDocument:
         Statement:
@@ -752,7 +726,6 @@ Resources:
 
   LambdaInvokeNGDI2CDSDKPermission:
     Type: 'AWS::Lambda::Permission'
-    DeletionPolicy: Retain
     Properties:
       Action: 'lambda:InvokeFunction'
       SourceAccount: !Ref 'AWS::AccountId'
@@ -767,7 +740,6 @@ Resources:
 
   EDGECPPTAPISecret:
     Type: 'AWS::SecretsManager::Secret'
-    DeletionPolicy: Retain
     Properties:
       Tags:
         - Value: !Sub '${ApplicationName}'
@@ -780,7 +752,6 @@ Resources:
 
   EdgeEndpointJ1939Bucket:
     Type: 'AWS::SSM::Parameter'
-    DeletionPolicy: Retain
     Properties:
       Tier: Standard
       Type: String
@@ -790,7 +761,6 @@ Resources:
 
   EdgeCPPTPoster:
     Type: 'AWS::Lambda::Function'
-    DeletionPolicy: Retain
     Properties:
       Layers:
         - !Ref RequestsPythonLayer
