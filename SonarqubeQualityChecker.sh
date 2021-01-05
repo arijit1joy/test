@@ -1,7 +1,6 @@
 #!/bin/bash
 
 function getSonarSecrets() {
-  # shellcheck disable=SC2046
   read -r sonarToken sonarHost <<<$(python - <<-EOF
 import sys
 import boto3
