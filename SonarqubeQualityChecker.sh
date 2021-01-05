@@ -96,13 +96,15 @@ try:
         print(f"\t{condition}")
         # Add the current "condition"'s metricKey to an array
         error_metric_keys.append(condition["metricKey"])
+    print(format_delimiter)
 
     if should_fail_build(error_metric_keys):
       build_fail_error_metric_keys = [metric_key for metric_key in error_metric_keys if metric_key not in skip_metric_keys]
       print(f"Aborting build due to errors in these metrics: '{build_fail_error_metric_keys}'")
       print(format_delimiter)
       raise RuntimeError(f"{failure_message}!")
-
+    else:
+      print_success_messages(project_status, project_key)
 except Exception as quality_checker_error:
   print(f"An exception ('{quality_checker_error}') occurred while checking the Sonarqube Quality Gate status for the project: '{project_key}'.")
   if type(quality_checker_error) != RuntimeError:
