@@ -1,6 +1,10 @@
 import traceback
 
 import boto3
+import edge_logger as logging
+
+
+logger = logging.logging_framework("EdgeNGDI2CDSDKConversion.BddUtility")
 
 
 def update_bdd_parameter(value, param_name=None):
@@ -12,7 +16,6 @@ def update_bdd_parameter(value, param_name=None):
             Type="String",
             Overwrite=True
         )
-        print("Set SSM Parameter Response:", set_ssm_parameter_response)
     except Exception as e:
-        print("An Exception occurred! Error:", e)
+        logger.error(f"An Exception occurred! Error:  {e}")
         traceback.print_exc()

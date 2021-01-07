@@ -1,12 +1,15 @@
 import json
 import uuid
+import edge_logger as logging
 
+
+logger = logging.logging_framework("EdgeNGDI2CDSDKConversion.CDSDKHB")
 
 def get_message_id():
 
     message_id = str(uuid.uuid4())
 
-    print("MessageID:", message_id)
+    logger.info(f"MessageID: {message_id}")
 
     return message_id
 
@@ -33,7 +36,7 @@ class CDHBSDK:
 
             vars(self)[variable] = var_dict[variable]
 
-        print("Class variables:", vars(self))
+        logger.info(f"Class variables: {vars(self)}")
 
         # Creating JSON payload to send to CD
 
@@ -47,13 +50,11 @@ class CDHBSDK:
 
         json_payload = get_json_payload()
 
-        print("HB JSON Payload:", json_payload)
-
         for var in class_variables:
 
             if class_variables[var]:
 
-                print("Variable:", var, "Value:", class_variables[var])
+                logger.info(f"Variable: {var} Value: {class_variables[var]}")
 
                 self.values[var] = class_variables[var]
 
@@ -72,13 +73,10 @@ class CDHBSDK:
             json_payload["Sent_Date_Time"] = json_payload["Occurrence_Date_Time"] if "Occurrence_Date_Time" \
                                                                                      in json_payload else ""
 
-        print("NEW HB JSON Payload:", json_payload)
-
         return json.loads(json.dumps(json_payload))
 
     def get_payload(self):
 
-        print("Returning Class Payload:", self.payload)
         return self.payload
 
 

@@ -8,6 +8,10 @@ import bdd_utility
 from system_variables import InternalResponse
 from obfuscate_gps_utility import deobfuscate_gps_coordinates
 from metadata_utility import write_health_parameter_to_database
+import edge_logger as logging
+
+
+logger = logging.logging_framework("EdgeCPPTPoster.PtPoster")
 
 secret_name = os.environ['PTxAPIKey']
 region_name = os.environ['Region']
@@ -31,7 +35,7 @@ def handle_fc_params(converted_fc_params):
             fc_param.pop("inactiveFaultCodes")
         if "pendingFaultCodes" in fc_param:
             fc_param.pop("pendingFaultCodes")
-    print("Converted FC Params: ", converted_fc_params)
+    logger.info(f"Converted FC Params: {converted_fc_params}")
     return converted_fc_params
 
 
@@ -46,7 +50,7 @@ def handle_hb_params(converted_device_params):
     # Remove unnecessary params from device parameters for PT payload
     converted_device_params = {key.lower(): value for key, value in converted_device_params.items() if
                                key in ["Latitude", "Longitude", "Altitude"]}
-    print("Converted Device Params: ", converted_device_params)
+    logger.info(f"Converted Device Params: {converted_device_params}")
     return converted_device_params
 
 
@@ -80,7 +84,7 @@ def store_device_health_params(converted_device_params, sample_time_stamp, devic
                                            cpu_usage_level, ram_usage_level, snr_per_satellite, new_timestamp,
                                            device_id, esn, os.environ["edgeCommonAPIURL"])
     else:
-        print("There is no messageId in Converted Device Parameter.")
+        logger.info(f"There is no messageId in Converted Device Parameter.")
 
 
 def send_to_pt(post_url, headers, json_body):
@@ -93,7 +97,7 @@ def send_to_pt(post_url, headers, json_body):
             api_key = secret['x-api-key']
             headers_json['x-api-key'] = api_key
         else:
-            print("PT x-api-key not exist in secret manager")
+            logger.info(f"PT x-api-key not exist in secret manager")
 
         if "samples" in json_body:
             for sample in json_body["samples"]:
@@ -120,12 +124,12 @@ def send_to_pt(post_url, headers, json_body):
             pt_response = requests.post(url=post_url, data=json.dumps(final_json_body), headers=headers_json)
             pt_response_body = pt_response.json()
             pt_response_code = pt_response.status_code
-            print("Post to PT response code:", pt_response_code)
-            print("Post to PT response body:", pt_response_body)
+            logger.info(f"Post to PT response code: {pt_response_code}")
+            logger.info(f"Post to PT response body: {pt_response_body}")
 
             if pt_response_code != 200:
                 bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDPTPostSuccess.value)
 
     except Exception as e:
         traceback.print_exc()
-        print("ERROR! An exception occurred while posting to PT endpoint:", e)
+        logger.error(f"ERROR! An exception occurred while posting to PT endpoint: {e}")

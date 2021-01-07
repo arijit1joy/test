@@ -8,6 +8,10 @@ from metadata_utility import build_metadata_and_write
 
 import bdd_utility
 from system_variables import InternalResponse
+import edge_logger as logging
+
+
+logger = logging.logging_framework("EdgeJ1939CSVConverter.CoverterLambda")
 
 s3 = boto3.client('s3')
 cp_post_bucket = os.environ["CPPostBucket"]
@@ -24,50 +28,50 @@ def process_ss(ss_rows, ss_dict, ngdi_json_template, ss_converted_prot_header,
 
         ss_values = ss_rows[1]  # Get the SS Values row
 
-        print("<------------------------------------------NEW SS SAMPLE--------------------------------------------->")
+        logger.info(f"<------------------------------------------NEW SS SAMPLE--------------------------------------------->")
 
-        print("Single Sample Values:", ss_values)
+        logger.info(f"Single Sample Values: {ss_values}")
 
         json_sample_head = ngdi_json_template
 
-        print("Received Json Body in SS Handler:", json_sample_head)
+        logger.info(f"Received Json Body in SS Handler:{json_sample_head}")
 
         parameters = {}
 
         ss_sample = {"convertedDeviceParameters": {}, "convertedEquipmentParameters": []}
 
-        print("Single Sample Converted Protocol Header:", ss_converted_prot_header)
+        logger.info(f"Single Sample Converted Protocol Header: {ss_converted_prot_header}")
 
         converted_prot_header = ss_converted_prot_header.split("~")
 
-        print("Converted Protocol Header Array:", converted_prot_header)
+        logger.info(f"Converted Protocol Header Array: {converted_prot_header}")
 
         try:
             protocol = converted_prot_header[1]
 
-            print("protocol:", protocol)
+            logger.info(f"protocol: {protocol}")
 
             network_id = converted_prot_header[2]
 
-            print("network_id:", network_id)
+            logger.info(f"network_id:{network_id}")
 
             address = converted_prot_header[3]
 
-            print("address:", address)
+            logger.info(f"address: {address}")
 
         except IndexError as e:
 
-            print("An exception occurred while trying to retrieve the AS protocols network_id and Address:", e)
+            logger.error(f"An exception occurred while trying to retrieve the AS protocols network_id and Address:{e}")
 
             return
 
-        print("Handling the device metadata headers in SS:", ss_converted_device_parameters)
+        logger.info(f"Handling the device metadata headers in SS: {ss_converted_device_parameters}")
 
         for key in ss_converted_device_parameters:
 
             if key:
 
-                print("Processing", key)
+                logger.info(f"Processing {key}")
 
                 if "messageid" in key.lower():
 
@@ -81,8 +85,8 @@ def process_ss(ss_rows, ss_dict, ngdi_json_template, ss_converted_prot_header,
 
         conv_eq_obj = {"protocol": protocol, "networkId": network_id, "deviceId": address}
 
-        print("Json Sample Head after metadata retrieval:", json_sample_head)
-        print("Converted Equipment Object:", conv_eq_obj)
+        logger.info(f"Json Sample Head after metadata retrieval: {json_sample_head}")
+        logger.info(f"Converted Equipment Object: {conv_eq_obj}")
 
         for param in ss_dict:
 
@@ -93,15 +97,15 @@ def process_ss(ss_rows, ss_dict, ngdi_json_template, ss_converted_prot_header,
             elif param:
                 parameters[param] = ss_values[ss_dict[param]]
 
-        print("SS Parameters:", parameters)
+        logger.info(f"SS Parameters: {parameters}")
 
         conv_eq_obj["parameters"] = parameters
 
-        print("Converted Equipment Object with Parameters:", conv_eq_obj)
+        logger.info(f"Converted Equipment Object with Parameters: {conv_eq_obj}")
 
         ss_sample["convertedEquipmentParameters"].append(conv_eq_obj)
 
-        print("Single Sample:", ss_sample)
+        logger.info(f"Single Sample: {ss_sample}")
 
         json_sample_head["samples"].append(ss_sample)
 
@@ -109,7 +113,7 @@ def process_ss(ss_rows, ss_dict, ngdi_json_template, ss_converted_prot_header,
 
     except Exception as e:
 
-        print("An exception occurred while handling the Single Sample:", e)
+        logger.error(f"An exception occurred while handling the Single Sample:{e}")
 
 
 def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
@@ -120,30 +124,30 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
 
     json_sample_head["numberOfSamples"] = len(as_rows)
 
-    print("Original Template from SS to AS", json_sample_head)
+    logger.info(f"Original Template from SS to AS {json_sample_head}")
 
     converted_prot_header = as_converted_prot_header.split("~")
 
-    print("AS Converted Protocol Header array:", converted_prot_header)
+    logger.info(f"AS Converted Protocol Header array: {converted_prot_header}")
 
-    print("All Sample Rows:", as_rows)
+    logger.info(f"All Sample Rows: {as_rows}")
 
     try:
         protocol = converted_prot_header[1]
 
-        print("protocol:", protocol)
+        logger.info(f"protocol: {protocol}")
 
         network_id = converted_prot_header[2]
 
-        print("network_id:", network_id)
+        logger.info(f"network_id: {network_id}")
 
         address = converted_prot_header[3]
 
-        print("address:", address)
+        logger.info(f"address: {address}")
 
     except IndexError as e:
 
-        print("An exception occurred while trying to retrieve the AS protocols network_id and Address:", e)
+        logger.error(f"An exception occurred while trying to retrieve the AS protocols network_id and Address: {e}")
 
         return
 
@@ -156,10 +160,10 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
         sample = {"convertedDeviceParameters": {}, "rawEquipmentParameters": [], "convertedEquipmentParameters": [],
                   "convertedEquipmentFaultCodes": []}
 
-        print("<------------------------------------------NEW AS SAMPLE--------------------------------------------->")
+        logger.info(f"<------------------------------------------NEW AS SAMPLE--------------------------------------------->")
 
-        print("OLD AS DICT:", old_as_dict)
-        print("AS DICT:", new_as_dict)
+        logger.info(f"OLD AS DICT: {old_as_dict}")
+        logger.info(f"AS DICT: {new_as_dict}")
 
         for key in as_converted_device_parameters:
 
@@ -168,11 +172,11 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
 
             del new_as_dict[key]
 
-        print("Current Sample with Converted Device Parameters:", sample)
+        logger.info(f"Current Sample with Converted Device Parameters: {sample}")
 
         conv_eq_obj = {"protocol": protocol, "networkId": network_id, "deviceId": address}
 
-        print("Current ConvertedEquipmentParameters:", conv_eq_obj)
+        logger.info(f"Current ConvertedEquipmentParameters:{conv_eq_obj}")
 
         for param in new_as_dict:
 
@@ -189,7 +193,7 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
 
         sample["convertedEquipmentParameters"].append(conv_eq_obj)
 
-        print("Current Sample with Converted Equipment Parameters:", sample)
+        logger.info(f"Current Sample with Converted Equipment Parameters:{sample}")
 
         conv_eq_fc_obj = {"protocol": protocol, "networkId": network_id, "deviceId": address, "activeFaultCodes": [],
                           "inactiveFaultCodes": [], "pendingFaultCodes": []}
@@ -198,7 +202,7 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
 
             ac_fc = values[new_as_dict["activeFaultCodes"]]
 
-            print("Active Faults:", ac_fc)
+            logger.info(f"Active Faults:{ac_fc}")
 
             if ac_fc:
 
@@ -213,7 +217,7 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
                         fc_arr = fc.split("~")
 
                         for fc_val in fc_arr:
-                            print("Fault Code Value:", fc_val)
+                            logger.info(f"Fault Code Value:{fc_val}")
                             fc_obj[fc_val.split(":")[0]] = fc_val.split(":")[1]
 
                         conv_eq_fc_obj["activeFaultCodes"].append(fc_obj)
@@ -264,7 +268,7 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
 
         json_sample_head["samples"].append(sample)
 
-        print("Updated JSON Sample Head:", json_sample_head)
+        logger.info(f"Updated JSON Sample Head:{json_sample_head}")
 
     return json_sample_head
 
@@ -277,7 +281,7 @@ def get_device_id(ngdi_json_template):
 
 
 def get_tsp_and_cust_ref(device_id):
-    print("Device ID:", device_id)
+    logger.info(f"Device ID: {device_id}")
 
     get_tsp_cust_ref_payload = {
 
@@ -296,15 +300,15 @@ def get_tsp_and_cust_ref(device_id):
         }
     }
 
-    print("Get TSP and Cust_Ref payload:", get_tsp_cust_ref_payload)
+    logger.info(f"Get TSP and Cust_Ref payload:  {get_tsp_cust_ref_payload}")
 
     get_tsp_cust_ref_response = requests.post(url=edgeCommonAPIURL, json=get_tsp_cust_ref_payload)
 
     get_tsp_cust_ref_response_body = get_tsp_cust_ref_response.json()[0]
     get_tsp_cust_ref_response_code = get_tsp_cust_ref_response.status_code
 
-    print("Get TSP and Cust_Ref response body:", get_tsp_cust_ref_response_body)
-    print("Get TSP and Cust_Ref response code:", get_tsp_cust_ref_response_code)
+    logger.info(f"Get TSP and Cust_Ref response body: {get_tsp_cust_ref_response_body}")
+    logger.info(f"Get TSP and Cust_Ref response code: {get_tsp_cust_ref_response_code}")
 
     if get_tsp_cust_ref_response_body and get_tsp_cust_ref_response_code == 200:
 
@@ -327,30 +331,28 @@ def get_cspec_req_id(sc_number):
 
 
 def lambda_handler(lambda_event, context):
-    print("Event:", json.dumps(lambda_event))
-    print("Context:", context)
 
     bucket_name = lambda_event['Records'][0]['s3']['bucket']['name']
     file_key = lambda_event['Records'][0]['s3']['object']['key']
     file_size = lambda_event['Records'][0]['s3']['object']['size']
 
-    print("Bucket:", bucket_name)
-    print("File Key:", file_key)
+    logger.info(f"Bucket: {bucket_name}")
+    logger.info(f"File Key: {file_key}")
 
     file_key = file_key.replace("%3A", ":")
 
-    print("New FileKey:", file_key)
+    logger.info(f"New FileKey: {file_key}")
 
     obj = s3.get_object(Bucket=bucket_name, Key=file_key)
     csv_file = obj['Body'].read().decode('utf-8').splitlines(True)
 
-    print("Csv File:", csv_file)
+    logger.info(f"Csv File: {csv_file}")
 
     file_date_time = str(obj['LastModified'])[:19]
 
     file_metadata = obj["Metadata"]
 
-    print("File Metadata:", file_metadata)
+    logger.info(f"File Metadata: {file_metadata}")
 
     fc_uuid = file_metadata['uuid']
 
@@ -367,7 +369,7 @@ def lambda_handler(lambda_event, context):
 
     ngdi_json_template = json.loads(os.environ["NGDIBody"])
 
-    print("NGDI Template", ngdi_json_template)
+    logger.info(f"NGDI Template {ngdi_json_template}")
 
     ss_row = False
     seen_ss = False
@@ -382,7 +384,7 @@ def lambda_handler(lambda_event, context):
         if new_row:
             csv_rows.append(row)
 
-    print("CSV Rows: ", csv_rows)
+    logger.info(f"CSV Rows:  {csv_rows}")
 
     ss_rows = []
     as_rows = []
@@ -393,31 +395,31 @@ def lambda_handler(lambda_event, context):
 
             if "messageFormatVersion" in row:
 
-                print("messageFormatVersion row:", row)
+                logger.info(f"messageFormatVersion row: {row}")
 
                 ngdi_json_template["messageFormatVersion"] = row[1] if row[1] else None
 
             elif "dataEncryptionSchemeId" in row:
 
-                print("dataEncryptionSchemeId row:", row)
+                logger.info(f"dataEncryptionSchemeId row: {row}")
 
                 ngdi_json_template["dataEncryptionSchemeId"] = row[1] if row[1] else None
 
             elif "telematicsBoxId" in row:
 
-                print("telematicsBoxId row:", row)
+                logger.info(f"telematicsBoxId row: {row}")
 
                 ngdi_json_template["telematicsDeviceId"] = row[1] if row[1] else None
 
             elif "componentSerialNumber" in row:
 
-                print("componentSerialNumber row:", row)
+                logger.info(f"componentSerialNumber row: {row}")
 
                 ngdi_json_template["componentSerialNumber"] = row[1] if row[1] else None
 
             elif "dataSamplingConfigId" in row:
 
-                print("dataSamplingConfigId row:", row)
+                logger.info(f"dataSamplingConfigId row: {row}")
 
                 ngdi_json_template["dataSamplingConfigId"] = row[1] if row[1] else None
 
@@ -425,7 +427,7 @@ def lambda_handler(lambda_event, context):
 
                 # Found the Single Sample Row. Append the row as Single Sample row.
 
-                print("ssDateTimestamp Header row:", row)
+                logger.info(f"ssDateTimestamp Header row: {row}")
 
                 ss_row = True
                 seen_ss = True
@@ -435,8 +437,8 @@ def lambda_handler(lambda_event, context):
 
                 # If there are no Single Samples, append the row as an All Sample row and stop looking for SS rows
 
-                print("No Single Samples!")
-                print("asDateTimestamp Header row:", row)
+                logger.info(f"No Single Samples!")
+                logger.info(f"asDateTimestamp Header row: {row}")
 
                 ss_row = False
                 seen_ss = True
@@ -445,11 +447,11 @@ def lambda_handler(lambda_event, context):
         elif ss_row:
 
             if "asDateTimestamp" in row:
-                print("ERROR! Missing the Single Sample Values.")
+                logger.error(f"ERROR! Missing the Single Sample Values.")
 
                 return
 
-            print("ssDateTimestamp Values row:", row)
+            logger.info(f"ssDateTimestamp Values row: {row}")
 
             ss_rows.append(row)
 
@@ -462,10 +464,10 @@ def lambda_handler(lambda_event, context):
     # Make sure that we received values in the AS (as_rows > 1) and/or SS
 
     if not seen_ss or (not as_rows) or len(as_rows) < 2:
-        print("ERROR! Missing the Single Sample Values or the All Samples Values.")
+        logger.error(f"ERROR! Missing the Single Sample Values or the All Samples Values.")
         return
 
-    print("NGDI Template after main metadata addition --->", ngdi_json_template)
+    logger.info(f"NGDI Template after main metadata addition ---> {ngdi_json_template}")
 
     ss_dict = {}
     as_dict = {}
@@ -477,10 +479,10 @@ def lambda_handler(lambda_event, context):
     count = 0
 
     ss_headers = ss_rows[0] if ss_rows else []
-    print("SS Headers:", ss_headers)
+    logger.info(f"SS Headers: {ss_headers}")
 
     as_headers = as_rows[0] if as_rows else []
-    print("AS Headers:", as_headers)
+    logger.info(f"AS Headers: {as_headers}")
 
     ss_converted_device_parameters = []
     seen_ss_dev_params = False
@@ -538,8 +540,8 @@ def lambda_handler(lambda_event, context):
             ss_dict[head] = count
             count = count + 1
 
-    print("SS_DICT:", ss_dict)
-    print("SS Device Headers:", ss_converted_device_parameters)
+    logger.info(f"SS_DICT: {ss_dict}")
+    logger.info(f"SS Device Headers: {ss_converted_device_parameters}")
 
     count = 0
 
@@ -589,58 +591,58 @@ def lambda_handler(lambda_event, context):
             as_dict[head] = count
             count = count + 1
 
-    print("AS_DICT:", as_dict)
-    print("AS Device Parameters:", as_converted_device_parameters)
+    logger.info(f"AS_DICT: {as_dict}")
+    logger.info(f"AS Device Parameters: {as_converted_device_parameters}")
 
     # Get rid of the AS header row since we have already stored the index of each header
     if as_rows:
-        print("Removing AS Header Row --index '0'-- from:", as_rows)
+        logger.info(f"Removing AS Header Row --index '0'-- from: {as_rows}")
         del as_rows[0]
-        print("New AS Rows:", as_rows)
+        logger.info(f"New AS Rows: {as_rows}")
 
-    print("<xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx---Handling Single Samples---xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>")
+    logger.info(f"<xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx---Handling Single Samples---xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>")
 
     ngdi_json_template = process_ss(ss_rows, ss_dict, ngdi_json_template, ss_converted_prot_header,
                                     ss_converted_device_parameters) if ss_rows else ngdi_json_template
 
-    print("NGDI JSON Template after SS handling:", ngdi_json_template)
+    logger.info(f"NGDI JSON Template after SS handling: {ngdi_json_template}")
 
-    print("<xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx---Handled Single Samples---xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>")
+    logger.info(f"<xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx---Handled Single Samples---xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>")
 
-    print("<xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx---Handling All Samples---xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>")
+    logger.info(f"<xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx---Handling All Samples---xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>")
 
     ngdi_json_template = process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
                                     as_converted_device_parameters)
 
-    print("NGDI JSON Template after AS handling:", ngdi_json_template)
+    logger.info(f"NGDI JSON Template after AS handling: {ngdi_json_template}")
 
-    print("<xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx---Handled All Samples---xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>")
+    logger.info(f"<xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx---Handled All Samples---xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>")
 
-    print("Verifying Telematics Partner Name and Customer Reference Exists in file...")
+    logger.info(f"Verifying Telematics Partner Name and Customer Reference Exists in file...")
 
     tsp_in_file = "telematicsPartnerName" in ngdi_json_template and ngdi_json_template["telematicsPartnerName"]
     cust_ref_in_file = "customerReference" in ngdi_json_template and ngdi_json_template["customerReference"]
 
-    print("Telematics Partner Name in file:", tsp_in_file)
-    print("Customer Reference in file:", cust_ref_in_file)
+    logger.info(f"Telematics Partner Name in file: {tsp_in_file}")
+    logger.info(f"Customer Reference in file: {cust_ref_in_file}")
 
     if not (tsp_in_file and cust_ref_in_file):
 
-        print("Retrieve Device ID from file . . .")
+        logger.info(f"Retrieve Device ID from file . . .")
 
         device_id = get_device_id(ngdi_json_template)
 
         if not device_id:
-            print("Error! Device ID is not in the file! Aborting!")
+            logger.error(f"Error! Device ID is not in the file! Aborting!")
             return
 
-        print("Retrieving TSP and Customer Reference from EDGE DB . . .")
+        logger.info(f"Retrieving TSP and Customer Reference from EDGE DB . . .")
 
         got_tsp_and_cust_ref = get_tsp_and_cust_ref(device_id)
 
         if not got_tsp_and_cust_ref:
 
-            print("Error! Could not retrieve TSP and Cust Ref. These are mandatory fields!")
+            logger.error(f"Error! Could not retrieve TSP and Cust Ref. These are mandatory fields!")
 
             return
 
@@ -650,17 +652,17 @@ def lambda_handler(lambda_event, context):
             if TSP_name != "NA":
                ngdi_json_template["telematicsPartnerName"] = TSP_name
             else: 
-               print("Error! Could not retrieve TSP. This is mandatory field!")
+               logger.error(f"Error! Could not retrieve TSP. This is mandatory field!")
                return
             ngdi_json_template["customerReference"] = got_tsp_and_cust_ref["cust_ref"]
 
-            print("Final file with TSP and Cust Ref:", ngdi_json_template)
+            logger.info(f"Final file with TSP and Cust Ref: {ngdi_json_template}")
 
-    print("Posting file to S3...")
+    logger.info(f"Posting file to S3...")
 
     filename = file_key
 
-    print("Filename: ", filename)
+    logger.info(f"Filename: {filename}")
 
     try:
 
@@ -673,23 +675,23 @@ def lambda_handler(lambda_event, context):
         #                 ngdi_json_template["telematicsDeviceId"] + '/' + date[:4] + '/' + date[4:6] + \
         #                 '/' + date[6:8] + '/' + filename.split('.csv')[0] + '.json'
 
-        print("Retrieving date info for File Path from filename . . .")
+        logger.info(f"Retrieving date info for File Path from filename . . .")
 
         file_name_array = filename.split('_')
 
-        print("Split File Name array:", file_name_array)
+        logger.info(f"Split File Name array: {file_name_array}")
 
         date_component = file_name_array[3]
 
-        print("File Name date component:", date_component)
+        logger.info(f"File Name date component: {date_component}")
 
         current_datetime = datetime.datetime.strptime(date_component, "%Y%m%d%H%M%S")
 
-        print("File Name date component in datetime format:", current_datetime)
+        logger.info(f"File Name date component in datetime format: {current_datetime}")
 
-        print("Year:", current_datetime.year)
-        print("Month:", current_datetime.month)
-        print("Day:", current_datetime.day)
+        logger.info(f"Year: {current_datetime.year}")
+        logger.info(f"Month:  {current_datetime.month}")
+        logger.info(f"Day: {current_datetime.day}")
 
         store_file_path = "ConvertedFiles/" + ngdi_json_template['componentSerialNumber'] + '/' + \
                           ngdi_json_template["telematicsDeviceId"] + '/' + ("%02d" % current_datetime.year) + '/' \
@@ -699,15 +701,14 @@ def lambda_handler(lambda_event, context):
 
     except Exception as e:
 
-        print("An error occured while trying to get the file path from the file name:", e,
-              ". Using current date-time . . .")
+        logger.error(f"An error occured while trying to get the file path from the file name:{e} Using current date-time . . .")
 
         current_datetime = datetime.datetime.now()
 
-        print("Current Date Time:", current_datetime)
-        print("Current Date Time Year:", current_datetime.year)
-        print("Current Date Time Month:", current_datetime.month)
-        print("Current Date Time Day:", current_datetime.day)
+        logger.info(f"Current Date Time: {current_datetime}")
+        logger.info(f"Current Date Time Year: {current_datetime.year}")
+        logger.info(f"Current Date Time Month: {current_datetime.month}")
+        logger.info(f"Current Date Time Day: {current_datetime.day}")
 
         store_file_path = "ConvertedFiles/" + ngdi_json_template['componentSerialNumber'] + '/' + \
                           ngdi_json_template["telematicsDeviceId"] + '/' + ("%02d" % current_datetime.year) + '/' \
@@ -715,14 +716,14 @@ def lambda_handler(lambda_event, context):
                           ("%02d" % current_datetime.month) + '/' + ("%02d" % current_datetime.day) + '/' + \
                           filename.split('.csv')[0] + '.json'
 
-    print("New Filename:", store_file_path)
+    logger.info(f"New Filename: {store_file_path}")
 
     store_file_response = s3_client.put_object(Bucket=cp_post_bucket,
                                                Key=store_file_path,
                                                Body=json.dumps(ngdi_json_template).encode(),
                                                Metadata={'j1939type': 'FC', 'uuid': fc_uuid})
 
-    print("Store File Response:", store_file_response)
+    logger.info(f"Store File Response: {store_file_response}")
 
     if store_file_response["ResponseMetadata"]["HTTPStatusCode"] == 200:
         bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDCSVConvertSuccess.value)
