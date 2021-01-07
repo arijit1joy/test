@@ -105,14 +105,11 @@ def post_cd_message(data):
     logger.info(f"Retrieving the TSP name to get the Auth Token . . .")
     tsp_name = data["Telematics_Partner_Name"]
     logger.info(f"TSP From File ----------------> {tsp_name}")
-    logger.info(f"Old AuthToken URL:  {auth_token_url}")
     auth_url = auth_token_url.replace("{TSP-Name}", tsp_name)
-    logger.info(f"New AuthToken URL: {auth_url}")
     req = requests.get(url=auth_url, params=params)
     auth_token = json.loads(req.text)
     auth_token_info = auth_token['authToken']
     url = cd_url + auth_token_info
-    logger.info(f'Auth Token ----------------> {auth_token_info}')
     sent_date_time = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ')[:-4] + "Z"
     logger.info(f'Sent_Date_Time  ------------------> {sent_date_time}')
     data["Sent_Date_Time"] = sent_date_time if sent_date_time else data["Occurrence_Date_Time"] \
@@ -329,7 +326,7 @@ def handle_fc(converted_device_params, converted_equip_params, converted_equip_f
             if "Telematics_Partner_Message_ID".lower() in var_dict:
                 logger.info(f"Found Message ID: {var_dict["Telematics_Partner_Message_ID".lower()]} in this sample! This is the Single Sample. Proceeding to the next sample . . .")
             else:
-                logger.info(f"There was an Error in this FC sample. It is not the Single Sample and it does not have FC info!")
+                logger.error(f"There was an Error in this FC sample. It is not the Single Sample and it does not have FC info!")
     except Exception as e:
         logger.error(f"Error! The following Exception occurred while handling this sample:{e}")
 
@@ -449,16 +446,14 @@ def process(bucket, key, file_size):
             for sample in samples:
                 send_sample(sample, metadata, fc_or_hb)
         else:
-            logger.info(f"Error! There are no samples in this file!")
+            logger.error(f"Error! There are no samples in this file!")
             return
     else:
-        logger.info(f"Error! Metadata retrieval failed! See logs.")
+        logger.error(f"Error! Metadata retrieval failed! See logs.")
         return
 
 
 def lambda_handler(event, context):
-    logger.info(f"Lambda Event: {event}")
-    logger.info(f"Lambda Context: {context}")
     logger.info(f"NGDI JSON Object: {event['Records'][0]['s3']['object']['key']}")
     # Retrieve bucket and key details
     key = event['Records'][0]['s3']['object']['key']

@@ -50,8 +50,6 @@ class CDFCSDK:
 
         json_payload = get_json_payload()
 
-        logger.info(f"FC JSON Payload: {json_payload}")
-
         self.values = {}
 
         for var in class_variables:
@@ -72,11 +70,9 @@ class CDFCSDK:
             json_payload["Sent_Date_Time"] = json_payload[
                 "Occurrence_Date_Time"] if "Occurrence_Date_Time" in json_payload else ""
 
-        logger.info(f"NEW FC JSON Payload: {json_payload}")
 
         return json.loads(json.dumps(json_payload))
 
     def get_payload(self):
 
-        logger.info(f"Returning Class Payload: {self.payload}")
         return self.payload

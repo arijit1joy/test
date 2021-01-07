@@ -16,7 +16,6 @@ def update_bdd_parameter(value, param_name=None):
             Type="String",
             Overwrite=True
         )
-        logger.info(f"Set SSM Parameter Response: {set_ssm_parameter_response}")
     except Exception as e:
         logger.error(f"An Exception occurred! Error: {e}")
         traceback.print_exc()

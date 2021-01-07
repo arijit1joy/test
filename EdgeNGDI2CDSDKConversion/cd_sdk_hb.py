@@ -50,8 +50,6 @@ class CDHBSDK:
 
         json_payload = get_json_payload()
 
-        logger.info(f"HB JSON Payload: {json_payload}")
-
         for var in class_variables:
 
             if class_variables[var]:
@@ -75,13 +73,10 @@ class CDHBSDK:
             json_payload["Sent_Date_Time"] = json_payload["Occurrence_Date_Time"] if "Occurrence_Date_Time" \
                                                                                      in json_payload else ""
 
-        logger.info(f"NEW HB JSON Payload: {json_payload}")
-
         return json.loads(json.dumps(json_payload))
 
     def get_payload(self):
 
-        logger.info(f"Returning Class Payload: {self.payload}")
         return self.payload
 
 

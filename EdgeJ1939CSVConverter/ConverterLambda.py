@@ -331,8 +331,6 @@ def get_cspec_req_id(sc_number):
 
 
 def lambda_handler(lambda_event, context):
-    logger.info(f"Event: {json.dumps(lambda_event)}")
-    logger.info(f"Context: {context}")
 
     bucket_name = lambda_event['Records'][0]['s3']['bucket']['name']
     file_key = lambda_event['Records'][0]['s3']['object']['key']
@@ -449,7 +447,7 @@ def lambda_handler(lambda_event, context):
         elif ss_row:
 
             if "asDateTimestamp" in row:
-                logger.info(f"ERROR! Missing the Single Sample Values.")
+                logger.error(f"ERROR! Missing the Single Sample Values.")
 
                 return
 
@@ -466,7 +464,7 @@ def lambda_handler(lambda_event, context):
     # Make sure that we received values in the AS (as_rows > 1) and/or SS
 
     if not seen_ss or (not as_rows) or len(as_rows) < 2:
-        logger.info(f"ERROR! Missing the Single Sample Values or the All Samples Values.")
+        logger.error(f"ERROR! Missing the Single Sample Values or the All Samples Values.")
         return
 
     logger.info(f"NGDI Template after main metadata addition ---> {ngdi_json_template}")
@@ -635,7 +633,7 @@ def lambda_handler(lambda_event, context):
         device_id = get_device_id(ngdi_json_template)
 
         if not device_id:
-            logger.info(f"Error! Device ID is not in the file! Aborting!")
+            logger.error(f"Error! Device ID is not in the file! Aborting!")
             return
 
         logger.info(f"Retrieving TSP and Customer Reference from EDGE DB . . .")
@@ -644,7 +642,7 @@ def lambda_handler(lambda_event, context):
 
         if not got_tsp_and_cust_ref:
 
-            logger.info(f"Error! Could not retrieve TSP and Cust Ref. These are mandatory fields!")
+            logger.error(f"Error! Could not retrieve TSP and Cust Ref. These are mandatory fields!")
 
             return
 
@@ -654,7 +652,7 @@ def lambda_handler(lambda_event, context):
             if TSP_name != "NA":
                ngdi_json_template["telematicsPartnerName"] = TSP_name
             else: 
-               logger.info(f"Error! Could not retrieve TSP. This is mandatory field!")
+               logger.error(f"Error! Could not retrieve TSP. This is mandatory field!")
                return
             ngdi_json_template["customerReference"] = got_tsp_and_cust_ref["cust_ref"]
 
