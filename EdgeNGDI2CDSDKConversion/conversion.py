@@ -324,7 +324,7 @@ def handle_fc(converted_device_params, converted_equip_params, converted_equip_f
             logger.info(f"This sample had no Fault Code information, checking if this is the Single Sample . . .")
             logger.info(f"Variable Dict: {var_dict}")
             if "Telematics_Partner_Message_ID".lower() in var_dict:
-                logger.info(f"Found Message ID: {var_dict["Telematics_Partner_Message_ID".lower()]} in this sample! This is the Single Sample. Proceeding to the next sample . . .")
+                logger.info(f'Found Message ID: {var_dict["Telematics_Partner_Message_ID".lower()]} in this sample! This is the Single Sample. Proceeding to the next sample . . .')
             else:
                 logger.error(f"There was an Error in this FC sample. It is not the Single Sample and it does not have FC info!")
     except Exception as e:
