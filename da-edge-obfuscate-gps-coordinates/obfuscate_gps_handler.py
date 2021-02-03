@@ -32,8 +32,8 @@ def send_file_to_s3(body):
         config_id = body["dataSamplingConfigId"]
         current_dt = datetime.now()
         file_name = "EDGE_{0}_{1}_{2}_{3}.json".format(device_id, esn, config_id, int(current_dt.timestamp()))
-        file_key = "ConvertedFiles/{0}/{1}/{2}/{3}/{4}/{5}".format(esn, device_id, current_dt.year, current_dt.month,
-                                                                   current_dt.day, file_name)
+        file_key = "ConvertedFiles/{0}/{1}/{2}/{3}/{4}/{5}".format(
+            esn, device_id, current_dt.strftime("%Y"), current_dt.strftime("%m"), current_dt.strftime("%d"), file_name)
         logger.info(f"File Name: {file_name}")
         logger.info(f"File Key:  {file_key}")
         send_to_s3_response = s3_client.put_object(Bucket=bucket_name, Key=file_key, Body=json.dumps(body).encode())
