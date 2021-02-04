@@ -8,8 +8,7 @@ env:
 phases: 
  
   install:  
-    commands:  
-    - apt-get update 
+    commands:
     - pip install awscli==1.16.209 
     - apt-get install zip 
     - apt-get install unzip 
