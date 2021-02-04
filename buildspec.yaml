@@ -5,6 +5,7 @@ phases:
  
   install:  
     commands:
+    - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
     - pip install awscli==1.16.209 
     - apt-get install zip 
     - apt-get install unzip
