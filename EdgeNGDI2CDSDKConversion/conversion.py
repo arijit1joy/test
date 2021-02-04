@@ -331,7 +331,7 @@ def create_fc_class(fc, f_codes, fc_index, fc_param, var_dict,
     variable_dict[fmi_indicator.lower()] = fc["FMI"]
     variable_dict[count_indicator.lower()] = fc["count"]
     logger.info(f"FC CD SDK Class Variable Dict: {variable_dict}")
-    fc_sdk_object = map_ngdi_sample_to_cd_payload(variable_dict)
+    fc_sdk_object = map_ngdi_sample_to_cd_payload(variable_dict, fc=True)
     logger.info(f"Posting Sample to CD...")
     post_cd_message(fc_sdk_object)
 
