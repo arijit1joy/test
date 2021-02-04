@@ -81,21 +81,20 @@ def get_metadata_info(j1939_file):
 
 
 def post_cd_message(data):
-    params = {}
     logger.info(f"Retrieving the TSP name to get the Auth Token . . .")
     tsp_name = data["Telematics_Partner_Name"]
     logger.info(f"TSP From File ----------------> {tsp_name}")
     auth_url = auth_token_url.replace("{TSP-Name}", tsp_name)
-    req = requests.get(url=auth_url, params=params)
+    req = requests.get(url=auth_url)
     auth_token = json.loads(req.text)
     auth_token_info = auth_token['authToken']
     url = cd_url + auth_token_info
     sent_date_time = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ')[:-4] + "Z"
     logger.info(f'Sent_Date_Time  ------------------> {sent_date_time}')
-    data["Sent_Date_Time"] = sent_date_time if sent_date_time else data["Occurrence_Date_Time"] \
-        if "Occurrence_Date_Time" in data else ''
-
-    # data["Equipment_ID"] = ""  # Permanent solution to EQUIP_ID renaming Issue on CP end - Removing "equipmentId"
+    if sent_date_time:
+        data["Sent_Date_Time"] = sent_date_time
+    else:
+        data["Sent_Date_Time"] = data["Occurrence_Date_Time"] if "Occurrence_Date_Time" in data else ''
 
     if "VIN" in data and not data["VIN"]:
         logger.info(f"Vin is not in file. Setting the value of the VIN to 'None'")
@@ -142,12 +141,12 @@ def post_cd_message(data):
         logger.info(f'response ------------>  {cp_response}')
 
         '''
-            ***************** The below is important for J1939 BDD functionality. Please do not modify! ********************
+            ***************** The below is important for J1939 BDD functionality. Please do not modify! ****************
         '''
         if is_bdd and cp_response == InternalResponse.J1939CPPostSuccess.value:
             bdd_utility.update_bdd_parameter(InternalResponse.J1939CPPostSuccess.value)
         '''
-            ***************** The above is important for J1939 BDD functionality. Please do not modify! ********************
+            ***************** The above is important for J1939 BDD functionality. Please do not modify! ****************
         '''
 
 
@@ -299,7 +298,8 @@ def handle_fc(converted_device_params, converted_equip_params, converted_equip_f
                                     else:
                                         # TODO Handle Pending Fault Codes.
                                         logger.info(
-                                            f"There are either no, fc_param in this file -- We are not handling pending FCs for now.")
+                                            f"There are either no, fc_param in this file -- We are not handling "
+                                            f"pending FCs for now.")
         if found_fcs:
             logger.info(
                 f"We have already processed this sample since it had fault codes. Continuing to the next sample . . .")
@@ -308,7 +308,8 @@ def handle_fc(converted_device_params, converted_equip_params, converted_equip_f
             logger.info(f"Variable Dict: {var_dict}")
             if "Telematics_Partner_Message_ID".lower() in var_dict:
                 logger.info(
-                    f'Found Message ID: {var_dict["Telematics_Partner_Message_ID".lower()]} in this sample! This is the Single Sample. Proceeding to the next sample . . .')
+                    f'Found Message ID: {var_dict["Telematics_Partner_Message_ID".lower()]} in this sample! This is '
+                    f'the Single Sample. Proceeding to the next sample . . .')
             else:
                 logger.error(
                     f"There was an Error in this FC sample. It is not the Single Sample and it does not have FC info!")
@@ -375,7 +376,7 @@ def process(bucket, key, file_size):
     logger.info(f"Checking if this is HB or FC...")
     file_metadata = j1939_file_object["Metadata"]
     logger.info(f"File Metadata: {file_metadata}")
-    fc_or_hb = file_metadata['j1939type'] if "j1939type" else None
+    fc_or_hb = file_metadata['j1939type'] if "j1939type" in file_metadata else None
     uuid = file_metadata['uuid']
     file_date_time = str(j1939_file_object['LastModified'])[:19]
     file_name = key.split('/')[-1]
@@ -432,10 +433,8 @@ def process(bucket, key, file_size):
                 send_sample(sample, metadata, fc_or_hb)
         else:
             logger.error(f"Error! There are no samples in this file!")
-            return
     else:
         logger.error(f"Error! Metadata retrieval failed! See logs.")
-        return
 
 
 def lambda_handler(event, context):
