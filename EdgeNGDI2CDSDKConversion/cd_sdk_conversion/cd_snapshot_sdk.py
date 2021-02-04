@@ -18,7 +18,7 @@ def get_snapshot_data(params, time_stamp, address, spn_file_json):
                     "Value": params[param],
                     "Parameter_Source_Address": address
                 })
-            else:  # If the parameter is not part of the EDGE SPN list, print a warning and move on
+            else:  # If the parameter is not part of the EDGE SPN list, print a warning & move on to the next parameter
                 logger.warn(f"The parameter: '{param}' is not in the EDGE SPN list!")
 
         snapshot_data["Parameter"] = parameters
