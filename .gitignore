@@ -2,3 +2,4 @@
 *__pycache__*
 *.coverage*
 *edge_core.py*
+*edge_logger.py*

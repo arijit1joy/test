@@ -1,18 +1,19 @@
-import json
-import cd_sdk_hb as hb_sdk
-import cd_sdk_fc as fc_sdk
-import os
-import boto3
-import requests
 import datetime
+import json
+import os
+
+import boto3
+import edge_core as edge
+import requests
 from metadata_utility import build_metadata_and_write
 from metadata_utility import write_health_parameter_to_database
-import edge_core as edge
-from system_variables import InternalResponse, CDSDK
-import bdd_utility
 from obfuscate_gps_utility import deobfuscate_gps_coordinates
-import edge_logger as logging
 
+import bdd_utility
+import edge_logger as logging
+from cd_sdk_conversion import cd_sdk
+from cd_sdk_conversion.cd_snapshot_sdk import get_snapshot_data
+from system_variables import InternalResponse, CDSDK
 
 logger = logging.logging_framework("EdgeNGDI2CDSDKConversion.Conversion")
 
@@ -24,7 +25,7 @@ from pypika import Query, Table, Order, functions as fn
 '''Getting the Values from SSM Parameter Store
 '''
 
-ssm = boto3.client('ssm')
+ssm = boto3.client('ssm')  # noqa
 
 
 def set_parameters():
@@ -39,8 +40,6 @@ params = set_parameters()
 name = params['Names']
 response = ssm.get_parameters(Names=name, WithDecryption=False)
 api_url = response['Parameters'][0]['Value']
-
-# metadata = {}
 
 spn_bucket = os.getenv('spn_parameter_json_object')
 spn_bucket_key = os.getenv('spn_parameter_json_object_key')
@@ -79,25 +78,6 @@ def get_metadata_info(j1939_file):
     except Exception as e:
         logger.error(f"An exception occurred while retrieving metadata:{e}")
         return False
-
-
-def get_snapshot_data(params, time_stamp, address):
-    logger.info(f"Getting snapshot data for the parameter list: {params}")
-    snapshot_data = []
-    logger.info(f"SPN File as JSON: {spn_file_json}")
-    try:
-        for param in params:
-            snapshot_data.append({"Snapshot_DateTimestamp": time_stamp,
-                                  "Parameter": [{
-                                      "Name": spn_file_json[param],
-                                      "Value": params[param],
-                                      "Parameter_Source_Address": address}]})
-        logger.info(f"Snapshot Data: {snapshot_data}")
-        return snapshot_data
-
-    except Exception as e:
-        logger.error(f"Error! An Exception occurred when getting the snapshot data: {e}")
-        return {}
 
 
 def post_cd_message(data):
@@ -222,7 +202,7 @@ def handle_hb(converted_device_params, converted_equip_params, converted_equip_f
                                 for equip_param in sample_obj:
                                     if equip_param == param_indicator:
                                         var_dict[sample_obj[equip_param]] = get_snapshot_data(
-                                            converted_equip_params[equip_param], time_stamp, address) \
+                                            converted_equip_params[equip_param], time_stamp, address, spn_file_json) \
                                             if equip_param in converted_equip_params else ""
                                     else:
                                         var_dict[sample_obj[equip_param]] = converted_equip_params[equip_param] \
@@ -236,9 +216,9 @@ def handle_hb(converted_device_params, converted_equip_params, converted_equip_f
                                         final_fc = get_active_faults(converted_equip_fc[fc_param], address)
                                     var_dict[sample_obj[fc_param]] = final_fc
         logger.info(f"HB CD SDK Class Variable Dict: {var_dict}")
-        hb_sdk_object = hb_sdk.CDHBSDK(var_dict)
+        hb_sdk_object = cd_sdk.map_ngdi_sample_to_cd_payload(var_dict)
         logger.info(f"Posting Sample to CD...")
-        post_cd_message(hb_sdk_object.get_payload())
+        post_cd_message(hb_sdk_object)
     except Exception as e:
         logger.error(f"Error! The following Exception occurred while handling this sample:{e}")
 
@@ -278,7 +258,8 @@ def handle_fc(converted_device_params, converted_equip_params, converted_equip_f
                                 for equip_param in sample_obj:
                                     if equip_param == param_indicator:
                                         var_dict[sample_obj[equip_param]] = get_snapshot_data(
-                                            converted_equip_params[equip_param].copy(), time_stamp, address) \
+                                            converted_equip_params[equip_param].copy(), time_stamp, address,
+                                            spn_file_json) \
                                             if equip_param in converted_equip_params else ""
                                     else:
                                         var_dict[sample_obj[equip_param]] = converted_equip_params[equip_param] \
@@ -317,16 +298,20 @@ def handle_fc(converted_device_params, converted_equip_params, converted_equip_f
                                             fc_index = fc_index + 1
                                     else:
                                         # TODO Handle Pending Fault Codes.
-                                        logger.info(f"There are either no, fc_param in this file -- We are not handling pending FCs for now.")
+                                        logger.info(
+                                            f"There are either no, fc_param in this file -- We are not handling pending FCs for now.")
         if found_fcs:
-            logger.info(f"We have already processed this sample since it had fault codes. Continuing to the next sample . . .")
+            logger.info(
+                f"We have already processed this sample since it had fault codes. Continuing to the next sample . . .")
         else:
             logger.info(f"This sample had no Fault Code information, checking if this is the Single Sample . . .")
             logger.info(f"Variable Dict: {var_dict}")
             if "Telematics_Partner_Message_ID".lower() in var_dict:
-                logger.info(f'Found Message ID: {var_dict["Telematics_Partner_Message_ID".lower()]} in this sample! This is the Single Sample. Proceeding to the next sample . . .')
+                logger.info(
+                    f'Found Message ID: {var_dict["Telematics_Partner_Message_ID".lower()]} in this sample! This is the Single Sample. Proceeding to the next sample . . .')
             else:
-                logger.error(f"There was an Error in this FC sample. It is not the Single Sample and it does not have FC info!")
+                logger.error(
+                    f"There was an Error in this FC sample. It is not the Single Sample and it does not have FC info!")
     except Exception as e:
         logger.error(f"Error! The following Exception occurred while handling this sample:{e}")
 
@@ -345,9 +330,9 @@ def create_fc_class(fc, f_codes, fc_index, fc_param, var_dict,
     variable_dict[fmi_indicator.lower()] = fc["FMI"]
     variable_dict[count_indicator.lower()] = fc["count"]
     logger.info(f"FC CD SDK Class Variable Dict: {variable_dict}")
-    fc_sdk_object = fc_sdk.CDFCSDK(variable_dict)
+    fc_sdk_object = cd_sdk.map_ngdi_sample_to_cd_payload(variable_dict)
     logger.info(f"Posting Sample to CD...")
-    post_cd_message(fc_sdk_object.get_payload())
+    post_cd_message(fc_sdk_object)
 
 
 def send_sample(sample, metadata, fc_or_hb):
