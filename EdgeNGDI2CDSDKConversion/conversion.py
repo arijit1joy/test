@@ -215,7 +215,7 @@ def handle_hb(converted_device_params, converted_equip_params, converted_equip_f
                                         final_fc = get_active_faults(converted_equip_fc[fc_param], address)
                                     var_dict[sample_obj[fc_param]] = final_fc
         logger.info(f"HB CD SDK Class Variable Dict: {var_dict}")
-        hb_sdk_object = map_ngdi_sample_to_cd_payload(var_dict)
+        hb_sdk_object = map_ngdi_sample_to_cd_payload(var_dict, hb=True)
         logger.info(f"Posting Sample to CD...")
         post_cd_message(hb_sdk_object)
     except Exception as e:
@@ -331,7 +331,7 @@ def create_fc_class(fc, f_codes, fc_index, fc_param, var_dict,
     variable_dict[fmi_indicator.lower()] = fc["FMI"]
     variable_dict[count_indicator.lower()] = fc["count"]
     logger.info(f"FC CD SDK Class Variable Dict: {variable_dict}")
-    fc_sdk_object = map_ngdi_sample_to_cd_payload(variable_dict)
+    fc_sdk_object = map_ngdi_sample_to_cd_payload(variable_dict, fc=True)
     logger.info(f"Posting Sample to CD...")
     post_cd_message(fc_sdk_object)
 
