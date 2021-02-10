@@ -1,6 +1,5 @@
 version: 0.2
 
-
 phases:
   install:
     commands:
@@ -21,12 +20,11 @@ phases:
 
   build:
     commands:
-        - cd EDGE-J1939-BDD
-        - python -m behave -D environment=${environment}
+      - cd EDGE-J1939-BDD
+      - python -m behave -D environment=${environment}
 
-
-reports: 
-  SurefireReports: 
+reports:
+  SurefireReports:
     files:
-      - '**/*'
-    base-directory: 'EDGE-J1939-BDD/reports'
+      - "**/*"
+    base-directory: "EDGE-J1939-BDD/reports"
