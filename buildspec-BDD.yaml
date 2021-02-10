@@ -4,20 +4,25 @@ version: 0.2
 phases:
   install:
     commands:
-      - python --version
+      - ASSUME_ROLE_ARN="arn:aws:iam::${AccountId}:role/da-edge-common-lib-NGCA-BDDTrustRole-${environment}"
+      - TEMP_ROLE=`aws sts assume-role --role-arn $ASSUME_ROLE_ARN --role-session-name edge-ngca`
+      - export TEMP_ROLE
+      - export AWS_ACCESS_KEY_ID=$(echo "${TEMP_ROLE}" | jq -r '.Credentials.AccessKeyId')
+      - export AWS_SECRET_ACCESS_KEY=$(echo "${TEMP_ROLE}" | jq -r '.Credentials.SecretAccessKey')
+      - export AWS_SESSION_TOKEN=$(echo "${TEMP_ROLE}" | jq -r '.Credentials.SessionToken')
       - echo $path
       - pip install --upgrade pip
-      - pip install behave    
+      - pip install selenium
+      - pip install requests
+      - pip install pypika
+      - pip install boto3
+      - pip install behave
       - curr_dir=$(pwd)
-      - echo 'current directory - $curr_dir'
 
   build:
     commands:
         - cd EDGE-J1939-BDD
-        - new_curr_dir=$(pwd)
-        - echo 'BDD directory - $new_curr_dir'
-        - pip install -r requirements.txt;
-        - python -m behave
+        - python -m behave -D environment=${environment}
 
 
 reports: 
