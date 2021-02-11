@@ -3,7 +3,7 @@ version: 0.2
 phases:
   install:
     commands:
-      - ASSUME_ROLE_ARN="arn:aws:iam::${AccountId}:role/da-edge-common-lib-NGCA-BDDTrustRole-${environment}"
+      - ASSUME_ROLE_ARN="arn:aws:iam::${EDGEAccountId}:role/da-edge-common-lib-NGCA-BDDTrustRole-${environment}"
       - TEMP_ROLE=`aws sts assume-role --role-arn $ASSUME_ROLE_ARN --role-session-name edge-ngca`
       - export TEMP_ROLE
       - export AWS_ACCESS_KEY_ID=$(echo "${TEMP_ROLE}" | jq -r '.Credentials.AccessKeyId')
