@@ -4,7 +4,7 @@ Command to Run behave
 
 use Command prompt or Pycharm Terminal
 
-inside da-EDGE-Olympus-device-management\EDGE-Device-Management-BDD folder
+inside da_edge_j1939_services\EDGE-J1939-BDD folder
 
 >behave -f pretty
 
