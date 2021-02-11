@@ -17,10 +17,10 @@ def valid_ebu_fc_message(context):
     context.j1939_fc_stages = ["FILE_RECEIVED", "UNCOMPRESSED", "CSV_JSON_CONVERTED", "CD_PT_POSTED", "FILE_SENT"]
     context.file_name = "edge_192999999999951_19299951_BDD001_2021-02-09T12_30_00.015Z.csv.gz"
     context.download_folder_path = "data/j1939_fc/download"
-    context.download_converted_file_name = "data/j1939_fc/download/received_ebu_converted_file.json"
-    context.compare_converted_file_name = "data/j1939_fc/compare/ebu_converted_file.json"
-    context.download_ngdi_file_name = "data/j1939_fc/download/received_ebu_ngdi_file.json"
-    context.compare_ngdi_file_name = "data/j1939_fc/compare/ebu_ngdi_file.json"
+    context.download_converted_file_name = "data/j1939_fc/download/received_j1939_fc_ebu_converted_file.json"
+    context.compare_converted_file_name = "data/j1939_fc/compare/j1939_fc_ebu_converted_file.json"
+    context.download_ngdi_file_name = "data/j1939_fc/download/received_j1939_fc_ebu_ngdi_file.json"
+    context.compare_ngdi_file_name = "data/j1939_fc/compare/j1939_fc_ebu_ngdi_file.json"
     context.device_id = context.ebu_device_id_1
     context.esn = context.ebu_esn_1
 
@@ -47,8 +47,8 @@ def valid_psbu_fc_message(context):
     context.j1939_fc_stages = ["FILE_RECEIVED", "UNCOMPRESSED", "CSV_JSON_CONVERTED"]
     context.file_name = "edge_192999999999952_20210209123000_19299952_BDD001_2021-02-09T12_30_00.015Z.csv.gz"
     context.download_folder_path = "data/j1939_fc/download"
-    context.download_converted_file_name = "data/j1939_fc/download/received_psbu_converted_file.json"
-    context.compare_converted_file_name = "data/j1939_fc/compare/psbu_converted_file.json"
+    context.download_converted_file_name = "data/j1939_fc/download/received_j1939_fc_psbu_converted_file.json"
+    context.compare_converted_file_name = "data/j1939_fc/compare/j1939_fc_psbu_converted_file.json"
     context.device_id = context.psbu_device_id_1
     context.esn = context.psbu_esn_1
 
@@ -61,7 +61,7 @@ def j1939_fc_file_uploaded_to_s3(context):
     upload_object_to_s3(context.device_upload_bucket, file_key, file_path)
 
 
-@then(u'Stored J1939 metadata stages in EDGE DB')
+@then(u'Stored J1939 FC metadata stages in EDGE DB')
 @exception_handler
 @set_delay(20, wait_before=True)
 def assert_j1939_fc_stages_in_edge_db(context):
@@ -78,7 +78,7 @@ def assert_j1939_fc_stages_in_edge_db(context):
 
 @exception_handler
 @then(u'A JSON file is created with the FC message in NGDI JSON format as its content and is stored in the '
-      u'edge-j1939-<env> bucket under the file path ConvertedFiles/esn/deviceID/yyyy/MM/dd/fc_file.json with a '
+      u'edge-j1939-<env> bucket under the file path ConvertedFiles/esn/device_id/yyyy/mm/dd/fc_file.json with a '
       u'metadata called j1939type whose value is FC')
 def assert_j1939_fc_message_in_converted_files(context):
     current_dt = datetime.utcnow()
@@ -96,7 +96,7 @@ def assert_j1939_fc_message_in_converted_files(context):
 
 @exception_handler
 @then(u'A JSON file is created with the FC message in NGDI JSON format as its content and is stored in the '
-      u'edge-j1939-<env> bucket under the file path NGDI/esn/device ID/yyyy/MM/dd/fc_file.json with a metadata '
+      u'edge-j1939-<env> bucket under the file path NGDI/esn/device_id/yyyy/mm/dd/fc_file.json with a metadata '
       u'called j1939type whose value is FC and CP Post Success Message is recorded')
 def assert_j1939_fc_message_in_ngdi(context):
     current_dt = datetime.utcnow()
@@ -114,8 +114,7 @@ def assert_j1939_fc_message_in_ngdi(context):
 
 @exception_handler
 @then(u'No JSON file is created with the FC message in NGDI JSON format as its content and is stored in the '
-      u'edge-j1939-<env> bucket under the file path NGDI/esn/device ID/yyyy/MM/dd/fc_file.json with a metadata '
-      u'called j1939type whose value is FC and CP Post Success Message is recorded')
+      u'edge-j1939-<env> bucket under the file path NGDI/esn/device_id/yyyy/mm/dd/fc_file.json')
 def assert_j1939_fc_message_not_in_ngdi(context):
     file_key = "NGDI/{0}/".format(context.esn)
     get_key = get_key_from_list_of_s3_objects(context.final_bucket, file_key)
