@@ -21,7 +21,7 @@ phases:
   build:
     commands:
       - cd EDGE-J1939-BDD
-      - python -m behave -D environment=${environment}
+      - python -m behave -D environment=${environment} region=${Region}
 
 reports:
   SurefireReports:

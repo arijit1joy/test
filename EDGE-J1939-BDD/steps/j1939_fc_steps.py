@@ -63,9 +63,9 @@ def j1939_fc_file_uploaded_to_s3(context):
 
 @then(u'Stored J1939 FC metadata stages in EDGE DB')
 @exception_handler
-@set_delay(20, wait_before=True)
+@set_delay(15, wait_before=True)
 def assert_j1939_fc_stages_in_edge_db(context):
-    current_date_time = (datetime.utcnow() - timedelta(minutes=5)).strftime('%Y-%m-%d %H:%M:%S')
+    current_date_time = (datetime.utcnow() - timedelta(minutes=2)).strftime('%Y-%m-%d %H:%M:%S')
     da_edge_metadata = Table(context.edge_metadata_table)
     query = Query.from_(da_edge_metadata).select(da_edge_metadata.data_pipeline_stage).where(
         da_edge_metadata.device_id == context.device_id).where(da_edge_metadata.data_protocol == "J1939_FC") \

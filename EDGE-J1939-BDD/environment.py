@@ -1,5 +1,6 @@
 def before_all(context):
     environment = context.config.userdata["environment"]
+    context.region = context.config.userdata["region"]
     edge_base_url = "https://api.edge-{environment}.aws.cummins.com".format(environment=environment)
     context.edge_common_db_url = edge_base_url + "/v3/EdgeDBLambda"
     context.edge_metadata_table = "da_edge_olympus.da_edge_metadata"
