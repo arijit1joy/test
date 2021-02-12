@@ -26,9 +26,15 @@ def upload_object_to_s3(bucket_name, key, path_to_file, metadata=None, extra_arg
 
 @exception_handler
 def get_key_from_list_of_s3_objects(bucket_name, prefix):
-    list_objects = S3_CLIENT.list_objects_v2(Bucket=bucket_name, Prefix=prefix)
-    key = list_objects.get("Contents")[0]["Key"] if list_objects.get("Contents") else None
-    return key
+    s3_object_list = S3_CLIENT.list_objects_v2(Bucket=bucket_name, Prefix=prefix)
+    s3_objects = s3_object_list.get("Contents") if s3_object_list.get("Contents") else None
+
+    if not s3_objects:
+        print(f"No object(s) with key prefix : '{prefix}' in the bucket: '{bucket_name}'!")
+        return None
+
+    s3_objects.sort(reverse=True, key=lambda s3_object: s3_object["LastModified"])
+    return s3_objects[0]["Key"]  # Get the actual object key of the latest key
 
 
 @exception_handler

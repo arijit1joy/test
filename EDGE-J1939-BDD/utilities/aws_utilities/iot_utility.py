@@ -14,8 +14,9 @@ IOT_CLIENT = boto3.client('iot', region_name='us-east-1')  # noqa
 
 @exception_handler
 def publish_to_mqtt_topic(topic, payload):
-    publish_response = IOT_DATA_CLIENT.publish(topic=topic, qos=1, payload=json.dumps(payload))
-    return publish_response['ResponseMetadata']['HTTPStatusCode']
+    pass
+    # publish_response = IOT_DATA_CLIENT.publish(topic=topic, qos=1, payload=json.dumps(payload))
+    # return publish_response['ResponseMetadata']['HTTPStatusCode']
 
 
 @exception_handler
