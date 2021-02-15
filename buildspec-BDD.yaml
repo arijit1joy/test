@@ -11,11 +11,7 @@ phases:
       - export AWS_SESSION_TOKEN=$(echo "${TEMP_ROLE}" | jq -r '.Credentials.SessionToken')
       - echo $path
       - pip install --upgrade pip
-      - pip install selenium
-      - pip install requests
-      - pip install pypika
-      - pip install boto3
-      - pip install behave
+      - pip install selenium, requests, pypika, boto3, behave, geopy
       - curr_dir=$(pwd)
 
   build:
