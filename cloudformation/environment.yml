@@ -724,7 +724,7 @@ Resources:
               - !Sub "${EdgeJ1939ProcessingBucket.Arn}"
             Effect: Allow
             Principal:
-              AWS: !Sub "da-edge-common-lib-NGCA-BDDTrustRole-${ApplicationEnvironmentTag}"
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:role/da-edge-common-lib-NGCA-BDDTrustRole-${ApplicationEnvironmentTag}"
       Bucket: !Ref EdgeJ1939ProcessingBucket
 
   LambdaInvokeNGDI2CDSDKPermission:
