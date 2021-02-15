@@ -3,6 +3,7 @@ def before_all(context):
     context.region = context.config.userdata["region"]
     edge_base_url = "https://api.edge-{environment}.aws.cummins.com".format(environment=environment)
     context.edge_common_db_url = edge_base_url + "/v3/EdgeDBLambda"
+    context.device_health_data_table = "da_edge_olympus.da_edge_device_health_data"
     context.edge_metadata_table = "da_edge_olympus.da_edge_metadata"
     context.j1939_public_topic = "$aws/things/{device_id}/public"
     context.device_upload_bucket = "device-data-log-{environment}".format(environment=environment)

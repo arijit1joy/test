@@ -1,8 +1,9 @@
 import os
 import shutil
+from geopy.distance import distance
 from datetime import datetime, timedelta
 from behave import given, when, then
-from pypika import Table, Query
+from pypika import Table, Query, Order
 from utilities import rest_api_utility as rest_api
 from utilities.db_utility import get_edge_db_payload
 from utilities.common_utility import exception_handler, set_delay
@@ -122,6 +123,34 @@ def assert_j1939_hb_stages_in_edge_db(context):
     edge_db_response = rest_api.post(context.edge_common_db_url, edge_db_payload)
     received_stages = [stage["data_pipeline_stage"] for stage in edge_db_response["body"]]
     assert set(context.j1939_hb_stages) == set(received_stages)
+
+
+@then(u'Obfuscate GPS Co-Ordinates and Stored in Device Health Data')
+@exception_handler
+def assert_j1939_hb_obfuscate_gps_coordinates_in_edge_db(context):
+    device_health_data = Table(context.device_health_data_table)
+    converted_device_params = j1939_hb_payload["samples"][0]["convertedDeviceParameters"]
+    message_id = converted_device_params["messageID"]
+    latitude, longitude = converted_device_params["Latitude"], converted_device_params["Longitude"]
+    query = Query.from_(device_health_data).select(device_health_data.latitude, device_health_data.longitude).where(
+        device_health_data.device_id == context.device_id).where(
+        device_health_data.health_param_message_id == message_id).orderby(
+        device_health_data.device_health_sn, order=Order.desc)
+    edge_db_payload = get_edge_db_payload('get', query)
+    edge_db_response = rest_api.post(context.edge_common_db_url, edge_db_payload)
+
+    # Deleting records before asserting obfuscate gps co-ordinates to avoid duplicate insertion in-case of obfuscate
+    # assertion fail
+    delete_query = Query.from_(device_health_data).delete().where(device_health_data.device_id == context.device_id)
+    delete_from_db_payload = get_edge_db_payload('post', delete_query)
+    delete_from_db_response = rest_api.post(context.edge_common_db_url, delete_from_db_payload)
+    assert delete_from_db_response["status_code"] == 200
+
+    # Asserting obfuscate gps co-ordinates stored in device health data table
+    edge_db_response_body = edge_db_response["body"][0]
+    stored_lat, stored_long = edge_db_response_body["latitude"], edge_db_response_body["longitude"]
+    obf_lat, obf_long, _ = distance(miles=25).destination((latitude, longitude), 0)
+    assert (round(stored_lat, 10), round(stored_long, 10)) == (round(obf_lat, 10), round(obf_long, 10))
 
 
 @exception_handler
