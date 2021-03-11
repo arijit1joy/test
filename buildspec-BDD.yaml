@@ -25,7 +25,7 @@ phases:
       - python -m behave -D environment=${environment} -D region=${Region}
 
 reports:
-  SurefireReports:
+  EdgeBDDReports:
     files:
       - "**/*"
     base-directory: "EDGE-J1939-BDD/reports"
