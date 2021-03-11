@@ -15,7 +15,7 @@ phases:
 
   build:
     commands:
-      - cd EDGE-EDL-BDD
+      - cd EDGE-J1939-BDD
       - if [ -f requirements.txt ]; then
           pip install -r requirements.txt;
         else
