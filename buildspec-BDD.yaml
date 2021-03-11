@@ -22,7 +22,7 @@ phases:
   build:
     commands:
       - cd EDGE-J1939-BDD
-      - exit_code=python -m behave -D environment=${environment} -D region=${Region}
+      - exit_code=$(python -m behave -D environment=${environment} -D region=${Region})
       - ls -ltr
       - aws s3 cp reports/ s3://da-edge-bdd-reports-${environment}/reports/ --recursive
       - if [ $exit_code != 0 ]; then
