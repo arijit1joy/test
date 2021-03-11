@@ -3,3 +3,4 @@ PyPika
 boto3
 botocore
 requests
+geopy
