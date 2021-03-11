@@ -28,7 +28,7 @@ if __name__ == '__main__':
 
         # Regardless of whether the behave execution passed or failed, copy the reports to the EDGE reporting bucket
         s3_copy_exit_code = subprocess.call("aws s3 cp reports/ "
-                                            f"s3://da-edge-bdd-reports-${execution_environment}/J1939/"
+                                            f"s3://da-edge-bdd-reports-{execution_environment}/J1939/"
                                             f"{time_path}/ "
                                             "--recursive",
                                             shell=True)
