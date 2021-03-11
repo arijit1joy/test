@@ -34,7 +34,9 @@ if __name__ == '__main__':
                                             "--recursive",
                                             shell=True)
 
-        if s3_copy_exit_code != 0:
+        if s3_copy_exit_code == 0:
+            print(f"<<<<<<<<SUCCESSFULLY UPLOADED THE BDD REPORTS TO THE EDGE REPORTING BUCKET!>>>>>>>")
+        else:
             print(f"<<<<<<<<AN ERROR: '{s3_copy_exit_code}' OCCURRED WHILE UPLOADING THE BDD REPORTS TO THE EDGE "
                   "REPORTING BUCKET!>>>>>>>")
 
