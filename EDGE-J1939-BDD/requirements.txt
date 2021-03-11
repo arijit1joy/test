@@ -1,0 +1,5 @@
+behave
+PyPika
+boto3
+botocore
+requests
