@@ -473,5 +473,8 @@ Resources:
       ExportConfig:
         ExportConfigType: S3
         S3Destination:
-          Bucket: !Sub {BDDReportsBucket}
+          Bucket: !Ref BDDReportsBucket
           Path: reports/
+          Packaging: ZIP
+          EncryptionKey: !Ref CMKARN
+          EncryptionDisabled: false
