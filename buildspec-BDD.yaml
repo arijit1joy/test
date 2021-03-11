@@ -25,7 +25,7 @@ phases:
       - python -m behave -D environment=${environment} -D region=${Region}
 
 reports:
-  !Sub EdgeBDDReports-${environment}:
+  EdgeBDDReports-${environment}:
     files:
       - "**/*"
     base-directory: "EDGE-J1939-BDD/reports"
