@@ -33,6 +33,10 @@ if __name__ == '__main__':
                                             "--recursive",
                                             shell=True)
 
+        if s3_copy_exit_code != 0:
+            print(f"<<<<<<<<AN ERROR: '{s3_copy_exit_code}' OCCURRED WHILE UPLOADING THE BDD REPORTS TO THE EDGE "
+                  "REPORTING BUCKET!>>>>>>>")
+
         if behave_execution_exit_code != 0:
             print("BDD Execution Failed! Aborting Deployment!")
             exit(behave_execution_exit_code)
