@@ -41,6 +41,9 @@ Parameters:
     Type: String
   PTJ1939ApiKey:
     Type: String
+  BDDReportsBucket:
+    Type: String
+    Default: da-edge-bdd-reports
 
 Resources:
   EdgeJ1939ProcessingBucketSSM:
@@ -826,3 +829,15 @@ Resources:
         - Arn
       Timeout: 300
       Runtime: python3.7
+
+
+  CodeBuildReportGroup:
+    Type: AWS::CodeBuild::ReportGroup
+    Properties:
+      Name: !Sub "EdgeJ1939BDDReports-${ApplicationEnvironmentTag}"
+      Type: TEST
+      ExportConfig:
+        ExportConfigType: S3
+        S3Destination:
+          Bucket: !Ref BDDReportsBucket
+          Path: reports/

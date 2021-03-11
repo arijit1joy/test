@@ -43,9 +43,7 @@ Parameters:
   J1939EndBucket:
     Type: String
     Default: edge-j1939-dev
-  BDDReportsBucket:
-    Type: String
-    Default: da-edge-bdd-reports
+
 
 Conditions:
   AddCodeBuildResource: !Equals [ !Ref CrossAccountCondition, true ]
@@ -465,16 +463,3 @@ Resources:
                 - !GetAtt [BuildProjectRole,Arn]
 
 
-  CodeBuildReportGroup:
-    Type: AWS::CodeBuild::ReportGroup
-    Properties:
-      Name: EdgeBDDReports
-      Type: TEST
-      ExportConfig:
-        ExportConfigType: S3
-        S3Destination:
-          Bucket: !Ref BDDReportsBucket
-          Path: reports/
-          Packaging: ZIP
-          EncryptionKey: !Ref CMKARN
-          EncryptionDisabled: false
