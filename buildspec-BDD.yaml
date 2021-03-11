@@ -23,7 +23,7 @@ phases:
     commands:
       - cd EDGE-J1939-BDD
       - python -m behave -D environment=${environment} -D region=${Region}
-
+      - aws s3 cp reports/ s3://da-edge-bdd-reports-${environment}/reports/ --recursive
 reports:
   !Sub EdgeJ1939BDDReports-${environment}:
     files:
