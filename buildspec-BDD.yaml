@@ -11,23 +11,22 @@ phases:
       - export AWS_SESSION_TOKEN=$(echo "${TEMP_ROLE}" | jq -r '.Credentials.SessionToken')
       - echo $path
       - pip install --upgrade pip
-      - pip install selenium
-      - pip install requests
-      - pip install pypika
-      - pip install boto3
-      - pip install behave
-      - pip install geopy
       - curr_dir=$(pwd)
 
   build:
     commands:
-      - cd EDGE-J1939-BDD
-      - exit_code=$(python -m behave -D environment=${environment} -D region=${Region})
-      - ls -ltr
-      - aws s3 cp reports/ s3://da-edge-bdd-reports-${environment}/reports/ --recursive
-      - if [ $exit_code != 0 ]; then
-          echo "Some of the BDD test cases failed";
-          exit(1);
+      - cd EDGE-EDL-BDD
+      - if [ -f requirements.txt ]; then
+          pip install -r requirements.txt;
+        else
+          echo "The 'requirements.txt' file is missing for the current BDD project! Please include all your dependencies in a 'requirements.txt' file and store this in the root folder of your BDD project.";
+          exit 1;
+        fi;
+      - if [ -f bdd_run_file.py ]; then
+          python bdd_run_file.py ${environment} ${Region};
+        else
+          echo "The 'bdd_run_file.py' file is missing for the current BDD project! Please include the 'bdd_run_file.py' in the root folder of your BDD project.";
+          exit 1;
         fi;
 reports:
   !Sub EdgeJ1939BDDReports-${environment}:
