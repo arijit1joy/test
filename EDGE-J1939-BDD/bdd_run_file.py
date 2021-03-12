@@ -18,8 +18,8 @@ if __name__ == '__main__':
 
     # Get the current date for reporting
     current_date_time = datetime.utcnow()
-    time_path = f"{current_date_time.year}/{current_date_time.month:02d}/{current_date_time.day:02d}/" \
-                f"{current_date_time.hour:02d}/{current_date_time.minute:02d}/{current_date_time.second:02d}"
+    time_path = f"{current_date_time.year}/{current_date_time.month:02d}/{current_date_time.day:02d}T" \
+                f"{current_date_time.hour:02d}_{current_date_time.minute:02d}_{current_date_time.second:02d}"
 
     if execution_environment in ["dev", "stage", "test"]:
         behave_execution_exit_code = subprocess.call("behave "
