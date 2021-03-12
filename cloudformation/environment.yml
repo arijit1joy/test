@@ -839,5 +839,5 @@ Resources:
       ExportConfig:
         ExportConfigType: S3
         S3Destination:
-          Bucket: !Ref BDDReportsBucket
+          Bucket: !Sub "${BDDReportsBucket}-${ApplicationEnvironmentTag}"
           Path: reports/
