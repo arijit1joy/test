@@ -28,17 +28,25 @@ if __name__ == '__main__':
                                                      shell=True)
 
         # Regardless of whether the behave execution passed or failed, copy the reports to the EDGE reporting bucket
+        back_up_s3_copy_exit_code = subprocess.call("aws s3 cp reports/ "
+                                                    f"s3://da-edge-bdd-reports-{execution_environment}/J1939/"
+                                                    f"{time_path}/ "
+                                                    "--recursive",
+                                                    shell=True)
+
         s3_copy_exit_code = subprocess.call("aws s3 cp reports/ "
-                                            f"s3://da-edge-bdd-reports-{execution_environment}/J1939/"
-                                            f"{time_path}/ "
-                                            "--recursive",
+                                            f"s3://da-edge-bdd-reports-{execution_environment}/reports/ --recursive",
                                             shell=True)
 
-        if s3_copy_exit_code == 0:
+        if s3_copy_exit_code == 0 and back_up_s3_copy_exit_code == 0:
             print(f"<<<<<<<<SUCCESSFULLY UPLOADED THE BDD REPORTS TO THE EDGE REPORTING BUCKET!>>>>>>>")
         else:
-            print(f"<<<<<<<<AN ERROR: '{s3_copy_exit_code}' OCCURRED WHILE UPLOADING THE BDD REPORTS TO THE EDGE "
-                  "REPORTING BUCKET!>>>>>>>")
+            s3_error = "<<<<<<<<AN ERROR: '{exit_code}' OCCURRED WHILE {action} THE BDD REPORTS " \
+                       "TO THE EDGE REPORTING BUCKET!>>>>>>>"
+            if s3_copy_exit_code != 0:
+                print(s3_error.format(exit_code=s3_copy_exit_code, action="UPLOADING"))
+            if back_up_s3_copy_exit_code != 0:
+                print(s3_error.format(exit_code=back_up_s3_copy_exit_code, action="BACKING UP"))
 
         if behave_execution_exit_code != 0:
             print("BDD Execution Failed! Aborting Deployment!")
