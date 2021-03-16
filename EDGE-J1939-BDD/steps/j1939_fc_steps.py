@@ -1,6 +1,6 @@
 import os
 import shutil
-from datetime import datetime, timedelta
+from datetime import datetime
 from behave import given, when, then
 from pypika import Table, Query
 from utilities import rest_api_utility as rest_api
@@ -36,7 +36,7 @@ def valid_ebu_fc_message_with_not_exist_device(context):
 @exception_handler
 @given(u'An invalid EBU FC file in CSV format containing no device_id value')
 def invalid_ebu_fc_message_without_device_id(context):
-    context.j1939_fc_stages = ["FILE_RECEIVED", "UNCOMPRESSED", "CSV_JSON_CONVERTED"]
+    context.j1939_fc_stages = []
     context.file_name = "edge_19299951_BDD001_2021-02-09T12_30_00.015Z.csv.gz"
     context.device_id = context.ebu_esn_1
 
@@ -45,7 +45,7 @@ def invalid_ebu_fc_message_without_device_id(context):
 @given(u'A valid PSBU FC message in CSV format containing a valid data')
 def valid_psbu_fc_message(context):
     context.j1939_fc_stages = ["FILE_RECEIVED", "UNCOMPRESSED", "CSV_JSON_CONVERTED"]
-    context.file_name = "edge_192999999999952_20210209123000_19299952_BDD001_2021-02-09T12_30_00.015Z.csv.gz"
+    context.file_name = "edge_192999999999952_19299952_BDD001_2021-02-09T12_30_00.015Z.csv.gz"
     context.download_folder_path = "data/j1939_fc/download"
     context.download_converted_file_name = "data/j1939_fc/download/received_j1939_fc_psbu_converted_file.json"
     context.compare_converted_file_name = "data/j1939_fc/compare/j1939_fc_psbu_converted_file.json"
@@ -63,13 +63,11 @@ def j1939_fc_file_uploaded_to_s3(context):
 
 @then(u'Stored J1939 FC metadata stages in EDGE DB')
 @exception_handler
-@set_delay(15, wait_before=True)
+@set_delay(80, wait_before=True)
 def assert_j1939_fc_stages_in_edge_db(context):
-    current_date_time = (datetime.utcnow() - timedelta(minutes=2)).strftime('%Y-%m-%d %H:%M:%S')
     da_edge_metadata = Table(context.edge_metadata_table)
     query = Query.from_(da_edge_metadata).select(da_edge_metadata.data_pipeline_stage).where(
-        da_edge_metadata.device_id == context.device_id).where(da_edge_metadata.data_protocol == "J1939_FC") \
-        .where(da_edge_metadata.file_received_date >= current_date_time)
+        da_edge_metadata.device_id == context.device_id).where(da_edge_metadata.data_protocol == "J1939_FC")  # noqa
     edge_db_payload = get_edge_db_payload('get', query)
     edge_db_response = rest_api.post(context.edge_common_db_url, edge_db_payload)
     received_stages = [stage["data_pipeline_stage"] for stage in edge_db_response["body"]]
@@ -81,9 +79,8 @@ def assert_j1939_fc_stages_in_edge_db(context):
       u'edge-j1939-<env> bucket under the file path ConvertedFiles/esn/device_id/yyyy/mm/dd/fc_file.json with a '
       u'metadata called j1939type whose value is FC')
 def assert_j1939_fc_message_in_converted_files(context):
-    current_dt = datetime.utcnow()
-    file_key = "ConvertedFiles/{0}/{1}/{2}/{3}/{4}/".format(
-        context.esn, context.device_id, current_dt.strftime("%Y"), current_dt.strftime("%m"), current_dt.strftime("%d"))
+    context.date_path = datetime.strptime(context.file_name.split("_")[4], "%Y-%m-%dT%H").strftime("%Y/%m/%d")
+    file_key = "ConvertedFiles/{0}/{1}/{2}/".format(context.esn, context.device_id, context.date_path)
     get_key = get_key_from_list_of_s3_objects(context.final_bucket, file_key)
     assert get_key is not None
     if get_key:
@@ -99,9 +96,7 @@ def assert_j1939_fc_message_in_converted_files(context):
       u'edge-j1939-<env> bucket under the file path NGDI/esn/device_id/yyyy/mm/dd/fc_file.json with a metadata '
       u'called j1939type whose value is FC and CP Post Success Message is recorded')
 def assert_j1939_fc_message_in_ngdi(context):
-    current_dt = datetime.utcnow()
-    file_key = "NGDI/{0}/{1}/{2}/{3}/{4}/".format(
-        context.esn, context.device_id, current_dt.strftime("%Y"), current_dt.strftime("%m"), current_dt.strftime("%d"))
+    file_key = "NGDI/{0}/{1}/{2}/".format(context.esn, context.device_id, context.date_path)
     get_key = get_key_from_list_of_s3_objects(context.final_bucket, file_key)
     assert get_key is not None
     if get_key:
