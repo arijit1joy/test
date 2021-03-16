@@ -685,17 +685,6 @@ Resources:
               - "s3:Get*"
               - "s3:List*"
             Resource:
-              - !Sub "${EdgeJ1939ProcessingBucket.Arn}/NGDI/*"
-            Effect: Allow
-            Principal:
-              AWS: !GetAtt
-                - EdgeCPPTPosterLambdaRole
-                - Arn
-          - Action:
-              - "s3:Put*"
-              - "s3:Get*"
-              - "s3:List*"
-            Resource:
               - !Sub "${EdgeJ1939ProcessingBucket.Arn}/*"
             Effect: Allow
             Principal:
@@ -706,17 +695,12 @@ Resources:
                 - !GetAtt
                   - EdgeNGDI2CDSDKConversionLambdaRole
                   - Arn
-          - Action:
-              - "s3:Put*"
-              - "s3:Get*"
-              - "s3:List*"
-            Resource:
-              - !Sub "${EdgeJ1939ProcessingBucket.Arn}/ConvertedFiles/*"
-            Effect: Allow
-            Principal:
-              AWS: !GetAtt
-                - ObfuscateGPSCoordinatesLambdaRole
-                - Arn
+                - !GetAtt
+                  - ObfuscateGPSCoordinatesLambdaRole
+                  - Arn
+                - !GetAtt
+                  - EdgeJ1939CSVConverterLambdaRole
+                  - Arn
           - Action:
               - "s3:Put*"
               - "s3:Get*"
