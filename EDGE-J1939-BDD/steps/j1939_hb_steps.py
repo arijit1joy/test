@@ -1,7 +1,7 @@
 import os
 import shutil
 from geopy.distance import distance
-from datetime import datetime, timedelta
+from datetime import datetime
 from behave import given, when, then
 from pypika import Table, Query, Order
 from utilities import rest_api_utility as rest_api
@@ -114,11 +114,9 @@ def hb_message_published_to_iot(context):
 @exception_handler
 @set_delay(10, wait_before=True)
 def assert_j1939_hb_stages_in_edge_db(context):
-    current_date_time = (datetime.utcnow() - timedelta(minutes=2)).strftime('%Y-%m-%d %H:%M:%S')
     da_edge_metadata = Table(context.edge_metadata_table)
     query = Query.from_(da_edge_metadata).select(da_edge_metadata.data_pipeline_stage).where(
-        da_edge_metadata.device_id == context.device_id).where(da_edge_metadata.data_protocol == "J1939_HB") \
-        .where(da_edge_metadata.file_received_date >= current_date_time)
+        da_edge_metadata.device_id == context.device_id).where(da_edge_metadata.data_protocol == "J1939_HB")  # noqa
     edge_db_payload = get_edge_db_payload('get', query)
     edge_db_response = rest_api.post(context.edge_common_db_url, edge_db_payload)
     received_stages = [stage["data_pipeline_stage"] for stage in edge_db_response["body"]]
@@ -133,15 +131,15 @@ def assert_j1939_hb_obfuscate_gps_coordinates_in_edge_db(context):
     message_id = converted_device_params["messageID"]
     latitude, longitude = converted_device_params["Latitude"], converted_device_params["Longitude"]
     query = Query.from_(device_health_data).select(device_health_data.latitude, device_health_data.longitude).where(
-        device_health_data.device_id == context.device_id).where(
-        device_health_data.health_param_message_id == message_id).orderby(
+        device_health_data.device_id == context.device_id).where(  # noqa
+        device_health_data.health_param_message_id == message_id).orderby(  # noqa
         device_health_data.device_health_sn, order=Order.desc)
     edge_db_payload = get_edge_db_payload('get', query)
     edge_db_response = rest_api.post(context.edge_common_db_url, edge_db_payload)
 
     # Deleting records before asserting obfuscate gps co-ordinates to avoid duplicate insertion in-case of obfuscate
     # assertion fail
-    delete_query = Query.from_(device_health_data).delete().where(device_health_data.device_id == context.device_id)
+    delete_query = Query.from_(device_health_data).delete().where(device_health_data.device_id == context.device_id)  # noqa
     delete_from_db_payload = get_edge_db_payload('post', delete_query)
     delete_from_db_response = rest_api.post(context.edge_common_db_url, delete_from_db_payload)
     assert delete_from_db_response["status_code"] == 200
