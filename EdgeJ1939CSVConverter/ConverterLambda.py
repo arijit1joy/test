@@ -693,10 +693,8 @@ def lambda_handler(lambda_event, context):
         logger.info(f"Month:  {current_datetime.month}")
         logger.info(f"Day: {current_datetime.day}")
 
-        store_file_path = "ConvertedFiles/" + ngdi_json_template['componentSerialNumber'] + '/' + \
-                          ngdi_json_template["telematicsDeviceId"] + '/' + ("%02d" % current_datetime.year) + '/' \
-                          + \
-                          ("%02d" % current_datetime.month) + '/' + ("%02d" % current_datetime.day) + '/' + \
+        store_file_path = "ConvertedFiles/" + esn + '/' + device_id + '/' + ("%02d" % current_datetime.year) + '/' \
+                          + ("%02d" % current_datetime.month) + '/' + ("%02d" % current_datetime.day) + '/' + \
                           filename.split('.csv')[0] + '.json'
 
     except Exception as e:
