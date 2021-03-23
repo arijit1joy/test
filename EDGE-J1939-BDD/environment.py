@@ -6,7 +6,8 @@ from utilities.db_utility import get_edge_db_payload
 def delete_metadata(context):
     da_edge_metadata = Table(context.edge_metadata_table)
     query = Query.from_(da_edge_metadata).delete().where(da_edge_metadata.device_id.isin(
-        [context.ebu_device_id_1, context.psbu_device_id_1, context.not_whitelisted_device_id, context.ebu_esn_1]))
+        [context.ebu_device_id_1, context.psbu_device_id_1, context.psbu_device_id_2,
+         context.not_whitelisted_device_id, context.ebu_esn_1]))
     edge_db_payload = get_edge_db_payload('post', query)
     edge_db_response = rest_api.post(context.edge_common_db_url, edge_db_payload)
     print(f"Delete Metadata Response: {edge_db_response}")
@@ -27,7 +28,10 @@ def before_all(context):
     context.ebu_vin_1 = "TESTVIN19299951"
     context.psbu_device_id_1 = "192999999999952"
     context.psbu_esn_1 = "19299952"
-    context.psbu_vin_1 = "TESTVIN19299951"
+    context.psbu_vin_1 = "TESTVIN19299952"
+    context.psbu_device_id_2 = "192999999999954"
+    context.psbu_esn_2 = "19299954"
+    context.psbu_vin_2 = "TESTVIN19299954"
     context.not_whitelisted_device_id = "192999999999953"
 
     # Delete metadata stages stored during last BDD execution

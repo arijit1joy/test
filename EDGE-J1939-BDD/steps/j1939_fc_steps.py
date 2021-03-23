@@ -10,13 +10,15 @@ from utilities.file_utility.file_handler import same_file_contents
 from utilities.aws_utilities.s3_utility import upload_object_to_s3, get_key_from_list_of_s3_objects, \
     download_object_from_s3, delete_object_from_s3
 
+EXPECTED_FILE_DOWNLOAD_PATH = "data/j1939_fc/download"
+
 
 @exception_handler
 @given(u'A valid EBU FC message in CSV format containing a valid data')
 def valid_ebu_fc_message(context):
     context.j1939_fc_stages = ["FILE_RECEIVED", "UNCOMPRESSED", "CSV_JSON_CONVERTED", "CD_PT_POSTED", "FILE_SENT"]
     context.file_name = "edge_192999999999951_19299951_BDD001_2021-02-09T12_30_00.015Z.csv.gz"
-    context.download_folder_path = "data/j1939_fc/download"
+    context.download_folder_path = EXPECTED_FILE_DOWNLOAD_PATH
     context.download_converted_file_name = "data/j1939_fc/download/received_j1939_fc_ebu_converted_file.json"
     context.compare_converted_file_name = "data/j1939_fc/compare/j1939_fc_ebu_converted_file.json"
     context.download_ngdi_file_name = "data/j1939_fc/download/received_j1939_fc_ebu_ngdi_file.json"
@@ -46,9 +48,22 @@ def invalid_ebu_fc_message_without_device_id(context):
 def valid_psbu_fc_message(context):
     context.j1939_fc_stages = ["FILE_RECEIVED", "UNCOMPRESSED", "CSV_JSON_CONVERTED"]
     context.file_name = "edge_192999999999952_19299952_BDD001_2021-02-09T12_30_00.015Z.csv.gz"
-    context.download_folder_path = "data/j1939_fc/download"
+    context.download_folder_path = EXPECTED_FILE_DOWNLOAD_PATH
     context.download_converted_file_name = "data/j1939_fc/download/received_j1939_fc_psbu_converted_file.json"
     context.compare_converted_file_name = "data/j1939_fc/compare/j1939_fc_psbu_converted_file.json"
+    context.device_id = context.psbu_device_id_1
+    context.esn = context.psbu_esn_1
+
+
+@exception_handler
+@given(u'A valid PSBU FC message in CSV format containing a valid data and filename without ESN')
+def valid_psbu_fc_message_without_esn_in_filename(context):
+    context.j1939_fc_stages = ["FILE_RECEIVED", "UNCOMPRESSED", "CSV_JSON_CONVERTED"]
+    context.file_name = "edge_192999999999954_BDD001_2021-02-09T12_30_00.015Z.csv.gz"
+    context.download_folder_path = EXPECTED_FILE_DOWNLOAD_PATH
+    context.download_converted_file_name = \
+        "data/j1939_fc/download/received_j1939_fc_psbu_converted_file_improper_esn.json"
+    context.compare_converted_file_name = "data/j1939_fc/compare/j1939_fc_psbu_converted_file_improper_esn.json"
     context.device_id = context.psbu_device_id_1
     context.esn = context.psbu_esn_1
 
