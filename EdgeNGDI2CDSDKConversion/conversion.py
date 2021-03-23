@@ -8,7 +8,7 @@ import requests
 from metadata_utility import build_metadata_and_write
 from metadata_utility import write_health_parameter_to_database
 from obfuscate_gps_utility import deobfuscate_gps_coordinates
-
+from multiprocessing import Process
 import bdd_utility
 import edge_logger as logging
 from cd_sdk_conversion.cd_sdk import map_ngdi_sample_to_cd_payload
@@ -65,6 +65,14 @@ s3_client = boto3.client('s3')
 spn_file_stream = s3_client.get_object(Bucket=spn_bucket, Key=spn_bucket_key)
 spn_file = spn_file_stream['Body'].read()
 spn_file_json = json.loads(spn_file)
+
+
+def delete_message_from_sqs_queue(receipt_handle):
+    queue_url = os.environ["QueueUrl"]
+    sqs_client = boto3.client('sqs')  # noqa
+    sqs_message_deletion_response = sqs_client.delete_message(QueueUrl=queue_url, ReceiptHandle=receipt_handle)
+    logger.info(f"SQS message deletion response: '{sqs_message_deletion_response}'. . .")
+    return sqs_message_deletion_response
 
 
 def get_metadata_info(j1939_file):
@@ -370,7 +378,10 @@ def send_sample(sample, metadata, fc_or_hb):
         handle_fc(converted_device_params, converted_equip_params, converted_equip_fc, metadata, time_stamp)
 
 
-def process(bucket, key, file_size):
+def retrieve_and_process_file(uploaded_file_object):
+    bucket = uploaded_file_object["source_bucket_name"]
+    key = uploaded_file_object["file_key"]
+    file_size = uploaded_file_object["file_size"]
     logger.info(f"Retrieving the JSON file from the NGDI folder")
     j1939_file_object = s3_client.get_object(Bucket=bucket, Key=key)
     logger.info(f"Checking if this is HB or FC...")
@@ -433,21 +444,39 @@ def process(bucket, key, file_size):
                 send_sample(sample, metadata, fc_or_hb)
         else:
             logger.error(f"Error! There are no samples in this file!")
+        delete_message_from_sqs_queue(uploaded_file_object["sqs_receipt_handle"])
     else:
         logger.error(f"Error! Metadata retrieval failed! See logs.")
 
 
 def lambda_handler(event, context):
-    logger.info(f"NGDI JSON Object: {event['Records'][0]['s3']['object']['key']}")
-    # Retrieve bucket and key details
-    key = event['Records'][0]['s3']['object']['key']
-    bucket = event['Records'][0]['s3']['bucket']['name']
-    file_size = event['Records'][0]['s3']['object']['size']
-    logger.info(f"Bucket: {bucket}")
-    logger.info(f"Key: {key}")
-    key = key.replace("%3A", ":")
-    logger.info(f"New FileKey: {key}")
-    process(bucket, key, file_size)
+    records = event.get("Records", [])
+    processes = []
+    logger.debug(f"Received SQS Records: {records}.")
+    for record in records:
+        s3_event_body = json.loads(record["body"])
+        s3_event = s3_event_body['Records'][0]['s3']
+
+        uploaded_file_object = dict(
+            source_bucket_name=s3_event['bucket']['name'],
+            file_key=s3_event['object']['key'].replace("%", ":").replace("3A", ""),
+            file_size=s3_event['object']['size'],
+            sqs_receipt_handle=record["receiptHandle"]
+        )
+        logger.info(f"Uploaded File Object: {uploaded_file_object}.")
+
+        # Retrieve the uploaded file from the s3 bucket and process the uploaded file
+        process = Process(target=retrieve_and_process_file, args=(uploaded_file_object,))
+
+        # Make a list of all process to wait and terminate at the end
+        processes.append(process)
+
+        # Start process
+        process.start()
+
+    # Make sure that all processes have finished
+    for process in processes:
+        process.join()
 
 
 '''

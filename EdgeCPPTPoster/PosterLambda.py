@@ -7,12 +7,12 @@ import post
 import pt_poster
 import uuid
 from metadata_utility import build_metadata_and_write
+from multiprocessing import Process
 import bdd_utility
 from system_variables import InternalResponse
 from update_scheduler import update_scheduler_table, get_request_id_from_consumption_view
 from pypika import Query, Table
 import edge_logger as logging
-
 
 logger = logging.logging_framework("EdgeCPPTPoster.PosterLambda")
 
@@ -36,6 +36,14 @@ s3_client = boto3.client('s3')
 ssm_client = boto3.client('ssm')
 
 
+def delete_message_from_sqs_queue(receipt_handle):
+    queue_url = os.environ["QueueUrl"]
+    sqs_client = boto3.client('sqs')  # noqa
+    sqs_message_deletion_response = sqs_client.delete_message(QueueUrl=queue_url, ReceiptHandle=receipt_handle)
+    logger.info(f"SQS message deletion response: '{sqs_message_deletion_response}'. . .")
+    return sqs_message_deletion_response
+
+
 def get_device_info(device_id):
     headers = {'Content-Type': 'application/json', 'x-api-key': currentProductAPIKey}
 
@@ -53,7 +61,8 @@ def get_device_info(device_id):
 
         get_device_info_body = response.json()
         get_device_info_code = response.status_code
-        logger.info(f"Get device info response code: {get_device_info_code} Get device info response body: {get_device_info_body}")
+        logger.info(
+            f"Get device info response code: {get_device_info_code} Get device info response body: {get_device_info_body}")
 
         if get_device_info_code == 200 and get_device_info_body:
 
@@ -91,8 +100,28 @@ def get_business_partner(device_type):
 
 def lambda_handler(event, context):
     # json_file = open("EDGE_352953080329158_64000002_SC123_20190820045303_F2BA (3).json", "r")
+    records = event.get("Records", [])
+    processes = []
+    logger.debug(f"Received SQS Records: {records}.")
+    for record in records:
+        s3_event_body = json.loads(record["body"])
+        receipt_handle = record["receiptHandle"]
+        # Retrieve the uploaded file from the s3 bucket and process the uploaded file
+        process = Process(target=retrieve_and_process_file, args=(s3_event_body, receipt_handle))
 
-    event_json = json.dumps(event)
+        # Make a list of all process to wait and terminate at the end
+        processes.append(process)
+
+        # Start process
+        process.start()
+
+    # Make sure that all processes have finished
+    for process in processes:
+        process.join()
+
+
+def retrieve_and_process_file(s3_event_body, receipt_handle):
+    event_json = json.dumps(s3_event_body)
 
     # Invoke data quality lambda - start
     try:
@@ -102,9 +131,9 @@ def lambda_handler(event, context):
     # Invoke data quality lambda - end
 
     hb_uuid = str(uuid.uuid4())
-    bucket_name = event['Records'][0]['s3']['bucket']['name']
-    file_key = event['Records'][0]['s3']['object']['key']
-    file_size = event['Records'][0]['s3']['object']['size']
+    bucket_name = s3_event_body['Records'][0]['s3']['bucket']['name']
+    file_key = s3_event_body['Records'][0]['s3']['object']['key']
+    file_size = s3_event_body['Records'][0]['s3']['object']['size']
     logger.info(f"Bucket Name: {bucket_name} File Key: {file_key}")
     file_key = file_key.replace("%3A", ":")
 
@@ -144,11 +173,12 @@ def lambda_handler(event, context):
         data_config_filename = '_'.join(['EDGE', device_id, esn, config_spec_name])
         request_id = get_request_id_from_consumption_view('J1939_HB', data_config_filename)
         build_metadata_and_write(hb_uuid, device_id, file_name, file_size, file_date_time, 'J1939_HB',
-                                 'FILE_RECEIVED', esn, config_spec_name, request_id, None, os.environ["edgeCommonAPIURL"])
+                                 'FILE_RECEIVED', esn, config_spec_name, request_id, None,
+                                 os.environ["edgeCommonAPIURL"])
         # Updating scheduler lambda based on the request_id
-        if request_id :
+        if request_id:
             update_scheduler_table(request_id, device_id)
-                        
+
     logger.info(f"Device ID sending the file: {device_id}")
 
     device_info = get_device_info(device_id)
@@ -210,10 +240,14 @@ def lambda_handler(event, context):
         logger.error(f"ERROR! The device_info value is missing for the device: {device_info}")
         bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDDeviceInfoError.value)
         return
+    delete_message_from_sqs_queue(receipt_handle)
+
 
 '''
 invoke content spec association API
 '''
+
+
 def data_quality(event):
     lambda_client = boto3.client('lambda')
     response = lambda_client.invoke(
@@ -224,6 +258,7 @@ def data_quality(event):
     if response['StatusCode'] != 202:
         raise Exception
     print("Data Quality invoked")
+
 
 # Local Test Main
 

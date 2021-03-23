@@ -160,6 +160,16 @@ Resources:
             Version: 2012-10-17
             Statement:
               - Action:
+                  - "sqs:SendMessage"
+                  - "sqs:ReceiveMessage"
+                  - "sqs:DeleteMessage"
+                  - "sqs:GetQueueAttributes"
+                  - "sqs:ChangeMessageVisibility"
+                Resource: !GetAtt
+                  - EDGEJ1939NGDI2CDSDKConversionQueue
+                  - Arn
+                Effect: Allow
+              - Action:
                   - "logs:*"
                 Resource: "arn:aws:logs:*:*:*"
                 Effect: Allow
@@ -189,6 +199,16 @@ Resources:
           PolicyDocument:
             Version: 2012-10-17
             Statement:
+              - Action:
+                  - "sqs:SendMessage"
+                  - "sqs:ReceiveMessage"
+                  - "sqs:DeleteMessage"
+                  - "sqs:GetQueueAttributes"
+                  - "sqs:ChangeMessageVisibility"
+                Resource: !GetAtt
+                  - EDGEJ1939DataLogFilesQueue
+                  - Arn
+                Effect: Allow
               - Action:
                   - "logs:*"
                 Resource: "arn:aws:logs:*:*:*"
@@ -321,17 +341,15 @@ Resources:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
       NotificationConfiguration:
-        LambdaConfigurations:
-          - Function: !GetAtt
-              - EdgeJ1939CSVConverter
-              - Arn
+        QueueConfigurations:
+          - Queue: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:EDGEJ1939DataLogFilesQueue-${ApplicationEnvironmentTag}"
             Event: "s3:ObjectCreated:*"
       BucketName: !Sub "da-edge-j1939-datalog-files-${ApplicationEnvironmentTag}"
       Tags:
         - Value: Edge
           Key: Name
     DependsOn:
-      - LambdaInvokePermissionJ1939Converter
+      - EDGEJ1939DataLogFilesQueuePolicy
 
   RoleForJ1939StreamBucket:
     Type: "AWS::IAM::Role"
@@ -427,6 +445,7 @@ Resources:
           converted_equip_params: convertedEquipmentParameters
           delivery_stream_name: !Ref DeliveryStreamName
           auth_token_url: !Ref AuthToken
+          QueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/EDGEJ1939NGDI2CDSDKConversionQueue-${ApplicationEnvironmentTag}"
       Handler: conversion.lambda_handler
       Role: !GetAtt
         - EdgeNGDI2CDSDKConversionLambdaRole
@@ -460,6 +479,16 @@ Resources:
           PolicyDocument:
             Version: 2012-10-17
             Statement:
+              - Action:
+                  - "sqs:SendMessage"
+                  - "sqs:ReceiveMessage"
+                  - "sqs:DeleteMessage"
+                  - "sqs:GetQueueAttributes"
+                  - "sqs:ChangeMessageVisibility"
+                Resource: !GetAtt
+                  - EDGEJ1939CPPTPosterQueue
+                  - Arn
+                Effect: Allow
               - Action:
                   - "logs:*"
                 Resource: "arn:aws:logs:*:*:*"
@@ -516,10 +545,8 @@ Resources:
               SSEAlgorithm: AES256
       BucketName: !Sub "edge-j1939-${ApplicationEnvironmentTag}"
       NotificationConfiguration:
-        LambdaConfigurations:
-          - Function: !GetAtt
-              - EdgeCPPTPoster
-              - Arn
+        QueueConfigurations:
+          - Queue: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:EDGEJ1939CPPTPosterQueue-${ApplicationEnvironmentTag}"
             Filter:
               S3Key:
                 Rules:
@@ -528,9 +555,7 @@ Resources:
                   - Name: suffix
                     Value: .json
             Event: "s3:ObjectCreated:*"
-          - Function: !GetAtt
-              - EdgeNGDI2CDSDKConversion
-              - Arn
+          - Queue: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:EDGEJ1939NGDI2CDSDKConversionQueue-${ApplicationEnvironmentTag}"
             Filter:
               S3Key:
                 Rules:
@@ -540,8 +565,8 @@ Resources:
                     Value: .json
             Event: "s3:ObjectCreated:*"
     DependsOn:
-      - LambdaInvokePermissionJ1939ProcessingBucket
-      - LambdaInvokeNGDI2CDSDKPermission
+      - EDGEJ1939CPPTPosterQueuePolicy
+      - EDGEJ1939NGDI2CDSDKConversionQueuePolicy
 
   EdgeJ1939PTSSM:
     Type: "AWS::SSM::Parameter"
@@ -551,20 +576,6 @@ Resources:
       Description: j1939 PT FC and Periodic Datacontent Spec values
       Value: '{"FC" : "Event1_5", "Periodic" : "Periodic1_9","PT_TSP": "Cummins"}'
       Name: da-edge-j1939-content-spec-value
-
-  LambdaInvokePermissionJ1939Converter:
-    Type: "AWS::Lambda::Permission"
-    Properties:
-      Action: "lambda:InvokeFunction"
-      SourceAccount: !Ref "AWS::AccountId"
-      FunctionName: !GetAtt
-        - EdgeJ1939CSVConverter
-        - Arn
-      SourceArn: !Join
-        - ""
-        - - "arn:aws:s3:::"
-          - !Sub "da-edge-j1939-datalog-files-${ApplicationEnvironmentTag}"
-      Principal: s3.amazonaws.com
 
   EndpointBucket:
     Type: "AWS::S3::Bucket"
@@ -623,6 +634,7 @@ Resources:
           environment: !Ref ApplicationEnvironmentTag
           edgeCommonAPIURL: !Ref EdgeCommonDBAPI
           APPLICATION_NAME: !Ref ApplicationName
+          QueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/EDGEJ1939DataLogFilesQueue-${ApplicationEnvironmentTag}"
           mapTspFromOwner: >-
             {"EBU": "Cummins", "PSBU": "Cummins" ,"TATA": "India_Edge",
             "Navistar": "Navistar", "N2": "Navistar" ,"Paccar":"Paccar"}
@@ -794,6 +806,7 @@ Resources:
           PTxAPIKey: pt_xapi_key
           delivery_stream_name: !Ref DeliveryStreamName
           CDPTJ1939PostURL: !Ref CDPTJ1939PostURL
+          QueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/EDGEJ1939CPPTPosterQueue-${ApplicationEnvironmentTag}"
           PowerGenValue: powerGen
       Handler: PosterLambda.lambda_handler
       Role: !GetAtt
@@ -813,3 +826,154 @@ Resources:
         S3Destination:
           Bucket: !Sub "${BDDReportsBucket}-${ApplicationEnvironmentTag}"
           Path: reports/
+
+# Queues
+  EDGEJ1939DataLogFilesQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "EDGEJ1939DataLogFilesQueue-${ApplicationEnvironmentTag}"
+      VisibilityTimeout: 600
+      RedrivePolicy:
+        deadLetterTargetArn:
+          Fn::GetAtt:
+            - "EDGEJ1939DataLogFilesDLQueue"
+            - "Arn"
+        maxReceiveCount: 5
+
+  EDGEJ1939DataLogFilesDLQueue:
+    Type: AWS::SQS::Queue
+
+
+# Queue Policies
+  EDGEJ1939DataLogFilesQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Sub "EDGEJ1939DataLogFilesQueue-${ApplicationEnvironmentTag}"
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sqs:SendMessage'
+            Resource:
+              - !Sub >-
+                arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:EDGEJ1939DataLogFilesQueue-${ApplicationEnvironmentTag}
+            Effect: Allow
+            Principal:
+              Service: "s3.amazonaws.com"
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !Sub "arn:aws:s3:::da-edge-j1939-datalog-files-${ApplicationEnvironmentTag}"
+    DependsOn:
+      - EDGEJ1939DataLogFilesQueue
+
+  # Lambda Event Source Mappings
+  EDGEJ1939DataLogFilesQueueTrigger:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: 50
+      MaximumBatchingWindowInSeconds: 60
+      Enabled: true
+      EventSourceArn: !GetAtt EDGEJ1939DataLogFilesQueue.Arn
+      FunctionName: !GetAtt EdgeJ1939CSVConverter.Arn
+
+
+# Queues
+  EDGEJ1939CPPTPosterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "EDGEJ1939CPPTPosterQueue-${ApplicationEnvironmentTag}"
+      VisibilityTimeout: 600
+      RedrivePolicy:
+        deadLetterTargetArn:
+          Fn::GetAtt:
+            - "EDGEJ1939CPPTPosterDLQueue"
+            - "Arn"
+        maxReceiveCount: 5
+
+  EDGEJ1939CPPTPosterDLQueue:
+    Type: AWS::SQS::Queue
+
+
+# Queue Policies
+  EDGEJ1939CPPTPosterQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Sub "EDGEJ1939CPPTPosterQueue-${ApplicationEnvironmentTag}"
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sqs:SendMessage'
+            Resource:
+              - !Sub >-
+                arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:EDGEJ1939CPPTPosterQueue-${ApplicationEnvironmentTag}
+            Effect: Allow
+            Principal:
+              Service: "s3.amazonaws.com"
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !Sub "arn:aws:s3:::edge-j1939-${ApplicationEnvironmentTag}"
+    DependsOn:
+      - EDGEJ1939CPPTPosterQueue
+
+  # Lambda Event Source Mappings
+  EDGEJ1939CPPTPosterQueueTrigger:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: 50
+      MaximumBatchingWindowInSeconds: 60
+      Enabled: true
+      EventSourceArn: !GetAtt EDGEJ1939CPPTPosterQueue.Arn
+      FunctionName: !GetAtt EdgeCPPTPoster.Arn
+
+# Queues
+  EDGEJ1939NGDI2CDSDKConversionQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "EDGEJ1939NGDI2CDSDKConversionQueue-${ApplicationEnvironmentTag}"
+      VisibilityTimeout: 600
+      RedrivePolicy:
+        deadLetterTargetArn:
+          Fn::GetAtt:
+            - "EDGEJ1939NGDI2CDSDKConversionDLQueue"
+            - "Arn"
+        maxReceiveCount: 5
+
+  EDGEJ1939NGDI2CDSDKConversionDLQueue:
+    Type: AWS::SQS::Queue
+
+
+# Queue Policies
+  EDGEJ1939NGDI2CDSDKConversionQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Sub "EDGEJ1939NGDI2CDSDKConversionQueue-${ApplicationEnvironmentTag}"
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sqs:SendMessage'
+            Resource:
+              - !Sub >-
+                arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:EDGEJ1939NGDI2CDSDKConversionQueue-${ApplicationEnvironmentTag}
+            Effect: Allow
+            Principal:
+              Service: "s3.amazonaws.com"
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !Sub "arn:aws:s3:::edge-j1939-${ApplicationEnvironmentTag}"
+    DependsOn:
+      - EDGEJ1939NGDI2CDSDKConversionQueue
+
+  # Lambda Event Source Mappings
+  EDGEJ1939NGDI2CDSDKConversionQueueTrigger:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: 50
+      MaximumBatchingWindowInSeconds: 60
+      Enabled: true
+      EventSourceArn: !GetAtt EDGEJ1939NGDI2CDSDKConversionQueue.Arn
+      FunctionName: !GetAtt EdgeNGDI2CDSDKConversion.Arn

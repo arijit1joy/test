@@ -4,12 +4,12 @@ import json
 import os
 import requests
 import datetime
+from multiprocessing import Process
 from metadata_utility import build_metadata_and_write
 
 import bdd_utility
 from system_variables import InternalResponse
 import edge_logger as logging
-
 
 logger = logging.logging_framework("EdgeJ1939CSVConverter.CoverterLambda")
 
@@ -22,13 +22,22 @@ mapTspFromOwner = os.environ["mapTspFromOwner"]
 s3_client = boto3.client('s3')
 
 
+def delete_message_from_sqs_queue(receipt_handle):
+    queue_url = os.environ["QueueUrl"]
+    sqs_client = boto3.client('sqs')  # noqa
+    sqs_message_deletion_response = sqs_client.delete_message(QueueUrl=queue_url, ReceiptHandle=receipt_handle)
+    logger.info(f"SQS message deletion response: '{sqs_message_deletion_response}'. . .")
+    return sqs_message_deletion_response
+
+
 def process_ss(ss_rows, ss_dict, ngdi_json_template, ss_converted_prot_header,
                ss_converted_device_parameters):
     try:
 
         ss_values = ss_rows[1]  # Get the SS Values row
 
-        logger.info(f"<------------------------------------------NEW SS SAMPLE--------------------------------------------->")
+        logger.info(
+            f"<------------------------------------------NEW SS SAMPLE--------------------------------------------->")
 
         logger.info(f"Single Sample Values: {ss_values}")
 
@@ -160,7 +169,8 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
         sample = {"convertedDeviceParameters": {}, "rawEquipmentParameters": [], "convertedEquipmentParameters": [],
                   "convertedEquipmentFaultCodes": []}
 
-        logger.info(f"<------------------------------------------NEW AS SAMPLE--------------------------------------------->")
+        logger.info(
+            f"<------------------------------------------NEW AS SAMPLE--------------------------------------------->")
 
         logger.info(f"OLD AS DICT: {old_as_dict}")
         logger.info(f"AS DICT: {new_as_dict}")
@@ -330,11 +340,10 @@ def get_cspec_req_id(sc_number):
     return config_spec_name, req_id
 
 
-def lambda_handler(lambda_event, context):
-
-    bucket_name = lambda_event['Records'][0]['s3']['bucket']['name']
-    file_key = lambda_event['Records'][0]['s3']['object']['key']
-    file_size = lambda_event['Records'][0]['s3']['object']['size']
+def retrieve_and_process_file(uploaded_file_object):
+    bucket_name = uploaded_file_object["source_bucket_name"]
+    file_key = uploaded_file_object["file_key"]
+    file_size = uploaded_file_object["file_size"]
 
     logger.info(f"Bucket: {bucket_name}")
     logger.info(f"File Key: {file_key}")
@@ -600,23 +609,27 @@ def lambda_handler(lambda_event, context):
         del as_rows[0]
         logger.info(f"New AS Rows: {as_rows}")
 
-    logger.info(f"<xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx---Handling Single Samples---xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>")
+    logger.info(
+        f"<xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx---Handling Single Samples---xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>")
 
     ngdi_json_template = process_ss(ss_rows, ss_dict, ngdi_json_template, ss_converted_prot_header,
                                     ss_converted_device_parameters) if ss_rows else ngdi_json_template
 
     logger.info(f"NGDI JSON Template after SS handling: {ngdi_json_template}")
 
-    logger.info(f"<xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx---Handled Single Samples---xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>")
+    logger.info(
+        f"<xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx---Handled Single Samples---xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>")
 
-    logger.info(f"<xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx---Handling All Samples---xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>")
+    logger.info(
+        f"<xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx---Handling All Samples---xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>")
 
     ngdi_json_template = process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
                                     as_converted_device_parameters)
 
     logger.info(f"NGDI JSON Template after AS handling: {ngdi_json_template}")
 
-    logger.info(f"<xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx---Handled All Samples---xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>")
+    logger.info(
+        f"<xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx---Handled All Samples---xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>")
 
     logger.info(f"Verifying Telematics Partner Name and Customer Reference Exists in file...")
 
@@ -648,12 +661,13 @@ def lambda_handler(lambda_event, context):
 
         else:
             TSP_Owners = json.loads(mapTspFromOwner)
-            TSP_name = TSP_Owners[str(got_tsp_and_cust_ref["device_owner"])] if str(got_tsp_and_cust_ref["device_owner"]) in TSP_Owners else "NA"
+            TSP_name = TSP_Owners[str(got_tsp_and_cust_ref["device_owner"])] if str(
+                got_tsp_and_cust_ref["device_owner"]) in TSP_Owners else "NA"
             if TSP_name != "NA":
-               ngdi_json_template["telematicsPartnerName"] = TSP_name
-            else: 
-               logger.error(f"Error! Could not retrieve TSP. This is mandatory field!")
-               return
+                ngdi_json_template["telematicsPartnerName"] = TSP_name
+            else:
+                logger.error(f"Error! Could not retrieve TSP. This is mandatory field!")
+                return
             ngdi_json_template["customerReference"] = got_tsp_and_cust_ref["cust_ref"]
 
             logger.info(f"Final file with TSP and Cust Ref: {ngdi_json_template}")
@@ -701,7 +715,8 @@ def lambda_handler(lambda_event, context):
 
     except Exception as e:
 
-        logger.error(f"An error occured while trying to get the file path from the file name:{e} Using current date-time . . .")
+        logger.error(
+            f"An error occured while trying to get the file path from the file name:{e} Using current date-time . . .")
 
         current_datetime = datetime.datetime.now()
 
@@ -727,6 +742,38 @@ def lambda_handler(lambda_event, context):
 
     if store_file_response["ResponseMetadata"]["HTTPStatusCode"] == 200:
         bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDCSVConvertSuccess.value)
+        # Delete message from Queue after success
+        delete_message_from_sqs_queue(uploaded_file_object["sqs_receipt_handle"])
+
+
+def lambda_handler(lambda_event, context):
+    records = lambda_event.get("Records", [])
+    processes = []
+    logger.debug(f"Received SQS Records: {records}.")
+    for record in records:
+        s3_event_body = json.loads(record["body"])
+        s3_event = s3_event_body['Records'][0]['s3']
+
+        uploaded_file_object = dict(
+            source_bucket_name=s3_event['bucket']['name'],
+            file_key=s3_event['object']['key'].replace("%", ":").replace("3A", ""),
+            file_size=s3_event['object']['size'],
+            sqs_receipt_handle=record["receiptHandle"]
+        )
+        logger.info(f"Uploaded File Object: {uploaded_file_object}.")
+
+        # Retrieve the uploaded file from the s3 bucket and process the uploaded file
+        process = Process(target=retrieve_and_process_file, args=(uploaded_file_object,))
+
+        # Make a list of all process to wait and terminate at the end
+        processes.append(process)
+
+        # Start process
+        process.start()
+
+    # Make sure that all processes have finished
+    for process in processes:
+        process.join()
 
 
 '''
