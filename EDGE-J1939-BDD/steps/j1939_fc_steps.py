@@ -11,6 +11,7 @@ from utilities.aws_utilities.s3_utility import upload_object_to_s3, get_key_from
     download_object_from_s3, delete_object_from_s3
 
 EXPECTED_FILE_DOWNLOAD_PATH = "data/j1939_fc/download"
+DATE_TIME_STAMP = "%Y-%m-%dT%H"
 
 
 @exception_handler
@@ -25,6 +26,7 @@ def valid_ebu_fc_message(context):
     context.compare_ngdi_file_name = "data/j1939_fc/compare/j1939_fc_ebu_ngdi_file.json"
     context.device_id = context.ebu_device_id_1
     context.esn = context.ebu_esn_1
+    context.date_path = datetime.strptime(context.file_name.split("_")[4], DATE_TIME_STAMP).strftime("%Y/%m/%d")
 
 
 @exception_handler
@@ -38,7 +40,7 @@ def valid_ebu_fc_message_with_not_exist_device(context):
 @exception_handler
 @given(u'An invalid EBU FC file in CSV format containing no device_id value')
 def invalid_ebu_fc_message_without_device_id(context):
-    context.j1939_fc_stages = []
+    context.j1939_fc_stages = ["FILE_RECEIVED", "UNCOMPRESSED", "CSV_JSON_CONVERTED"]
     context.file_name = "edge_19299951_BDD001_2021-02-09T12_30_00.015Z.csv.gz"
     context.device_id = context.ebu_esn_1
 
@@ -53,6 +55,7 @@ def valid_psbu_fc_message(context):
     context.compare_converted_file_name = "data/j1939_fc/compare/j1939_fc_psbu_converted_file.json"
     context.device_id = context.psbu_device_id_1
     context.esn = context.psbu_esn_1
+    context.date_path = datetime.strptime(context.file_name.split("_")[4], DATE_TIME_STAMP).strftime("%Y/%m/%d")
 
 
 @exception_handler
@@ -64,8 +67,9 @@ def valid_psbu_fc_message_without_esn_in_filename(context):
     context.download_converted_file_name = \
         "data/j1939_fc/download/received_j1939_fc_psbu_converted_file_improper_esn.json"
     context.compare_converted_file_name = "data/j1939_fc/compare/j1939_fc_psbu_converted_file_improper_esn.json"
-    context.device_id = context.psbu_device_id_1
-    context.esn = context.psbu_esn_1
+    context.device_id = context.psbu_device_id_2
+    context.esn = context.psbu_esn_2
+    context.date_path = datetime.strptime(context.file_name.split("_")[3], DATE_TIME_STAMP).strftime("%Y/%m/%d")
 
 
 @exception_handler
@@ -94,7 +98,6 @@ def assert_j1939_fc_stages_in_edge_db(context):
       u'edge-j1939-<env> bucket under the file path ConvertedFiles/esn/device_id/yyyy/mm/dd/fc_file.json with a '
       u'metadata called j1939type whose value is FC')
 def assert_j1939_fc_message_in_converted_files(context):
-    context.date_path = datetime.strptime(context.file_name.split("_")[4], "%Y-%m-%dT%H").strftime("%Y/%m/%d")
     file_key = "ConvertedFiles/{0}/{1}/{2}/".format(context.esn, context.device_id, context.date_path)
     get_key = get_key_from_list_of_s3_objects(context.final_bucket, file_key)
     assert get_key is not None
