@@ -163,8 +163,6 @@ Resources:
                   - "sqs:SendMessage"
                   - "sqs:ReceiveMessage"
                   - "sqs:DeleteMessage"
-                  - "sqs:GetQueueAttributes"
-                  - "sqs:ChangeMessageVisibility"
                 Resource: !GetAtt
                   - EDGEJ1939NGDI2CDSDKConversionQueue
                   - Arn
@@ -203,8 +201,6 @@ Resources:
                   - "sqs:SendMessage"
                   - "sqs:ReceiveMessage"
                   - "sqs:DeleteMessage"
-                  - "sqs:GetQueueAttributes"
-                  - "sqs:ChangeMessageVisibility"
                 Resource: !GetAtt
                   - EDGEJ1939DataLogFilesQueue
                   - Arn
@@ -483,8 +479,6 @@ Resources:
                   - "sqs:SendMessage"
                   - "sqs:ReceiveMessage"
                   - "sqs:DeleteMessage"
-                  - "sqs:GetQueueAttributes"
-                  - "sqs:ChangeMessageVisibility"
                 Resource: !GetAtt
                   - EDGEJ1939CPPTPosterQueue
                   - Arn
