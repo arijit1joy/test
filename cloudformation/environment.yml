@@ -338,7 +338,7 @@ Resources:
               SSEAlgorithm: AES256
       NotificationConfiguration:
         QueueConfigurations:
-          - Queue: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:EDGEJ1939DataLogFilesQueue-${ApplicationEnvironmentTag}"
+          - Queue: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${ApplicationName}-DataLogFilesQueue-${ApplicationEnvironmentTag}"
             Event: "s3:ObjectCreated:*"
       BucketName: !Sub "da-edge-j1939-datalog-files-${ApplicationEnvironmentTag}"
       Tags:
@@ -397,6 +397,7 @@ Resources:
         - Value: Edge
           Key: Name
       MemorySize: 512
+      ReservedConcurrentExecutions: 5
       Environment:
         Variables:
           fmi_indicator: FMI
@@ -441,12 +442,12 @@ Resources:
           converted_equip_params: convertedEquipmentParameters
           delivery_stream_name: !Ref DeliveryStreamName
           auth_token_url: !Ref AuthToken
-          QueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/EDGEJ1939NGDI2CDSDKConversionQueue-${ApplicationEnvironmentTag}"
+          QueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/${ApplicationName}-NGDI2CDSDKConversionQueue-${ApplicationEnvironmentTag}"
       Handler: conversion.lambda_handler
       Role: !GetAtt
         - EdgeNGDI2CDSDKConversionLambdaRole
         - Arn
-      Timeout: 300
+      Timeout: 900
       Runtime: python3.7
       FunctionName: !Sub "${ApplicationName}-EdgeNGDI2CDSDKConversion-${ApplicationEnvironmentTag}"
 
@@ -540,7 +541,7 @@ Resources:
       BucketName: !Sub "edge-j1939-${ApplicationEnvironmentTag}"
       NotificationConfiguration:
         QueueConfigurations:
-          - Queue: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:EDGEJ1939CPPTPosterQueue-${ApplicationEnvironmentTag}"
+          - Queue: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${ApplicationName}-CPPTPosterQueue-${ApplicationEnvironmentTag}"
             Filter:
               S3Key:
                 Rules:
@@ -549,7 +550,7 @@ Resources:
                   - Name: suffix
                     Value: .json
             Event: "s3:ObjectCreated:*"
-          - Queue: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:EDGEJ1939NGDI2CDSDKConversionQueue-${ApplicationEnvironmentTag}"
+          - Queue: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${ApplicationName}-NGDI2CDSDKConversionQueue-${ApplicationEnvironmentTag}"
             Filter:
               S3Key:
                 Rules:
@@ -615,6 +616,7 @@ Resources:
         - Value: Edge
           Key: Name
       MemorySize: 512
+      ReservedConcurrentExecutions: 5
       Environment:
         Variables:
           APPLICATION_ENVIRONMENT: !Ref ApplicationEnvironmentTag
@@ -628,7 +630,7 @@ Resources:
           environment: !Ref ApplicationEnvironmentTag
           edgeCommonAPIURL: !Ref EdgeCommonDBAPI
           APPLICATION_NAME: !Ref ApplicationName
-          QueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/EDGEJ1939DataLogFilesQueue-${ApplicationEnvironmentTag}"
+          QueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/${ApplicationName}-DataLogFilesQueue-${ApplicationEnvironmentTag}"
           mapTspFromOwner: >-
             {"EBU": "Cummins", "PSBU": "Cummins" ,"TATA": "India_Edge",
             "Navistar": "Navistar", "N2": "Navistar" ,"Paccar":"Paccar"}
@@ -638,7 +640,7 @@ Resources:
       Role: !GetAtt
         - EdgeJ1939CSVConverterLambdaRole
         - Arn
-      Timeout: 300
+      Timeout: 900
       Runtime: python3.7
 
   PandasPythonLayer:
@@ -766,6 +768,7 @@ Resources:
         - Value: Edge
           Key: Name
       MemorySize: 512
+      ReservedConcurrentExecutions: 5
       Environment:
         Variables:
           cd_device_owners: '{"EBU": "EBU", "TATA": "TATA"}'
@@ -800,13 +803,13 @@ Resources:
           PTxAPIKey: pt_xapi_key
           delivery_stream_name: !Ref DeliveryStreamName
           CDPTJ1939PostURL: !Ref CDPTJ1939PostURL
-          QueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/EDGEJ1939CPPTPosterQueue-${ApplicationEnvironmentTag}"
+          QueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/${ApplicationName}-CPPTPosterQueue-${ApplicationEnvironmentTag}"
           PowerGenValue: powerGen
       Handler: PosterLambda.lambda_handler
       Role: !GetAtt
         - EdgeCPPTPosterLambdaRole
         - Arn
-      Timeout: 300
+      Timeout: 900
       Runtime: python3.7
 
 
@@ -825,17 +828,19 @@ Resources:
   EDGEJ1939DataLogFilesQueue:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: !Sub "EDGEJ1939DataLogFilesQueue-${ApplicationEnvironmentTag}"
-      VisibilityTimeout: 600
+      QueueName: !Sub "${ApplicationName}-DataLogFilesQueue-${ApplicationEnvironmentTag}"
+      VisibilityTimeout: 900
       RedrivePolicy:
         deadLetterTargetArn:
           Fn::GetAtt:
             - "EDGEJ1939DataLogFilesDLQueue"
             - "Arn"
-        maxReceiveCount: 5
+        maxReceiveCount: 2
 
   EDGEJ1939DataLogFilesDLQueue:
     Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${ApplicationName}-DataLogFilesQueue-${ApplicationEnvironmentTag}"
 
 
 # Queue Policies
@@ -843,7 +848,7 @@ Resources:
     Type: AWS::SQS::QueuePolicy
     Properties:
       Queues:
-        - !Sub "EDGEJ1939DataLogFilesQueue-${ApplicationEnvironmentTag}"
+        - !Sub "${ApplicationName}-DataLogFilesQueue-${ApplicationEnvironmentTag}"
       PolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -851,7 +856,7 @@ Resources:
               - 'sqs:SendMessage'
             Resource:
               - !Sub >-
-                arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:EDGEJ1939DataLogFilesQueue-${ApplicationEnvironmentTag}
+                arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${ApplicationName}-DataLogFilesQueue-${ApplicationEnvironmentTag}
             Effect: Allow
             Principal:
               Service: "s3.amazonaws.com"
@@ -876,17 +881,19 @@ Resources:
   EDGEJ1939CPPTPosterQueue:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: !Sub "EDGEJ1939CPPTPosterQueue-${ApplicationEnvironmentTag}"
-      VisibilityTimeout: 600
+      QueueName: !Sub "${ApplicationName}-CPPTPosterQueue-${ApplicationEnvironmentTag}"
+      VisibilityTimeout: 900
       RedrivePolicy:
         deadLetterTargetArn:
           Fn::GetAtt:
             - "EDGEJ1939CPPTPosterDLQueue"
             - "Arn"
-        maxReceiveCount: 5
+        maxReceiveCount: 2
 
   EDGEJ1939CPPTPosterDLQueue:
     Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${ApplicationName}-CPPTPosterQueue-${ApplicationEnvironmentTag}"
 
 
 # Queue Policies
@@ -894,7 +901,7 @@ Resources:
     Type: AWS::SQS::QueuePolicy
     Properties:
       Queues:
-        - !Sub "EDGEJ1939CPPTPosterQueue-${ApplicationEnvironmentTag}"
+        - !Sub "${ApplicationName}-CPPTPosterQueue-${ApplicationEnvironmentTag}"
       PolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -902,7 +909,7 @@ Resources:
               - 'sqs:SendMessage'
             Resource:
               - !Sub >-
-                arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:EDGEJ1939CPPTPosterQueue-${ApplicationEnvironmentTag}
+                arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${ApplicationName}-CPPTPosterQueue-${ApplicationEnvironmentTag}
             Effect: Allow
             Principal:
               Service: "s3.amazonaws.com"
@@ -926,17 +933,19 @@ Resources:
   EDGEJ1939NGDI2CDSDKConversionQueue:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: !Sub "EDGEJ1939NGDI2CDSDKConversionQueue-${ApplicationEnvironmentTag}"
-      VisibilityTimeout: 600
+      QueueName: !Sub "${ApplicationName}-NGDI2CDSDKConversionQueue-${ApplicationEnvironmentTag}"
+      VisibilityTimeout: 900
       RedrivePolicy:
         deadLetterTargetArn:
           Fn::GetAtt:
             - "EDGEJ1939NGDI2CDSDKConversionDLQueue"
             - "Arn"
-        maxReceiveCount: 5
+        maxReceiveCount: 2
 
   EDGEJ1939NGDI2CDSDKConversionDLQueue:
     Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${ApplicationName}-NGDI2CDSDKConversionQueue-${ApplicationEnvironmentTag}"
 
 
 # Queue Policies
@@ -944,7 +953,7 @@ Resources:
     Type: AWS::SQS::QueuePolicy
     Properties:
       Queues:
-        - !Sub "EDGEJ1939NGDI2CDSDKConversionQueue-${ApplicationEnvironmentTag}"
+        - !Sub "${ApplicationName}-NGDI2CDSDKConversionQueue-${ApplicationEnvironmentTag}"
       PolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -952,7 +961,7 @@ Resources:
               - 'sqs:SendMessage'
             Resource:
               - !Sub >-
-                arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:EDGEJ1939NGDI2CDSDKConversionQueue-${ApplicationEnvironmentTag}
+                arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${ApplicationName}-NGDI2CDSDKConversionQueue-${ApplicationEnvironmentTag}
             Effect: Allow
             Principal:
               Service: "s3.amazonaws.com"
