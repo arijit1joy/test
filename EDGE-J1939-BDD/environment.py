@@ -1,6 +1,9 @@
+from time import sleep
 from pypika import Table, Query
 from utilities import rest_api_utility as rest_api
 from utilities.db_utility import get_edge_db_payload
+from utilities.common_utility import exception_handler
+from utilities.aws_utilities.s3_utility import upload_object_to_s3
 
 
 def delete_metadata(context):
@@ -36,3 +39,25 @@ def before_all(context):
 
     # Delete metadata stages stored during last BDD execution
     delete_metadata(context)
+
+
+@exception_handler
+def before_feature(context, feature):
+    if "J1939 Fault Code" in feature.name:
+        context.file_name_for_ebu_scenario_1 = "edge_192999999999951_19299951_BDD001_2021-02-09T12_30_00.015Z.csv.gz"
+        context.file_name_for_ebu_scenario_2 = "edge_192999999999953_19299951_BDD001_2021-02-09T12_30_00.015Z.csv.gz"
+        context.file_name_for_ebu_scenario_3 = "edge_19299951_BDD001_2021-02-09T12_30_00.015Z.csv.gz"
+        context.file_name_for_psbu_scenario_1 = "edge_192999999999952_19299952_BDD001_2021-02-09T12_30_00.015Z.csv.gz"
+        context.file_name_for_psbu_scenario_2 = "edge_192999999999954_BDD001_2021-02-09T12_30_00.015Z.csv.gz"
+
+        files = [context.file_name_for_ebu_scenario_1, context.file_name_for_ebu_scenario_2,
+                 context.file_name_for_ebu_scenario_3, context.file_name_for_psbu_scenario_1,
+                 context.file_name_for_psbu_scenario_2]
+
+        for file_name in files:
+            file_key = "bosch-device/" + file_name
+            file_path = "data/j1939_fc/upload/" + file_name
+            upload_object_to_s3(context.device_upload_bucket, file_key, file_path)
+
+        # Wait for 5 minutes to allow all J1939 FC lambdas to process
+        sleep(300)

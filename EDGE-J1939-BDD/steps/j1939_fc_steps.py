@@ -5,10 +5,10 @@ from behave import given, when, then
 from pypika import Table, Query
 from utilities import rest_api_utility as rest_api
 from utilities.db_utility import get_edge_db_payload
-from utilities.common_utility import exception_handler, set_delay
+from utilities.common_utility import exception_handler
 from utilities.file_utility.file_handler import same_file_contents
-from utilities.aws_utilities.s3_utility import upload_object_to_s3, get_key_from_list_of_s3_objects, \
-    download_object_from_s3, delete_object_from_s3
+from utilities.aws_utilities.s3_utility import get_key_from_list_of_s3_objects, download_object_from_s3, \
+    delete_object_from_s3
 
 EXPECTED_FILE_DOWNLOAD_PATH = "data/j1939_fc/download"
 DATE_TIME_STAMP = "%Y-%m-%dT%H"
@@ -18,7 +18,7 @@ DATE_TIME_STAMP = "%Y-%m-%dT%H"
 @given(u'A valid EBU FC message in CSV format containing a valid data')
 def valid_ebu_fc_message(context):
     context.j1939_fc_stages = ["FILE_RECEIVED", "UNCOMPRESSED", "CSV_JSON_CONVERTED", "CD_PT_POSTED", "FILE_SENT"]
-    context.file_name = "edge_192999999999951_19299951_BDD001_2021-02-09T12_30_00.015Z.csv.gz"
+    context.file_name = context.file_name_for_ebu_scenario_1
     context.download_folder_path = EXPECTED_FILE_DOWNLOAD_PATH
     context.download_converted_file_name = "data/j1939_fc/download/received_j1939_fc_ebu_converted_file.json"
     context.compare_converted_file_name = "data/j1939_fc/compare/j1939_fc_ebu_converted_file.json"
@@ -33,7 +33,7 @@ def valid_ebu_fc_message(context):
 @given(u'A valid EBU FC file in CSV format containing a device_id that does not exist in the EDGE ecosystem')
 def valid_ebu_fc_message_with_not_exist_device(context):
     context.j1939_fc_stages = ["FILE_RECEIVED", "UNCOMPRESSED", "CSV_JSON_CONVERTED"]
-    context.file_name = "edge_192999999999953_19299951_BDD001_2021-02-09T12_30_00.015Z.csv.gz"
+    context.file_name = context.file_name_for_ebu_scenario_2
     context.device_id = context.not_whitelisted_device_id
 
 
@@ -41,7 +41,7 @@ def valid_ebu_fc_message_with_not_exist_device(context):
 @given(u'An invalid EBU FC file in CSV format containing no device_id value')
 def invalid_ebu_fc_message_without_device_id(context):
     context.j1939_fc_stages = ["FILE_RECEIVED", "UNCOMPRESSED", "CSV_JSON_CONVERTED"]
-    context.file_name = "edge_19299951_BDD001_2021-02-09T12_30_00.015Z.csv.gz"
+    context.file_name = context.file_name_for_ebu_scenario_3
     context.device_id = context.ebu_esn_1
 
 
@@ -49,7 +49,7 @@ def invalid_ebu_fc_message_without_device_id(context):
 @given(u'A valid PSBU FC message in CSV format containing a valid data')
 def valid_psbu_fc_message(context):
     context.j1939_fc_stages = ["FILE_RECEIVED", "UNCOMPRESSED", "CSV_JSON_CONVERTED"]
-    context.file_name = "edge_192999999999952_19299952_BDD001_2021-02-09T12_30_00.015Z.csv.gz"
+    context.file_name = context.file_name_for_psbu_scenario_1
     context.download_folder_path = EXPECTED_FILE_DOWNLOAD_PATH
     context.download_converted_file_name = "data/j1939_fc/download/received_j1939_fc_psbu_converted_file.json"
     context.compare_converted_file_name = "data/j1939_fc/compare/j1939_fc_psbu_converted_file.json"
@@ -62,7 +62,7 @@ def valid_psbu_fc_message(context):
 @given(u'A valid PSBU FC message in CSV format containing a valid data and filename without ESN')
 def valid_psbu_fc_message_without_esn_in_filename(context):
     context.j1939_fc_stages = ["FILE_RECEIVED", "UNCOMPRESSED", "CSV_JSON_CONVERTED"]
-    context.file_name = "edge_192999999999954_BDD001_2021-02-09T12_30_00.015Z.csv.gz"
+    context.file_name = context.file_name_for_psbu_scenario_2
     context.download_folder_path = EXPECTED_FILE_DOWNLOAD_PATH
     context.download_converted_file_name = \
         "data/j1939_fc/download/received_j1939_fc_psbu_converted_file_improper_esn.json"
@@ -76,13 +76,13 @@ def valid_psbu_fc_message_without_esn_in_filename(context):
 @when(u'The FC file is uploaded to the da-edge-j1939-datalog-files-<env> bucket')
 def j1939_fc_file_uploaded_to_s3(context):
     file_key = "bosch-device/" + context.file_name
-    file_path = "data/j1939_fc/upload/" + context.file_name
-    upload_object_to_s3(context.device_upload_bucket, file_key, file_path)
+    get_key = get_key_from_list_of_s3_objects(context.device_upload_bucket, file_key)
+    assert get_key is not None
+    assert delete_object_from_s3(context.device_upload_bucket, get_key) is True
 
 
-@then(u'Stored J1939 FC metadata stages in EDGE DB')
 @exception_handler
-@set_delay(80, wait_before=True)
+@then(u'Stored J1939 FC metadata stages in EDGE DB')
 def assert_j1939_fc_stages_in_edge_db(context):
     da_edge_metadata = Table(context.edge_metadata_table)
     query = Query.from_(da_edge_metadata).select(da_edge_metadata.data_pipeline_stage).where(
