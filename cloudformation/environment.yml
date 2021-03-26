@@ -840,7 +840,7 @@ Resources:
   EDGEJ1939DataLogFilesDLQueue:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: !Sub "${ApplicationName}-DataLogFilesQueue-${ApplicationEnvironmentTag}"
+      QueueName: !Sub "${ApplicationName}-DataLogFilesDLQueue-${ApplicationEnvironmentTag}"
 
 
 # Queue Policies
@@ -893,7 +893,7 @@ Resources:
   EDGEJ1939CPPTPosterDLQueue:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: !Sub "${ApplicationName}-CPPTPosterQueue-${ApplicationEnvironmentTag}"
+      QueueName: !Sub "${ApplicationName}-CPPTPosterDLQueue-${ApplicationEnvironmentTag}"
 
 
 # Queue Policies
@@ -945,7 +945,7 @@ Resources:
   EDGEJ1939NGDI2CDSDKConversionDLQueue:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: !Sub "${ApplicationName}-NGDI2CDSDKConversionQueue-${ApplicationEnvironmentTag}"
+      QueueName: !Sub "${ApplicationName}-NGDI2CDSDKConversionDLQueue-${ApplicationEnvironmentTag}"
 
 
 # Queue Policies
