@@ -1,19 +1,8 @@
 from time import sleep
-from pypika import Table, Query
-from utilities import rest_api_utility as rest_api
-from utilities.db_utility import get_edge_db_payload
 from utilities.common_utility import exception_handler
+from utilities.j1939_utility import delete_metadata, get_j1939_fc_data_set, get_j1939_hb_data_set
 from utilities.aws_utilities.s3_utility import upload_object_to_s3
-
-
-def delete_metadata(context):
-    da_edge_metadata = Table(context.edge_metadata_table)
-    query = Query.from_(da_edge_metadata).delete().where(da_edge_metadata.device_id.isin(
-        [context.ebu_device_id_1, context.psbu_device_id_1, context.psbu_device_id_2,
-         context.not_whitelisted_device_id, context.ebu_esn_1]))
-    edge_db_payload = get_edge_db_payload('post', query)
-    edge_db_response = rest_api.post(context.edge_common_db_url, edge_db_payload)
-    print(f"Delete Metadata Response: {edge_db_response}")
+from utilities.aws_utilities.iot_utility import publish_to_mqtt_topic
 
 
 def before_all(context):
@@ -29,6 +18,12 @@ def before_all(context):
     context.ebu_device_id_1 = "192999999999951"
     context.ebu_esn_1 = "19299951"
     context.ebu_vin_1 = "TESTVIN19299951"
+    context.ebu_device_id_2 = "192999999999955"
+    context.ebu_esn_2 = "19299955"
+    context.ebu_vin_2 = "TESTVIN19299955"
+    context.ebu_device_id_3 = "192999999999956"
+    context.ebu_esn_3 = "19299956"
+    context.ebu_vin_3 = "TESTVIN19299956"
     context.psbu_device_id_1 = "192999999999952"
     context.psbu_esn_1 = "19299952"
     context.psbu_vin_1 = "TESTVIN19299952"
@@ -44,20 +39,31 @@ def before_all(context):
 @exception_handler
 def before_feature(context, feature):
     if "J1939 Fault Code" in feature.name:
-        context.file_name_for_ebu_scenario_1 = "edge_192999999999951_19299951_BDD001_2021-02-09T12_30_00.015Z.csv.gz"
-        context.file_name_for_ebu_scenario_2 = "edge_192999999999953_19299951_BDD001_2021-02-09T12_30_00.015Z.csv.gz"
-        context.file_name_for_ebu_scenario_3 = "edge_19299951_BDD001_2021-02-09T12_30_00.015Z.csv.gz"
-        context.file_name_for_psbu_scenario_1 = "edge_192999999999952_19299952_BDD001_2021-02-09T12_30_00.015Z.csv.gz"
-        context.file_name_for_psbu_scenario_2 = "edge_192999999999954_BDD001_2021-02-09T12_30_00.015Z.csv.gz"
+        j1939_fc_data_set = get_j1939_fc_data_set(context)
 
-        files = [context.file_name_for_ebu_scenario_1, context.file_name_for_ebu_scenario_2,
-                 context.file_name_for_ebu_scenario_3, context.file_name_for_psbu_scenario_1,
-                 context.file_name_for_psbu_scenario_2]
-
-        for file_name in files:
+        for file_name in j1939_fc_data_set:
             file_key = "bosch-device/" + file_name
             file_path = "data/j1939_fc/upload/" + file_name
             upload_object_to_s3(context.device_upload_bucket, file_key, file_path)
 
-        # Wait for 5 minutes to allow all J1939 FC lambdas to process
-        sleep(300)
+        # Wait for 4.5 minutes to allow all J1939 FC lambdas to process
+        time_in_secs = 270
+
+    elif "J1939 Heart Beat" in feature.name:
+        j1939_hb_data_set = get_j1939_hb_data_set(context)
+
+        for device_id, j1939_hb_payload in j1939_hb_data_set.items():
+            topic = context.j1939_public_topic.replace("{device_id}", device_id)
+            publish_to_mqtt_topic(topic, j1939_hb_payload, context.region)
+
+            # Using j1939_hb_payload in "then" behavior
+            context.j1939_hb_payload = j1939_hb_payload
+
+        # Wait for 2.5 minutes to allow all J1939 HB lambdas to process
+        time_in_secs = 150
+
+    else:
+        time_in_secs = 0
+
+    print(f"Delaying {time_in_secs} Seconds for Feature: {feature.name}")
+    sleep(time_in_secs)
