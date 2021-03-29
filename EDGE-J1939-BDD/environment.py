@@ -38,32 +38,27 @@ def before_all(context):
 
 @exception_handler
 def before_feature(context, feature):
-    if "J1939 Fault Code" in feature.name:
-        j1939_fc_data_set = get_j1939_fc_data_set(context)
+    j1939_fc_data_set = get_j1939_fc_data_set(context)
 
-        for file_name in j1939_fc_data_set:
-            file_key = "bosch-device/" + file_name
-            file_path = "data/j1939_fc/upload/" + file_name
-            upload_object_to_s3(context.device_upload_bucket, file_key, file_path)
+    for file_name in j1939_fc_data_set:
+        file_key = "bosch-device/" + file_name
+        file_path = "data/j1939_fc/upload/" + file_name
+        upload_object_to_s3(context.device_upload_bucket, file_key, file_path)
 
-        # Wait for 4.5 minutes to allow all J1939 FC lambdas to process
-        time_in_secs = 270
+    # Wait for 4.5 minutes to allow all J1939 FC lambdas to process
+    #time_in_secs = 270
 
-    elif "J1939 Heart Beat" in feature.name:
-        j1939_hb_data_set = get_j1939_hb_data_set(context)
+    j1939_hb_data_set = get_j1939_hb_data_set(context)
 
-        for device_id, j1939_hb_payload in j1939_hb_data_set.items():
-            topic = context.j1939_public_topic.replace("{device_id}", device_id)
-            publish_to_mqtt_topic(topic, j1939_hb_payload, context.region)
+    for device_id, j1939_hb_payload in j1939_hb_data_set.items():
+        topic = context.j1939_public_topic.replace("{device_id}", device_id)
+        publish_to_mqtt_topic(topic, j1939_hb_payload, context.region)
 
-            # Using j1939_hb_payload in "then" behavior
-            context.j1939_hb_payload = j1939_hb_payload
+        # Using j1939_hb_payload in "then" behavior
+        context.j1939_hb_payload = j1939_hb_payload
 
-        # Wait for 2.5 minutes to allow all J1939 HB lambdas to process
-        time_in_secs = 150
-
-    else:
-        time_in_secs = 0
+    # Wait for 2.5 minutes to allow all J1939 HB lambdas to process
+    time_in_secs = 270
 
     print(f"Delaying {time_in_secs} Seconds for Feature: {feature.name}")
     sleep(time_in_secs)
