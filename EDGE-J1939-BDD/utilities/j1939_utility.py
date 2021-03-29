@@ -93,7 +93,7 @@ def handle_j1939_process(context):
         topic = context.j1939_public_topic.replace("{device_id}", device_id)
         publish_to_mqtt_topic(topic, j1939_hb_payload, context.region)
 
-        # Using j1939_hb_payload in "then" behavior
+        # Using j1939_hb_payload in "then" steps
         context.j1939_hb_payload = j1939_hb_payload
 
     print("<---Finished setting up data for J1939 HB--->")
