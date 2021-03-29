@@ -1,8 +1,4 @@
-from time import sleep
-from utilities.common_utility import exception_handler
-from utilities.j1939_utility import delete_metadata, get_j1939_fc_data_set, get_j1939_hb_data_set
-from utilities.aws_utilities.s3_utility import upload_object_to_s3
-from utilities.aws_utilities.iot_utility import publish_to_mqtt_topic
+from utilities.j1939_utility import handle_j1939_process
 
 
 def before_all(context):
@@ -32,33 +28,5 @@ def before_all(context):
     context.psbu_vin_2 = "TESTVIN19299954"
     context.not_whitelisted_device_id = "192999999999953"
 
-    # Delete metadata stages stored during last BDD execution
-    delete_metadata(context)
-
-
-@exception_handler
-def before_feature(context, feature):
-    j1939_fc_data_set = get_j1939_fc_data_set(context)
-
-    for file_name in j1939_fc_data_set:
-        file_key = "bosch-device/" + file_name
-        file_path = "data/j1939_fc/upload/" + file_name
-        upload_object_to_s3(context.device_upload_bucket, file_key, file_path)
-
-    # Wait for 4.5 minutes to allow all J1939 FC lambdas to process
-    #time_in_secs = 270
-
-    j1939_hb_data_set = get_j1939_hb_data_set(context)
-
-    for device_id, j1939_hb_payload in j1939_hb_data_set.items():
-        topic = context.j1939_public_topic.replace("{device_id}", device_id)
-        publish_to_mqtt_topic(topic, j1939_hb_payload, context.region)
-
-        # Using j1939_hb_payload in "then" behavior
-        context.j1939_hb_payload = j1939_hb_payload
-
-    # Wait for 2.5 minutes to allow all J1939 HB lambdas to process
-    time_in_secs = 270
-
-    print(f"Delaying {time_in_secs} Seconds for Feature: {feature.name}")
-    sleep(time_in_secs)
+    # Upload files for J1939 FC and publish payload for J1939 HB to reduce waiting time
+    handle_j1939_process(context)

@@ -1,7 +1,11 @@
+from time import sleep
 from pypika import Table, Query
 from utilities import rest_api_utility as rest_api
 from utilities.db_utility import get_edge_db_payload
+from utilities.common_utility import exception_handler
 from utilities.file_utility.file_handler import get_json_file
+from utilities.aws_utilities.s3_utility import upload_object_to_s3
+from utilities.aws_utilities.iot_utility import publish_to_mqtt_topic
 
 J1939_HB_PAYLOAD_PATH = "data/j1939_hb/upload/valid_j1939_hb_payload.json"
 
@@ -65,3 +69,37 @@ def get_j1939_hb_data_set(context):
                          context.psbu_device_id_1: hb_payload_for_psbu_scenario_1}
 
     return j1939_hb_data_set
+
+
+@exception_handler
+def handle_j1939_process(context):
+    # Delete metadata stages stored during last BDD execution
+    delete_metadata(context)
+
+    # Set up and upload files for J1939 FC
+    j1939_fc_data_set = get_j1939_fc_data_set(context)
+
+    for file_name in j1939_fc_data_set:
+        file_key = "bosch-device/" + file_name
+        file_path = "data/j1939_fc/upload/" + file_name
+        upload_object_to_s3(context.device_upload_bucket, file_key, file_path)
+
+    print("<---Finished setting up data for J1939 FC--->")
+
+    # Set up and publish payload for J1939 HB
+    j1939_hb_data_set = get_j1939_hb_data_set(context)
+
+    for device_id, j1939_hb_payload in j1939_hb_data_set.items():
+        topic = context.j1939_public_topic.replace("{device_id}", device_id)
+        publish_to_mqtt_topic(topic, j1939_hb_payload, context.region)
+
+        # Using j1939_hb_payload in "then" behavior
+        context.j1939_hb_payload = j1939_hb_payload
+
+    print("<---Finished setting up data for J1939 HB--->")
+
+    # Wait for 4.5 minutes to allow all J1939 lambdas to process
+    time_in_secs = 270
+
+    print(f"Delaying {time_in_secs} Seconds for J1939 Features..!")
+    sleep(time_in_secs)

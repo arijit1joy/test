@@ -1,4 +1,9 @@
-Feature: Regression Test Cases for Heart Beat Process
+Feature: Regression Test Cases for J1939 Heart Beat Process
+
+  """
+    'When' steps are being executed before running J1939 HB feature that's why we don't have 'When' steps for J1939 HB feature
+  """
+
 # Scenarios for EBU Devices
   Scenario: HB message is received to EDGE cloud with the valid data for EBU
     Given A valid EBU HB message in JSON format containing a valid data
