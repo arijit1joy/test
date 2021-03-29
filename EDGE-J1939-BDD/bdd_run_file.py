@@ -22,10 +22,16 @@ if __name__ == '__main__':
                 f"{current_date_time.hour:02d}_{current_date_time.minute:02d}_{current_date_time.second:02d}"
 
     if execution_environment in ["dev", "stage", "test"]:
-        behave_execution_exit_code = subprocess.call("behave "
+        behave_execution_hb_exit_code = subprocess.Popen("behave -i=features/j1939_hb.feature "
                                                      f"-D environment={execution_environment} "
                                                      f"-D region={region}",
                                                      shell=True)
+        behave_execution_exit_code = subprocess.call("behave -i=features/j1939_fc.feature "
+                                                     f"-D environment={execution_environment} "
+                                                     f"-D region={region}",
+                                                     shell=True)
+
+
 
         # Regardless of whether the behave execution passed or failed, copy the reports to the EDGE reporting bucket
         back_up_s3_copy_exit_code = subprocess.call("aws s3 cp reports/ "
