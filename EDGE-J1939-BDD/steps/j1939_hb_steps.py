@@ -2,18 +2,15 @@ import os
 import shutil
 from geopy.distance import distance
 from datetime import datetime
-from behave import given, when, then
+from behave import given, then
 from pypika import Table, Query, Order
 from utilities import rest_api_utility as rest_api
 from utilities.db_utility import get_edge_db_payload
-from utilities.common_utility import exception_handler, set_delay
-from utilities.aws_utilities.iot_utility import publish_to_mqtt_topic
-from utilities.file_utility.file_handler import same_file_contents, get_json_file
+from utilities.common_utility import exception_handler
+from utilities.file_utility.file_handler import same_file_contents
 from utilities.aws_utilities.s3_utility import get_key_from_list_of_s3_objects, download_object_from_s3, \
     delete_object_from_s3
 
-j1939_hb_payload = {}
-j1939_hb_payload_path = "data/j1939_hb/upload/valid_j1939_hb_payload.json"
 download_folder_path = "data/j1939_hb/download"
 
 
@@ -27,12 +24,6 @@ def valid_ebu_hb_message(context):
     context.compare_ngdi_file_name = "data/j1939_hb/compare/j1939_hb_ebu_ngdi_file.json"
     context.device_id = context.ebu_device_id_1
     context.esn = context.ebu_esn_1
-    global j1939_hb_payload
-    j1939_hb_payload = get_json_file(j1939_hb_payload_path)
-    j1939_hb_payload["componentSerialNumber"] = context.esn
-    j1939_hb_payload["equipmentId"] = "EDGE_{esn}".format(esn=context.esn)
-    j1939_hb_payload["vin"] = context.ebu_vin_1
-    j1939_hb_payload["telematicsDeviceId"] = context.device_id
 
 
 @exception_handler
@@ -45,8 +36,6 @@ def valid_ebu_hb_message_with_not_exist_device(context):
         "data/j1939_hb/compare/j1939_hb_ebu_converted_file_device_does_not_exist.json"
     context.device_id = context.not_whitelisted_device_id
     context.esn = context.ebu_esn_1
-    global j1939_hb_payload
-    j1939_hb_payload["telematicsDeviceId"] = context.device_id
 
 
 @exception_handler
@@ -60,12 +49,8 @@ def valid_ebu_hb_message_without_tpn_and_cr(context):
         "data/j1939_hb/compare/j1939_hb_ebu_converted_file_without_tpn_and_cr.json"
     context.download_ngdi_file_name = "data/j1939_hb/download/received_j1939_hb_ebu_ngdi_file_without_tpn_and_cr.json"
     context.compare_ngdi_file_name = "data/j1939_hb/compare/j1939_hb_ebu_ngdi_file_without_tpn_and_cr.json"
-    context.device_id = context.ebu_device_id_1
-    context.esn = context.ebu_esn_1
-    global j1939_hb_payload
-    j1939_hb_payload["telematicsDeviceId"] = context.device_id
-    del j1939_hb_payload["telematicsPartnerName"]
-    del j1939_hb_payload["customerReference"]
+    context.device_id = context.ebu_device_id_2
+    context.esn = context.ebu_esn_2
 
 
 @exception_handler
@@ -80,11 +65,8 @@ def valid_ebu_hb_message_incorrect_tpn_and_cr(context):
     context.download_ngdi_file_name = \
         "data/j1939_hb/download/received_j1939_hb_ebu_ngdi_file_incorrect_tpn_and_cr.json"
     context.compare_ngdi_file_name = "data/j1939_hb/compare/j1939_hb_ebu_ngdi_file_incorrect_tpn_and_cr.json"
-    context.device_id = context.ebu_device_id_1
-    context.esn = context.ebu_esn_1
-    global j1939_hb_payload
-    j1939_hb_payload["telematicsPartnerName"] = "Invalid_TPN"
-    j1939_hb_payload["customerReference"] = "Invalid_CR"
+    context.device_id = context.ebu_device_id_3
+    context.esn = context.ebu_esn_3
 
 
 @exception_handler
@@ -95,24 +77,10 @@ def valid_psbu_hb_message(context):
     context.compare_converted_file_name = "data/j1939_hb/compare/j1939_hb_psbu_converted_file.json"
     context.device_id = context.psbu_device_id_1
     context.esn = context.psbu_esn_1
-    global j1939_hb_payload
-    j1939_hb_payload = get_json_file(j1939_hb_payload_path)
-    j1939_hb_payload["componentSerialNumber"] = context.esn
-    j1939_hb_payload["equipmentId"] = "EDGE_{esn}".format(esn=context.esn)
-    j1939_hb_payload["vin"] = context.psbu_vin_1
-    j1939_hb_payload["telematicsDeviceId"] = context.device_id
 
 
 @exception_handler
-@when(u'The HB is posted to the /public topic')
-def hb_message_published_to_iot(context):
-    topic = context.j1939_public_topic.replace("{device_id}", context.device_id)
-    publish_to_mqtt_topic(topic, j1939_hb_payload, context.region)
-
-
 @then(u'Stored J1939 HB metadata stages in EDGE DB')
-@exception_handler
-@set_delay(10, wait_before=True)
 def assert_j1939_hb_stages_in_edge_db(context):
     da_edge_metadata = Table(context.edge_metadata_table)
     query = Query.from_(da_edge_metadata).select(da_edge_metadata.data_pipeline_stage).where(
@@ -123,11 +91,11 @@ def assert_j1939_hb_stages_in_edge_db(context):
     assert set(context.j1939_hb_stages) == set(received_stages)
 
 
-@then(u'Obfuscate GPS Co-Ordinates and Stored in Device Health Data')
 @exception_handler
+@then(u'Obfuscate GPS Co-Ordinates and Stored in Device Health Data')
 def assert_j1939_hb_obfuscate_gps_coordinates_in_edge_db(context):
     device_health_data = Table(context.device_health_data_table)
-    converted_device_params = j1939_hb_payload["samples"][0]["convertedDeviceParameters"]
+    converted_device_params = context.j1939_hb_payload["samples"][0]["convertedDeviceParameters"]
     message_id = converted_device_params["messageID"]
     latitude, longitude = converted_device_params["Latitude"], converted_device_params["Longitude"]
     query = Query.from_(device_health_data).select(device_health_data.latitude, device_health_data.longitude).where(
