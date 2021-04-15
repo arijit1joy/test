@@ -44,6 +44,8 @@ Parameters:
   BDDReportsBucket:
     Type: String
     Default: da-edge-bdd-reports
+  EdgeSQSUtilityVersion:
+    Type: String
 
 Resources:
   EdgeJ1939ProcessingBucketSSM:
@@ -168,6 +170,10 @@ Resources:
                   - Arn
                 Effect: Allow
               - Action:
+                  - "sqs:SendMessage"
+                Resource: !Sub 'arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}'
+                Effect: Allow
+              - Action:
                   - "logs:*"
                 Resource: "arn:aws:logs:*:*:*"
                 Effect: Allow
@@ -204,6 +210,10 @@ Resources:
                 Resource: !GetAtt
                   - EDGEJ1939DataLogFilesQueue
                   - Arn
+                Effect: Allow
+              - Action:
+                  - "sqs:SendMessage"
+                Resource: !Sub 'arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}'
                 Effect: Allow
               - Action:
                   - "logs:*"
@@ -387,6 +397,8 @@ Resources:
           arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:Edge-Core:${EdgeCoreLayerVersion}
         - !Sub >-
           arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:edge_db_utility:${EdgeDBUtilityLayerVersion}
+        - !Sub >-
+          arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:edge-sqs-utility:${EdgeSQSUtilityVersion}
       Code:
         S3Bucket: !Ref ArtifactsBucket
         S3Key: !Sub "${VersionId}/EdgeNGDI2CDSDKConversion.zip"
@@ -443,6 +455,7 @@ Resources:
           delivery_stream_name: !Ref DeliveryStreamName
           auth_token_url: !Ref AuthToken
           QueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/${ApplicationName}-NGDI2CDSDKConversionQueue-${ApplicationEnvironmentTag}"
+          metaWriteQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
       Handler: conversion.lambda_handler
       Role: !GetAtt
         - EdgeNGDI2CDSDKConversionLambdaRole
@@ -483,6 +496,10 @@ Resources:
                 Resource: !GetAtt
                   - EDGEJ1939CPPTPosterQueue
                   - Arn
+                Effect: Allow
+              - Action:
+                  - "sqs:SendMessage"
+                Resource: !Sub 'arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}'
                 Effect: Allow
               - Action:
                   - "logs:*"
@@ -606,6 +623,8 @@ Resources:
           arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:kinesis_utility:${KinesisLayerVersion}
         - !Sub >-
           arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:edge_db_utility:${EdgeDBUtilityLayerVersion}
+        - !Sub >-
+          arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:edge-sqs-utility:${EdgeSQSUtilityVersion}
       Code:
         S3Bucket: !Ref ArtifactsBucket
         S3Key: !Sub "${VersionId}/EdgeJ1939CSVConverter.zip"
@@ -636,6 +655,7 @@ Resources:
             "Navistar": "Navistar", "N2": "Navistar" ,"Paccar":"Paccar"}
           delivery_stream_name: !Ref DeliveryStreamName
           Region: !Sub "${AWS::Region}"
+          metaWriteQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
       Handler: ConverterLambda.lambda_handler
       Role: !GetAtt
         - EdgeJ1939CSVConverterLambdaRole
@@ -758,6 +778,8 @@ Resources:
           arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:edge_db_utility:${EdgeDBUtilityLayerVersion}
         - !Sub >-
           arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:Scheduler-queries:${SchedulerQueriesLayerVersion}
+        - !Sub >-
+          arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:edge-sqs-utility:${EdgeSQSUtilityVersion}
       Code:
         S3Bucket: !Ref ArtifactsBucket
         S3Key: !Sub "${VersionId}/EdgeCPPTPoster.zip"
@@ -805,6 +827,7 @@ Resources:
           CDPTJ1939PostURL: !Ref CDPTJ1939PostURL
           QueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/${ApplicationName}-CPPTPosterQueue-${ApplicationEnvironmentTag}"
           PowerGenValue: powerGen
+          metaWriteQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
       Handler: PosterLambda.lambda_handler
       Role: !GetAtt
         - EdgeCPPTPosterLambdaRole

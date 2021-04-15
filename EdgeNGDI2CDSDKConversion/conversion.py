@@ -5,7 +5,7 @@ import os
 import boto3
 import edge_core as edge
 import requests
-from metadata_utility import build_metadata_and_write
+from sqs_utility import sqs_send_message
 from metadata_utility import write_health_parameter_to_database
 from obfuscate_gps_utility import deobfuscate_gps_coordinates
 from multiprocessing import Process
@@ -429,9 +429,10 @@ def retrieve_and_process_file(uploaded_file_object):
     if consumption_per_request == 'null':
         consumption_per_request = None
 
-    build_metadata_and_write(uuid, device_id, file_name, file_size, file_date_time, data_protocol,
-                             'FILE_SENT', esn, config_spec_name, request_id, consumption_per_request,
-                             os.environ["edgeCommonAPIURL"])
+    sqs_message = str(uuid) + "," + str(device_id) + "," + str(file_name) + "," + str(file_size) + "," + str(
+        file_date_time) + "," + str(data_protocol) + "," + str('FILE_SENT') + "," + str(esn) + "," + str(
+        config_spec_name) + "," + str(request_id) + "," + str(consumption_per_request) + "," + " " + "," + " "
+    sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message)
     logger.info(f"Retrieving Metadata from the file: {j1939_file}")
     logger.info(f"Retrieving Samples from the file: {j1939_file}")
     samples = j1939_file["samples"] if "samples" in j1939_file else None

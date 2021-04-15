@@ -5,7 +5,7 @@ import os
 import requests
 import datetime
 from multiprocessing import Process
-from metadata_utility import build_metadata_and_write
+from sqs_utility import sqs_send_message
 
 import bdd_utility
 from system_variables import InternalResponse
@@ -373,8 +373,10 @@ def retrieve_and_process_file(uploaded_file_object):
 
     config_spec_name, req_id = get_cspec_req_id(file_name.split('_')[3])
 
-    build_metadata_and_write(fc_uuid, device_id, file_name, file_size, file_date_time, 'J1939_FC',
-                             'CSV_JSON_CONVERTED', esn, config_spec_name, req_id, None, edgeCommonAPIURL)
+    sqs_message = str(fc_uuid) + "," + str(device_id) + "," + str(file_name) + "," + str(file_size) + "," + str(
+        file_date_time) + "," + str('J1939_FC') + "," + str('CSV_JSON_CONVERTED') + "," + str(esn) + "," + str(
+        config_spec_name) + "," + str(req_id) + "," + str(None) + "," + " " + "," + " "
+    sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message)
 
     ngdi_json_template = json.loads(os.environ["NGDIBody"])
 

@@ -6,7 +6,7 @@ import environment_params as env
 import post
 import pt_poster
 import uuid
-from metadata_utility import build_metadata_and_write
+from sqs_utility import sqs_send_message
 from multiprocessing import Process
 import bdd_utility
 from system_variables import InternalResponse
@@ -172,9 +172,10 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
         config_spec_name, req_id = post.get_cspec_req_id(json_body['dataSamplingConfigId'])
         data_config_filename = '_'.join(['EDGE', device_id, esn, config_spec_name])
         request_id = get_request_id_from_consumption_view('J1939_HB', data_config_filename)
-        build_metadata_and_write(hb_uuid, device_id, file_name, file_size, file_date_time, 'J1939_HB',
-                                 'FILE_RECEIVED', esn, config_spec_name, request_id, None,
-                                 os.environ["edgeCommonAPIURL"])
+        sqs_message = str(hb_uuid) + "," + str(device_id) + "," + str(file_name) + "," + str(file_size) + "," + str(
+            file_date_time) + "," + str('J1939_HB') + "," + str('FILE_RECEIVED') + "," + str(esn) + "," + str(
+            config_spec_name) + "," + str(request_id) + "," + str(None) + "," + " " + "," + " "
+        sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message)
         # Updating scheduler lambda based on the request_id
         if request_id:
             update_scheduler_table(request_id, device_id)
