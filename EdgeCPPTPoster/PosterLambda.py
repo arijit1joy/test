@@ -8,10 +8,7 @@ import pt_poster
 import uuid
 from metadata_utility import build_metadata_and_write
 from multiprocessing import Process
-import bdd_utility
-from system_variables import InternalResponse
 from update_scheduler import update_scheduler_table, get_request_id_from_consumption_view
-from pypika import Query, Table
 import edge_logger as logging
 
 logger = logging.logging_framework("EdgeCPPTPoster.PosterLambda")
@@ -233,12 +230,10 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
         else:
 
             logger.error(f"Error! The boxApplication value is not recorded in the EDGE DB!")
-            bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDPSBUDeviceInfoError.value)
             return
 
     else:
         logger.error(f"ERROR! The device_info value is missing for the device: {device_info}")
-        bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDDeviceInfoError.value)
         return
     delete_message_from_sqs_queue(receipt_handle)
 

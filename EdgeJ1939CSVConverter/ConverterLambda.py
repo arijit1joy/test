@@ -6,9 +6,6 @@ import requests
 import datetime
 from multiprocessing import Process
 from metadata_utility import build_metadata_and_write
-
-import bdd_utility
-from system_variables import InternalResponse
 import edge_logger as logging
 
 logger = logging.logging_framework("EdgeJ1939CSVConverter.CoverterLambda")
@@ -739,7 +736,6 @@ def retrieve_and_process_file(uploaded_file_object):
     logger.info(f"Store File Response: {store_file_response}")
 
     if store_file_response["ResponseMetadata"]["HTTPStatusCode"] == 200:
-        bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDCSVConvertSuccess.value)
         # Delete message from Queue after success
         delete_message_from_sqs_queue(uploaded_file_object["sqs_receipt_handle"])
 
