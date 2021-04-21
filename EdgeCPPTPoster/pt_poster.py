@@ -9,6 +9,7 @@ from system_variables import InternalResponse
 from obfuscate_gps_utility import deobfuscate_gps_coordinates
 from metadata_utility import write_health_parameter_to_database
 import edge_logger as logging
+from sqs_utility import sqs_send_message
 
 
 logger = logging.logging_framework("EdgeCPPTPoster.PtPoster")
@@ -87,7 +88,7 @@ def store_device_health_params(converted_device_params, sample_time_stamp, devic
         logger.info(f"There is no messageId in Converted Device Parameter.")
 
 
-def send_to_pt(post_url, headers, json_body):
+def send_to_pt(post_url, headers, json_body, sqs_message):
     try:
         headers_json = json.loads(headers)
         get_secret_value_response = sec_client.get_secret_value(SecretId=secret_name)
@@ -129,6 +130,8 @@ def send_to_pt(post_url, headers, json_body):
 
             if pt_response_code != 200:
                 bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDPTPostSuccess.value)
+            else:
+                sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message)
 
     except Exception as e:
         traceback.print_exc()

@@ -159,4 +159,6 @@ def assert_j1939_hb_message_in_ngdi(context):
 def assert_j1939_hb_message_not_in_ngdi(context):
     file_key = "NGDI/{0}/".format(context.esn)
     get_key = get_key_from_list_of_s3_objects(context.final_bucket, file_key)
+    if get_key:
+        delete_object_from_s3(context.final_bucket, get_key)
     assert get_key is None

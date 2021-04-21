@@ -6,7 +6,6 @@ import traceback
 import edge_logger as logging
 from sqs_utility import sqs_send_message
 
-
 logger = logging.logging_framework("EdgeCPPTPoster.Post")
 
 s3_resource = boto3.resource('s3')
@@ -29,11 +28,11 @@ def get_cspec_req_id(sc_number):
 
 
 def send_to_cd(bucket_name, key, file_size, file_date_time, json_format, client, j1939_type, fc_uuid, endpoint_bucket,
-               endpoint_file, use_endpoint_bucket, json_body, config_spec_name, req_id, device_id, esn, hb_uuid):
+               endpoint_file, use_endpoint_bucket, json_body, config_spec_name, req_id, device_id, esn, hb_uuid,
+               sqs_message):
     logger.info(f"Received CD file for posting!")
 
     file_key = key.split('/')[-1]
-
     if json_format.lower() == "sdk":
         logger.info(f"Posting to the NGDI folder for posting to CD Pipeline...")
 
@@ -47,9 +46,7 @@ def send_to_cd(bucket_name, key, file_size, file_date_time, json_format, client,
                                                           Key=key.replace("ConvertedFiles", "NGDI"),
                                                           Body=json.dumps(json_body).encode(),
                                                           Metadata={'j1939type': j1939_type, 'uuid': fc_uuid})
-                sqs_message = str(fc_uuid) + "," + str(device_id) + "," + str(file_key) + "," + str(file_size) + "," + str(
-                    file_date_time) + "," + str('J1939_FC') + "," + str('CD_PT_POSTED') + "," + str(esn) + "," + str(
-                    config_spec_name_fc) + "," + str(req_id_fc) + "," + str(None) + "," + " " + "," + " "
+
                 sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message)
 
             else:
@@ -59,9 +56,6 @@ def send_to_cd(bucket_name, key, file_size, file_date_time, json_format, client,
                                                           Metadata={'j1939type': j1939_type,
                                                                     'uuid': hb_uuid})
 
-                sqs_message = str(hb_uuid) + "," + str(device_id) + "," + str(file_key) + "," + str(file_size) + "," + str(
-                    file_date_time) + "," + str('J1939_HB') + "," + str('CD_PT_POSTED') + "," + str(esn) + "," + str(
-                    config_spec_name) + "," + str(req_id) + "," + str(None) + "," + " " + "," + " "
                 sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message)
 
             logger.info(f"Post CD File to NGDI Folder Response:{post_to_ngdi_response}")
@@ -78,5 +72,5 @@ def send_to_cd(bucket_name, key, file_size, file_date_time, json_format, client,
             endpoint_file_exists = check_endpoint_file_exists(endpoint_bucket, endpoint_file)
 
         else:
-
-            pt_poster.send_to_pt(CDPTJ1939PostURL, CDPTJ1939Header, json_body)
+            sqs_message = sqs_message.replace("CD_PT_POSTED", "FILE_SENT")
+            pt_poster.send_to_pt(CDPTJ1939PostURL, CDPTJ1939Header, json_body, sqs_message)

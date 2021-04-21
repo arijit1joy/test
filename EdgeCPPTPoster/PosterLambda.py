@@ -167,18 +167,27 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
 
     esn = json_body['componentSerialNumber'] if 'componentSerialNumber' in json_body else None
     file_name = file_key.split('/')[-1]
-
-    if j1939_type.lower() == 'hb':
+    config_spec_and_req_id = ""
+    if j1939_type.lower() == "fc":
+        config_spec_name_fc, req_id_fc = post.get_cspec_req_id(file_key.split('_')[3])
+        config_spec_and_req_id = str(config_spec_name_fc) + "," + str(req_id_fc)
+        j1939_data_type = 'J1939_FC'
+    elif j1939_type.lower() == 'hb':
+        j1939_data_type = 'J1939_HB'
         config_spec_name, req_id = post.get_cspec_req_id(json_body['dataSamplingConfigId'])
         data_config_filename = '_'.join(['EDGE', device_id, esn, config_spec_name])
         request_id = get_request_id_from_consumption_view('J1939_HB', data_config_filename)
-        sqs_message = str(hb_uuid) + "," + str(device_id) + "," + str(file_name) + "," + str(file_size) + "," + str(
-            file_date_time) + "," + str('J1939_HB') + "," + str('FILE_RECEIVED') + "," + str(esn) + "," + str(
-            config_spec_name) + "," + str(request_id) + "," + str(None) + "," + " " + "," + " "
-        sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message)
+        config_spec_and_req_id = str(config_spec_name) + "," + str(request_id)
         # Updating scheduler lambda based on the request_id
         if request_id:
             update_scheduler_table(request_id, device_id)
+
+    sqs_message = str(hb_uuid) + "," + str(device_id) + "," + str(file_name) + "," + str(file_size) + "," + str(
+        file_date_time) + "," + str(j1939_data_type) + "," + str('FILE_RECEIVED') + "," + str(esn) + "," + config_spec_and_req_id + "," + str(None) + "," + " " + "," + " "
+
+    if j1939_type.lower() == 'hb':
+        sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message)
+
 
     logger.info(f"Device ID sending the file: {device_id}")
 
@@ -212,9 +221,10 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
             config_spec_name, req_id = post.get_cspec_req_id(json_body['dataSamplingConfigId'])
 
             logger.info(f"After Update json : {json_body}")
+            sqs_message = sqs_message.replace("FILE_RECEIVED", "CD_PT_POSTED")
             post.send_to_cd(bucket_name, file_key, file_size, file_date_time, JSONFormat, s3_client,
                             j1939_type, fc_uuid, EndpointBucket, endpointFile, UseEndpointBucket, json_body,
-                            config_spec_name, req_id, device_id, esn, hb_uuid)
+                            config_spec_name, req_id, device_id, esn, hb_uuid, sqs_message)
 
         elif device_owner in json.loads(os.environ["psbu_device_owner"]):
 
@@ -229,8 +239,8 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
             json_body['telematicsPartnerName'] = config_spec_value['PT_TSP']
 
             logger.info(f"Json_body before calling SEND_TO_PT function: {json_body}")
-
-            pt_poster.send_to_pt(PTJ1939PostURL, PTJ1939Header, json_body)
+            sqs_message = sqs_message.replace("FILE_RECEIVED", "FILE_SENT")
+            pt_poster.send_to_pt(PTJ1939PostURL, PTJ1939Header, json_body, sqs_message)
         else:
 
             logger.error(f"Error! The boxApplication value is not recorded in the EDGE DB!")
