@@ -4,16 +4,12 @@ import os
 import requests
 import traceback
 import datetime
-import bdd_utility
-from system_variables import InternalResponse
-from obfuscate_gps_utility import deobfuscate_gps_coordinates
-from metadata_utility import write_health_parameter_to_database
 import edge_logger as logging
 from sqs_utility import sqs_send_message
-
+from obfuscate_gps_utility import deobfuscate_gps_coordinates
+from metadata_utility import write_health_parameter_to_database
 
 logger = logging.logging_framework("EdgeCPPTPoster.PtPoster")
-
 secret_name = os.environ['PTxAPIKey']
 region_name = os.environ['Region']
 
@@ -128,11 +124,7 @@ def send_to_pt(post_url, headers, json_body, sqs_message):
             logger.info(f"Post to PT response code: {pt_response_code}")
             logger.info(f"Post to PT response body: {pt_response_body}")
 
-            if pt_response_code != 200:
-                bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDPTPostSuccess.value)
-            else:
-                sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message)
-
+            sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message)
     except Exception as e:
         traceback.print_exc()
         logger.error(f"ERROR! An exception occurred while posting to PT endpoint: {e}")

@@ -1,8 +1,7 @@
-import boto3
 import os
 import edge_core as edge
 import scheduler_query as scheduler
-from pypika import Query, Table, Order, functions as fn
+from pypika import Query, Table
 import edge_logger as logging
 
 

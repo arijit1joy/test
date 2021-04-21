@@ -4,12 +4,9 @@ import json
 import os
 import requests
 import datetime
+import edge_logger as logging
 from multiprocessing import Process
 from sqs_utility import sqs_send_message
-
-import bdd_utility
-from system_variables import InternalResponse
-import edge_logger as logging
 
 logger = logging.logging_framework("EdgeJ1939CSVConverter.CoverterLambda")
 
@@ -741,7 +738,6 @@ def retrieve_and_process_file(uploaded_file_object):
     logger.info(f"Store File Response: {store_file_response}")
 
     if store_file_response["ResponseMetadata"]["HTTPStatusCode"] == 200:
-        bdd_utility.update_bdd_parameter(InternalResponse.J1939BDDCSVConvertSuccess.value)
         # Delete message from Queue after success
         delete_message_from_sqs_queue(uploaded_file_object["sqs_receipt_handle"])
 
@@ -774,12 +770,3 @@ def lambda_handler(lambda_event, context):
     # Make sure that all processes have finished
     for process in processes:
         process.join()
-
-
-'''
-Main Method For Local Testing
-'''
-if __name__ == "__main__":
-    event = ""
-    # context = ""
-    # lambda_handler(event, context)

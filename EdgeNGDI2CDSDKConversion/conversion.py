@@ -9,18 +9,15 @@ from sqs_utility import sqs_send_message
 from metadata_utility import write_health_parameter_to_database
 from obfuscate_gps_utility import deobfuscate_gps_coordinates
 from multiprocessing import Process
-import bdd_utility
 import edge_logger as logging
 from cd_sdk_conversion.cd_sdk import map_ngdi_sample_to_cd_payload
 from cd_sdk_conversion.cd_snapshot_sdk import get_snapshot_data
-from system_variables import InternalResponse, CDSDK
-
-logger = logging.logging_framework("EdgeNGDI2CDSDKConversion.Conversion")
-
 import sys
 
 sys.path.insert(1, './lib')
 from pypika import Query, Table, Order, functions as fn
+
+logger = logging.logging_framework("EdgeNGDI2CDSDKConversion.Conversion")
 
 '''Getting the Values from SSM Parameter Store
 '''
@@ -115,11 +112,6 @@ def post_cd_message(data):
         data["Equipment_ID"] = "EDGE_" + data["Engine_Serial_Number"]  # Setting the Equipment ID to EDGE_<ESN>
         logger.info(f"New Equipment ID: {data['Equipment_ID']}")
 
-    is_bdd = False
-    if data["Telematics_Box_ID"] in InternalResponse.J1939BDDValidDevices.value.split(","):
-        logger.info(f"This is a BDD execution!")
-        is_bdd = True
-
     # de-obfuscate GPS co-ordinates
     if "Latitude" in data and "Longitude" in data:
         latitude = data["Latitude"]
@@ -127,18 +119,6 @@ def post_cd_message(data):
         data["Latitude"], data["Longitude"] = deobfuscate_gps_coordinates(latitude, longitude)
 
     logger.info(f'File to send to CD   ------------------> {data}')
-
-    '''
-        ***************** The below is important for J1939 BDD functionality. Please do not modify! ********************
-    '''
-    if is_bdd:
-        bdd_utility.update_bdd_parameter("<---**--->".join([json.dumps(data), data["Telematics_Partner_Message_ID"],
-                                                            sent_date_time, data["VIN"], data["Equipment_ID"]]),
-                                         param_name=CDSDK.CDSDKBDDVariables.value)
-    '''
-        ***************** The above is important for J1939 BDD functionality. Please do not modify! ********************
-    '''
-
     logger.info(f'cd_url   ------------------>  {url}')
     logger.info(f'Type of message: {type(data)}')
 
@@ -147,15 +127,6 @@ def post_cd_message(data):
         r = requests.post(url=url, json=data)
         cp_response = r.text
         logger.info(f'response ------------>  {cp_response}')
-
-        '''
-            ***************** The below is important for J1939 BDD functionality. Please do not modify! ****************
-        '''
-        if is_bdd and cp_response == InternalResponse.J1939CPPostSuccess.value:
-            bdd_utility.update_bdd_parameter(InternalResponse.J1939CPPostSuccess.value)
-        '''
-            ***************** The above is important for J1939 BDD functionality. Please do not modify! ****************
-        '''
 
 
 def get_active_faults(fault_list, address):
