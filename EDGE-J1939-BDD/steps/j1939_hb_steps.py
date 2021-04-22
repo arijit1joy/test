@@ -72,7 +72,7 @@ def valid_ebu_hb_message_incorrect_tpn_and_cr(context):
 @exception_handler
 @given(u'A valid PSBU HB message in JSON format containing a valid data')
 def valid_psbu_hb_message(context):
-    context.j1939_hb_stages = ["FILE_RECEIVED"]
+    context.j1939_hb_stages = ["FILE_RECEIVED", "FILE_SENT"]
     context.download_converted_file_name = "data/j1939_hb/download/received_j1939_hb_psbu_converted_file.json"
     context.compare_converted_file_name = "data/j1939_hb/compare/j1939_hb_psbu_converted_file.json"
     context.device_id = context.psbu_device_id_1

@@ -48,7 +48,7 @@ def invalid_ebu_fc_message_without_device_id(context):
 @exception_handler
 @given(u'A valid PSBU FC message in CSV format containing a valid data')
 def valid_psbu_fc_message(context):
-    context.j1939_fc_stages = ["FILE_RECEIVED", "UNCOMPRESSED", "CSV_JSON_CONVERTED"]
+    context.j1939_fc_stages = ["FILE_RECEIVED", "UNCOMPRESSED", "CSV_JSON_CONVERTED", "FILE_SENT"]
     context.file_name = context.file_name_for_psbu_scenario_1
     context.download_folder_path = EXPECTED_FILE_DOWNLOAD_PATH
     context.download_converted_file_name = "data/j1939_fc/download/received_j1939_fc_psbu_converted_file.json"
