@@ -98,8 +98,8 @@ def handle_j1939_process(context):
 
     print("<---Finished setting up data for J1939 HB--->")
 
-    # Wait for 5.5 minutes to allow all J1939 lambdas to process
-    time_in_secs = 330
+    # Wait for 6.5 minutes to allow all J1939 lambdas to process
+    time_in_secs = 390
 
     print(f"Delaying {time_in_secs} Seconds for J1939 Features..!")
     sleep(time_in_secs)
