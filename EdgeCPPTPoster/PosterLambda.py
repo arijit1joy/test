@@ -148,17 +148,17 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
     file_name = file_key.split('/')[-1]
 
     if j1939_type.lower() == "fc":
-        config_spec_name_fc, req_id_fc = post.get_config_spec_req_id(file_key.split('_')[3])
+        config_spec_name_fc, req_id_fc = post.get_cspec_req_id(file_key.split('_')[3])
         config_spec_and_req_id = str(config_spec_name_fc) + "," + str(req_id_fc)
         j1939_data_type = 'J1939_FC'
         file_uuid = fc_uuid
     elif j1939_type.lower() == 'hb':
         j1939_data_type = 'J1939_HB'
-        config_spec_name, req_id = post.get_config_spec_req_id(json_body['dataSamplingConfigId'])
+        config_spec_name, req_id = post.get_cspec_req_id(json_body['dataSamplingConfigId'])
         data_config_filename = '_'.join(['EDGE', device_id, esn, config_spec_name])
         request_id = get_request_id_from_consumption_view('J1939_HB', data_config_filename)
         config_spec_and_req_id = str(config_spec_name) + "," + str(request_id)
-        file_uuid = fc_uuid
+        file_uuid = hb_uuid
 
         # Updating scheduler lambda based on the request_id
         if request_id:
@@ -205,7 +205,8 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
 
             logger.info(f"After Update json : {json_body}")
             sqs_message = sqs_message.replace("FILE_RECEIVED", "CD_PT_POSTED")
-            post.send_to_cd(bucket_name, file_key, s3_client, j1939_type, fc_uuid, json_body, hb_uuid, sqs_message)
+            post.send_to_cd(bucket_name, file_key, JSONFormat, s3_client, j1939_type, EndpointBucket,  endpointFile,
+                            UseEndpointBucket, json_body, file_uuid, sqs_message)
 
         elif device_owner in json.loads(os.environ["psbu_device_owner"]):
 
