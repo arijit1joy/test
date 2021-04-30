@@ -1,1 +1,3 @@
 pypika
+boto3
+requests

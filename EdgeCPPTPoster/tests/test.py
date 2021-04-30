@@ -1,11 +1,10 @@
 import unittest
-from unittest import mock
 from unittest.mock import patch
 
-
 with patch.dict('os.environ',
-                {'EdgeCommonDBAPI': 'https://test.edgedb.url',}):
-                import update_scheduler
+                {'EdgeCommonDBAPI': 'https://test.edgedb.url', }):
+    import update_scheduler
+
 
 class TestEdgeCPPTPoster(unittest.TestCase):
 
@@ -14,10 +13,9 @@ class TestEdgeCPPTPoster(unittest.TestCase):
         req_id = 'REQ1233'
         device_id = '102900000000003'
         expected_query = update_scheduler.get_update_scheduler_query(req_id, device_id)
-        print('query',query)
-        print('expected_query',expected_query)
+        print('query', query)
+        print('expected_query', expected_query)
         assert query == expected_query
-
 
     @patch.dict('os.environ', {'EdgeCommonDBAPI': 'https://api.edge-dev.aws.cummins.com/v3/EdgeDBLambda'})
     @patch('update_scheduler.edge.api_request')
@@ -30,7 +28,6 @@ class TestEdgeCPPTPoster(unittest.TestCase):
         mock_get_update_scheduler_query.assert_called()
         mock_api_request.assert_called()
 
-
     @patch.dict('os.environ', {'EdgeCommonDBAPI': 'https://api.edge-dev.aws.cummins.com/v3/EdgeDBLambda'})
     @patch('update_scheduler.edge.server_error')
     @patch('update_scheduler.get_update_scheduler_query')
@@ -41,14 +38,13 @@ class TestEdgeCPPTPoster(unittest.TestCase):
         result = update_scheduler.update_scheduler_table('REQ1233', device_id)
         mock_get_update_scheduler_query.assert_called()
         mock_api_request.assert_called()
-    
+
     def test_get_request_id_from_consumption_view_query(self):
         query = "SELECT request_id FROM da_edge_olympus.edge_data_consumption_vw WHERE data_type='J1939_HB' AND data_config_filename='EDGE_357649070803120_64100016_SC5079' AND config_status='Config Accepted'"
         data_protocol = 'J1939_HB'
         data_config_filename = 'EDGE_357649070803120_64100016_SC5079'
-        expected_query = update_scheduler.get_request_id_from_consumption_view_query(data_protocol, data_config_filename)
-        print('query',query)
-        print('expected_query',expected_query)
+        expected_query = update_scheduler.get_request_id_from_consumption_view_query(data_protocol,
+                                                                                     data_config_filename)
+        print('query', query)
+        print('expected_query', expected_query)
         assert query == expected_query
-    
-

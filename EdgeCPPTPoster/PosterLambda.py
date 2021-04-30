@@ -1,15 +1,17 @@
 import json
-import requests
 import os
+import uuid
+from multiprocessing import Process
+
 import boto3
+import edge_logger as logging
+import requests
+from sqs_utility import sqs_send_message
+
 import environment_params as env
 import post
 import pt_poster
-import uuid
-from sqs_utility import sqs_send_message
-from multiprocessing import Process
 from update_scheduler import update_scheduler_table, get_request_id_from_consumption_view
-import edge_logger as logging
 
 logger = logging.logging_framework("EdgeCPPTPoster.PosterLambda")
 
@@ -29,8 +31,8 @@ PTJ1939Header = os.environ["PTJ1939Header"]
 PowerGenValue = os.environ["PowerGenValue"]
 mapTspFromOwner = os.environ["mapTspFromOwner"]
 data_quality_lambda = os.environ["DataQualityLambda"]
-s3_client = boto3.client('s3')
-ssm_client = boto3.client('ssm')
+s3_client = boto3.client('s3')  # noqa
+ssm_client = boto3.client('ssm')  # noqa
 
 
 def delete_message_from_sqs_queue(receipt_handle):
@@ -95,28 +97,6 @@ def get_business_partner(device_type):
         return False
 
 
-def lambda_handler(event, context):
-    # json_file = open("EDGE_352953080329158_64000002_SC123_20190820045303_F2BA (3).json", "r")
-    records = event.get("Records", [])
-    processes = []
-    logger.debug(f"Received SQS Records: {records}.")
-    for record in records:
-        s3_event_body = json.loads(record["body"])
-        receipt_handle = record["receiptHandle"]
-        # Retrieve the uploaded file from the s3 bucket and process the uploaded file
-        process = Process(target=retrieve_and_process_file, args=(s3_event_body, receipt_handle))
-
-        # Make a list of all process to wait and terminate at the end
-        processes.append(process)
-
-        # Start process
-        process.start()
-
-    # Make sure that all processes have finished
-    for process in processes:
-        process.join()
-
-
 def retrieve_and_process_file(s3_event_body, receipt_handle):
     event_json = json.dumps(s3_event_body)
 
@@ -127,7 +107,6 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
         logger.info(f"ERROR Invoking data quality - {e}")
     # Invoke data quality lambda - end
 
-    hb_uuid = str(uuid.uuid4())
     bucket_name = s3_event_body['Records'][0]['s3']['bucket']['name']
     file_key = s3_event_body['Records'][0]['s3']['object']['key']
     file_size = s3_event_body['Records'][0]['s3']['object']['size']
@@ -156,7 +135,10 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
 
     j1939_type = file_metadata["j1939type"] if "j1939type" in file_metadata else 'HB'
 
+    # If the file contains a UUID, then use it moving forward else:
+    # Set the UUID to None for FC and get a new UUID for HB
     fc_uuid = file_metadata["uuid"] if "uuid" in file_metadata else None
+    hb_uuid = file_metadata["uuid"] if "uuid" in file_metadata else str(uuid.uuid4())
 
     logger.info(f"FC or HB: {j1939_type}")
 
@@ -164,31 +146,37 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
 
     esn = json_body['componentSerialNumber'] if 'componentSerialNumber' in json_body else None
     file_name = file_key.split('/')[-1]
-    config_spec_and_req_id = ""
+
     if j1939_type.lower() == "fc":
-        config_spec_name_fc, req_id_fc = post.get_cspec_req_id(file_key.split('_')[3])
+        config_spec_name_fc, req_id_fc = post.get_config_spec_req_id(file_key.split('_')[3])
         config_spec_and_req_id = str(config_spec_name_fc) + "," + str(req_id_fc)
         j1939_data_type = 'J1939_FC'
+        file_uuid = fc_uuid
     elif j1939_type.lower() == 'hb':
         j1939_data_type = 'J1939_HB'
-        config_spec_name, req_id = post.get_cspec_req_id(json_body['dataSamplingConfigId'])
+        config_spec_name, req_id = post.get_config_spec_req_id(json_body['dataSamplingConfigId'])
         data_config_filename = '_'.join(['EDGE', device_id, esn, config_spec_name])
         request_id = get_request_id_from_consumption_view('J1939_HB', data_config_filename)
         config_spec_and_req_id = str(config_spec_name) + "," + str(request_id)
+        file_uuid = fc_uuid
+
         # Updating scheduler lambda based on the request_id
         if request_id:
             update_scheduler_table(request_id, device_id)
+    else:
+        raise RuntimeError(f"Invalid 'j1939type': '{j1939_type}' received! "
+                           "The 'j1939type' S3 object metadata for FC files should be 'FC'!")
 
-    sqs_message = str(hb_uuid) + "," + str(device_id) + "," + str(file_name) + "," + str(file_size) + "," + str(
-        file_date_time) + "," + str(j1939_data_type) + "," + str('FILE_RECEIVED') + "," + str(esn) + "," + config_spec_and_req_id + "," + str(None) + "," + " " + "," + " "
+    sqs_message = file_uuid + "," + str(device_id) + "," + str(file_name) + "," + str(file_size) + "," + str(
+        file_date_time) + "," + str(j1939_data_type) + "," + str('FILE_RECEIVED') + "," + str(
+        esn) + "," + config_spec_and_req_id + "," + str(None) + "," + " " + "," + " "
 
     if j1939_type.lower() == 'hb':
         sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message)
 
-
     logger.info(f"Device ID sending the file: {device_id}")
 
-    device_info = get_device_info(device_id)
+    device_info = get_device_info(device_id)  # type: dict
 
     if device_info:
         device_owner = device_info["device_owner"] if "device_owner" in device_info else None
@@ -215,13 +203,9 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
 
         if device_owner in json.loads(os.environ["cd_device_owners"]):
 
-            config_spec_name, req_id = post.get_cspec_req_id(json_body['dataSamplingConfigId'])
-
             logger.info(f"After Update json : {json_body}")
             sqs_message = sqs_message.replace("FILE_RECEIVED", "CD_PT_POSTED")
-            post.send_to_cd(bucket_name, file_key, file_size, file_date_time, JSONFormat, s3_client,
-                            j1939_type, fc_uuid, EndpointBucket, endpointFile, UseEndpointBucket, json_body,
-                            config_spec_name, req_id, device_id, esn, hb_uuid, sqs_message)
+            post.send_to_cd(bucket_name, file_key, s3_client, j1939_type, fc_uuid, json_body, hb_uuid, sqs_message)
 
         elif device_owner in json.loads(os.environ["psbu_device_owner"]):
 
@@ -249,25 +233,40 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
     delete_message_from_sqs_queue(receipt_handle)
 
 
-'''
-invoke content spec association API
-'''
-
-
+# Invoke the Data Quality Lambda
 def data_quality(event):
-    lambda_client = boto3.client('lambda')
+    lambda_client = boto3.client('lambda')  # noqa
+
+    logger.info("Invoking the Data Quality lambda . . .")
+
     response = lambda_client.invoke(
         FunctionName=data_quality_lambda,
         InvocationType='Event',
         Payload=event
     )
+
     if response['StatusCode'] != 202:
-        raise Exception
-    print("Data Quality invoked")
+        raise RuntimeError("An error occurred while invoking the data quality lambda")
+
+    logger.info("Successfully invoked the Data Quality lambda!")
 
 
-# Local Test Main
+def lambda_handler(event, context):  # noqa
+    records = event.get("Records", [])
+    processes = []
+    logger.debug(f"Received SQS Records: {records}.")
+    for record in records:
+        s3_event_body = json.loads(record["body"])
+        receipt_handle = record["receiptHandle"]
+        # Retrieve the uploaded file from the s3 bucket and process the uploaded file
+        process = Process(target=retrieve_and_process_file, args=(s3_event_body, receipt_handle))
 
+        # Make a list of all process to wait and terminate at the end
+        processes.append(process)
 
-if __name__ == '__main__':
-    lambda_handler("", "")
+        # Start process
+        process.start()
+
+    # Make sure that all processes have finished
+    for process in processes:
+        process.join()
