@@ -34,11 +34,13 @@ def send_to_cd(bucket_name, key, json_format, client, j1939_type, endpoint_bucke
                json_body, uuid, sqs_message):
     logger.info(f"Received CD file for posting!")
 
+    ngdi_key = key.replace("ConvertedFiles", "NGDI")
+
     if json_format.lower() == "sdk":
-        logger.info(f"Posting to the NGDI folder for posting to CD Pipeline...")
+        logger.info(f"Posting to the bucket: '{bucket_name}' with key: '{ngdi_key}', for posting to CD Pipeline...")
 
         try:
-            post_to_ngdi_response = client.put_object(Bucket=bucket_name, Key=key.replace("ConvertedFiles", "NGDI"),
+            post_to_ngdi_response = client.put_object(Bucket=bucket_name, Key=ngdi_key,
                                                       Body=json.dumps(json_body).encode(),
                                                       Metadata={'j1939type': j1939_type, 'uuid': uuid})
 
