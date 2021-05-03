@@ -1,6 +1,4 @@
 import json
-import re
-
 import boto3
 import os
 import requests
@@ -86,7 +84,7 @@ def store_device_health_params(converted_device_params, sample_time_stamp, devic
         logger.info(f"There is no messageId in Converted Device Parameter.")
 
 
-def send_to_pt(post_url, headers, json_body, sqs_message, uuid_value):
+def send_to_pt(post_url, headers, json_body, sqs_message):
     try:
         headers_json = json.loads(headers)
         get_secret_value_response = sec_client.get_secret_value(SecretId=secret_name)
@@ -126,11 +124,7 @@ def send_to_pt(post_url, headers, json_body, sqs_message, uuid_value):
             logger.info(f"Post to PT response code: {pt_response_code}")
             logger.info(f"Post to PT response body: {pt_response_body}")
 
-            print("The file was successfully sent. Inserting the 'FILE_SENT' stage into the Device Metadata table "
-                  f"for this file with UUID: '{uuid_value}' . . .")
             sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message)
-            print("The 'FILE_SENT' stage was successfully inserted into the Device Metadata table for this file"
-                  f" with UUID: '{uuid_value}'!")
     except Exception as e:
         traceback.print_exc()
         logger.error(f"ERROR! An exception occurred while posting to PT endpoint: {e}")
