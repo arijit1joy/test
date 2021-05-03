@@ -128,20 +128,6 @@ def send_to_pt(post_url, headers, json_body, sqs_message, uuid_value):
 
             print("The file was successfully sent. Inserting the 'FILE_SENT' stage into the Device Metadata table "
                   f"for this file with UUID: '{uuid_value}' . . .")
-
-            # If the current file is a reprocessed file, insert a "FILE_SENT" stage for the file with the original UUID
-            is_reprocessing_uuid = re.fullmatch(r"(\w{8}-\w{4}-\w{4}-\w{4}-\w{12})#(ER|R)\d", uuid_value)
-
-            if is_reprocessing_uuid:
-                original_uuid = is_reprocessing_uuid.group(1)
-
-                print("This is a reprocessed file!"
-                      f" Inserting the 'FILE_SENT' stage for the original file with UUID: '{original_uuid}' . . .")
-                sqs_message_with_original_uuid = sqs_message.replace(uuid_value, original_uuid)
-                sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message_with_original_uuid)
-                print("The 'FILE_SENT' stage was successfully inserted into the Device Metadata table "
-                      f"for this file with UUID: '{original_uuid}'!")
-
             sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message)
             print("The 'FILE_SENT' stage was successfully inserted into the Device Metadata table for this file"
                   f" with UUID: '{uuid_value}'!")
