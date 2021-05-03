@@ -59,7 +59,7 @@ def send_to_cd(bucket_name, key, json_format, client, j1939_type, endpoint_bucke
 
             # TODO - This functionality is not in use now, but may be used in the future
             endpoint_file_exists = check_endpoint_file_exists(endpoint_bucket, endpoint_file)
-            print(endpoint_file_exists)
+            logger.info(endpoint_file_exists)
 
         else:
             sqs_message = sqs_message.replace("CD_PT_POSTED", "FILE_SENT")
