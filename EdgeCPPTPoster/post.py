@@ -63,4 +63,4 @@ def send_to_cd(bucket_name, key, json_format, client, j1939_type, endpoint_bucke
 
         else:
             sqs_message = sqs_message.replace("CD_PT_POSTED", "FILE_SENT")
-            pt_poster.send_to_pt(CDPTJ1939PostURL, CDPTJ1939Header, json_body, sqs_message)
+            pt_poster.send_to_pt(CDPTJ1939PostURL, CDPTJ1939Header, json_body, sqs_message, uuid)
