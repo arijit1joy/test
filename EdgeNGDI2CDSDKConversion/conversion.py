@@ -1,7 +1,6 @@
 import datetime
 import json
 import os
-import re
 
 import boto3
 import edge_core as edge
@@ -360,9 +359,7 @@ def retrieve_and_process_file(uploaded_file_object):
     file_metadata = j1939_file_object["Metadata"]
     logger.info(f"File Metadata: {file_metadata}")
     fc_or_hb = file_metadata['j1939type'] if "j1939type" in file_metadata else None
-
-    uuid_value = file_metadata['uuid']
-
+    uuid = file_metadata['uuid']
     file_date_time = str(j1939_file_object['LastModified'])[:19]
     file_name = key.split('/')[-1]
     device_id = file_name.split('_')[1]
@@ -403,10 +400,10 @@ def retrieve_and_process_file(uploaded_file_object):
     if consumption_per_request == 'null':
         consumption_per_request = None
 
-    sqs_message = "{uuid}" + "," + str(device_id) + "," + str(file_name) + "," + str(file_size) + "," + str(
+    sqs_message = str(uuid) + "," + str(device_id) + "," + str(file_name) + "," + str(file_size) + "," + str(
         file_date_time) + "," + str(data_protocol) + "," + str('FILE_SENT') + "," + str(esn) + "," + str(
         config_spec_name) + "," + str(request_id) + "," + str(consumption_per_request) + "," + " " + "," + " "
-
+    sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message)
     logger.info(f"Retrieving Metadata from the file: {j1939_file}")
     logger.info(f"Retrieving Samples from the file: {j1939_file}")
     samples = j1939_file["samples"] if "samples" in j1939_file else None
@@ -419,29 +416,9 @@ def retrieve_and_process_file(uploaded_file_object):
                 send_sample(sample, metadata, fc_or_hb)
         else:
             logger.error(f"Error! There are no samples in this file!")
+        delete_message_from_sqs_queue(uploaded_file_object["sqs_receipt_handle"])
     else:
         logger.error(f"Error! Metadata retrieval failed! See logs.")
-
-    print("The file was successfully processed. Inserting the 'FILE_SENT' stage into the Device Metadata table "
-          f"for this file with UUID: '{uuid_value} . . .")
-
-    # If the current file is a reprocessed file, insert the "FILE_SENT" stage for the original file
-    is_reprocessing_uuid = re.fullmatch(r"(\w{8}-\w{4}-\w{4}-\w{4}-\w{12})#(ER|R)\d", uuid_value)
-    if is_reprocessing_uuid:
-        original_uuid = is_reprocessing_uuid.group(1)
-
-        print("This is a reprocessed file!"
-              f" Inserting the 'FILE_SENT' stage for the original file with UUID: '{original_uuid}' . . .")
-        sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message.format(uuid=original_uuid))
-        print("The 'FILE_SENT' stage was successfully inserted into the Device Metadata table "
-              f"for this file with UUID: {original_uuid}!")
-
-    sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message.format(uuid=uuid_value))
-    print("The 'FILE_SENT' stage was successfully inserted into the Device Metadata table for this file"
-          f" with UUID: {uuid_value}!")
-
-    # If the process succeeds, delete the message from the SQS queue
-    delete_message_from_sqs_queue(uploaded_file_object["sqs_receipt_handle"])
 
 
 def lambda_handler(event, context):
