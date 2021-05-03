@@ -400,8 +400,8 @@ def retrieve_and_process_file(uploaded_file_object):
     if consumption_per_request == 'null':
         consumption_per_request = None
 
-    sqs_message = str(uuid) + "," + str(device_id) + "," + str(file_name) + "," + str(file_size) + "," + str(
-        file_date_time) + "," + str(data_protocol) + "," + str('FILE_SENT') + "," + str(esn) + "," + str(
+    sqs_message = uuid + "," + str(device_id) + "," + str(file_name) + "," + str(file_size) + "," + str(
+        file_date_time) + "," + str(data_protocol) + "," + 'FILE_SENT' + "," + str(esn) + "," + str(
         config_spec_name) + "," + str(request_id) + "," + str(consumption_per_request) + "," + " " + "," + " "
     sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message)
     logger.info(f"Retrieving Metadata from the file: {j1939_file}")
