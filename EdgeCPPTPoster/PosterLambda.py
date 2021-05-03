@@ -172,7 +172,6 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
         esn) + "," + config_spec_and_req_id + "," + str(None) + "," + " " + "," + " "
 
     if j1939_type.lower() == 'hb':
-        logger.info("")
         sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message)
 
     logger.info(f"Device ID sending the file: {device_id}")
