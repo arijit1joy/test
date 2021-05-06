@@ -463,7 +463,8 @@ def store_health_parameters_into_redshift(converted_device_params, time_stamp, j
         cpu_temperature = converted_device_params[
             'CPU_temperature'] if 'CPU_temperature' in converted_device_params else None
         pmic_temperature = converted_device_params[
-            'PMIC_temperature'] if 'PMIC_temperature' in converted_device_params else None
+            'PMIC_temperature'] if ('PMIC_temperature' in converted_device_params) and converted_device_params[
+            'PMIC_temperature'] else None
         latitude = converted_device_params['Latitude'] if 'Latitude' in converted_device_params else None
         longitude = converted_device_params['Longitude'] if 'Longitude' in converted_device_params else None
         altitude = converted_device_params['Altitude'] if 'Altitude' in converted_device_params else None
