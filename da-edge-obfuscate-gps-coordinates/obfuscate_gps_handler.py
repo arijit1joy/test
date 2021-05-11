@@ -2,7 +2,7 @@ import os
 import json
 import boto3
 from datetime import datetime
-from obfuscate_gps_utility import obfuscate_gps_coordinates
+from obfuscate_gps_utility import handle_gps_coordinates
 import edge_logger as logging
 
 
@@ -18,7 +18,7 @@ def obfuscate_gps(body):
                     latitude = converted_device_params["Latitude"]
                     longitude = converted_device_params["Longitude"]
                     converted_device_params["Latitude"], converted_device_params["Longitude"] = \
-                        obfuscate_gps_coordinates(latitude, longitude)
+                        handle_gps_coordinates(latitude, longitude)
     logger.info(f"Body: {body}")
     send_file_to_s3(body)
 

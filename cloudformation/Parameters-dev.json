@@ -13,11 +13,11 @@
         "DeliveryStreamName": "da-edge-aai-service-metadata-stream",
         "KinesisLayerVersion": "9",
         "CDDataEndpoint": "https://telematics-stg.cummins.com:8443/DataService/postData?AuthToken=",
-        "DeviceHealthDeliveryStream": "da-edge-aai-service-heartbeat-data-stream",
         "EdgeCoreLayerVersion": "36",
 		"EdgeSQSUtilityVersion": "9",
+		"DeviceHealthDeliveryStream": "da-edge-aai-service-heartbeat-data-stream",
         "AuthToken": "https://api.edge-dev.aws.cummins.com/v3/edge-device/provider-auth-token?TspName={TSP-Name}",
-        "EdgeDBUtilityLayerVersion": "5",
+        "EdgeDBUtilityLayerVersion": "10",
 		"DataQualityLambda":"da-EDGE-Olympus-BL-DataQuality",
         "SchedulerQueriesLayerVersion": "15"
     }

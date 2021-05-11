@@ -6,7 +6,7 @@ import traceback
 import datetime
 import edge_logger as logging
 from sqs_utility import sqs_send_message
-from obfuscate_gps_utility import deobfuscate_gps_coordinates
+from obfuscate_gps_utility import handle_gps_coordinates
 from metadata_utility import write_health_parameter_to_database
 
 logger = logging.logging_framework("EdgeCPPTPoster.PtPoster")
@@ -42,7 +42,7 @@ def handle_hb_params(converted_device_params):
         latitude = converted_device_params["Latitude"]
         longitude = converted_device_params["Longitude"]
         converted_device_params["Latitude"], converted_device_params["Longitude"] = \
-            deobfuscate_gps_coordinates(latitude, longitude)
+            handle_gps_coordinates(latitude, longitude, deobfuscate=True)
 
     # Remove unnecessary params from device parameters for PT payload
     converted_device_params = {key.lower(): value for key, value in converted_device_params.items() if

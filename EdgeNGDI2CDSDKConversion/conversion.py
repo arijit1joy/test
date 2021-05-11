@@ -7,7 +7,7 @@ import edge_core as edge
 import requests
 from sqs_utility import sqs_send_message
 from metadata_utility import write_health_parameter_to_database
-from obfuscate_gps_utility import deobfuscate_gps_coordinates
+from obfuscate_gps_utility import handle_gps_coordinates
 from multiprocessing import Process
 import edge_logger as logging
 from cd_sdk_conversion.cd_sdk import map_ngdi_sample_to_cd_payload
@@ -116,7 +116,7 @@ def post_cd_message(data):
     if "Latitude" in data and "Longitude" in data:
         latitude = data["Latitude"]
         longitude = data["Longitude"]
-        data["Latitude"], data["Longitude"] = deobfuscate_gps_coordinates(latitude, longitude)
+        data["Latitude"], data["Longitude"] = handle_gps_coordinates(latitude, longitude, deobfuscate=True)
 
     logger.info(f'File to send to CD   ------------------> {data}')
     logger.info(f'cd_url   ------------------>  {url}')
