@@ -171,7 +171,7 @@ Resources:
                 Effect: Allow
               - Action:
                   - "sqs:SendMessage"
-                Resource: !Sub 'arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}'
+                Resource: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
                 Effect: Allow
               - Action:
                   - "logs:*"
@@ -213,7 +213,7 @@ Resources:
                 Effect: Allow
               - Action:
                   - "sqs:SendMessage"
-                Resource: !Sub 'arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}'
+                Resource: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
                 Effect: Allow
               - Action:
                   - "logs:*"
@@ -497,7 +497,7 @@ Resources:
                 Effect: Allow
               - Action:
                   - "sqs:SendMessage"
-                Resource: !Sub 'arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}'
+                Resource: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
                 Effect: Allow
               - Action:
                   - "logs:*"
@@ -785,7 +785,7 @@ Resources:
           Key: "lambda:createdBy"
         - Value: Edge
           Key: Name
-      MemorySize: 512
+      MemorySize: 2048
       ReservedConcurrentExecutions: 5
       Environment:
         Variables:
@@ -831,6 +831,12 @@ Resources:
       Timeout: 900
       Runtime: python3.7
 
+  EdgeCPPTPosterEventInvokeConfig:
+    Type: AWS::Lambda::EventInvokeConfig
+    Properties:
+      FunctionName: !Ref EdgeCPPTPoster
+      MaximumRetryAttempts: 1
+      Qualifier: "$LATEST"
 
   CodeBuildReportGroup:
     Type: AWS::CodeBuild::ReportGroup
@@ -843,7 +849,7 @@ Resources:
           Bucket: !Sub "${BDDReportsBucket}-${ApplicationEnvironmentTag}"
           Path: reports/
 
-# Queues
+  # Queues
   EDGEJ1939DataLogFilesQueue:
     Type: AWS::SQS::Queue
     Properties:
@@ -861,8 +867,7 @@ Resources:
     Properties:
       QueueName: !Sub "${ApplicationName}-DataLogFilesDLQueue-${ApplicationEnvironmentTag}"
 
-
-# Queue Policies
+  # Queue Policies
   EDGEJ1939DataLogFilesQueuePolicy:
     Type: AWS::SQS::QueuePolicy
     Properties:
@@ -872,7 +877,7 @@ Resources:
         Version: 2012-10-17
         Statement:
           - Action:
-              - 'sqs:SendMessage'
+              - "sqs:SendMessage"
             Resource:
               - !Sub >-
                 arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${ApplicationName}-DataLogFilesQueue-${ApplicationEnvironmentTag}
@@ -895,8 +900,7 @@ Resources:
       EventSourceArn: !GetAtt EDGEJ1939DataLogFilesQueue.Arn
       FunctionName: !GetAtt EdgeJ1939CSVConverter.Arn
 
-
-# Queues
+  # Queues
   EDGEJ1939CPPTPosterQueue:
     Type: AWS::SQS::Queue
     Properties:
@@ -914,8 +918,7 @@ Resources:
     Properties:
       QueueName: !Sub "${ApplicationName}-CPPTPosterDLQueue-${ApplicationEnvironmentTag}"
 
-
-# Queue Policies
+  # Queue Policies
   EDGEJ1939CPPTPosterQueuePolicy:
     Type: AWS::SQS::QueuePolicy
     Properties:
@@ -925,7 +928,7 @@ Resources:
         Version: 2012-10-17
         Statement:
           - Action:
-              - 'sqs:SendMessage'
+              - "sqs:SendMessage"
             Resource:
               - !Sub >-
                 arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${ApplicationName}-CPPTPosterQueue-${ApplicationEnvironmentTag}
@@ -948,7 +951,7 @@ Resources:
       EventSourceArn: !GetAtt EDGEJ1939CPPTPosterQueue.Arn
       FunctionName: !GetAtt EdgeCPPTPoster.Arn
 
-# Queues
+  # Queues
   EDGEJ1939NGDI2CDSDKConversionQueue:
     Type: AWS::SQS::Queue
     Properties:
@@ -966,8 +969,7 @@ Resources:
     Properties:
       QueueName: !Sub "${ApplicationName}-NGDI2CDSDKConversionDLQueue-${ApplicationEnvironmentTag}"
 
-
-# Queue Policies
+  # Queue Policies
   EDGEJ1939NGDI2CDSDKConversionQueuePolicy:
     Type: AWS::SQS::QueuePolicy
     Properties:
@@ -977,7 +979,7 @@ Resources:
         Version: 2012-10-17
         Statement:
           - Action:
-              - 'sqs:SendMessage'
+              - "sqs:SendMessage"
             Resource:
               - !Sub >-
                 arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${ApplicationName}-NGDI2CDSDKConversionQueue-${ApplicationEnvironmentTag}
