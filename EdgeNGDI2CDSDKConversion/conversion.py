@@ -372,6 +372,10 @@ def retrieve_and_process_file(uploaded_file_object):
     logger.info(f"File as JSON: {j1939_file}")
     if fc_or_hb.lower() == 'hb':
         esn = j1939_file['componentSerialNumber']
+        # Please note that the order is expected to be <Make>*<Model>***<ESN>**** for Improper PSBU ESN
+        if esn and "*" in esn:
+            esn = [esn_component for esn_component in esn.split("*") if esn_component][-1]
+            
         config_spec_name = j1939_file['dataSamplingConfigId']
         data_protocol = 'J1939_HB'
     else:

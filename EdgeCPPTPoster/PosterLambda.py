@@ -145,6 +145,10 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
     device_id = json_body["telematicsDeviceId"] if "telematicsDeviceId" in json_body else None
 
     esn = json_body['componentSerialNumber'] if 'componentSerialNumber' in json_body else None
+    # Please note that the order is expected to be <Make>*<Model>***<ESN>**** for Improper PSBU ESN
+    if esn and "*" in esn:
+        esn = [esn_component for esn_component in esn.split("*") if esn_component][-1]
+
     file_name = file_key.split('/')[-1]
 
     if j1939_type.lower() == "fc":

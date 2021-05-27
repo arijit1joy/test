@@ -28,7 +28,12 @@ def send_file_to_s3(body):
         s3_client = boto3.client("s3")
         bucket_name = os.environ["j1939_end_bucket"]
         device_id = body["telematicsDeviceId"]
+
         esn = body["componentSerialNumber"]
+        # Please note that the order is expected to be <Make>*<Model>***<ESN>**** for Improper PSBU ESN
+        if esn and "*" in esn:
+            esn = [esn_component for esn_component in esn.split("*") if esn_component][-1]
+
         config_id = body["dataSamplingConfigId"]
         current_dt = datetime.now()
         file_name = "EDGE_{0}_{1}_{2}_{3}.json".format(device_id, esn, config_id, int(current_dt.timestamp()))
