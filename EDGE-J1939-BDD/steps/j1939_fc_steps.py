@@ -10,7 +10,7 @@ from utilities.file_utility.file_handler import same_file_contents
 from utilities.aws_utilities.s3_utility import get_key_from_list_of_s3_objects, download_object_from_s3, \
     delete_object_from_s3
 
-EXPECTED_FILE_DOWNLOAD_PATH = "data/j1939_fc/download"
+DOWNLOAD_FOLDER_PATH = "data/j1939_fc/download"
 DATE_TIME_STAMP = "%Y-%m-%dT%H"
 
 
@@ -19,7 +19,6 @@ DATE_TIME_STAMP = "%Y-%m-%dT%H"
 def valid_ebu_fc_message(context):
     context.j1939_fc_stages = ["FILE_RECEIVED", "UNCOMPRESSED", "CSV_JSON_CONVERTED", "CD_PT_POSTED", "FILE_SENT"]
     context.file_name = context.file_name_for_ebu_scenario_1
-    context.download_folder_path = EXPECTED_FILE_DOWNLOAD_PATH
     context.download_converted_file_name = "data/j1939_fc/download/received_j1939_fc_ebu_converted_file.json"
     context.compare_converted_file_name = "data/j1939_fc/compare/j1939_fc_ebu_converted_file.json"
     context.download_ngdi_file_name = "data/j1939_fc/download/received_j1939_fc_ebu_ngdi_file.json"
@@ -50,7 +49,6 @@ def invalid_ebu_fc_message_without_device_id(context):
 def valid_psbu_fc_message(context):
     context.j1939_fc_stages = ["FILE_RECEIVED", "UNCOMPRESSED", "CSV_JSON_CONVERTED", "FILE_SENT"]
     context.file_name = context.file_name_for_psbu_scenario_1
-    context.download_folder_path = EXPECTED_FILE_DOWNLOAD_PATH
     context.download_converted_file_name = "data/j1939_fc/download/received_j1939_fc_psbu_converted_file.json"
     context.compare_converted_file_name = "data/j1939_fc/compare/j1939_fc_psbu_converted_file.json"
     context.device_id = context.psbu_device_id_1
@@ -61,9 +59,8 @@ def valid_psbu_fc_message(context):
 @exception_handler
 @given(u'A valid PSBU FC message in CSV format containing a valid data and filename without ESN')
 def valid_psbu_fc_message_without_esn_in_filename(context):
-    context.j1939_fc_stages = ["FILE_RECEIVED", "UNCOMPRESSED", "CSV_JSON_CONVERTED"]
+    context.j1939_fc_stages = ["FILE_RECEIVED", "UNCOMPRESSED", "CSV_JSON_CONVERTED", "FILE_SENT"]
     context.file_name = context.file_name_for_psbu_scenario_2
-    context.download_folder_path = EXPECTED_FILE_DOWNLOAD_PATH
     context.download_converted_file_name = \
         "data/j1939_fc/download/received_j1939_fc_psbu_converted_file_improper_esn.json"
     context.compare_converted_file_name = "data/j1939_fc/compare/j1939_fc_psbu_converted_file_improper_esn.json"
@@ -102,10 +99,10 @@ def assert_j1939_fc_message_in_converted_files(context):
     get_key = get_key_from_list_of_s3_objects(context.final_bucket, file_key)
     assert get_key is not None
     if get_key:
-        os.mkdir(context.download_folder_path)
+        os.mkdir(DOWNLOAD_FOLDER_PATH)
         download_object_from_s3(context.final_bucket, get_key, context.download_converted_file_name)
         assert same_file_contents(context.compare_converted_file_name, context.download_converted_file_name) is True
-        shutil.rmtree(context.download_folder_path)
+        shutil.rmtree(DOWNLOAD_FOLDER_PATH)
         assert delete_object_from_s3(context.final_bucket, get_key) is True
 
 
@@ -118,10 +115,10 @@ def assert_j1939_fc_message_in_ngdi(context):
     get_key = get_key_from_list_of_s3_objects(context.final_bucket, file_key)
     assert get_key is not None
     if get_key:
-        os.mkdir(context.download_folder_path)
+        os.mkdir(DOWNLOAD_FOLDER_PATH)
         download_object_from_s3(context.final_bucket, get_key, context.download_ngdi_file_name)
         assert same_file_contents(context.compare_ngdi_file_name, context.download_ngdi_file_name) is True
-        shutil.rmtree(context.download_folder_path)
+        shutil.rmtree(DOWNLOAD_FOLDER_PATH)
         assert delete_object_from_s3(context.final_bucket, get_key) is True
 
 

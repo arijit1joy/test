@@ -11,7 +11,7 @@ from utilities.file_utility.file_handler import same_file_contents
 from utilities.aws_utilities.s3_utility import get_key_from_list_of_s3_objects, download_object_from_s3, \
     delete_object_from_s3
 
-download_folder_path = "data/j1939_hb/download"
+DOWNLOAD_FOLDER_PATH = "data/j1939_hb/download"
 
 
 @exception_handler
@@ -116,7 +116,7 @@ def assert_j1939_hb_obfuscate_gps_coordinates_in_edge_db(context):
     edge_db_response_body = edge_db_response["body"][0]
     stored_lat, stored_long = edge_db_response_body["latitude"], edge_db_response_body["longitude"]
     obf_lat, obf_long, _ = distance(miles=25).destination((latitude, longitude), 0)
-    assert (round(stored_lat, 10), round(stored_long, 10)) == (round(obf_lat, 10), round(obf_long, 10))
+    assert (round(stored_lat, 5), round(stored_long, 5)) == (round(obf_lat, 5), round(obf_long, 5))
 
 
 @exception_handler
@@ -129,10 +129,10 @@ def assert_j1939_hb_message_in_converted_files(context):
     get_key = get_key_from_list_of_s3_objects(context.final_bucket, file_key)
     assert get_key is not None
     if get_key:
-        os.mkdir(download_folder_path)
+        os.mkdir(DOWNLOAD_FOLDER_PATH)
         download_object_from_s3(context.final_bucket, get_key, context.download_converted_file_name)
         assert same_file_contents(context.compare_converted_file_name, context.download_converted_file_name) is True
-        shutil.rmtree(download_folder_path)
+        shutil.rmtree(DOWNLOAD_FOLDER_PATH)
         assert delete_object_from_s3(context.final_bucket, get_key) is True
 
 
@@ -146,10 +146,10 @@ def assert_j1939_hb_message_in_ngdi(context):
     get_key = get_key_from_list_of_s3_objects(context.final_bucket, file_key)
     assert get_key is not None
     if get_key:
-        os.mkdir(download_folder_path)
+        os.mkdir(DOWNLOAD_FOLDER_PATH)
         download_object_from_s3(context.final_bucket, get_key, context.download_ngdi_file_name)
         assert same_file_contents(context.compare_ngdi_file_name, context.download_ngdi_file_name) is True
-        shutil.rmtree(download_folder_path)
+        shutil.rmtree(DOWNLOAD_FOLDER_PATH)
         assert delete_object_from_s3(context.final_bucket, get_key) is True
 
 
