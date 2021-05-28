@@ -373,7 +373,7 @@ def retrieve_and_process_file(uploaded_file_object):
     sqs_message = str(fc_uuid) + "," + str(device_id) + "," + str(file_name) + "," + str(file_size) + "," + str(
         file_date_time) + "," + str('J1939_FC') + "," + str('CSV_JSON_CONVERTED') + "," + str(esn) + "," + str(
         config_spec_name) + "," + str(req_id) + "," + str(None) + "," + " " + "," + " "
-    sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message)
+    sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message, edgeCommonAPIURL)
 
     ngdi_json_template = json.loads(os.environ["NGDIBody"])
 
@@ -664,7 +664,7 @@ def retrieve_and_process_file(uploaded_file_object):
                 got_tsp_and_cust_ref["device_owner"]) in TSP_Owners else "NA"
             if TSP_name != "NA":
                 ngdi_json_template["telematicsPartnerName"] = TSP_name
-            else: 
+            else:
                 logger.error(f"Error! Could not retrieve TSP. This is mandatory field!")
                 return
             ngdi_json_template["customerReference"] = got_tsp_and_cust_ref["cust_ref"]

@@ -396,7 +396,7 @@ Resources:
         - !Sub >-
           arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:edge_db_utility:${EdgeDBUtilityLayerVersion}
         - !Sub >-
-          arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:edge-sqs-utility:${EdgeSQSUtilityVersion}
+          arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:EDGESQSUtility:${EdgeSQSUtilityVersion}
       Code:
         S3Bucket: !Ref ArtifactsBucket
         S3Key: !Sub "${VersionId}/EdgeNGDI2CDSDKConversion.zip"
@@ -622,7 +622,7 @@ Resources:
         - !Sub >-
           arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:edge_db_utility:${EdgeDBUtilityLayerVersion}
         - !Sub >-
-          arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:edge-sqs-utility:${EdgeSQSUtilityVersion}
+          arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:EDGESQSUtility:${EdgeSQSUtilityVersion}
       Code:
         S3Bucket: !Ref ArtifactsBucket
         S3Key: !Sub "${VersionId}/EdgeJ1939CSVConverter.zip"
@@ -775,7 +775,7 @@ Resources:
         - !Sub >-
           arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:Scheduler-queries:${SchedulerQueriesLayerVersion}
         - !Sub >-
-          arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:edge-sqs-utility:${EdgeSQSUtilityVersion}
+          arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:EDGESQSUtility:${EdgeSQSUtilityVersion}
       Code:
         S3Bucket: !Ref ArtifactsBucket
         S3Key: !Sub "${VersionId}/EdgeCPPTPoster.zip"

@@ -13,6 +13,7 @@ logger = logging.logging_framework("EdgeCPPTPoster.Post")
 s3_resource = boto3.resource('s3')  # noqa
 CDPTJ1939PostURL = os.environ["CDPTJ1939PostURL"]
 CDPTJ1939Header = os.environ["CDPTJ1939Header"]
+edgeCommonAPIURL = os.environ['edgeCommonAPIURL']
 
 
 def check_endpoint_file_exists(endpoint_bucket, endpoint_file):
@@ -45,7 +46,7 @@ def send_to_cd(bucket_name, key, json_format, client, j1939_type, endpoint_bucke
                                                       Body=json.dumps(json_body).encode(),
                                                       Metadata={'j1939type': j1939_type, 'uuid': uuid})
 
-            sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message)
+            sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message, edgeCommonAPIURL)
 
             logger.info(f"Post CD File to NGDI Folder Response:{post_to_ngdi_response}")
         except Exception as e:

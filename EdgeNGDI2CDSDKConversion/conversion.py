@@ -38,6 +38,7 @@ name = params['Names']
 response = ssm.get_parameters(Names=name, WithDecryption=False)
 api_url = response['Parameters'][0]['Value']
 
+edgeCommonAPIURL = os.environ['edgeCommonAPIURL']
 spn_bucket = os.getenv('spn_parameter_json_object')
 spn_bucket_key = os.getenv('spn_parameter_json_object_key')
 auth_token_url = os.getenv('auth_token_url')
@@ -375,7 +376,7 @@ def retrieve_and_process_file(uploaded_file_object):
         # Please note that the order is expected to be <Make>*<Model>***<ESN>**** for Improper PSBU ESN
         if esn and "*" in esn:
             esn = [esn_component for esn_component in esn.split("*") if esn_component][-1]
-            
+
         config_spec_name = j1939_file['dataSamplingConfigId']
         data_protocol = 'J1939_HB'
     else:
@@ -407,7 +408,7 @@ def retrieve_and_process_file(uploaded_file_object):
     sqs_message = uuid + "," + str(device_id) + "," + str(file_name) + "," + str(file_size) + "," + str(
         file_date_time) + "," + str(data_protocol) + "," + 'FILE_SENT' + "," + str(esn) + "," + str(
         config_spec_name) + "," + str(request_id) + "," + str(consumption_per_request) + "," + " " + "," + " "
-    sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message)
+    sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message, edgeCommonAPIURL)
     logger.info(f"Retrieving Metadata from the file: {j1939_file}")
     logger.info(f"Retrieving Samples from the file: {j1939_file}")
     samples = j1939_file["samples"] if "samples" in j1939_file else None

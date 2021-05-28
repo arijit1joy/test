@@ -12,6 +12,7 @@ from metadata_utility import write_health_parameter_to_database
 logger = logging.logging_framework("EdgeCPPTPoster.PtPoster")
 secret_name = os.environ['PTxAPIKey']
 region_name = os.environ['Region']
+edgeCommonAPIURL = os.environ['edgeCommonAPIURL']
 
 # Create a Secrets Manager client
 session = boto3.session.Session()
@@ -124,7 +125,7 @@ def send_to_pt(post_url, headers, json_body, sqs_message):
             logger.info(f"Post to PT response code: {pt_response_code}")
             logger.info(f"Post to PT response body: {pt_response_body}")
 
-            sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message)
+            sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message, edgeCommonAPIURL)
     except Exception as e:
         traceback.print_exc()
         logger.error(f"ERROR! An exception occurred while posting to PT endpoint: {e}")
