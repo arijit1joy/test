@@ -114,7 +114,8 @@ def post_cd_message(data):
         logger.info(f"New Equipment ID: {data['Equipment_ID']}")
 
     # de-obfuscate GPS co-ordinates
-    if "Latitude" in data and "Longitude" in data:
+    if ("Latitude" in data) and ("Longitude" in data) and (data["Latitude"] not in ['', '0.0']) and \
+            (data["Longitude"] not in ['', '0.0']):
         latitude = data["Latitude"]
         longitude = data["Longitude"]
         data["Latitude"], data["Longitude"] = handle_gps_coordinates(latitude, longitude, deobfuscate=True)
