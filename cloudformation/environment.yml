@@ -514,7 +514,7 @@ Resources:
                 Resource:
                   - !Sub >-
                     arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pt_xapi_key-??????
-                  - !ImportValue MSKClusterSecret-${ApplicationEnvironmentTag}
+                  - !ImportValue MSKClusterSecret-dev
                 Effect: Allow
               - Action:
                   - "lambda:InvokeFunction"
@@ -525,7 +525,7 @@ Resources:
                   - "kafka:ListClusters"
                   - "kafka:DescribeCluster"
                   - "kafka:GetBootstrapBrokers"
-                Resource: !ImportValue MSKClusterArn-${ApplicationEnvironmentTag}
+                Resource: !ImportValue MSKClusterArn-dev
                 Effect: Allow
 
       AssumeRolePolicyDocument:
@@ -775,6 +775,7 @@ Resources:
     Type: "AWS::Lambda::Function"
     Properties:
       Layers:
+        - !ImportValue MSKKafkaClientArn-${ApplicationEnvironmentTag}
         - !Ref RequestsPythonLayer
         - !Sub >-
           arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:Edge-Core:${EdgeCoreLayerVersion}
@@ -833,8 +834,8 @@ Resources:
           QueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/${ApplicationName}-CPPTPosterQueue-${ApplicationEnvironmentTag}"
           PowerGenValue: powerGen
           metaWriteQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
-          mskSecretArn: !ImportValue MSKClusterSecret-${ApplicationEnvironmentTag}
-          mskClusterArn: !ImportValue MSKClusterArn-${ApplicationEnvironmentTag}
+          mskSecretArn: !ImportValue MSKClusterSecret-dev
+          mskClusterArn: !ImportValue MSKClusterArn-dev
       Handler: PosterLambda.lambda_handler
       Role: !GetAtt
         - EdgeCPPTPosterLambdaRole
