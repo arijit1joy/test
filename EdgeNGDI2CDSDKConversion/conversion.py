@@ -190,7 +190,6 @@ def handle_hb(converted_device_params, converted_equip_params, converted_equip_f
                                     var_dict[sample_obj[fc_param]] = final_fc
         logger.info(f"HB CD SDK Class Variable Dict: {var_dict}")
         hb_sdk_object = map_ngdi_sample_to_cd_payload(var_dict)
-        logger.info(f"Posting Sample to CD...")
 
         # de-obfuscate GPS co-ordinates
         if ("Latitude" in hb_sdk_object) and ("Longitude" in hb_sdk_object):
@@ -198,7 +197,8 @@ def handle_hb(converted_device_params, converted_equip_params, converted_equip_f
             longitude = hb_sdk_object["Longitude"]
             hb_sdk_object["Latitude"], hb_sdk_object["Longitude"] = \
                 handle_gps_coordinates(latitude, longitude, deobfuscate=True)
-            
+
+        logger.info(f"Posting Sample to CD...")
         post_cd_message(hb_sdk_object)
     except Exception as e:
         logger.error(f"Error! The following Exception occurred while handling this sample:{e}")
