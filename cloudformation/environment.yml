@@ -521,12 +521,12 @@ Resources:
                   - "lambda:InvokeAsync"
                 Resource: "*"
                 Effect: Allow
-              - Action:
-                  - "kafka:ListClusters"
-                  - "kafka:DescribeCluster"
-                  - "kafka:GetBootstrapBrokers"
-                Resource: !ImportValue MSKClusterArn-dev
-                Effect: Allow
+              # - Action:
+              #     - "kafka:ListClusters"
+              #     - "kafka:DescribeCluster"
+              #     - "kafka:GetBootstrapBrokers"
+              #   Resource: !ImportValue MSKClusterArn-dev
+              #   Effect: Allow
 
       AssumeRolePolicyDocument:
         Statement:
@@ -775,7 +775,7 @@ Resources:
     Type: "AWS::Lambda::Function"
     Properties:
       Layers:
-        - !ImportValue MSKKafkaClientArn-${ApplicationEnvironmentTag}
+        - !ImportValue MSKKafkaClientArn-dev
         - !Ref RequestsPythonLayer
         - !Sub >-
           arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:Edge-Core:${EdgeCoreLayerVersion}
@@ -785,7 +785,7 @@ Resources:
           arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:Scheduler-queries:${SchedulerQueriesLayerVersion}
         - !Sub >-
           arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:EDGEDeviceMetadataSQSLayer:${EdgeSQSUtilityVersion}
-        - !ImportValue MSKKafkaClientArn-${ApplicationEnvironmentTag}
+        
       Code:
         S3Bucket: !Ref ArtifactsBucket
         S3Key: !Sub "${VersionId}/EdgeCPPTPoster.zip"
@@ -835,7 +835,7 @@ Resources:
           PowerGenValue: powerGen
           metaWriteQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
           mskSecretArn: !ImportValue MSKClusterSecret-dev
-          mskClusterArn: !ImportValue MSKClusterArn-dev
+          #mskClusterArn: !ImportValue MSKClusterArn-dev
       Handler: PosterLambda.lambda_handler
       Role: !GetAtt
         - EdgeCPPTPosterLambdaRole
