@@ -113,12 +113,6 @@ def post_cd_message(data):
         data["Equipment_ID"] = "EDGE_" + data["Engine_Serial_Number"]  # Setting the Equipment ID to EDGE_<ESN>
         logger.info(f"New Equipment ID: {data['Equipment_ID']}")
 
-    # de-obfuscate GPS co-ordinates
-    if "Latitude" in data and "Longitude" in data:
-        latitude = data["Latitude"]
-        longitude = data["Longitude"]
-        data["Latitude"], data["Longitude"] = handle_gps_coordinates(latitude, longitude, deobfuscate=True)
-
     logger.info(f'File to send to CD   ------------------> {data}')
     logger.info(f'cd_url   ------------------>  {url}')
     logger.info(f'Type of message: {type(data)}')
@@ -196,6 +190,14 @@ def handle_hb(converted_device_params, converted_equip_params, converted_equip_f
                                     var_dict[sample_obj[fc_param]] = final_fc
         logger.info(f"HB CD SDK Class Variable Dict: {var_dict}")
         hb_sdk_object = map_ngdi_sample_to_cd_payload(var_dict)
+
+        # de-obfuscate GPS co-ordinates
+        if ("Latitude" in hb_sdk_object) and ("Longitude" in hb_sdk_object):
+            latitude = hb_sdk_object["Latitude"]
+            longitude = hb_sdk_object["Longitude"]
+            hb_sdk_object["Latitude"], hb_sdk_object["Longitude"] = \
+                handle_gps_coordinates(latitude, longitude, deobfuscate=True)
+
         logger.info(f"Posting Sample to CD...")
         post_cd_message(hb_sdk_object)
     except Exception as e:
