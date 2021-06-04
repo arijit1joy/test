@@ -849,7 +849,7 @@ Resources:
       Runtime: python3.7
       VpcConfig:
         SecurityGroupIds:
-          - sg-085912345678492fb
+          - sg-0a078c2b6efe70593
         SubnetIds:
           - subnet-ff29a4d1
           - subnet-7a174630
