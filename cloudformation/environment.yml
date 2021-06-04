@@ -775,7 +775,6 @@ Resources:
     Type: "AWS::Lambda::Function"
     Properties:
       Layers:
-        - !ImportValue MSKKafkaClientArn-dev
         - !Ref RequestsPythonLayer
         - !Sub >-
           arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:Edge-Core:${EdgeCoreLayerVersion}
@@ -783,8 +782,8 @@ Resources:
           arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:edge_db_utility:${EdgeDBUtilityLayerVersion}
         - !Sub >-
           arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:Scheduler-queries:${SchedulerQueriesLayerVersion}
-        # - !Sub >-
-        #   arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:EDGEDeviceMetadataSQSLayer:${EdgeSQSUtilityVersion}
+        - !Sub >-
+          arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:EDGEDeviceMetadataSQSLayer:${EdgeSQSUtilityVersion}
         
       Code:
         S3Bucket: !Ref ArtifactsBucket
@@ -842,6 +841,12 @@ Resources:
         - Arn
       Timeout: 900
       Runtime: python3.7
+      VpcConfig:
+        SecurityGroupIds:
+          - sg-085912345678492fb
+        SubnetIds:
+          - subnet-071f712345678e7c8
+          - subnet-07fd123456788a036
 
   EdgeCPPTPosterEventInvokeConfig:
     Type: AWS::Lambda::EventInvokeConfig
