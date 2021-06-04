@@ -514,19 +514,22 @@ Resources:
                 Resource:
                   - !Sub >-
                     arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pt_xapi_key-??????
-                  - !ImportValue MSKClusterSecret-dev
+                  - !ImportValue
+                      'Fn::Sub': 'MSKClusterSecret-${ApplicationEnvironmentTag}'
                 Effect: Allow
               - Action:
                   - "lambda:InvokeFunction"
                   - "lambda:InvokeAsync"
                 Resource: "*"
                 Effect: Allow
-              # - Action:
-              #     - "kafka:ListClusters"
-              #     - "kafka:DescribeCluster"
-              #     - "kafka:GetBootstrapBrokers"
-              #   Resource: !ImportValue MSKClusterArn-dev
-              #   Effect: Allow
+              - Action:
+                  - "kafka:ListClusters"
+                  - "kafka:DescribeCluster"
+                  - "kafka:GetBootstrapBrokers"
+                Resource: 
+                  - !ImportValue
+                      'Fn::Sub': 'MSKClusterArn-${ApplicationEnvironmentTag}'
+                Effect: Allow
 
       AssumeRolePolicyDocument:
         Statement:
@@ -833,8 +836,11 @@ Resources:
           QueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/${ApplicationName}-CPPTPosterQueue-${ApplicationEnvironmentTag}"
           PowerGenValue: powerGen
           metaWriteQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
-          mskSecretArn: !ImportValue MSKClusterSecret-dev
-          #mskClusterArn: !ImportValue MSKClusterArn-dev
+          mskSecretArn: !ImportValue
+            'Fn::Sub': 'MSKClusterSecret-${ApplicationEnvironmentTag}'
+          mskClusterArn: !ImportValue
+            'Fn::Sub': 'MSKClusterArn-${ApplicationEnvironmentTag}'
+          topicName: "J1939"
       Handler: PosterLambda.lambda_handler
       Role: !GetAtt
         - EdgeCPPTPosterLambdaRole
@@ -845,8 +851,9 @@ Resources:
         SecurityGroupIds:
           - sg-085912345678492fb
         SubnetIds:
-          - subnet-071f712345678e7c8
-          - subnet-07fd123456788a036
+          - subnet-ff29a4d1
+          - subnet-7a174630
+          - subnet-032caf5f
 
   EdgeCPPTPosterEventInvokeConfig:
     Type: AWS::Lambda::EventInvokeConfig
