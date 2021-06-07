@@ -857,10 +857,9 @@ Resources:
         SecurityGroupIds:
           - !ImportValue
             'Fn::Sub': 'EdgeMskClusterSGroup-${ApplicationEnvironmentTag}'
-        SubnetIds: !Select 
-        - 0
-        - !ImportValue
-          'Fn::Sub': 'MSKLambdaPrivateSubnet-${ApplicationEnvironmentTag}'
+        SubnetIds:
+          - !ImportValue
+            'Fn::Sub': 'MSKLambdaPrivateSubnet-${ApplicationEnvironmentTag}'
 
   EdgeCPPTPosterEventInvokeConfig:
     Type: AWS::Lambda::EventInvokeConfig
