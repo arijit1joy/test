@@ -37,7 +37,7 @@ def send_to_cd(bucket_name, key, json_format, client, j1939_type, endpoint_bucke
     logger.info(f"Received CD file for posting!")
 
     ## Send to Cluster
-    publish_message(json_body.encode('utf-8'))
+    publish_message(json_body)
     ngdi_key = key.replace("ConvertedFiles", "NGDI")
 
     if json_format.lower() == "sdk":
