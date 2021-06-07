@@ -38,8 +38,6 @@ def send_to_cd(bucket_name, key, json_format, client, j1939_type, endpoint_bucke
 
     ## Send to Cluster
     publish_message(json_body.encode('utf-8'))
-
-
     ngdi_key = key.replace("ConvertedFiles", "NGDI")
 
     if json_format.lower() == "sdk":
