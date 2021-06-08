@@ -10,17 +10,24 @@ secret_arn = os.environ['mskSecretArn']
 mskcluster_arn = os.environ['mskClusterArn']
 topic_name = os.environ['topicName']
 
+secrets_client = boto3.client("secretsmanager")
+cluster_client = boto3.client('kafka')
+cluster_response = {}
+secret_response = {}
+
 def get_secret_value():
     """Gets the value of a secret.
     Version (if defined) is used to retrieve a particular version of
     the secret.
     """
+    global secret_response
+   
     try:
-        logger.info("Inside get_secret_value() method")
-        secrets_client = boto3.client("secretsmanager")
-        kwargs = {'SecretId': secret_arn}
-        response = secrets_client.get_secret_value(**kwargs)
-        return response
+        if not secret_response:
+            logger.info("Inside get_secret_value() method")
+            kwargs = {'SecretId': secret_arn}
+            secret_response = secrets_client.get_secret_value(**kwargs)
+            return secret_response
     except ClientError as e:
         if e.response['Error']['Code'] == 'ResourceNotFoundException':
             logger.error("The requested secret " + secret_name + " was not found")
@@ -34,12 +41,11 @@ def get_brokers(mskcluster_arn):
     using msk cluster arn.
     """
     logger.info("Inside get_brokers() method")
+    global cluster_response
     try:
-        client = boto3.client('kafka')
-        response = client.get_bootstrap_brokers(
-        ClusterArn=mskcluster_arn
-        )
-        return response['BootstrapBrokerStringSaslScram'].split(',')
+        if not cluster_response:    
+            cluster_response = cluster_client.get_bootstrap_brokers(ClusterArn=mskcluster_arn)
+            return cluster_response['BootstrapBrokerStringSaslScram'].split(',')
     except ClientError as e:
         logger.error("Error while getting broker list", e)
 
