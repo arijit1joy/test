@@ -27,7 +27,6 @@ def get_secret_value():
             logger.info("Inside get_secret_value() method")
             kwargs = {'SecretId': secret_arn}
             secret_response = secrets_client.get_secret_value(**kwargs)
-            return secret_response
     except ClientError as e:
         if e.response['Error']['Code'] == 'ResourceNotFoundException':
             logger.error("The requested secret " + secret_name + " was not found")
@@ -35,6 +34,7 @@ def get_secret_value():
             logger.error("The request was invalid due to:", e)
         elif e.response['Error']['Code'] == 'InvalidParameterException':
             logger.error("The request had invalid params:", e)
+    return secret_response
 
 def get_brokers(mskcluster_arn):
     """Gets the broker list to publish the message 
@@ -45,9 +45,9 @@ def get_brokers(mskcluster_arn):
     try:
         if not cluster_response:    
             cluster_response = cluster_client.get_bootstrap_brokers(ClusterArn=mskcluster_arn)
-            return cluster_response['BootstrapBrokerStringSaslScram'].split(',')
     except ClientError as e:
         logger.error("Error while getting broker list", e)
+    return cluster_response['BootstrapBrokerStringSaslScram'].split(',')
 
 def publish_message(message_object):
 
