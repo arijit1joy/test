@@ -791,8 +791,8 @@ Resources:
           arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:edge_db_utility:${EdgeDBUtilityLayerVersion}
         - !Sub >-
           arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:Scheduler-queries:${SchedulerQueriesLayerVersion}
-        - !Sub >-
-          arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:EDGEDeviceMetadataSQSLayer:${EdgeSQSUtilityVersion}
+        - !ImportValue
+          'Fn::Sub': 'EDGESQSUtilityPythonLayer-${ApplicationEnvironmentTag}'
         
       Code:
         S3Bucket: !Ref ArtifactsBucket
