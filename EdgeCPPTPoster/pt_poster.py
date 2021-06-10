@@ -123,9 +123,13 @@ def send_to_pt(post_url, headers, json_body, sqs_message):
             pt_response_body = pt_response.json()
             pt_response_code = pt_response.status_code
             logger.info(f"Post to PT response code: {pt_response_code}")
-            logger.info(f"Post to PT response body: {pt_response_body}")
 
-            sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message, edgeCommonAPIURL)
+            if "statusCode" in pt_response_body and pt_response_body["statusCode"] == 200:
+                sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message, edgeCommonAPIURL)
+                logger.info(f"Post to PT response body: {pt_response_body}")
+            else:
+                logger.info(f"ERROR! Posting PT : {pt_response_body}")
+
     except Exception as e:
         traceback.print_exc()
         logger.error(f"ERROR! An exception occurred while posting to PT endpoint: {e}")
