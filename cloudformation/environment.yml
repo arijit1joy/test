@@ -46,6 +46,8 @@ Parameters:
     Default: da-edge-bdd-reports
   EdgeSQSUtilityVersion:
     Type: String
+  ProcessDataQuality:
+    Type: String
 
 Resources:
   EdgeJ1939ProcessingBucketSSM:
@@ -824,6 +826,7 @@ Resources:
           QueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/${ApplicationName}-CPPTPosterQueue-${ApplicationEnvironmentTag}"
           PowerGenValue: powerGen
           metaWriteQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
+          ProcessDataQuality: !Ref ProcessDataQuality
       Handler: PosterLambda.lambda_handler
       Role: !GetAtt
         - EdgeCPPTPosterLambdaRole

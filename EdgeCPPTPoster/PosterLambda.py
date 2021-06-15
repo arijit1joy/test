@@ -30,6 +30,7 @@ PTJ1939PostURL = os.environ["PTJ1939PostURL"]
 PTJ1939Header = os.environ["PTJ1939Header"]
 PowerGenValue = os.environ["PowerGenValue"]
 mapTspFromOwner = os.environ["mapTspFromOwner"]
+process_data_quality = os.environ["ProcessDataQuality"]
 data_quality_lambda = os.environ["DataQualityLambda"]
 s3_client = boto3.client('s3')  # noqa
 ssm_client = boto3.client('ssm')  # noqa
@@ -100,12 +101,16 @@ def get_business_partner(device_type):
 def retrieve_and_process_file(s3_event_body, receipt_handle):
     event_json = json.dumps(s3_event_body)
 
-    # Invoke data quality lambda - start
-    try:
-        data_quality(event_json)
-    except Exception as e:
-        logger.info(f"ERROR Invoking data quality - {e}")
-    # Invoke data quality lambda - end
+    if process_data_quality.lower() == 'yes':
+        logger.info("Initiating data quality...")
+        # Invoke data quality lambda - start
+        try:
+            data_quality(event_json)
+        except Exception as e:
+            logger.info(f"ERROR Invoking data quality - {e}")
+        # Invoke data quality lambda - end
+    else:
+        logger.info("data quality skipped...")
 
     bucket_name = s3_event_body['Records'][0]['s3']['bucket']['name']
     file_key = s3_event_body['Records'][0]['s3']['object']['key']
