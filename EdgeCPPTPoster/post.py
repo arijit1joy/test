@@ -4,6 +4,7 @@ import traceback
 
 import boto3
 import edge_logger as logging
+from kafka_producer import publish_message
 from sqs_utility import sqs_send_message
 
 import pt_poster
@@ -35,6 +36,8 @@ def send_to_cd(bucket_name, key, json_format, client, j1939_type, endpoint_bucke
                json_body, uuid, sqs_message):
     logger.info(f"Received CD file for posting!")
 
+    ## Send to Cluster
+    publish_message(json_body)
     ngdi_key = key.replace("ConvertedFiles", "NGDI")
 
     if json_format.lower() == "sdk":

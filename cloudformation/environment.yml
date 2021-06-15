@@ -516,12 +516,29 @@ Resources:
                 Resource:
                   - !Sub >-
                     arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pt_xapi_key-??????
+                  - !ImportValue
+                      'Fn::Sub': 'MSKClusterSecret-${ApplicationEnvironmentTag}'
                 Effect: Allow
               - Action:
                   - "lambda:InvokeFunction"
                   - "lambda:InvokeAsync"
                 Resource: "*"
                 Effect: Allow
+              - Action:
+                  - "kafka:ListClusters"
+                  - "kafka:DescribeCluster"
+                  - "kafka:GetBootstrapBrokers"
+                Resource: 
+                  - !ImportValue
+                      'Fn::Sub': 'MSKClusterArn-${ApplicationEnvironmentTag}'
+                Effect: Allow
+              - Action:
+                  - "ec2:CreateNetworkInterface"
+                  - "ec2:DescribeNetworkInterfaces"
+                  - "ec2:DeleteNetworkInterface"
+                Resource: "*"
+                Effect: Allow
+
       AssumeRolePolicyDocument:
         Statement:
           - Action: "sts:AssumeRole"
@@ -776,8 +793,9 @@ Resources:
           arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:edge_db_utility:${EdgeDBUtilityLayerVersion}
         - !Sub >-
           arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:Scheduler-queries:${SchedulerQueriesLayerVersion}
-        - !Sub >-
-          arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:EDGEDeviceMetadataSQSLayer:${EdgeSQSUtilityVersion}
+        - !ImportValue
+          'Fn::Sub': 'EDGESQSUtilityPythonLayer-${ApplicationEnvironmentTag}'
+        
       Code:
         S3Bucket: !Ref ArtifactsBucket
         S3Key: !Sub "${VersionId}/EdgeCPPTPoster.zip"
@@ -827,12 +845,24 @@ Resources:
           PowerGenValue: powerGen
           metaWriteQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
           ProcessDataQuality: !Ref ProcessDataQuality
+          mskSecretArn: !ImportValue
+            'Fn::Sub': 'MSKClusterSecret-${ApplicationEnvironmentTag}'
+          mskClusterArn: !ImportValue
+            'Fn::Sub': 'MSKClusterArn-${ApplicationEnvironmentTag}'
+          topicName: "J1939"
       Handler: PosterLambda.lambda_handler
       Role: !GetAtt
         - EdgeCPPTPosterLambdaRole
         - Arn
       Timeout: 900
       Runtime: python3.7
+      VpcConfig:
+        SecurityGroupIds:
+          - !ImportValue
+            'Fn::Sub': 'EdgeMskClusterSGroup-${ApplicationEnvironmentTag}'
+        SubnetIds:
+          - !ImportValue
+            'Fn::Sub': 'MSKLambdaPrivateSubnet-${ApplicationEnvironmentTag}'
 
   EdgeCPPTPosterEventInvokeConfig:
     Type: AWS::Lambda::EventInvokeConfig
@@ -1004,3 +1034,16 @@ Resources:
       Enabled: true
       EventSourceArn: !GetAtt EDGEJ1939NGDI2CDSDKConversionQueue.Arn
       FunctionName: !GetAtt EdgeNGDI2CDSDKConversion.Arn
+  # SQSEndpoint:
+  #   Type: 'AWS::EC2::VPCEndpoint'
+  #   Properties:
+  #     PolicyDocument:
+  #       Version: 2012-10-17
+  #       Statement:
+  #         - Effect: Allow
+  #           Principal: '*'
+  #           Action:
+  #             - 'sqs:*'
+  #           Resource: !Sub ${EDGEJ1939CPPTPosterQueue.Arn}
+  #     ServiceName: !Sub 'com.amazonaws.${AWS::Region}.sqs'
+  #     VpcId: !Ref VPCID
