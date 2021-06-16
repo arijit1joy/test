@@ -850,6 +850,7 @@ Resources:
           mskClusterArn: !ImportValue
             'Fn::Sub': 'MSKClusterArn-${ApplicationEnvironmentTag}'
           topicName: "J1939"
+          publishKafka: false 
       Handler: PosterLambda.lambda_handler
       Role: !GetAtt
         - EdgeCPPTPosterLambdaRole
