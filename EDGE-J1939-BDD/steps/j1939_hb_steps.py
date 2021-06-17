@@ -8,8 +8,7 @@ from utilities import rest_api_utility as rest_api
 from utilities.db_utility import get_edge_db_payload
 from utilities.common_utility import exception_handler
 from utilities.file_utility.file_handler import same_file_contents
-from utilities.aws_utilities.s3_utility import get_key_from_list_of_s3_objects, download_object_from_s3, \
-    delete_object_from_s3
+from utilities.aws_utilities.s3_utility import get_key_from_list_of_s3_objects, download_object_from_s3
 
 DOWNLOAD_FOLDER_PATH = "data/j1939_hb/download"
 
@@ -133,7 +132,6 @@ def assert_j1939_hb_message_in_converted_files(context):
         download_object_from_s3(context.final_bucket, get_key, context.download_converted_file_name)
         assert same_file_contents(context.compare_converted_file_name, context.download_converted_file_name) is True
         shutil.rmtree(DOWNLOAD_FOLDER_PATH)
-        assert delete_object_from_s3(context.final_bucket, get_key) is True
 
 
 @exception_handler
@@ -150,15 +148,12 @@ def assert_j1939_hb_message_in_ngdi(context):
         download_object_from_s3(context.final_bucket, get_key, context.download_ngdi_file_name)
         assert same_file_contents(context.compare_ngdi_file_name, context.download_ngdi_file_name) is True
         shutil.rmtree(DOWNLOAD_FOLDER_PATH)
-        assert delete_object_from_s3(context.final_bucket, get_key) is True
 
 
 @exception_handler
 @then(u'No JSON file is created with the HB message as its content and is stored in the edge-j1939-<env> bucket '
       u'under the file path NGDI/esn/device_id/yyyy/mm/dd/hb_file.json with no metadata')
 def assert_j1939_hb_message_not_in_ngdi(context):
-    file_key = "NGDI/{0}/".format(context.esn)
+    file_key = "NGDI/{0}/{1}".format(context.esn, context.device_id)
     get_key = get_key_from_list_of_s3_objects(context.final_bucket, file_key)
-    if get_key:
-        delete_object_from_s3(context.final_bucket, get_key)
     assert get_key is None

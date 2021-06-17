@@ -4,8 +4,8 @@ from utilities import rest_api_utility as rest_api
 from utilities.db_utility import get_edge_db_payload
 from utilities.common_utility import exception_handler
 from utilities.file_utility.file_handler import get_json_file
-from utilities.aws_utilities.s3_utility import upload_object_to_s3
 from utilities.aws_utilities.iot_utility import publish_to_mqtt_topic
+from utilities.aws_utilities.s3_utility import upload_object_to_s3, delete_folder_object_from_s3
 
 J1939_HB_PAYLOAD_PATH = "data/j1939_hb/upload/valid_j1939_hb_payload.json"
 
@@ -18,6 +18,16 @@ def delete_metadata(context):
     edge_db_payload = get_edge_db_payload('post', query)
     edge_db_response = rest_api.post(context.edge_common_db_url, edge_db_payload)
     print(f"Delete Metadata Response: {edge_db_response}")
+
+
+def delete_s3_objects(context):
+    esn_list = [context.ebu_esn_1, context.ebu_esn_2, context.ebu_esn_3, context.psbu_esn_1, context.psbu_esn_2]
+
+    for esn in esn_list:
+        print(f"Deleting Files Prefix with 'ConvertedFiles/{esn}/' and 'NGDI/{esn}/' from "
+              f"Bucket '{context.final_bucket}'.")
+        delete_folder_object_from_s3(context.final_bucket, f"ConvertedFiles/{esn}/")
+        delete_folder_object_from_s3(context.final_bucket, f"NGDI/{esn}/")
 
 
 def get_j1939_fc_data_set(context):
@@ -75,6 +85,9 @@ def get_j1939_hb_data_set(context):
 def handle_j1939_process(context):
     # Delete metadata stages stored during last BDD execution
     delete_metadata(context)
+
+    # Delete s3 objects uploaded during last BDD execution
+    delete_s3_objects(context)
 
     # Set up and upload files for J1939 FC
     j1939_fc_data_set = get_j1939_fc_data_set(context)
