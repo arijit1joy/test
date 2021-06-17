@@ -51,6 +51,13 @@ def delete_object_from_s3(bucket_name, key):
     return True
 
 
+@exception_handler
+def delete_folder_object_from_s3(bucket_name, prefix):
+    bucket = S3_RESOURCE.Bucket(bucket_name)
+    bucket.objects.filter(Prefix=prefix).delete()
+    return True
+
+
 # Check if the object is in the bucket and return the object data if the get_object_info is "True"
 @exception_handler
 def object_is_in_s3(bucket_name, key, get_object_info=False):

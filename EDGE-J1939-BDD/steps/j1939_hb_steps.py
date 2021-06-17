@@ -157,7 +157,7 @@ def assert_j1939_hb_message_in_ngdi(context):
 @then(u'No JSON file is created with the HB message as its content and is stored in the edge-j1939-<env> bucket '
       u'under the file path NGDI/esn/device_id/yyyy/mm/dd/hb_file.json with no metadata')
 def assert_j1939_hb_message_not_in_ngdi(context):
-    file_key = "NGDI/{0}/".format(context.esn)
+    file_key = "NGDI/{0}/{1}".format(context.esn, context.device_id)
     get_key = get_key_from_list_of_s3_objects(context.final_bucket, file_key)
     if get_key:
         delete_object_from_s3(context.final_bucket, get_key)

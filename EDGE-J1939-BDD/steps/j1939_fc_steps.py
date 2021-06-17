@@ -126,6 +126,6 @@ def assert_j1939_fc_message_in_ngdi(context):
 @then(u'No JSON file is created with the FC message in NGDI JSON format as its content and is stored in the '
       u'edge-j1939-<env> bucket under the file path NGDI/esn/device_id/yyyy/mm/dd/fc_file.json')
 def assert_j1939_fc_message_not_in_ngdi(context):
-    file_key = "NGDI/{0}/".format(context.esn)
+    file_key = "NGDI/{0}/{1}/".format(context.esn, context.device_id)
     get_key = get_key_from_list_of_s3_objects(context.final_bucket, file_key)
     assert get_key is None
