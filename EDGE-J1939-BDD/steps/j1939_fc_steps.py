@@ -103,6 +103,7 @@ def assert_j1939_fc_message_in_converted_files(context):
         download_object_from_s3(context.final_bucket, get_key, context.download_converted_file_name)
         assert same_file_contents(context.compare_converted_file_name, context.download_converted_file_name) is True
         shutil.rmtree(DOWNLOAD_FOLDER_PATH)
+        assert delete_object_from_s3(context.final_bucket, get_key) is True
 
 
 @exception_handler
@@ -118,6 +119,7 @@ def assert_j1939_fc_message_in_ngdi(context):
         download_object_from_s3(context.final_bucket, get_key, context.download_ngdi_file_name)
         assert same_file_contents(context.compare_ngdi_file_name, context.download_ngdi_file_name) is True
         shutil.rmtree(DOWNLOAD_FOLDER_PATH)
+        assert delete_object_from_s3(context.final_bucket, get_key) is True
 
 
 @exception_handler
