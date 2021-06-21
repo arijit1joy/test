@@ -1,6 +1,6 @@
 Product=EDGE
 Year=2021
 Quarter=Q2
-Major=2
+Major=3
 Minor=0
 Fixed=0

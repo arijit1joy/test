@@ -353,6 +353,13 @@ Resources:
           - Queue: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${ApplicationName}-DataLogFilesQueue-${ApplicationEnvironmentTag}"
             Event: "s3:ObjectCreated:*"
       BucketName: !Sub "da-edge-j1939-datalog-files-${ApplicationEnvironmentTag}"
+      LifecycleConfiguration:
+        Rules:
+          - Status: Enabled
+            Id: !Sub 'da-edge-j1939-datalog-files-${ApplicationEnvironmentTag}-TransitAfter3Months'
+            Transitions:
+              - TransitionInDays: 90
+                StorageClass: GLACIER
       Tags:
         - Value: Edge
           Key: Name
@@ -408,7 +415,7 @@ Resources:
           Key: "lambda:createdBy"
         - Value: Edge
           Key: Name
-      MemorySize: 512
+      MemorySize: 1536
       ReservedConcurrentExecutions: 5
       Environment:
         Variables:
@@ -573,6 +580,13 @@ Resources:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
       BucketName: !Sub "edge-j1939-${ApplicationEnvironmentTag}"
+      LifecycleConfiguration:
+        Rules:
+          - Status: Enabled
+            Id: !Sub 'edge-j1939-${ApplicationEnvironmentTag}-TransitAfter7Days'
+            Transitions:
+              - TransitionInDays: 7
+                StorageClass: GLACIER
       NotificationConfiguration:
         QueueConfigurations:
           - Queue: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${ApplicationName}-CPPTPosterQueue-${ApplicationEnvironmentTag}"
