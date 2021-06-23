@@ -8,11 +8,13 @@ import edge_logger as logging
 from sqs_utility import sqs_send_message
 from obfuscate_gps_utility import handle_gps_coordinates
 from metadata_utility import write_health_parameter_to_database
+from kafka_producer import publish_message
 
 logger = logging.logging_framework("EdgeCPPTPoster.PtPoster")
 secret_name = os.environ['PTxAPIKey']
 region_name = os.environ['Region']
 edgeCommonAPIURL = os.environ['edgeCommonAPIURL']
+publishKafka = os.environ['publishKafka']
 
 # Create a Secrets Manager client
 session = boto3.session.Session()
@@ -119,6 +121,9 @@ def send_to_pt(post_url, headers, json_body, sqs_message):
         # We are not sending payload to PT for Digital Cockpit Device
         if not json_body["telematicsDeviceId"] == '192000000000101':
             final_json_body = [json_body]
+            ## Send to Cluster
+            if publishKafka=='true':
+                publish_message(json_body)
             pt_response = requests.post(url=post_url, data=json.dumps(final_json_body), headers=headers_json)
             pt_response_body = pt_response.json()
             pt_response_code = pt_response.status_code

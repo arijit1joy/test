@@ -4,7 +4,6 @@ import traceback
 
 import boto3
 import edge_logger as logging
-from kafka_producer import publish_message
 from sqs_utility import sqs_send_message
 
 import pt_poster
@@ -15,7 +14,6 @@ s3_resource = boto3.resource('s3')  # noqa
 CDPTJ1939PostURL = os.environ["CDPTJ1939PostURL"]
 CDPTJ1939Header = os.environ["CDPTJ1939Header"]
 edgeCommonAPIURL = os.environ['edgeCommonAPIURL']
-publishKafka = os.environ['publishKafka']
 
 
 def check_endpoint_file_exists(endpoint_bucket, endpoint_file):
@@ -37,9 +35,6 @@ def send_to_cd(bucket_name, key, json_format, client, j1939_type, endpoint_bucke
                json_body, uuid, sqs_message):
     logger.info(f"Received CD file for posting!")
 
-    ## Send to Cluster
-    if publishKafka=='true':
-        publish_message(json_body)
     ngdi_key = key.replace("ConvertedFiles", "NGDI")
 
     if json_format.lower() == "sdk":
