@@ -62,7 +62,9 @@ phases:
               echo "Current dir - $(pwd)";
               echo "\n#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#\n";
               if [ -f requirements.txt ]; then
-                pip install -r requirements.txt -t ./lib ;
+                if [ -f dependencies.txt ]; then
+                  pip install -r dependencies.txt -t ./lib ;
+                fi;
                 zip -r "$mydir.zip" .;
                 coverage run -m unittest discover -s tests;
                 testCaseExecutionExitCode=$?;
@@ -71,7 +73,7 @@ phases:
                   echo "[ERROR] ---> Some of the TDD/Code Coverage test cases failed for the project '$mydir'. Exit code => '$testCaseExecutionExitCode'! Aborting Build!";
                   echo "\n#====================================================================================================================================================================================#\n";
                 fi;
-                coverage report --omit tests/* && coverage xml;
+                coverage report --omit tests/*,dependencies.txt && coverage xml;
                 sonar-scanner -X -Dsonar.login=$SONAR_LOGIN -Dsonar.host.url=$SONAR_HOST -Dsonar.python.coverage.reportPaths="coverage.xml";
                 if [ -f "../SonarqubeQualityChecker.sh" ] && [ -f "sonar-project.properties" ]; then
                   cd ..;

@@ -47,7 +47,9 @@ phases:
               echo "Processing - $mydir"; 
               echo "Current dir - $(pwd)"; 
               if [ -f requirements.txt ]; then
-                pip install -r requirements.txt -t ./lib ;
+                if [ -f dependencies.txt ]; then
+                  pip install -r dependencies.txt -t ./lib ;
+                fi;
                 zip -r "$mydir.zip" .;               
                 cp "$mydir.zip" "$curr_dir/target"; 
               else           
