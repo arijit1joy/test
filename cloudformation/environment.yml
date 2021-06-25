@@ -863,8 +863,8 @@ Resources:
             'Fn::Sub': 'MSKClusterSecret-${ApplicationEnvironmentTag}'
           mskClusterArn: !ImportValue
             'Fn::Sub': 'MSKClusterArn-${ApplicationEnvironmentTag}'
-          topicName: "J1939"
-          publishKafka: false 
+          topicName: "j1939-pt-topic"
+          publishKafka: true 
       Handler: PosterLambda.lambda_handler
       Role: !GetAtt
         - EdgeCPPTPosterLambdaRole
