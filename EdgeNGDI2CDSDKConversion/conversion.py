@@ -13,6 +13,7 @@ import edge_logger as logging
 from cd_sdk_conversion.cd_sdk import map_ngdi_sample_to_cd_payload
 from cd_sdk_conversion.cd_snapshot_sdk import get_snapshot_data
 import sys
+from lambda_cache import ssm
 
 sys.path.insert(1, './lib')
 from pypika import Query, Table, Order, functions as fn
@@ -22,7 +23,7 @@ logger = logging.logging_framework("EdgeNGDI2CDSDKConversion.Conversion")
 '''Getting the Values from SSM Parameter Store
 '''
 
-ssm = boto3.client('ssm')  # noqa
+#ssm = boto3.client('ssm')  # noqa
 
 
 def set_parameters():
@@ -35,8 +36,8 @@ def set_parameters():
 
 params = set_parameters()
 name = params['Names']
-response = ssm.get_parameters(Names=name, WithDecryption=False)
-api_url = response['Parameters'][0]['Value']
+#response = ssm.get_parameters(Names=name, WithDecryption=False)
+#api_url = response['Parameters'][0]['Value']
 
 edgeCommonAPIURL = os.environ['edgeCommonAPIURL']
 spn_bucket = os.getenv('spn_parameter_json_object')
@@ -352,7 +353,7 @@ def send_sample(sample, metadata, fc_or_hb):
         handle_fc(converted_device_params, converted_equip_params, converted_equip_fc, metadata, time_stamp)
 
 
-def retrieve_and_process_file(uploaded_file_object):
+def retrieve_and_process_file(uploaded_file_object, api_url):
     bucket = uploaded_file_object["source_bucket_name"]
     key = uploaded_file_object["file_key"]
     file_size = uploaded_file_object["file_size"]
@@ -428,7 +429,9 @@ def retrieve_and_process_file(uploaded_file_object):
         logger.error(f"Error! Metadata retrieval failed! See logs.")
 
 
+@ssm.cache(parameter=name, entry_name='parameters')
 def lambda_handler(event, context):
+    api_url = getattr(context, 'parameters')[0]['Value']
     records = event.get("Records", [])
     processes = []
     logger.debug(f"Received SQS Records: {records}.")
@@ -445,7 +448,7 @@ def lambda_handler(event, context):
         logger.info(f"Uploaded File Object: {uploaded_file_object}.")
 
         # Retrieve the uploaded file from the s3 bucket and process the uploaded file
-        process = Process(target=retrieve_and_process_file, args=(uploaded_file_object,))
+        process = Process(target=retrieve_and_process_file, args=(uploaded_file_object, api_url,))
 
         # Make a list of all process to wait and terminate at the end
         processes.append(process)
