@@ -2,6 +2,7 @@
     "Parameters": {
         "ApplicationEnvironmentTag": "stage",
         "ApplicationName": "da-edge-j1939",
+		"ApplicationNameCDA": "cda",
         "VersionId": "empty",
         "ArtifactsBucket": "171670492297-da-edge-platform-catalog-us-east-2",
         "EdgeCommonDBAPI": "https://api.edge-stage.aws.cummins.com/v3/EdgeDBLambda",

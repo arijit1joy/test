@@ -5,6 +5,8 @@ Description: >-
 Parameters:
   ApplicationName:
     Type: String
+  ApplicationNameCDA:
+    Type: String
   AuthToken:
     Type: String
   DataQualityLambda:
@@ -518,27 +520,27 @@ Resources:
                   - "ssm:List*"
                 Resource: "*"
                 Effect: Allow
-              # - Action:
-              #     - "secretsmanager:GetSecretValue"
-              #   Resource:
-              #     - !Sub >-
-              #       arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pt_xapi_key-??????
-              #     - !ImportValue
-              #         'Fn::Sub': 'MSKClusterSecret-${ApplicationEnvironmentTag}'
-              #   Effect: Allow
+              - Action:
+                  - "secretsmanager:GetSecretValue"
+                Resource:
+                  - !Sub >-
+                    arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pt_xapi_key-??????
+                  - !ImportValue
+                      'Fn::Sub': 'Fn::Sub': '${ApplicationNameCDA}-msk-cluster-secret-${ApplicationEnvironmentTag}'
+                Effect: Allow
               - Action:
                   - "lambda:InvokeFunction"
                   - "lambda:InvokeAsync"
                 Resource: "*"
                 Effect: Allow
-              # - Action:
-              #     - "kafka:ListClusters"
-              #     - "kafka:DescribeCluster"
-              #     - "kafka:GetBootstrapBrokers"
-              #   Resource: 
-              #     - !ImportValue
-              #         'Fn::Sub': 'MSKClusterArn-${ApplicationEnvironmentTag}'
-              #   Effect: Allow
+              - Action:
+                  - "kafka:ListClusters"
+                  - "kafka:DescribeCluster"
+                  - "kafka:GetBootstrapBrokers"
+                Resource: 
+                  - !ImportValue
+                      'Fn::Sub': '${ApplicationNameCDA}-msk-cluster-arn-${ApplicationEnvironmentTag}'
+                Effect: Allow
               - Action:
                   - "ec2:CreateNetworkInterface"
                   - "ec2:DescribeNetworkInterfaces"
@@ -859,10 +861,10 @@ Resources:
           PowerGenValue: powerGen
           metaWriteQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
           ProcessDataQuality: !Ref ProcessDataQuality
-          # mskSecretArn: !ImportValue
-          #   'Fn::Sub': 'MSKClusterSecret-${ApplicationEnvironmentTag}'
-          # mskClusterArn: !ImportValue
-          #   'Fn::Sub': 'MSKClusterArn-${ApplicationEnvironmentTag}'
+          mskSecretArn: !ImportValue
+            'Fn::Sub': '${ApplicationNameCDA}-msk-cluster-secret-${ApplicationEnvironmentTag}'
+          mskClusterArn: !ImportValue
+            'Fn::Sub': '${ApplicationNameCDA}-msk-cluster-arn-${ApplicationEnvironmentTag}'
           topicName: "j1939-pt-topic"
           publishKafka: true 
       Handler: PosterLambda.lambda_handler
@@ -871,13 +873,13 @@ Resources:
         - Arn
       Timeout: 900
       Runtime: python3.7
-      # VpcConfig:
-      #   SecurityGroupIds:
-      #     - !ImportValue
-      #       'Fn::Sub': 'EdgeMskClusterSGroup-${ApplicationEnvironmentTag}'
-      #   SubnetIds:
-      #     - !ImportValue
-      #       'Fn::Sub': 'MSKLambdaPrivateSubnet-${ApplicationEnvironmentTag}'
+      VpcConfig:
+        SecurityGroupIds:
+          - !ImportValue
+            'Fn::Sub': '${ApplicationName}-msk-cluster-security-group-${ApplicationEnvironmentTag}'
+        SubnetIds:
+          - !ImportValue
+            'Fn::Sub': '${ApplicationName}-msk-lambda-private-subnet-${ApplicationEnvironmentTag}'
 
   EdgeCPPTPosterEventInvokeConfig:
     Type: AWS::Lambda::EventInvokeConfig
