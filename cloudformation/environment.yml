@@ -876,10 +876,10 @@ Resources:
       VpcConfig:
         SecurityGroupIds:
           - !ImportValue
-            'Fn::Sub': '${ApplicationName}-msk-cluster-security-group-${ApplicationEnvironmentTag}'
+            'Fn::Sub': '${ApplicationNameCDA}-msk-cluster-security-group-${ApplicationEnvironmentTag}'
         SubnetIds:
           - !ImportValue
-            'Fn::Sub': '${ApplicationName}-msk-lambda-private-subnet-${ApplicationEnvironmentTag}'
+            'Fn::Sub': '${ApplicationNameCDA}-msk-lambda-private-subnet-${ApplicationEnvironmentTag}'
 
   EdgeCPPTPosterEventInvokeConfig:
     Type: AWS::Lambda::EventInvokeConfig
