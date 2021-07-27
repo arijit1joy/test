@@ -525,8 +525,8 @@ Resources:
                 Resource:
                   - !Sub >-
                     arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pt_xapi_key-??????
-                  # - !ImportValue
-                  #     'Fn::Sub': '${ApplicationNameCDA}-msk-cluster-secret-${ApplicationEnvironmentTag}'
+                  - !ImportValue
+                      'Fn::Sub': '${ApplicationNameCDA}-msk-cluster-secret-${ApplicationEnvironmentTag}'
                 Effect: Allow
               - Action:
                   - "lambda:InvokeFunction"
@@ -861,8 +861,8 @@ Resources:
           PowerGenValue: powerGen
           metaWriteQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
           ProcessDataQuality: !Ref ProcessDataQuality
-          # mskSecretArn: !ImportValue
-          #   'Fn::Sub': '${ApplicationNameCDA}-msk-cluster-secret-${ApplicationEnvironmentTag}'
+          mskSecretArn: !ImportValue
+            'Fn::Sub': '${ApplicationNameCDA}-msk-cluster-secret-${ApplicationEnvironmentTag}'
           mskClusterArn: !ImportValue
             'Fn::Sub': '${ApplicationNameCDA}-msk-cluster-arn-${ApplicationEnvironmentTag}'
           topicName: "j1939-pt-topic"
