@@ -358,7 +358,7 @@ Resources:
       LifecycleConfiguration:
         Rules:
           - Status: Enabled
-            Id: !Sub 'da-edge-j1939-datalog-files-${ApplicationEnvironmentTag}-TransitAfter3Months'
+            Id: !Sub "da-edge-j1939-datalog-files-${ApplicationEnvironmentTag}-TransitAfter3Months"
             Transitions:
               - TransitionInDays: 90
                 StorageClass: GLACIER
@@ -523,24 +523,23 @@ Resources:
               - Action:
                   - "secretsmanager:GetSecretValue"
                 Resource:
-                  - !Sub >-
-                    arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pt_xapi_key-??????
+                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pt_xapi_key-??????"
                   - !ImportValue
-                      'Fn::GetAtt: edge-platform-apps-cdadatahub-1XM7SAN4CD70P-development-CDASecurityResourcesStack-W7STIB0GQAAT.Outputs.MskSecretManagerArn'
+                    "Fn::Sub": "${ApplicationNameCDA}-msk-cluster-secret-${ApplicationEnvironmentTag}"
                 Effect: Allow
               - Action:
                   - "lambda:InvokeFunction"
                   - "lambda:InvokeAsync"
                 Resource: "*"
                 Effect: Allow
-              # - Action:
-              #     - "kafka:ListClusters"
-              #     - "kafka:DescribeCluster"
-              #     - "kafka:GetBootstrapBrokers"
-              #   Resource: 
-              #     - !ImportValue
-              #         'Fn::Sub': '${ApplicationNameCDA}-msk-cluster-arn-${ApplicationEnvironmentTag}'
-              #   Effect: Allow
+              - Action:
+                  - "kafka:ListClusters"
+                  - "kafka:DescribeCluster"
+                  - "kafka:GetBootstrapBrokers"
+                Resource:
+                  - !ImportValue
+                    "Fn::Sub": "${ApplicationNameCDA}-msk-cluster-arn-${ApplicationEnvironmentTag}"
+                Effect: Allow
               - Action:
                   - "ec2:CreateNetworkInterface"
                   - "ec2:DescribeNetworkInterfaces"
@@ -585,7 +584,7 @@ Resources:
       LifecycleConfiguration:
         Rules:
           - Status: Enabled
-            Id: !Sub 'edge-j1939-${ApplicationEnvironmentTag}-TransitAfter7Days'
+            Id: !Sub "edge-j1939-${ApplicationEnvironmentTag}-TransitAfter7Days"
             Transitions:
               - TransitionInDays: 7
                 StorageClass: GLACIER
@@ -810,8 +809,7 @@ Resources:
         - !Sub >-
           arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:Scheduler-queries:${SchedulerQueriesLayerVersion}
         - !ImportValue
-          'Fn::Sub': 'EDGESQSUtilityPythonLayer-${ApplicationEnvironmentTag}'
-        
+          "Fn::Sub": "EDGESQSUtilityPythonLayer-${ApplicationEnvironmentTag}"
       Code:
         S3Bucket: !Ref ArtifactsBucket
         S3Key: !Sub "${VersionId}/EdgeCPPTPoster.zip"
@@ -861,25 +859,25 @@ Resources:
           PowerGenValue: powerGen
           metaWriteQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
           ProcessDataQuality: !Ref ProcessDataQuality
-          # mskSecretArn: !ImportValue
-          #   'Fn::Sub': '${ApplicationNameCDA}-msk-cluster-secret-${ApplicationEnvironmentTag}'
-          # mskClusterArn: !ImportValue
-          #   'Fn::Sub': '${ApplicationNameCDA}-msk-cluster-arn-${ApplicationEnvironmentTag}'
+          mskSecretArn: !ImportValue
+            "Fn::Sub": "${ApplicationNameCDA}-msk-cluster-secret-${ApplicationEnvironmentTag}"
+          mskClusterArn: !ImportValue
+            "Fn::Sub": "${ApplicationNameCDA}-msk-cluster-arn-${ApplicationEnvironmentTag}"
           topicName: "j1939-pt-topic"
-          publishKafka: true 
+          publishKafka: true
       Handler: PosterLambda.lambda_handler
       Role: !GetAtt
         - EdgeCPPTPosterLambdaRole
         - Arn
       Timeout: 900
       Runtime: python3.7
-      # VpcConfig:
-      #   SecurityGroupIds:
-      #     - !ImportValue
-      #       'Fn::Sub': '${ApplicationNameCDA}-msk-cluster-security-group-${ApplicationEnvironmentTag}'
-      #   SubnetIds:
-      #     - !ImportValue
-      #       'Fn::Sub': '${ApplicationNameCDA}-msk-lambda-private-subnet-${ApplicationEnvironmentTag}'
+      VpcConfig:
+        SecurityGroupIds:
+          - !ImportValue
+            "Fn::Sub": "${ApplicationNameCDA}-msk-cluster-security-group-${ApplicationEnvironmentTag}"
+        SubnetIds:
+          - !ImportValue
+            "Fn::Sub": "${ApplicationNameCDA}-msk-lambda-private-subnet-${ApplicationEnvironmentTag}"
 
   EdgeCPPTPosterEventInvokeConfig:
     Type: AWS::Lambda::EventInvokeConfig
