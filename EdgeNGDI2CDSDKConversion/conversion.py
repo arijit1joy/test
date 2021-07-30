@@ -36,8 +36,7 @@ def set_parameters():
 
 params = set_parameters()
 name = params['Names']
-#response = ssm.get_parameters(Names=name, WithDecryption=False)
-#api_url = response['Parameters'][0]['Value']
+
 
 edgeCommonAPIURL = os.environ['edgeCommonAPIURL']
 spn_bucket = os.getenv('spn_parameter_json_object')
@@ -431,7 +430,14 @@ def retrieve_and_process_file(uploaded_file_object, api_url):
 
 @ssm.cache(parameter=name, entry_name='parameters')
 def lambda_handler(event, context):
-    api_url = getattr(context, 'parameters')[0]['Value']
+    try:
+        vals = getattr(context, 'parameters')
+        api_url = vals[params['Names'][0]]
+    except AttributeError as ae:
+        logger.error("Error, could not find ssm in the cache\n Proceeding as usual")
+        ssm_uncached = boto3.client('ssm')
+        response = ssm_uncached.get_parameters(Names=name, WithDecryption=False)
+        api_url = response['Parameters'][0]['Value']
     records = event.get("Records", [])
     processes = []
     logger.debug(f"Received SQS Records: {records}.")
