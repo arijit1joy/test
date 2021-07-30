@@ -2,6 +2,7 @@
     "Parameters": {
         "ApplicationEnvironmentTag": "dev",
         "ApplicationName": "da-edge-j1939",
+		"ApplicationNameCDA": "cda",
         "VersionId": "empty",
         "ArtifactsBucket": "edge-platform-apps-daedgej1939-1fk-artifactbucket-o9xqtwd301hn",
         "EdgeCommonDBAPI": "https://api.edge-dev.aws.cummins.com/v3/EdgeDBLambda",
