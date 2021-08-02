@@ -52,7 +52,7 @@ Parameters:
     Type: String
 
 Conditions:
-  UseProdCondition: !Not [!Equals [!Ref ApplicationEnvironmentTag, prod]]
+  UseNotProdCondition: !Not [!Equals [!Ref ApplicationEnvironmentTag, prod]]
 
 Resources:
   EdgeJ1939ProcessingBucketSSM:
@@ -528,7 +528,7 @@ Resources:
                 Resource:
                   - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pt_xapi_key-??????"
                   - !If
-                    - UseProdCondition
+                    - UseNotProdCondition
                     - !ImportValue
                       "Fn::Sub": "${ApplicationNameCDA}-msk-cluster-secret-${ApplicationEnvironmentTag}"
                     - !Ref "AWS::NoValue"
@@ -539,7 +539,7 @@ Resources:
                 Resource: "*"
                 Effect: Allow
               - !If
-                - UseProdCondition
+                - UseNotProdCondition
                 - Action:
                     - "kafka:ListClusters"
                     - "kafka:DescribeCluster"
@@ -869,12 +869,12 @@ Resources:
           metaWriteQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
           ProcessDataQuality: !Ref ProcessDataQuality
           mskSecretArn: !If
-            - UseProdCondition
+            - UseNotProdCondition
             - !ImportValue
               "Fn::Sub": "${ApplicationNameCDA}-msk-cluster-secret-${ApplicationEnvironmentTag}"
             - !Ref "AWS::NoValue"
           mskClusterArn: !If
-            - UseProdCondition
+            - UseNotProdCondition
             - !ImportValue
               "Fn::Sub": "${ApplicationNameCDA}-msk-cluster-arn-${ApplicationEnvironmentTag}"
             - !Ref "AWS::NoValue"
@@ -887,7 +887,7 @@ Resources:
       Timeout: 900
       Runtime: python3.7
       VpcConfig: !If
-        - UseProdCondition
+        - UseNotProdCondition
         - SecurityGroupIds:
             - !ImportValue
               "Fn::Sub": "${ApplicationNameCDA}-msk-cluster-security-group-${ApplicationEnvironmentTag}"
