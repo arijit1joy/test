@@ -52,7 +52,7 @@ Parameters:
     Type: String
 
 Conditions:
-  UseProdCondition: !Equals [!Ref ApplicationEnvironmentTag, prod]
+  UseProdCondition: !Not [!Equals [!Ref ApplicationEnvironmentTag, prod]]
 
 Resources:
   EdgeJ1939ProcessingBucketSSM:
