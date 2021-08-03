@@ -2,6 +2,7 @@
     "Parameters": {
         "ApplicationEnvironmentTag": "prod",
         "ApplicationName": "da-edge-j1939",
+		"ApplicationNameCDA": "cda",
         "VersionId": "empty",
         "ArtifactsBucket": "171670492297-da-edge-platform-catalog-us-east-2",
         "EdgeCommonDBAPI": "https://api.edge.awsprd.cummins.com/v3/EdgeDBLambda",
@@ -13,7 +14,7 @@
         "DeliveryStreamName": "da-edge-aai-service-metadata-stream",
         "KinesisLayerVersion": "1",
         "CDDataEndpoint": "https://telematics.cummins.com:8443/DataService/postData?AuthToken=",
-        "EdgeCoreLayerVersion": "11",
+        "EdgeCoreLayerVersion": "16",
 		"EdgeSQSUtilityVersion": "1",
         "DeviceHealthDeliveryStream": "da-edge-aai-service-heartbeat-data-stream",
         "AuthToken": "https://api.edge.awsprd.cummins.com/v3/edge-device/provider-auth-token?TspName={TSP-Name}",

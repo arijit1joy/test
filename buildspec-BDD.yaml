@@ -29,7 +29,7 @@ phases:
           exit 1;
         fi;
 reports:
-  !Sub EdgeJ1939BDDReports-${environment}:
+  EdgeJ1939BDDReports-${environment}:
     files:
       - "**/*"
     base-directory: "EDGE-J1939-BDD/reports"
