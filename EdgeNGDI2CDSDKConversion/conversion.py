@@ -428,7 +428,7 @@ def retrieve_and_process_file(uploaded_file_object, api_url):
         logger.error(f"Error! Metadata retrieval failed! See logs.")
 
 
-@ssm.cache(parameter=name, entry_name='parameters')
+@ssm.cache(parameter=name, entry_name='parameters')  # noqa-cache accepts list as a parameter but expects a str
 def lambda_handler(event, context):
     try:
         vals = getattr(context, 'parameters')
