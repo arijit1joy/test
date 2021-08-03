@@ -122,7 +122,7 @@ def send_to_pt(post_url, headers, json_body, sqs_message):
         if not json_body["telematicsDeviceId"] == '192000000000101':
             final_json_body = [json_body]
             ## Send to Cluster
-            if (os.environ["APPLICATION_ENVIRONMENT"].lower() != "prod") and (publishKafka == "true"):
+            if (os.environ["APPLICATION_ENVIRONMENT"].lower() in ["dev", "test"]) and (publishKafka == "true"):
                 publish_message(json_body)
             pt_response = requests.post(url=post_url, data=json.dumps(final_json_body), headers=headers_json)
             pt_response_body = pt_response.json()
