@@ -104,7 +104,7 @@ def post_cd_message(data):
 
     if "VIN" in data and not data["VIN"]:
         logger.info(f"Vin is not in file. Setting the value of the VIN to 'None'")
-        data["VIN"] = None
+        data["VIN"] = ""
         logger.info(f"New VIN {data['VIN']}")
 
     # TODO Temporary address to the Equipment_ID retrieval issue. Renaming to EDGE_<ESN> if not there already . . .
