@@ -881,7 +881,7 @@ Resources:
               "Fn::Sub": "${ApplicationNameCDA}-msk-cluster-arn-${ApplicationEnvironmentTag}"
             - !Ref "AWS::NoValue"
           topicName: "j1939-pt-topic"
-          publishKafka: true 
+          publishKafka: false 
       Handler: PosterLambda.lambda_handler
       Role: !GetAtt
         - EdgeCPPTPosterLambdaRole
