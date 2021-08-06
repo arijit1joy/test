@@ -50,6 +50,9 @@ Parameters:
     Type: String
   ProcessDataQuality:
     Type: String
+  PrivateSubnetID:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: private-subnet-id
 
 Conditions:
   UseDevOrTestCondition: !Or
@@ -881,7 +884,7 @@ Resources:
               "Fn::Sub": "${ApplicationNameCDA}-msk-cluster-arn-${ApplicationEnvironmentTag}"
             - !Ref "AWS::NoValue"
           topicName: "j1939-pt-topic"
-          publishKafka: false 
+          publishKafka: false
       Handler: PosterLambda.lambda_handler
       Role: !GetAtt
         - EdgeCPPTPosterLambdaRole
@@ -894,8 +897,7 @@ Resources:
             - !ImportValue
               "Fn::Sub": "${ApplicationNameCDA}-msk-cluster-security-group-${ApplicationEnvironmentTag}"
           SubnetIds:
-            - !ImportValue
-              "Fn::Sub": "${ApplicationNameCDA}-msk-lambda-private-subnet-${ApplicationEnvironmentTag}"
+            - !Ref PrivateSubnetID
         - !Ref "AWS::NoValue"
 
   EdgeCPPTPosterEventInvokeConfig:
@@ -1068,16 +1070,3 @@ Resources:
       Enabled: true
       EventSourceArn: !GetAtt EDGEJ1939NGDI2CDSDKConversionQueue.Arn
       FunctionName: !GetAtt EdgeNGDI2CDSDKConversion.Arn
-  # SQSEndpoint:
-  #   Type: 'AWS::EC2::VPCEndpoint'
-  #   Properties:
-  #     PolicyDocument:
-  #       Version: 2012-10-17
-  #       Statement:
-  #         - Effect: Allow
-  #           Principal: '*'
-  #           Action:
-  #             - 'sqs:*'
-  #           Resource: !Sub ${EDGEJ1939CPPTPosterQueue.Arn}
-  #     ServiceName: !Sub 'com.amazonaws.${AWS::Region}.sqs'
-  #     VpcId: !Ref VPCID
