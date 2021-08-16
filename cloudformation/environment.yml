@@ -425,7 +425,7 @@ Resources:
           Key: "lambda:createdBy"
         - Value: Edge
           Key: Name
-      MemorySize: 1536
+      MemorySize: 512
       ReservedConcurrentExecutions: 5
       Environment:
         Variables:
