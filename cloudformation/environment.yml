@@ -685,6 +685,7 @@ Resources:
       ReservedConcurrentExecutions: 5
       Environment:
         Variables:
+          LoggingLevel: "info"
           APPLICATION_ENVIRONMENT: !Ref ApplicationEnvironmentTag
           CPPostBucket: !Sub "edge-j1939-${ApplicationEnvironmentTag}"
           region: !Sub "${AWS::Region}"
