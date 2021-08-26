@@ -266,6 +266,7 @@ Resources:
       MemorySize: 512
       Environment:
         Variables:
+          LoggingLevel: "info"
           APPLICATION_NAME: !Ref ApplicationName
           region: !Sub "${AWS::Region}"
           APPLICATION_ENVIRONMENT: !Ref ApplicationEnvironmentTag
