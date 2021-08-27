@@ -17,9 +17,11 @@ def obfuscate_gps(body):
                 if "Latitude" in converted_device_params and "Longitude" in converted_device_params:
                     latitude = converted_device_params["Latitude"]
                     longitude = converted_device_params["Longitude"]
+                    LOGGER.info(f"Latitude: {latitude}, Longitude: {longitude}, before obfuscated gps coordinates")
                     converted_device_params["Latitude"], converted_device_params["Longitude"] = \
                         handle_gps_coordinates(latitude, longitude)
-    LOGGER.info(f"Body: {body}")
+                    LOGGER.info(f"Latitude: {converted_device_params['Latitude']}, "
+                                f"Longitude: {converted_device_params['Longitude']}, after obfuscated gps coordinates")
     send_file_to_s3(body)
 
 
