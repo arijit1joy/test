@@ -1,16 +1,17 @@
+import os
 import json
 import boto3
-import os
+import datetime
 import requests
 import traceback
-import datetime
-import edge_logger as logging
+import utility as util
 from sqs_utility import sqs_send_message
+from kafka_producer import publish_message
 from obfuscate_gps_utility import handle_gps_coordinates
 from metadata_utility import write_health_parameter_to_database
-from kafka_producer import publish_message
 
-logger = logging.logging_framework("EdgeCPPTPoster.PtPoster")
+
+LOGGER, FILE_NAME = util.logger_and_file_name(__name__)
 secret_name = os.environ['PTxAPIKey']
 region_name = os.environ['Region']
 edgeCommonAPIURL = os.environ['edgeCommonAPIURL']
@@ -35,7 +36,7 @@ def handle_fc_params(converted_fc_params):
             fc_param.pop("inactiveFaultCodes")
         if "pendingFaultCodes" in fc_param:
             fc_param.pop("pendingFaultCodes")
-    logger.info(f"Converted FC Params: {converted_fc_params}")
+    LOGGER.debug(f"Converted FC Params: {converted_fc_params}")
     return converted_fc_params
 
 
@@ -50,7 +51,7 @@ def handle_hb_params(converted_device_params):
     # Remove unnecessary params from device parameters for PT payload
     converted_device_params = {key.lower(): value for key, value in converted_device_params.items() if
                                key in ["Latitude", "Longitude", "Altitude"]}
-    logger.info(f"Converted Device Params: {converted_device_params}")
+    LOGGER.debug(f"Converted Device Params: {converted_device_params}")
     return converted_device_params
 
 
@@ -84,7 +85,7 @@ def store_device_health_params(converted_device_params, sample_time_stamp, devic
                                            cpu_usage_level, ram_usage_level, snr_per_satellite, new_timestamp,
                                            device_id, esn, os.environ["edgeCommonAPIURL"])
     else:
-        logger.info(f"There is no messageId in Converted Device Parameter.")
+        LOGGER.info(f"There is no messageId in Converted Device Parameter.")
 
 
 def send_to_pt(post_url, headers, json_body, sqs_message):
@@ -97,7 +98,7 @@ def send_to_pt(post_url, headers, json_body, sqs_message):
             api_key = secret['x-api-key']
             headers_json['x-api-key'] = api_key
         else:
-            logger.info(f"PT x-api-key not exist in secret manager")
+            LOGGER.error(f"PT x-api-key not exist in secret manager")
 
         if "samples" in json_body:
             for sample in json_body["samples"]:
@@ -121,20 +122,21 @@ def send_to_pt(post_url, headers, json_body, sqs_message):
         # We are not sending payload to PT for Digital Cockpit Device
         if not json_body["telematicsDeviceId"] == '192000000000101':
             final_json_body = [json_body]
-            ## Send to Cluster
+
+            # Send to Cluster
             if (os.environ["APPLICATION_ENVIRONMENT"].lower() in ["dev", "test"]) and (publishKafka == "true"):
                 publish_message(json_body)
+
             pt_response = requests.post(url=post_url, data=json.dumps(final_json_body), headers=headers_json)
             pt_response_body = pt_response.json()
             pt_response_code = pt_response.status_code
-            logger.info(f"Post to PT response code: {pt_response_code}")
+            LOGGER.info(f"Post to PT response code: {pt_response_code}, body: {pt_response_body}")
 
             if "statusCode" in pt_response_body and pt_response_body["statusCode"] == 200:
                 sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message, edgeCommonAPIURL)
-                logger.info(f"Post to PT response body: {pt_response_body}")
             else:
-                logger.info(f"ERROR! Posting PT : {pt_response_body}")
+                LOGGER.error(f"ERROR! Posting PT : {pt_response_body}")
 
     except Exception as e:
         traceback.print_exc()
-        logger.error(f"ERROR! An exception occurred while posting to PT endpoint: {e}")
+        LOGGER.error(f"ERROR! An exception occurred while posting to PT endpoint: {e}")
