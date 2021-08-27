@@ -4,7 +4,6 @@ LOGGER, FILE_NAME = util.logger_and_file_name(__name__)
 
 
 def get_snapshot_data(params, time_stamp, address, spn_file_json):
-    LOGGER.info(f"Getting snapshot data for the parameter list: {params}")
     snapshot_data = {"Snapshot_DateTimestamp": time_stamp}
     parameters = []
 
@@ -29,5 +28,5 @@ def get_snapshot_data(params, time_stamp, address, spn_file_json):
 
     except Exception as get_snapshot_error:
         # Catch the error and just print the error to the console
-        LOGGER.error(f"Error! An Exception {get_snapshot_error} occurred when getting the snapshot data!")
+        LOGGER.error(f"Error! An exception occurred when getting the snapshot data: {get_snapshot_error}")
         raise get_snapshot_error

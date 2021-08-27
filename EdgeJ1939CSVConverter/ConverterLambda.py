@@ -29,17 +29,12 @@ def delete_message_from_sqs_queue(receipt_handle):
 def process_ss(ss_rows, ss_dict, ngdi_json_template, ss_converted_prot_header, ss_converted_device_parameters):
     try:
         ss_values = ss_rows[1]  # Get the SS Values row
-        LOGGER.debug(f"Single Sample Values: {ss_values}")
 
         json_sample_head = ngdi_json_template
-        LOGGER.debug(f"Received Json Body in SS Handler:{json_sample_head}")
-
         parameters = {}
         ss_sample = {"convertedDeviceParameters": {}, "convertedEquipmentParameters": []}
-        LOGGER.debug(f"Single Sample Converted Protocol Header: {ss_converted_prot_header}")
 
         converted_prot_header = ss_converted_prot_header.split("~")
-        LOGGER.debug(f"Converted Protocol Header Array: {converted_prot_header}")
 
         try:
             protocol = converted_prot_header[1]
@@ -48,8 +43,6 @@ def process_ss(ss_rows, ss_dict, ngdi_json_template, ss_converted_prot_header, s
         except IndexError as e:
             LOGGER.error(f"An exception occurred while trying to retrieve the AS protocols network_id and Address:{e}")
             return
-
-        LOGGER.debug(f"Handling the device metadata headers in SS: {ss_converted_device_parameters}")
 
         for key in ss_converted_device_parameters:
             if key:
@@ -61,23 +54,17 @@ def process_ss(ss_rows, ss_dict, ngdi_json_template, ss_converted_prot_header, s
 
         conv_eq_obj = {"protocol": protocol, "networkId": network_id, "deviceId": address}
 
-        LOGGER.debug(f"Json Sample Head after metadata retrieval: {json_sample_head}")
-
         for param in ss_dict:
             if "datetimestamp" in param.lower():
                 ss_sample["dateTimestamp"] = ss_values[ss_dict[param]]
             elif param:
                 parameters[param] = ss_values[ss_dict[param]]
 
-        LOGGER.debug(f"SS Parameters: {parameters}")
-
         conv_eq_obj["parameters"] = parameters
-        LOGGER.debug(f"Converted Equipment Object with Parameters: {conv_eq_obj}")
-
         ss_sample["convertedEquipmentParameters"].append(conv_eq_obj)
-        LOGGER.info(f"Single Sample: {ss_sample}")
-
         json_sample_head["samples"].append(ss_sample)
+        LOGGER.debug(f"Process SS JSON Sample Head: {json_sample_head}")
+
         return json_sample_head
     except Exception as e:
         LOGGER.error(f"An exception occurred while handling the Single Sample:{e}")
@@ -87,11 +74,7 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header, a
     old_as_dict = as_dict
     json_sample_head = ngdi_json_template
     json_sample_head["numberOfSamples"] = len(as_rows)
-    LOGGER.debug(f"Original Template from SS to AS {json_sample_head}")
-
     converted_prot_header = as_converted_prot_header.split("~")
-    LOGGER.debug(f"AS Converted Protocol Header array: {converted_prot_header}")
-    LOGGER.debug(f"All Sample Rows: {as_rows}")
 
     try:
         protocol = converted_prot_header[1]
@@ -107,20 +90,13 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header, a
         sample = {"convertedDeviceParameters": {}, "rawEquipmentParameters": [], "convertedEquipmentParameters": [],
                   "convertedEquipmentFaultCodes": []}
 
-        LOGGER.debug(f"OLD AS DICT: {old_as_dict}")
-        LOGGER.debug(f"AS DICT: {new_as_dict}")
-
         for key in as_converted_device_parameters:
             if key:
                 sample["convertedDeviceParameters"][key] = values[new_as_dict[key]]
 
             del new_as_dict[key]
 
-        LOGGER.debug(f"Current Sample with Converted Device Parameters: {sample}")
-
         conv_eq_obj = {"protocol": protocol, "networkId": network_id, "deviceId": address}
-
-        LOGGER.debug(f"Current ConvertedEquipmentParameters:{conv_eq_obj}")
 
         for param in new_as_dict:
             if param:
@@ -131,15 +107,11 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header, a
 
         conv_eq_obj["parameters"] = parameters
         sample["convertedEquipmentParameters"].append(conv_eq_obj)
-        LOGGER.debug(f"Current Sample with Converted Equipment Parameters:{sample}")
-
         conv_eq_fc_obj = {"protocol": protocol, "networkId": network_id, "deviceId": address, "activeFaultCodes": [],
                           "inactiveFaultCodes": [], "pendingFaultCodes": []}
 
         if "activeFaultCodes" in new_as_dict:
-
             ac_fc = values[new_as_dict["activeFaultCodes"]]
-            LOGGER.debug(f"Active Faults:{ac_fc}")
 
             if ac_fc:
                 ac_fc_array = ac_fc.split("|")
@@ -148,7 +120,6 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header, a
                         fc_obj = {}
                         fc_arr = fc.split("~")
                         for fc_val in fc_arr:
-                            LOGGER.debug(f"Fault Code Value:{fc_val}")
                             fc_obj[fc_val.split(":")[0]] = fc_val.split(":")[1]
 
                         conv_eq_fc_obj["activeFaultCodes"].append(fc_obj)
@@ -182,7 +153,7 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header, a
         sample["convertedEquipmentFaultCodes"].append(conv_eq_fc_obj)
 
         json_sample_head["samples"].append(sample)
-        LOGGER.debug(f"Updated JSON Sample Head:{json_sample_head}")
+        LOGGER.debug(f"Process AS JSON Sample Head: {json_sample_head}")
 
     return json_sample_head
 
@@ -246,7 +217,6 @@ def retrieve_and_process_file(uploaded_file_object):
 
     obj = s3.get_object(Bucket=bucket_name, Key=file_key)
     csv_file = obj['Body'].read().decode('utf-8').splitlines(True)
-    LOGGER.debug(f"Csv File: {csv_file}")
 
     file_date_time = str(obj['LastModified'])[:19]
     file_metadata = obj["Metadata"]
@@ -264,7 +234,6 @@ def retrieve_and_process_file(uploaded_file_object):
     sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message, edgeCommonAPIURL)
 
     ngdi_json_template = json.loads(os.environ["NGDIBody"])
-    LOGGER.debug(f"NGDI Template: {ngdi_json_template}")
 
     ss_row = False
     seen_ss = False
@@ -286,32 +255,22 @@ def retrieve_and_process_file(uploaded_file_object):
     for row in csv_rows:
         if not ss_row and not seen_ss:
             if "messageFormatVersion" in row:
-                LOGGER.debug(f"messageFormatVersion row: {row}")
                 ngdi_json_template["messageFormatVersion"] = row[1] if row[1] else None
             elif "dataEncryptionSchemeId" in row:
-                LOGGER.debug(f"dataEncryptionSchemeId row: {row}")
                 ngdi_json_template["dataEncryptionSchemeId"] = row[1] if row[1] else None
             elif "telematicsBoxId" in row:
-                LOGGER.debug(f"telematicsBoxId row: {row}")
                 ngdi_json_template["telematicsDeviceId"] = row[1] if row[1] else None
             elif "componentSerialNumber" in row:
-                LOGGER.debug(f"componentSerialNumber row: {row}")
                 ngdi_json_template["componentSerialNumber"] = row[1] if row[1] else None
             elif "dataSamplingConfigId" in row:
-                LOGGER.debug(f"dataSamplingConfigId row: {row}")
                 ngdi_json_template["dataSamplingConfigId"] = row[1] if row[1] else None
             elif "ssDateTimestamp" in row:
                 # Found the Single Sample Row. Append the row as Single Sample row.
-                LOGGER.debug(f"ssDateTimestamp Header row: {row}")
-
                 ss_row = True
                 seen_ss = True
                 ss_rows.append(row)
             elif "asDateTimestamp" in row:
                 # If there are no Single Samples, append the row as an All Sample row and stop looking for SS rows
-                LOGGER.debug(f"No Single Samples!")
-                LOGGER.debug(f"asDateTimestamp Header row: {row}")
-
                 ss_row = False
                 seen_ss = True
                 as_rows.append(row)
@@ -319,8 +278,6 @@ def retrieve_and_process_file(uploaded_file_object):
             if "asDateTimestamp" in row:
                 LOGGER.error(f"ERROR! Missing the Single Sample Values.")
                 return
-
-            LOGGER.debug(f"ssDateTimestamp Values row: {row}")
 
             ss_rows.append(row)
             ss_row = False
@@ -332,7 +289,7 @@ def retrieve_and_process_file(uploaded_file_object):
         LOGGER.error(f"ERROR! Missing the Single Sample Values or the All Samples Values.")
         return
 
-    LOGGER.info(f"NGDI Template after main metadata addition: {ngdi_json_template}")
+    LOGGER.debug(f"NGDI Template after main metadata addition: {ngdi_json_template}")
 
     ss_dict = {}
     as_dict = {}
@@ -341,10 +298,7 @@ def retrieve_and_process_file(uploaded_file_object):
     count = 0
 
     ss_headers = ss_rows[0] if ss_rows else []
-    LOGGER.debug(f"SS Headers: {ss_headers}")
-
     as_headers = as_rows[0] if as_rows else []
-    LOGGER.debug(f"AS Headers: {as_headers}")
 
     ss_converted_device_parameters = []
     seen_ss_dev_params = False
@@ -380,9 +334,6 @@ def retrieve_and_process_file(uploaded_file_object):
             ss_dict[head] = count
             count = count + 1
 
-    LOGGER.debug(f"SS_DICT: {ss_dict}")
-    LOGGER.debug(f"SS Device Headers: {ss_converted_device_parameters}")
-
     count = 0
 
     # For each of the headers in the SS row, map the index to the header value
@@ -409,9 +360,6 @@ def retrieve_and_process_file(uploaded_file_object):
             as_dict[head] = count
             count = count + 1
 
-    LOGGER.debug(f"AS_DICT: {as_dict}")
-    LOGGER.debug(f"AS Device Parameters: {as_converted_device_parameters}")
-
     # Get rid of the AS header row since we have already stored the index of each header
     if as_rows:
         LOGGER.debug(f"Removing AS Header Row --index '0'-- from: {as_rows}")
@@ -421,24 +369,20 @@ def retrieve_and_process_file(uploaded_file_object):
     LOGGER.info("Handling Single Samples")
     ngdi_json_template = process_ss(ss_rows, ss_dict, ngdi_json_template, ss_converted_prot_header,
                                     ss_converted_device_parameters) if ss_rows else ngdi_json_template
-    LOGGER.debug(f"NGDI JSON Template after SS handling: {ngdi_json_template}")
 
     LOGGER.info("Handling All Samples")
     ngdi_json_template = process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header,
                                     as_converted_device_parameters)
-    LOGGER.info(f"NGDI JSON Template after AS handling: {ngdi_json_template}")
 
     tsp_in_file = "telematicsPartnerName" in ngdi_json_template and ngdi_json_template["telematicsPartnerName"]
     cust_ref_in_file = "customerReference" in ngdi_json_template and ngdi_json_template["customerReference"]
-    LOGGER.debug(f"Telematics Partner Name in file: {tsp_in_file}")
-    LOGGER.debug(f"Customer Reference in file: {cust_ref_in_file}")
 
     if not (tsp_in_file and cust_ref_in_file):
         LOGGER.info(f"Retrieve Device ID from file . . .")
         device_id = get_device_id(ngdi_json_template)
 
         if not device_id:
-            LOGGER.error(f"Error! Device ID is not in the file! Aborting!")
+            LOGGER.error(f"Error! Device ID '{device_id}' is not in the file! Aborting!")
             return
 
         LOGGER.info(f"Retrieving TSP and Customer Reference from EDGE DB . . .")
@@ -461,21 +405,14 @@ def retrieve_and_process_file(uploaded_file_object):
 
             LOGGER.debug(f"Final file with TSP and Cust Ref: {ngdi_json_template}")
 
-    LOGGER.info(f"Posting file to S3...")
     filename = file_key
     LOGGER.info(f"Filename: {filename}")
 
     try:
         LOGGER.info(f"Retrieving date info for File Path from filename . . .")
-
         file_name_array = filename.split('_')
-        LOGGER.debug(f"Split File Name array: {file_name_array}")
-
         date_component = file_name_array[3]
-        LOGGER.debug(f"File Name date component: {date_component}")
-
         current_datetime = datetime.datetime.strptime(date_component, "%Y%m%d%H%M%S")
-        LOGGER.debug(f"File Name date component in datetime format: {current_datetime}")
 
         store_file_path = "ConvertedFiles/" + esn + '/' + device_id + '/' + ("%02d" % current_datetime.year) + '/' + \
                           ("%02d" % current_datetime.month) + '/' + ("%02d" % current_datetime.day) + '/' + \
@@ -486,7 +423,6 @@ def retrieve_and_process_file(uploaded_file_object):
             f"An error occurred while trying to get the file path from the file name:{e} Using current date-time . . .")
 
         current_datetime = datetime.datetime.now()
-        LOGGER.debug(f"Current Date Time: {current_datetime}")
 
         store_file_path = "ConvertedFiles/" + ngdi_json_template['componentSerialNumber'] + '/' + \
                           ngdi_json_template["telematicsDeviceId"] + '/' + ("%02d" % current_datetime.year) + '/' + \

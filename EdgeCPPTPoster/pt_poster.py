@@ -36,7 +36,7 @@ def handle_fc_params(converted_fc_params):
             fc_param.pop("inactiveFaultCodes")
         if "pendingFaultCodes" in fc_param:
             fc_param.pop("pendingFaultCodes")
-    LOGGER.info(f"Converted FC Params: {converted_fc_params}")
+    LOGGER.debug(f"Converted FC Params: {converted_fc_params}")
     return converted_fc_params
 
 
@@ -51,7 +51,7 @@ def handle_hb_params(converted_device_params):
     # Remove unnecessary params from device parameters for PT payload
     converted_device_params = {key.lower(): value for key, value in converted_device_params.items() if
                                key in ["Latitude", "Longitude", "Altitude"]}
-    LOGGER.info(f"Converted Device Params: {converted_device_params}")
+    LOGGER.debug(f"Converted Device Params: {converted_device_params}")
     return converted_device_params
 
 

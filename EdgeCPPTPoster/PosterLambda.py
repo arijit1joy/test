@@ -44,13 +44,13 @@ def get_device_info(device_id):
     payload = env.get_dev_info_payload
     payload["input"]["Params"][0]["devId"] = device_id
 
-    LOGGER.info(f"Retrieving the device details from the EDGE DB...")
+    LOGGER.info(f"Retrieving the device details from the EDGE DB for Device ID: {device_id}")
 
     try:
         response = requests.post(url=edgeCommonAPIURL, json=payload)
         get_device_info_body = response.json()
         get_device_info_code = response.status_code
-        LOGGER.info(f"Get device info response code: {get_device_info_code}, body: {get_device_info_body}")
+        LOGGER.debug(f"Get device info response code: {get_device_info_code}, body: {get_device_info_body}")
 
         if get_device_info_code == 200 and get_device_info_body:
             get_device_info_body = get_device_info_body[0]
@@ -99,10 +99,10 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
     file_date_time = str(file_object['LastModified'])[:19]
     file_object_stream = file_object['Body'].read()
     json_body = json.loads(file_object_stream)
-    LOGGER.info(f"File as JSON: {json_body}")
+    LOGGER.debug(f"File as JSON: {json_body}")
 
     file_metadata = file_object["Metadata"]
-    LOGGER.info(f"File Metadata: {file_metadata}")
+    LOGGER.debug(f"File Metadata: {file_metadata}")
 
     j1939_type = file_metadata["j1939type"] if "j1939type" in file_metadata else 'HB'
 
@@ -171,7 +171,6 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
                 return
 
         if device_owner in json.loads(os.environ["cd_device_owners"]):
-            LOGGER.info(f"After Update json : {json_body}")
             sqs_message = sqs_message.replace("FILE_RECEIVED", "CD_PT_POSTED")
             post.send_to_cd(bucket_name, file_key, JSONFormat, s3_client, j1939_type, EndpointBucket,  endpointFile,
                             UseEndpointBucket, json_body, file_uuid, sqs_message)

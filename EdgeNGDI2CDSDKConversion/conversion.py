@@ -71,10 +71,8 @@ def delete_message_from_sqs_queue(receipt_handle):
 
 def get_metadata_info(j1939_file):
     j1939_file_val = j1939_file
-    LOGGER.debug(f"Removing 'samples' from the j1939 file...")
     try:
         j1939_file_val.pop("samples")
-        LOGGER.debug(f"j1939 file with no samples: {j1939_file_val}")
         return j1939_file_val
 
     except Exception as e:
@@ -83,16 +81,14 @@ def get_metadata_info(j1939_file):
 
 
 def post_cd_message(data):
-    LOGGER.debug(f"Retrieving the TSP name to get the Auth Token . . .")
     tsp_name = data["Telematics_Partner_Name"]
-    LOGGER.debug(f"TSP From File ----------------> {tsp_name}")
+    LOGGER.debug(f"TSP From File: {tsp_name}")
     auth_url = auth_token_url.replace("{TSP-Name}", tsp_name)
     req = requests.get(url=auth_url)
     auth_token = json.loads(req.text)
     auth_token_info = auth_token['authToken']
     url = cd_url + auth_token_info
     sent_date_time = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ')[:-4] + "Z"
-    LOGGER.debug(f'Sent_Date_Time  ------------------> {sent_date_time}')
     if sent_date_time:
         data["Sent_Date_Time"] = sent_date_time
     else:
@@ -109,7 +105,7 @@ def post_cd_message(data):
         data["Equipment_ID"] = "EDGE_" + data["Engine_Serial_Number"]  # Setting the Equipment ID to EDGE_<ESN>
         LOGGER.debug(f"New Equipment ID: {data['Equipment_ID']}")
 
-    LOGGER.debug(f'File to send to CD   ------------------> {data}')
+    LOGGER.debug(f'File to send to CD: {data}')
 
     # We are not sending payload to CD for Digital Cockpit Device
     if not data["Telematics_Box_ID"] == '192000000000101':
@@ -122,14 +118,11 @@ def get_active_faults(fault_list, address):
     LOGGER.info(f"Getting Active Faults")
     final_fc_list = []
     for fc in fault_list:
-        LOGGER.debug(f"Handling FC: {fc}")
         fc["Fault_Source_Address"] = address
         fc["SPN"] = fc["spn"]
         fc["FMI"] = fc["fmi"]
-        LOGGER.debug(f"Handling Intermediate FC: {fc}")
         del fc["spn"]
         del fc["fmi"]
-        LOGGER.debug(f"Handling final FC: {fc}")
         final_fc_list.append(fc)
     LOGGER.debug(f"Final FC list: {final_fc_list}")
     return final_fc_list
@@ -139,7 +132,6 @@ def handle_hb(converted_device_params, converted_equip_params, converted_equip_f
     var_dict = {}
     address = ""
     LOGGER.info(f"Retrieving parameters for creating HB SDK Class Object")
-    LOGGER.debug(f"CD SDK Arguments Map: {class_arg_map}")
     try:
         for arg in class_arg_map:
             LOGGER.debug(f"Handling the arg: {arg}")
@@ -156,13 +148,11 @@ def handle_hb(converted_device_params, converted_equip_params, converted_equip_f
                     else:
                         if samples[param]:
                             if param == converted_device_params_var:
-                                LOGGER.info(f"Handling convertedDeviceParameters")
                                 sample_obj = samples[param]
                                 for val in sample_obj:
                                     var_dict[sample_obj[val]] = converted_device_params[val] \
                                         if val in converted_device_params else ""
                             elif param == converted_equip_params_var:
-                                LOGGER.info(f"Handling convertedEquipmentParameters")
                                 sample_obj = samples[param][0]
                                 address = converted_equip_params["deviceId"] \
                                     if "deviceId" in converted_equip_params else ""
@@ -175,7 +165,6 @@ def handle_hb(converted_device_params, converted_equip_params, converted_equip_f
                                         var_dict[sample_obj[equip_param]] = converted_equip_params[equip_param] \
                                             if equip_param in converted_equip_params else ""
                             else:
-                                LOGGER.info(f"Handling convertedEquipmentFaultCodes")
                                 sample_obj = samples[param][0]
                                 for fc_param in sample_obj:
                                     final_fc = []
@@ -203,7 +192,6 @@ def handle_fc(converted_device_params, converted_equip_params, converted_equip_f
     address = ""
     found_fcs = False
     LOGGER.info(f"Retrieving parameters for creating FC SDK Class Object")
-    LOGGER.debug(f"CD SDK Arguments Map:  {class_arg_map}")
     try:
         for arg in class_arg_map:
             LOGGER.debug(f"Handling the arg: {arg}")
@@ -220,13 +208,11 @@ def handle_fc(converted_device_params, converted_equip_params, converted_equip_f
                     else:
                         if samples[param]:
                             if param == converted_device_params_var:
-                                LOGGER.info(f"Handling convertedDeviceParameters")
                                 sample_obj = samples[param]
                                 for val in sample_obj:
                                     var_dict[sample_obj[val]] = converted_device_params[val] \
                                         if val in converted_device_params else ""
                             elif param == converted_equip_params_var:
-                                LOGGER.info(f"Handling convertedEquipmentParameters")
                                 sample_obj = samples[param][0]
                                 address = converted_equip_params["deviceId"] \
                                     if "deviceId" in converted_equip_params else ""
@@ -240,18 +226,15 @@ def handle_fc(converted_device_params, converted_equip_params, converted_equip_f
                                         var_dict[sample_obj[equip_param]] = converted_equip_params[equip_param] \
                                             if equip_param in converted_equip_params else ""
                             else:
-                                LOGGER.info(f"Handling convertedEquipmentFaultCodes")
                                 sample_obj = samples[param][0]
                                 for fc_param in sample_obj:
                                     if fc_param in converted_equip_fc and fc_param == active_fault_code_indicator:
                                         all_active_fcs = converted_equip_fc[fc_param].copy()
                                         if not all_active_fcs:
                                             continue
-                                        LOGGER.info(f"These are active Fault Codes")
                                         found_fcs = True  # Indicating that we found Fault Codes in this file.
                                         fc_index = 0
                                         final_fc = get_active_faults(all_active_fcs, address)
-                                        LOGGER.info(f"Total Number of fcs: {len(all_active_fcs)}")
                                         for fc in all_active_fcs:
                                             create_fc_class(fc, final_fc, fc_index, sample_obj[fc_param], var_dict, 1)
                                             fc_index = fc_index + 1
@@ -259,33 +242,27 @@ def handle_fc(converted_device_params, converted_equip_params, converted_equip_f
                                         all_inactive_fcs = converted_equip_fc[fc_param].copy()
                                         if not all_inactive_fcs:
                                             continue
-                                        LOGGER.info(f"These are inactive Fault Codes")
                                         found_fcs = True  # Indicating that we found Fault Codes in this file.
                                         all_active_fcs = converted_equip_fc[active_fault_code_indicator].copy() if \
                                             active_fault_code_indicator in converted_equip_fc else []
                                         fc_index = 0
                                         inactive_final_fc = get_active_faults(all_inactive_fcs, address)
                                         active_final_fc = get_active_faults(all_active_fcs, address)
-                                        LOGGER.info(f"Total Number of fcs: {len(all_inactive_fcs)}")
                                         for fc in all_inactive_fcs:
                                             create_fc_class(fc, inactive_final_fc, fc_index, sample_obj[fc_param],
                                                             var_dict, 0, active_final_fc)
                                             fc_index = fc_index + 1
                                     else:
                                         # TODO Handle Pending Fault Codes.
-                                        LOGGER.info(
-                                            f"There are either no, fc_param in this file -- We are not handling "
-                                            f"pending FCs for now.")
+                                        LOGGER.info(f"There are either no, fc_param in this file -- We are not "
+                                                    f"handling pending FCs for now.")
         if found_fcs:
-            LOGGER.info(
-                f"We have already processed this sample since it had fault codes. Continuing to the next sample . . .")
+            LOGGER.info("We have already processed this sample since it had fault codes. Continuing to the next sample")
         else:
-            LOGGER.info(f"This sample had no Fault Code information, checking if this is the Single Sample . . .")
-            LOGGER.debug(f"Variable Dict: {var_dict}")
+            LOGGER.info(f"This sample had no Fault Code information, checking if this is the Single Sample")
             if "Telematics_Partner_Message_ID".lower() in var_dict:
-                LOGGER.info(
-                    f'Found Message ID: {var_dict["Telematics_Partner_Message_ID".lower()]} in this sample! This is '
-                    f'the Single Sample. Proceeding to the next sample . . .')
+                LOGGER.info(f'Found Message ID: {var_dict["Telematics_Partner_Message_ID".lower()]} in this sample!'
+                            f'This is the Single Sample. Proceeding to the next sample')
             else:
                 LOGGER.error(
                     f"There was an Error in this FC sample. It is not the Single Sample and it does not have FC info!")
@@ -293,35 +270,25 @@ def handle_fc(converted_device_params, converted_equip_params, converted_equip_f
         LOGGER.error(f"Error! The following Exception occurred while handling this sample:{e}")
 
 
-def create_fc_class(fc, f_codes, fc_index, fc_param, var_dict,
-                    active_or_inactive, active_fault_array=None):
-    LOGGER.debug(f"Current FC Index: {fc_index}")
+def create_fc_class(fc, f_codes, fc_index, fc_param, var_dict, active_or_inactive, active_fault_array=None):
     fcs = f_codes.copy()
     fcs.pop(fc_index)
-    LOGGER.debug(f"Old active faults: {f_codes}")
-    LOGGER.debug(f"New active faults: {fcs}")
     variable_dict = var_dict.copy()
     variable_dict[fc_param] = fcs if not active_fault_array else active_fault_array
     variable_dict[active_cd_parameter] = active_or_inactive
     variable_dict[spn_indicator.lower()] = fc["SPN"]
     variable_dict[fmi_indicator.lower()] = fc["FMI"]
     variable_dict[count_indicator.lower()] = fc["count"]
-    LOGGER.debug(f"FC CD SDK Class Variable Dict: {variable_dict}")
     fc_sdk_object = map_ngdi_sample_to_cd_payload(variable_dict, fc=True)
     LOGGER.info(f"Posting Sample to CD...")
     post_cd_message(fc_sdk_object)
 
 
 def send_sample(sample, metadata, fc_or_hb):
-    LOGGER.info(f"Handling Sample: {sample}")
     converted_equip_params = []
     converted_device_params = {}
     converted_equip_fc = []
     time_stamp = ""
-    LOGGER.debug(f"converted_equip_params: {converted_equip_params_var}")
-    LOGGER.debug(f"converted_device_params: {converted_device_params_var}")
-    LOGGER.debug(f"converted_equip_fc: {converted_equip_fc_var}")
-    LOGGER.debug(f"Retrieving the params from the Sample")
     if converted_equip_params_var in sample:
         converted_equip_params = sample[converted_equip_params_var][0] if sample[converted_equip_params_var] else []
         LOGGER.debug(f"Found  {converted_equip_params_var} : {converted_equip_params}")
@@ -333,10 +300,9 @@ def send_sample(sample, metadata, fc_or_hb):
         LOGGER.debug(f"Found {converted_equip_fc_var} : {converted_equip_fc}")
     if time_stamp_param in sample:
         time_stamp = sample[time_stamp_param]
-    LOGGER.debug(f"Sample Time Stamp: {time_stamp}")
-    LOGGER.info(f"New converted_equip_params: {converted_equip_params}")
-    LOGGER.info(f"New converted_device_params: {converted_device_params}")
-    LOGGER.info(f"New converted_equip_fc , {converted_equip_fc}")
+    LOGGER.debug(f"New converted_equip_params: {converted_equip_params}")
+    LOGGER.debug(f"New converted_device_params: {converted_device_params}")
+    LOGGER.debug(f"New converted_equip_fc , {converted_equip_fc}")
     if fc_or_hb.lower() == "hb":
         store_health_parameters_into_redshift(converted_device_params, time_stamp, metadata)
         LOGGER.info(f"Handling HB...")
@@ -365,7 +331,7 @@ def retrieve_and_process_file(uploaded_file_object, api_url):
         return
     j1939_file_stream = j1939_file_object['Body'].read()
     j1939_file = json.loads(j1939_file_stream)
-    LOGGER.info(f"File as JSON: {j1939_file}")
+    LOGGER.debug(f"File as JSON: {j1939_file}")
     if fc_or_hb.lower() == 'hb':
         esn = j1939_file['componentSerialNumber']
         # Please note that the order is expected to be <Make>*<Model>***<ESN>**** for Improper PSBU ESN
@@ -378,6 +344,7 @@ def retrieve_and_process_file(uploaded_file_object, api_url):
         esn = key.split('_')[2]
         config_spec_name = key.split('_')[3]
         data_protocol = 'J1939_FC'
+
     updated_file_name = '_'.join(key.split('/')[-1].split('_')[0:3]) + "%"
     edge_data_consumption_vw = Table('da_edge_olympus.edge_data_consumption_vw')
     query = Query.from_(edge_data_consumption_vw).select(
@@ -388,11 +355,12 @@ def retrieve_and_process_file(uploaded_file_object, api_url):
         edge_data_consumption_vw.data_type == data_protocol).orderby(edge_data_consumption_vw.request_id_int,
                                                                      order=Order.desc
                                                                      ).limit(1)
-    LOGGER.info(f"Consumption View Query: {query.get_sql(quote_char=None)}")
     try:
         get_response = edge.api_request(api_url, "get", query.get_sql(quote_char=None))
-        LOGGER.info(f"Response: {get_response}")
+        LOGGER.info(f"Consumption View Response: {get_response}")
     except Exception as exception:
+        # Using logging level 'info' in case exception occurred due to invalid query
+        LOGGER.info(f"Consumption View Query: {query.get_sql(quote_char=None)}")
         return edge.server_error(str(exception))
     request_id = get_response[0]['request_id'] if get_response and "request_id" in get_response[0] else None
     consumption_per_request = get_response[0]['consumption_per_request'] if get_response and get_response[0][
@@ -405,11 +373,9 @@ def retrieve_and_process_file(uploaded_file_object, api_url):
         config_spec_name) + "," + str(request_id) + "," + str(consumption_per_request) + "," + " " + "," + " "
     sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message, edgeCommonAPIURL)
     samples = j1939_file["samples"] if "samples" in j1939_file else None
-    LOGGER.info(f"File Samples: {samples}")
     metadata = get_metadata_info(j1939_file)
     if metadata:
         if samples:
-            LOGGER.info(f"Sending samples for CD processing . . .")
             for sample in samples:
                 send_sample(sample, metadata, fc_or_hb)
         else:
@@ -425,7 +391,7 @@ def lambda_handler(event, context):
         vals = getattr(context, 'parameters')
         api_url = vals[params['Names'][0]]
     except AttributeError as ae:
-        LOGGER.error("Error, could not find ssm in the cache\n Proceeding as usual")
+        LOGGER.error(f"Error, could not find ssm in the cache\n Proceeding as usual: {ae}")
         ssm_uncached = boto3.client('ssm')
         response = ssm_uncached.get_parameters(Names=name, WithDecryption=False)
         api_url = response['Parameters'][0]['Value']
