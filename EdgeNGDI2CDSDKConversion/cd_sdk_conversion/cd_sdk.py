@@ -1,17 +1,10 @@
 import json
 
-import edge_logger as logging
-
-logger = logging.logging_framework(f"EdgeNGDI2CDSDKConversion.{__name__}")
-
 
 def map_ngdi_sample_to_cd_payload(parameters, fc=False):
 
     # Get the appropriate template file based on if the "fc" flag is set to True
     cd_json_template = json.load(open(f"cd_sdk_conversion/cd_{'fc' if fc else 'hb'}_sdk_payload.json", "r"))
-
-    logger.info(f"CD {'FC' if fc else 'HB'} Json Template: {cd_json_template}")
-
     final_cd_payload = {}
 
     # Populate the CD Payload Template

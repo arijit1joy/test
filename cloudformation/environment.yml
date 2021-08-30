@@ -266,6 +266,7 @@ Resources:
       MemorySize: 512
       Environment:
         Variables:
+          LoggingLevel: "info"
           APPLICATION_NAME: !Ref ApplicationName
           region: !Sub "${AWS::Region}"
           APPLICATION_ENVIRONMENT: !Ref ApplicationEnvironmentTag
@@ -422,6 +423,7 @@ Resources:
       ReservedConcurrentExecutions: 5
       Environment:
         Variables:
+          LoggingLevel: "info"
           fmi_indicator: FMI
           spn_parameter_json_object_key: edge_spn_parameter_name.json
           edgeCommonAPIURL: !Ref EdgeCommonDBAPI
@@ -670,6 +672,7 @@ Resources:
       ReservedConcurrentExecutions: 5
       Environment:
         Variables:
+          LoggingLevel: "info"
           APPLICATION_ENVIRONMENT: !Ref ApplicationEnvironmentTag
           CPPostBucket: !Sub "edge-j1939-${ApplicationEnvironmentTag}"
           region: !Sub "${AWS::Region}"
@@ -819,15 +822,15 @@ Resources:
           Key: "lambda:createdBy"
         - Value: Edge
           Key: Name
-      MemorySize: 2048
+      MemorySize: 1024
       ReservedConcurrentExecutions: 5
       Environment:
         Variables:
+          LoggingLevel: "info"
           cd_device_owners: '{"EBU": "EBU", "TATA": "TATA"}'
           Environment: !Sub "${ApplicationEnvironmentTag}"
           edgeCommonAPIURL: !Ref EdgeCommonDBAPI
           APPLICATION_ENVIRONMENT: !Ref ApplicationEnvironmentTag
-          CurrentProductsAPI: "https://api.cp.aws.cummins.com/v1/edge-utils/cp-data"
           PTJ1939Header: !Ref PTJ1939Header
           environment: !Ref ApplicationEnvironmentTag
           PSBUSpecifier: psbu
@@ -851,7 +854,6 @@ Resources:
           CPPostBucket: !Sub "edge-j1939-${ApplicationEnvironmentTag}"
           region: !Sub "${AWS::Region}"
           PTJ1939PostURL: !Ref PTJ1939PostURL
-          CurrentProdutCommonAPIKey: GxcxtISfZE1e9Rb63Gj6kAh5xTTz9ba4hQGfjc20
           PTxAPIKey: pt_xapi_key
           delivery_stream_name: !Ref DeliveryStreamName
           CDPTJ1939PostURL: !Ref CDPTJ1939PostURL
