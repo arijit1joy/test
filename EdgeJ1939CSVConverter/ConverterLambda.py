@@ -184,18 +184,18 @@ def get_tsp_and_cust_ref(device_id):
 
     LOGGER.debug(f"Get TSP and Cust_Ref payload:  {get_tsp_cust_ref_payload}")
     get_tsp_cust_ref_response = requests.post(url=edgeCommonAPIURL, json=get_tsp_cust_ref_payload)
-    get_tsp_cust_ref_response_body = get_tsp_cust_ref_response.json()[0]
+    get_tsp_cust_ref_response_body = get_tsp_cust_ref_response.json()
     get_tsp_cust_ref_response_code = get_tsp_cust_ref_response.status_code
 
     LOGGER.debug(f"Get TSP and Cust_Ref response code: {get_tsp_cust_ref_response_code}, "
                  f"body: {get_tsp_cust_ref_response_body}")
 
     if (get_tsp_cust_ref_response_body and get_tsp_cust_ref_response_code == 200) and \
-            ("cust_ref" in get_tsp_cust_ref_response_body and get_tsp_cust_ref_response_body["cust_ref"]) and \
-            ("device_owner" in get_tsp_cust_ref_response_body and get_tsp_cust_ref_response_body["device_owner"]):
-        return get_tsp_cust_ref_response_body
+            ("cust_ref" in get_tsp_cust_ref_response_body[0] and get_tsp_cust_ref_response_body[0]["cust_ref"]) and \
+            ("device_owner" in get_tsp_cust_ref_response_body[0] and get_tsp_cust_ref_response_body[0]["device_owner"]):
+        return get_tsp_cust_ref_response_body[0]
 
-    return {}
+    return None
 
 
 def get_cspec_req_id(sc_number):
