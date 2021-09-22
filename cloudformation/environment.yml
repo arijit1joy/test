@@ -185,7 +185,7 @@ Resources:
                   - "sqs:SendMessage"
                 Resource:
                   - !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
-                  - !Sub "arn:aws:sqs.${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
+                  - !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
                 Effect: Allow
               - Action:
                   - "logs:*"
@@ -229,7 +229,7 @@ Resources:
                   - "sqs:SendMessage"
                 Resource:
                   - !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
-                  - !Sub "arn:aws:sqs.${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
+                  - !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
                 Effect: Allow
               - Action:
                   - "logs:*"
@@ -328,7 +328,7 @@ Resources:
                 Effect: Allow
               - Action:
                   - "sqs:SendMessage"
-                Resource: !Sub "arn:aws:sqs.${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
+                Resource: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
                 Effect: Allow
       AssumeRolePolicyDocument:
         Statement:
@@ -523,7 +523,7 @@ Resources:
                   - "sqs:SendMessage"
                 Resource:
                   - !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
-                  - !Sub "arn:aws:sqs.${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
+                  - !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
                 Effect: Allow
               - Action:
                   - "logs:*"
