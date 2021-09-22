@@ -1,6 +1,6 @@
 import utility as util
 
-LOGGER, FILE_NAME = util.logger_and_file_name(__name__)
+LOGGER = util.logger_and_file_name(__name__)
 
 
 def get_snapshot_data(params, time_stamp, address, spn_file_json):

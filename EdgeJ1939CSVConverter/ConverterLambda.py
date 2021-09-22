@@ -8,7 +8,7 @@ import utility as util
 from multiprocessing import Process
 from sqs_utility import sqs_send_message
 
-LOGGER, FILE_NAME = util.logger_and_file_name(__name__)
+LOGGER = util.logger_and_file_name(__name__)
 
 s3 = boto3.client('s3')
 s3_client = boto3.client('s3')
@@ -286,7 +286,9 @@ def retrieve_and_process_file(uploaded_file_object):
 
     # Make sure that we received values in the AS (as_rows > 1) and/or SS
     if not seen_ss or (not as_rows) or len(as_rows) < 2:
-        LOGGER.error(f"ERROR! Missing the Single Sample Values or the All Samples Values.")
+        error_message = "Missing the Single Sample Values or the All Samples Values."
+        LOGGER.error(error_message)
+        util.write_to_audit_table(error_message, device_id)
         return
 
     LOGGER.debug(f"NGDI Template after main metadata addition: {ngdi_json_template}")
@@ -382,14 +384,18 @@ def retrieve_and_process_file(uploaded_file_object):
         device_id = get_device_id(ngdi_json_template)
 
         if not device_id:
-            LOGGER.error(f"Error! Device ID '{device_id}' is not in the file! Aborting!")
+            error_message = f"Device ID '{device_id}' is not in the file! Aborting!"
+            LOGGER.error(error_message)
+            util.write_to_audit_table(error_message, device_id)
             return
 
         LOGGER.info(f"Retrieving TSP and Customer Reference from EDGE DB . . .")
         got_tsp_and_cust_ref = get_tsp_and_cust_ref(device_id)
 
         if not got_tsp_and_cust_ref:
-            LOGGER.error(f"Error! Could not retrieve TSP and Cust Ref. These are mandatory fields!")
+            error_message = "Could not retrieve TSP and Cust Ref. These are mandatory fields!"
+            LOGGER.error(error_message)
+            util.write_to_audit_table(error_message, device_id)
             return
 
         else:
