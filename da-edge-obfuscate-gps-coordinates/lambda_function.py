@@ -2,7 +2,7 @@ import utility as util
 from obfuscate_gps_handler import obfuscate_gps
 
 
-LOGGER = util.logger_and_file_name(__name__)
+LOGGER = util.get_logger(__name__)
 
 
 def lambda_handler(event, context):  # noqa

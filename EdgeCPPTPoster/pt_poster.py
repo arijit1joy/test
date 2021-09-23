@@ -11,7 +11,7 @@ from obfuscate_gps_utility import handle_gps_coordinates
 from metadata_utility import write_health_parameter_to_database
 
 
-LOGGER = util.logger_and_file_name(__name__)
+LOGGER = util.get_logger(__name__)
 secret_name = os.environ['PTxAPIKey']
 region_name = os.environ['Region']
 edgeCommonAPIURL = os.environ['edgeCommonAPIURL']

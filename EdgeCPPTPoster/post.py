@@ -6,7 +6,7 @@ import pt_poster
 import utility as util
 from sqs_utility import sqs_send_message
 
-LOGGER = util.logger_and_file_name(__name__)
+LOGGER = util.get_logger(__name__)
 
 s3_resource = boto3.resource('s3')
 CDPTJ1939PostURL = os.environ["CDPTJ1939PostURL"]

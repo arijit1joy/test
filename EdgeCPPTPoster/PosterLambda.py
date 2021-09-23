@@ -11,7 +11,7 @@ from multiprocessing import Process
 from sqs_utility import sqs_send_message
 from update_scheduler import update_scheduler_table, get_request_id_from_consumption_view
 
-LOGGER = util.logger_and_file_name(__name__)
+LOGGER = util.get_logger(__name__)
 
 # Retrieve the environment variables
 edgeCommonAPIURL = os.environ['edgeCommonAPIURL']

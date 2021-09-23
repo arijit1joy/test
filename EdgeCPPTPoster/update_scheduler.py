@@ -4,7 +4,7 @@ import edge_core as edge
 import scheduler_query as scheduler
 from pypika import Query, Table
 
-LOGGER = util.logger_and_file_name(__name__)
+LOGGER = util.get_logger(__name__)
 db_api_url = os.environ["edgeCommonAPIURL"]
 
 

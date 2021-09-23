@@ -5,7 +5,7 @@ import utility as util
 from datetime import datetime
 from obfuscate_gps_utility import handle_gps_coordinates
 
-LOGGER = util.logger_and_file_name(__name__)
+LOGGER = util.get_logger(__name__)
 
 
 def obfuscate_gps(body):

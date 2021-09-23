@@ -17,7 +17,7 @@ from cd_sdk_conversion.cd_sdk import map_ngdi_sample_to_cd_payload
 sys.path.insert(1, './lib')
 from pypika import Query, Table, Order, functions as fn
 
-LOGGER = util.logger_and_file_name(__name__)
+LOGGER = util.get_logger(__name__)
 
 '''Getting the Values from SSM Parameter Store
 '''

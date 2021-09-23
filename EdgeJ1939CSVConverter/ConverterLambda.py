@@ -8,7 +8,7 @@ import utility as util
 from multiprocessing import Process
 from sqs_utility import sqs_send_message
 
-LOGGER = util.logger_and_file_name(__name__)
+LOGGER = util.get_logger(__name__)
 
 s3 = boto3.client('s3')
 s3_client = boto3.client('s3')

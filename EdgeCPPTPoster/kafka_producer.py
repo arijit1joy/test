@@ -5,7 +5,7 @@ import utility as util
 from kafka import KafkaProducer
 from botocore.exceptions import ClientError
 
-LOGGER = util.logger_and_file_name(__name__)
+LOGGER = util.get_logger(__name__)
 cluster_response = {}
 secret_response = {}
 
