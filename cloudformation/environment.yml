@@ -183,7 +183,9 @@ Resources:
                 Effect: Allow
               - Action:
                   - "sqs:SendMessage"
-                Resource: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
+                Resource:
+                  - !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
+                  - !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
                 Effect: Allow
               - Action:
                   - "logs:*"
@@ -225,7 +227,9 @@ Resources:
                 Effect: Allow
               - Action:
                   - "sqs:SendMessage"
-                Resource: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
+                Resource:
+                  - !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
+                  - !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
                 Effect: Allow
               - Action:
                   - "logs:*"
@@ -271,6 +275,7 @@ Resources:
           region: !Sub "${AWS::Region}"
           APPLICATION_ENVIRONMENT: !Ref ApplicationEnvironmentTag
           j1939_end_bucket: !Ref EdgeJ1939ProcessingBucket
+          AuditTrailQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
       Handler: lambda_function.lambda_handler
       Role: !GetAtt
         - ObfuscateGPSCoordinatesLambdaRole
@@ -320,6 +325,10 @@ Resources:
                   - "lambda:InvokeFunction"
                   - "lambda:InvokeAsync"
                 Resource: "*"
+                Effect: Allow
+              - Action:
+                  - "sqs:SendMessage"
+                Resource: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
                 Effect: Allow
       AssumeRolePolicyDocument:
         Statement:
@@ -468,6 +477,7 @@ Resources:
           auth_token_url: !Ref AuthToken
           QueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/${ApplicationName}-NGDI2CDSDKConversionQueue-${ApplicationEnvironmentTag}"
           metaWriteQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
+          AuditTrailQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
       Handler: conversion.lambda_handler
       Role: !GetAtt
         - EdgeNGDI2CDSDKConversionLambdaRole
@@ -511,7 +521,9 @@ Resources:
                 Effect: Allow
               - Action:
                   - "sqs:SendMessage"
-                Resource: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
+                Resource:
+                  - !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
+                  - !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
                 Effect: Allow
               - Action:
                   - "logs:*"
@@ -555,7 +567,6 @@ Resources:
                   - "ec2:DeleteNetworkInterface"
                 Resource: "*"
                 Effect: Allow
-
       AssumeRolePolicyDocument:
         Statement:
           - Action: "sts:AssumeRole"
@@ -691,6 +702,7 @@ Resources:
           delivery_stream_name: !Ref DeliveryStreamName
           Region: !Sub "${AWS::Region}"
           metaWriteQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
+          AuditTrailQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
       Handler: ConverterLambda.lambda_handler
       Role: !GetAtt
         - EdgeJ1939CSVConverterLambdaRole
@@ -860,6 +872,7 @@ Resources:
           QueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/${ApplicationName}-CPPTPosterQueue-${ApplicationEnvironmentTag}"
           PowerGenValue: powerGen
           metaWriteQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
+          AuditTrailQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
           ProcessDataQuality: !Ref ProcessDataQuality
           mskSecretArn: !If
             - UseDevOrTestCondition

@@ -17,7 +17,7 @@ from cd_sdk_conversion.cd_sdk import map_ngdi_sample_to_cd_payload
 sys.path.insert(1, './lib')
 from pypika import Query, Table, Order, functions as fn
 
-LOGGER, FILE_NAME = util.logger_and_file_name(__name__)
+LOGGER = util.get_logger(__name__)
 
 '''Getting the Values from SSM Parameter Store
 '''
@@ -184,7 +184,9 @@ def handle_hb(converted_device_params, converted_equip_params, converted_equip_f
         LOGGER.info(f"Posting Sample to CD...")
         post_cd_message(hb_sdk_object)
     except Exception as e:
-        LOGGER.error(f"Error! The following Exception occurred while handling this sample:{e}")
+        error_message = f"An exception occurred while handling HB sample: {e}"
+        LOGGER.error(error_message)
+        util.write_to_audit_table("J1939_HB", error_message)
 
 
 def handle_fc(converted_device_params, converted_equip_params, converted_equip_fc, metadata, time_stamp):
@@ -267,7 +269,9 @@ def handle_fc(converted_device_params, converted_equip_params, converted_equip_f
                 LOGGER.error(
                     f"There was an Error in this FC sample. It is not the Single Sample and it does not have FC info!")
     except Exception as e:
-        LOGGER.error(f"Error! The following Exception occurred while handling this sample:{e}")
+        error_message = f"An exception occurred while handling FC sample: {e}"
+        LOGGER.error(error_message)
+        util.write_to_audit_table("J1939_FC", error_message)
 
 
 def create_fc_class(fc, f_codes, fc_index, fc_param, var_dict, active_or_inactive, active_fault_array=None):
@@ -379,10 +383,14 @@ def retrieve_and_process_file(uploaded_file_object, api_url):
             for sample in samples:
                 send_sample(sample, metadata, fc_or_hb)
         else:
-            LOGGER.error(f"Error! There are no samples in this file!")
+            error_message = f"There are no samples in this file for the device: {device_id}."
+            LOGGER.error(error_message)
+            util.write_to_audit_table(data_protocol, error_message, device_id)
         delete_message_from_sqs_queue(uploaded_file_object["sqs_receipt_handle"])
     else:
-        LOGGER.error(f"Error! Metadata retrieval failed! See logs.")
+        error_message = f"Metadata retrieval failed for the device: {device_id}."
+        LOGGER.error(error_message)
+        util.write_to_audit_table(data_protocol, error_message, device_id)
 
 
 @ssm.cache(parameter=name, entry_name='parameters')  # noqa-cache accepts list as a parameter but expects a str

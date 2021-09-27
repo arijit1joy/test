@@ -11,7 +11,7 @@ from multiprocessing import Process
 from sqs_utility import sqs_send_message
 from update_scheduler import update_scheduler_table, get_request_id_from_consumption_view
 
-LOGGER, FILE_NAME = util.logger_and_file_name(__name__)
+LOGGER = util.get_logger(__name__)
 
 # Retrieve the environment variables
 edgeCommonAPIURL = os.environ['edgeCommonAPIURL']
@@ -173,7 +173,7 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
         if device_owner in json.loads(os.environ["cd_device_owners"]):
             sqs_message = sqs_message.replace("FILE_RECEIVED", "CD_PT_POSTED")
             post.send_to_cd(bucket_name, file_key, JSONFormat, s3_client, j1939_type, EndpointBucket,  endpointFile,
-                            UseEndpointBucket, json_body, file_uuid, sqs_message)
+                            UseEndpointBucket, json_body, file_uuid, sqs_message, j1939_data_type)
 
         elif device_owner in json.loads(os.environ["psbu_device_owner"]):
             parameter = ssm_client.get_parameter(Name='da-edge-j1939-content-spec-value', WithDecryption=False)
@@ -187,13 +187,17 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
 
             LOGGER.debug(f"Json_body before calling SEND_TO_PT function: {json_body}")
             sqs_message = sqs_message.replace("FILE_RECEIVED", "FILE_SENT")
-            pt_poster.send_to_pt(PTJ1939PostURL, PTJ1939Header, json_body, sqs_message)
+            pt_poster.send_to_pt(PTJ1939PostURL, PTJ1939Header, json_body, sqs_message, j1939_data_type)
         else:
-            LOGGER.error(f"Error! The boxApplication value is not recorded in the EDGE DB!")
+            error_message = f"The boxApplication value is not recorded in the EDGE DB for the device: {device_id}"
+            LOGGER.error(error_message)
+            util.write_to_audit_table(j1939_data_type, error_message, device_id)
             return
 
     else:
-        LOGGER.error(f"ERROR! The device_info value is missing for the device: {device_info}")
+        error_message = f"The device_info value is missing for the device: {device_id}"
+        LOGGER.error(error_message)
+        util.write_to_audit_table(j1939_data_type, error_message, device_id)
         return
     delete_message_from_sqs_queue(receipt_handle)
 

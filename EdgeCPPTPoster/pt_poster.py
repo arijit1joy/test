@@ -11,7 +11,7 @@ from obfuscate_gps_utility import handle_gps_coordinates
 from metadata_utility import write_health_parameter_to_database
 
 
-LOGGER, FILE_NAME = util.logger_and_file_name(__name__)
+LOGGER = util.get_logger(__name__)
 secret_name = os.environ['PTxAPIKey']
 region_name = os.environ['Region']
 edgeCommonAPIURL = os.environ['edgeCommonAPIURL']
@@ -88,7 +88,7 @@ def store_device_health_params(converted_device_params, sample_time_stamp, devic
         LOGGER.info(f"There is no messageId in Converted Device Parameter.")
 
 
-def send_to_pt(post_url, headers, json_body, sqs_message):
+def send_to_pt(post_url, headers, json_body, sqs_message, j1939_data_type):
     try:
         headers_json = json.loads(headers)
         get_secret_value_response = sec_client.get_secret_value(SecretId=secret_name)
@@ -125,7 +125,7 @@ def send_to_pt(post_url, headers, json_body, sqs_message):
 
             # Send to Cluster
             if (os.environ["APPLICATION_ENVIRONMENT"].lower() in ["dev", "test"]) and (publishKafka == "true"):
-                publish_message(json_body)
+                publish_message(json_body, j1939_data_type)
 
             pt_response = requests.post(url=post_url, data=json.dumps(final_json_body), headers=headers_json)
             pt_response_body = pt_response.json()
@@ -136,7 +136,10 @@ def send_to_pt(post_url, headers, json_body, sqs_message):
                 sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message, edgeCommonAPIURL)
             else:
                 LOGGER.error(f"ERROR! Posting PT : {pt_response_body}")
+                util.write_to_audit_table(j1939_data_type, pt_response_body, json_body["telematicsDeviceId"])
 
     except Exception as e:
+        error_message = f"An exception occurred while posting to PT endpoint: {e}"
+        LOGGER.error(error_message)
         traceback.print_exc()
-        LOGGER.error(f"ERROR! An exception occurred while posting to PT endpoint: {e}")
+        util.write_to_audit_table(j1939_data_type, error_message, json_body["telematicsDeviceId"])

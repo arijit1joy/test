@@ -8,7 +8,7 @@ import utility as util
 from multiprocessing import Process
 from sqs_utility import sqs_send_message
 
-LOGGER, FILE_NAME = util.logger_and_file_name(__name__)
+LOGGER = util.get_logger(__name__)
 
 s3 = boto3.client('s3')
 s3_client = boto3.client('s3')
@@ -184,18 +184,18 @@ def get_tsp_and_cust_ref(device_id):
 
     LOGGER.debug(f"Get TSP and Cust_Ref payload:  {get_tsp_cust_ref_payload}")
     get_tsp_cust_ref_response = requests.post(url=edgeCommonAPIURL, json=get_tsp_cust_ref_payload)
-    get_tsp_cust_ref_response_body = get_tsp_cust_ref_response.json()[0]
+    get_tsp_cust_ref_response_body = get_tsp_cust_ref_response.json()
     get_tsp_cust_ref_response_code = get_tsp_cust_ref_response.status_code
 
     LOGGER.debug(f"Get TSP and Cust_Ref response code: {get_tsp_cust_ref_response_code}, "
                  f"body: {get_tsp_cust_ref_response_body}")
 
     if (get_tsp_cust_ref_response_body and get_tsp_cust_ref_response_code == 200) and \
-            ("cust_ref" in get_tsp_cust_ref_response_body and get_tsp_cust_ref_response_body["cust_ref"]) and \
-            ("device_owner" in get_tsp_cust_ref_response_body and get_tsp_cust_ref_response_body["device_owner"]):
-        return get_tsp_cust_ref_response_body
+            ("cust_ref" in get_tsp_cust_ref_response_body[0] and get_tsp_cust_ref_response_body[0]["cust_ref"]) and \
+            ("device_owner" in get_tsp_cust_ref_response_body[0] and get_tsp_cust_ref_response_body[0]["device_owner"]):
+        return get_tsp_cust_ref_response_body[0]
 
-    return {}
+    return None
 
 
 def get_cspec_req_id(sc_number):
@@ -286,7 +286,9 @@ def retrieve_and_process_file(uploaded_file_object):
 
     # Make sure that we received values in the AS (as_rows > 1) and/or SS
     if not seen_ss or (not as_rows) or len(as_rows) < 2:
-        LOGGER.error(f"ERROR! Missing the Single Sample Values or the All Samples Values.")
+        error_message = "Missing the Single Sample Values or the All Samples Values."
+        LOGGER.error(error_message)
+        util.write_to_audit_table(error_message, device_id)
         return
 
     LOGGER.debug(f"NGDI Template after main metadata addition: {ngdi_json_template}")
@@ -382,14 +384,18 @@ def retrieve_and_process_file(uploaded_file_object):
         device_id = get_device_id(ngdi_json_template)
 
         if not device_id:
-            LOGGER.error(f"Error! Device ID '{device_id}' is not in the file! Aborting!")
+            error_message = f"Device ID '{device_id}' is not in the file! Aborting!"
+            LOGGER.error(error_message)
+            util.write_to_audit_table(error_message, device_id)
             return
 
         LOGGER.info(f"Retrieving TSP and Customer Reference from EDGE DB . . .")
         got_tsp_and_cust_ref = get_tsp_and_cust_ref(device_id)
 
         if not got_tsp_and_cust_ref:
-            LOGGER.error(f"Error! Could not retrieve TSP and Cust Ref. These are mandatory fields!")
+            error_message = "Could not retrieve TSP and Cust Ref. These are mandatory fields!"
+            LOGGER.error(error_message)
+            util.write_to_audit_table(error_message, device_id)
             return
 
         else:

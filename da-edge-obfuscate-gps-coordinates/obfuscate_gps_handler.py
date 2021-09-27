@@ -5,8 +5,7 @@ import utility as util
 from datetime import datetime
 from obfuscate_gps_utility import handle_gps_coordinates
 
-
-LOGGER, FILE_NAME = util.logger_and_file_name(__name__)
+LOGGER = util.get_logger(__name__)
 
 
 def obfuscate_gps(body):
@@ -46,3 +45,4 @@ def send_file_to_s3(body):
         LOGGER.debug(f"Send to S3 Response: {send_to_s3_response}")
     except Exception as e:
         LOGGER.error(f"An error occurred while sending file to s3:  {e}")
+        util.write_to_audit_table(e)

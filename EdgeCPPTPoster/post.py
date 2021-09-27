@@ -6,7 +6,7 @@ import pt_poster
 import utility as util
 from sqs_utility import sqs_send_message
 
-LOGGER, FILE_NAME = util.logger_and_file_name(__name__)
+LOGGER = util.get_logger(__name__)
 
 s3_resource = boto3.resource('s3')
 CDPTJ1939PostURL = os.environ["CDPTJ1939PostURL"]
@@ -30,7 +30,7 @@ def get_cspec_req_id(sc_number):
 
 
 def send_to_cd(bucket_name, key, json_format, client, j1939_type, endpoint_bucket, endpoint_file, use_endpoint_bucket,
-               json_body, uuid, sqs_message):
+               json_body, uuid, sqs_message, j1939_data_type):
     LOGGER.info(f"Received CD file for posting!")
 
     ngdi_key = key.replace("ConvertedFiles", "NGDI")
@@ -48,9 +48,10 @@ def send_to_cd(bucket_name, key, json_format, client, j1939_type, endpoint_bucke
 
             LOGGER.info(f"Post CD File to NGDI Folder Response:{post_to_ngdi_response}")
         except Exception as e:
-
-            LOGGER.error(f"ERROR! An Exception occurred while posting the file to the NGDI folder: {e} --> Traceback:")
+            error_message = f"An Exception occurred while posting the file to the NGDI folder: {e}"
+            LOGGER.error(error_message)
             traceback.print_exc()  # Printing the Stack Trace
+            util.write_to_audit_table(j1939_data_type, error_message, json_body["telematicsDeviceId"])
 
     elif json_format.lower() == "ngdi":
 
@@ -60,4 +61,4 @@ def send_to_cd(bucket_name, key, json_format, client, j1939_type, endpoint_bucke
             LOGGER.debug(f"Endpoint File Exists: {endpoint_file_exists}")
         else:
             sqs_message = sqs_message.replace("CD_PT_POSTED", "FILE_SENT")
-            pt_poster.send_to_pt(CDPTJ1939PostURL, CDPTJ1939Header, json_body, sqs_message)
+            pt_poster.send_to_pt(CDPTJ1939PostURL, CDPTJ1939Header, json_body, sqs_message, j1939_data_type)

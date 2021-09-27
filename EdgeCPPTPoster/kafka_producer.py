@@ -5,7 +5,7 @@ import utility as util
 from kafka import KafkaProducer
 from botocore.exceptions import ClientError
 
-LOGGER, FILE_NAME = util.logger_and_file_name(__name__)
+LOGGER = util.get_logger(__name__)
 cluster_response = {}
 secret_response = {}
 
@@ -49,7 +49,7 @@ def get_brokers(mskcluster_arn):
     return cluster_response['BootstrapBrokerStringSaslScram'].split(',')
 
 
-def publish_message(message_object):
+def publish_message(message_object, j1939_data_type):
     # Get credentials
     LOGGER.info("Inside publish_message()")
     secret_object = get_secret_value()
@@ -76,7 +76,9 @@ def publish_message(message_object):
         }
         return json_obj
     except ClientError as e:
-        LOGGER.error("Error while publishing the message to cluster", e)
+        error_message = f"Error while publishing the message to cluster: {e}"
+        LOGGER.error(error_message)
+        util.write_to_audit_table(j1939_data_type, error_message, message_object["telematicsDeviceId"])
         json_obj = {
             "response": "500"
         }
