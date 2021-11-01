@@ -349,28 +349,8 @@ def retrieve_and_process_file(uploaded_file_object, api_url):
         config_spec_name = key.split('_')[3]
         data_protocol = 'J1939_FC'
 
-    updated_file_name = '_'.join(key.split('/')[-1].split('_')[0:3]) + "%"
-    edge_data_consumption_vw = Table('da_edge_olympus.edge_data_consumption_vw')
-    query = Query.from_(edge_data_consumption_vw).select(
-        fn.Cast(fn.Substring(edge_data_consumption_vw.request_id, 4, fn.Length(edge_data_consumption_vw.request_id)),
-                'Integer', alias='request_id_int'), edge_data_consumption_vw.request_id,
-        edge_data_consumption_vw.consumption_per_request).where(
-        edge_data_consumption_vw.data_config_filename.like(updated_file_name)).where(
-        edge_data_consumption_vw.data_type == data_protocol).orderby(edge_data_consumption_vw.request_id_int,
-                                                                     order=Order.desc
-                                                                     ).limit(1)
-    try:
-        get_response = edge.api_request(api_url, "get", query.get_sql(quote_char=None))
-        LOGGER.info(f"Consumption View Response: {get_response}")
-    except Exception as exception:
-        # Using logging level 'info' in case exception occurred due to invalid query
-        LOGGER.info(f"Consumption View Query: {query.get_sql(quote_char=None)}")
-        return edge.server_error(str(exception))
-    request_id = get_response[0]['request_id'] if get_response and "request_id" in get_response[0] else None
-    consumption_per_request = get_response[0]['consumption_per_request'] if get_response and get_response[0][
-        'consumption_per_request'] else None
-    if consumption_per_request == 'null':
-        consumption_per_request = None
+    consumption_per_request = None
+    request_id = None
 
     sqs_message = uuid + "," + str(device_id) + "," + str(file_name) + "," + str(file_size) + "," + str(
         file_date_time) + "," + str(data_protocol) + "," + 'FILE_SENT' + "," + str(esn) + "," + str(
