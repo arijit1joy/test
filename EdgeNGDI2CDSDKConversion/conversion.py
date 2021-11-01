@@ -349,6 +349,7 @@ def retrieve_and_process_file(uploaded_file_object, api_url):
         config_spec_name = key.split('_')[3]
         data_protocol = 'J1939_FC'
 
+    # Commented/deleted consumption request id fetch from view as it does not deliver any business value
     consumption_per_request = None
     request_id = None
 
