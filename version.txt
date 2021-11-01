@@ -3,4 +3,4 @@ Year=2021
 Quarter=Q4
 Major=1
 Minor=0
-Fixed=0
+Fixed=1
