@@ -664,7 +664,7 @@ Resources:
         - Arn
       Principal: iot.amazonaws.com
 
- LambdaInvokeIotObfuscateGPSCoordinatesPermission:
+  LambdaInvokeIotObfuscateGPSCoordinatesPermission:
     Type: "AWS::Lambda::Permission"
     Properties:
       Action: "lambda:InvokeFunction"
