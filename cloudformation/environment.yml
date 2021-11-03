@@ -53,6 +53,10 @@ Parameters:
   PrivateSubnetID:
     Type: AWS::SSM::Parameter::Value<String>
     Default: private-subnet-id
+  CrossIOTRoleArn:
+    Type: String
+  IotClientAccount:
+    Type: String
 
 Conditions:
   UseDevOrTestCondition: !Or
@@ -329,6 +333,9 @@ Resources:
               - Action:
                   - "sqs:SendMessage"
                 Resource: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
+                Effect: Allow
+              - Action: "sts:AssumeRole"
+                Resource: !Ref CrossIOTRoleArn
                 Effect: Allow
       AssumeRolePolicyDocument:
         Statement:
@@ -655,6 +662,14 @@ Resources:
       SourceArn: !GetAtt
         - EdgePublicDataIoTTopicRule
         - Arn
+      Principal: iot.amazonaws.com
+
+ LambdaInvokeIotObfuscateGPSCoordinatesPermission:
+    Type: "AWS::Lambda::Permission"
+    Properties:
+      Action: "lambda:InvokeFunction"
+      FunctionName: !Ref ObfuscateGPSCoordinatesLambda
+      SourceArn: !Sub "arn:aws:iot:us-east-2:${IotClientAccount}:rule/da_edge_j1939_EdgeIotRulePublicDataDataLogger_${ApplicationEnvironmentTag}"
       Principal: iot.amazonaws.com
 
   EdgeJ1939CSVConverter:

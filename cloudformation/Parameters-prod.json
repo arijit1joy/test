@@ -21,6 +21,8 @@
         "EdgeDBUtilityLayerVersion": "8",
 		"DataQualityLambda":"da-EDGE-Olympus-BL-DataQuality",
         "SchedulerQueriesLayerVersion": "7",
-		"ProcessDataQuality" : "no"
+		"ProcessDataQuality" : "no",
+	    "CrossIOTRoleArn": "arn:aws:iam::148144240310:role/cda-edge-iot-service-role",
+        "IotClientAccount": "148144240310"
     }
 }
