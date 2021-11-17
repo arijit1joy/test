@@ -18,7 +18,7 @@
 		"EdgeSQSUtilityVersion": "5",
         "DeviceHealthDeliveryStream": "da-edge-aai-service-heartbeat-data-stream",
         "AuthToken": "https://api.edge-test.aws.cummins.com/v3/edge-device/provider-auth-token?TspName={TSP-Name}",
-        "EdgeDBUtilityLayerVersion": "9",
+        "EdgeDBUtilityLayerVersion": "12",
 		"DataQualityLambda":"da-EDGE-Olympus-BL-DataQuality",
         "SchedulerQueriesLayerVersion": "7",
 		"ProcessDataQuality" : "no",
