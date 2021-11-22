@@ -97,7 +97,7 @@ def handle_j1939_process(context):
     delete_metadata(context)
 
     # Delete device health data stored during last BDD execution
-    delete_device_health_data
+    delete_device_health_data(context)
 
     # Delete s3 objects uploaded during last BDD execution
     delete_s3_objects(context)
