@@ -107,10 +107,10 @@ def assert_j1939_hb_obfuscate_gps_coordinates_in_edge_db(context):
 
     # Deleting records before asserting obfuscate gps co-ordinates to avoid duplicate insertion in-case of obfuscate
     # assertion fail
-    delete_query = Query.from_(device_health_data).delete().where(device_health_data.device_id == context.device_id)  # noqa
-    delete_from_db_payload = get_edge_db_payload('post', delete_query)
-    delete_from_db_response = rest_api.post(context.edge_common_db_url, delete_from_db_payload)
-    assert delete_from_db_response["status_code"] == 200
+    # delete_query = Query.from_(device_health_data).delete().where(device_health_data.device_id == context.device_id)  # noqa
+    # delete_from_db_payload = get_edge_db_payload('post', delete_query)
+    # delete_from_db_response = rest_api.post(context.edge_common_db_url, delete_from_db_payload)
+    # assert delete_from_db_response["status_code"] == 200
 
     # Asserting obfuscate gps co-ordinates stored in device health data table
     edge_db_response_body = edge_db_response["body"][0]
