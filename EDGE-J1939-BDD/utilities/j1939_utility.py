@@ -20,6 +20,16 @@ def delete_metadata(context):
     print(f"Delete Metadata Response: {edge_db_response}")
 
 
+def delete_device_health_data(context):
+    device_ids = [context.ebu_device_id_1, context.ebu_device_id_2, context.ebu_device_id_3, context.psbu_device_id_1,
+                  context.psbu_device_id_2, context.not_whitelisted_device_id, context.ebu_esn_1]
+    da_edge_device_health_data = Table(context.device_health_data_table)
+    query = Query.from_(da_edge_device_health_data).delete().where(da_edge_device_health_data.device_id.isin(device_ids))
+    edge_db_payload = get_edge_db_payload('post', query)
+    edge_db_response = rest_api.post(context.edge_common_db_url, edge_db_payload)
+    print(f"Delete Device Health Data Response: {edge_db_response}")
+
+
 def delete_s3_objects(context):
     esn_list = [context.ebu_esn_1, context.ebu_esn_2, context.ebu_esn_3, context.psbu_esn_1, context.psbu_esn_2]
 
@@ -85,6 +95,9 @@ def get_j1939_hb_data_set(context):
 def handle_j1939_process(context):
     # Delete metadata stages stored during last BDD execution
     delete_metadata(context)
+
+    # Delete device health data stored during last BDD execution
+    delete_device_health_data
 
     # Delete s3 objects uploaded during last BDD execution
     delete_s3_objects(context)
