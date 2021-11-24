@@ -272,6 +272,7 @@ Resources:
         - Value: Edge
           Key: Name
       MemorySize: 512
+      ReservedConcurrentExecutions: 25
       Environment:
         Variables:
           LoggingLevel: "info"
@@ -436,7 +437,7 @@ Resources:
         - Value: Edge
           Key: Name
       MemorySize: 1536
-      ReservedConcurrentExecutions: 5
+      ReservedConcurrentExecutions: 25
       Environment:
         Variables:
           LoggingLevel: "info"
@@ -695,7 +696,7 @@ Resources:
         - Value: Edge
           Key: Name
       MemorySize: 1024
-      ReservedConcurrentExecutions: 5
+      ReservedConcurrentExecutions: 25
       Environment:
         Variables:
           LoggingLevel: "info"
@@ -850,7 +851,7 @@ Resources:
         - Value: Edge
           Key: Name
       MemorySize: 1536
-      ReservedConcurrentExecutions: 5
+      ReservedConcurrentExecutions: 25
       Environment:
         Variables:
           LoggingLevel: "info"
