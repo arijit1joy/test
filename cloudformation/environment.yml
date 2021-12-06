@@ -869,7 +869,7 @@ Resources:
           EBUSpecifier: onhighway
           EndpointFile: EndpointJson.json
           DataQualityLambda: !Sub "${DataQualityLambda}-${ApplicationEnvironmentTag}"
-          psbu_device_owner: '{"PSBU": "PSBU"}'
+          psbu_device_owner: '{"PSBU": "PSBU", "Siemens":"Siemens"}'
           JSONFormat: SDK
           Region: !Sub "${AWS::Region}"
           CDPTJ1939Header: !Ref CDPTJ1939Header
