@@ -61,10 +61,8 @@ def get_device_info(device_id):
             if get_device_info_code == 200 and get_device_info_body:
                 get_device_info_body = get_device_info_body[0]
                 return get_device_info_body
-            elif attempts == MAX_ATTEMPTS:
-                LOGGER.error(
-                    f"An error occurred while trying to retrieve the device's details. Check EDGE common DB logs.")
-                return False
+        LOGGER.error(f"An error occurred while trying to retrieve the device's details. Check EDGE common DB logs.")
+        return False
     except Exception as e:
         LOGGER.error(f"An exception occurred while retrieving the device details: {e}")
         return False
