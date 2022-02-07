@@ -21,7 +21,7 @@ def get_secret_value():
         secrets_client = boto3.client("secretsmanager")
         secret_arn = os.environ['mskSecretArn']
         if not secret_response:
-            LOGGER.info("Inside get_secret_value() method")
+            LOGGER.debug("Inside get_secret_value() method")
             kwargs = {'SecretId': secret_arn}
             secret_response = secrets_client.get_secret_value(**kwargs)
     except ClientError as e:
@@ -38,7 +38,7 @@ def get_brokers(mskcluster_arn):
     """Gets the broker list to publish the message 
     using msk cluster arn.
     """
-    LOGGER.info("Inside get_brokers() method")
+    LOGGER.debug("Inside get_brokers() method")
     global cluster_response
     try:
         cluster_client = boto3.client('kafka')
@@ -51,7 +51,7 @@ def get_brokers(mskcluster_arn):
 
 def publish_message(message_object, j1939_data_type):
     # Get credentials
-    LOGGER.info("Inside publish_message()")
+    LOGGER.debug("Inside publish_message()")
     secret_object = get_secret_value()
     sec = json.loads(secret_object['SecretString'])
 
