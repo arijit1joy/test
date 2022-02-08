@@ -37,7 +37,7 @@ def get_request_id_from_consumption_view_query(data_protocol, data_config_filena
 
 
 def update_scheduler_table(req_id, device_id):
-    LOGGER.info(f'updating scheduler table')
+    LOGGER.debug(f'updating scheduler table')
     query = scheduler.get_update_scheduler_query(req_id, device_id)
 
     try:

@@ -47,7 +47,7 @@ def get_device_info(device_id):
     payload["input"]["Params"][0]["devId"] = device_id
     attempts = 0
 
-    LOGGER.info(f"Retrieving the device details from the EDGE DB for Device ID: {device_id}")
+    LOGGER.debug(f"Retrieving the device details from the EDGE DB for Device ID: {device_id}")
 
     try:
         while attempts < MAX_ATTEMPTS:
@@ -81,7 +81,7 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
     event_json = json.dumps(s3_event_body)
 
     if process_data_quality.lower() == 'yes':
-        LOGGER.info("Initiating data quality...")
+        LOGGER.debug("Initiating data quality...")
         # Invoke data quality lambda - start
         try:
             data_quality(event_json)
@@ -89,7 +89,7 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
             LOGGER.error(f"ERROR Invoking data quality - {e}")
         # Invoke data quality lambda - end
     else:
-        LOGGER.info("data quality skipped...")
+        LOGGER.debug("data quality skipped...")
 
     bucket_name = s3_event_body['Records'][0]['s3']['bucket']['name']
     file_key = s3_event_body['Records'][0]['s3']['object']['key']
@@ -219,7 +219,7 @@ def data_quality(event):
     if response['StatusCode'] != 202:
         raise RuntimeError("An error occurred while invoking the data quality lambda")
 
-    LOGGER.info("Successfully invoked the Data Quality lambda!")
+    LOGGER.debug("Successfully invoked the Data Quality lambda!")
 
 
 def lambda_handler(event, context):  # noqa

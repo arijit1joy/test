@@ -247,7 +247,7 @@ def retrieve_and_process_file(uploaded_file_object):
         if new_row:
             csv_rows.append(row)
 
-    LOGGER.info(f"CSV Rows:  {csv_rows}")
+    LOGGER.debug(f"CSV Rows:  {csv_rows}")
 
     ss_rows = []
     as_rows = []
@@ -463,7 +463,7 @@ def lambda_handler(lambda_event, context):  # noqa
             file_size=s3_event['object']['size'],
             sqs_receipt_handle=record["receiptHandle"]
         )
-        LOGGER.info(f"Uploaded File Object: {uploaded_file_object}.")
+        LOGGER.debug(f"Uploaded File Object: {uploaded_file_object}.")
 
         # Retrieve the uploaded file from the s3 bucket and process the uploaded file
         process = Process(target=retrieve_and_process_file, args=(uploaded_file_object,))

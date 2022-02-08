@@ -15,7 +15,7 @@ edgeCommonAPIURL = os.environ['edgeCommonAPIURL']
 
 
 def check_endpoint_file_exists(endpoint_bucket, endpoint_file):
-    LOGGER.info(f"Checking if endpoint file: '{endpoint_file}' exists in the bucket: '{endpoint_bucket}'...")
+    LOGGER.debug(f"Checking if endpoint file: '{endpoint_file}' exists in the bucket: '{endpoint_bucket}'...")
     return False
 
 
