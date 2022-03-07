@@ -59,6 +59,8 @@ Parameters:
     Type: String
   IotClientAccount:
     Type: String
+  NimbusIoTRoleArn:
+    Type: String
 
 Conditions:
   UseDevOrTestCondition: !Or
@@ -338,7 +340,9 @@ Resources:
                 Resource: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
                 Effect: Allow
               - Action: "sts:AssumeRole"
-                Resource: !Ref CrossIOTRoleArn
+                Resource:
+                  - !Ref CrossIOTRoleArn
+                  - !Ref NimbusIoTRoleArn
                 Effect: Allow
       AssumeRolePolicyDocument:
         Statement:
