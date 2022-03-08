@@ -61,6 +61,8 @@ Parameters:
     Type: String
   NimbusIoTRoleArn:
     Type: String
+  NimbusIoTAccount:
+    Type: String
 
 Conditions:
   UseDevOrTestCondition: !Or
@@ -677,6 +679,14 @@ Resources:
       Action: "lambda:InvokeFunction"
       FunctionName: !Ref ObfuscateGPSCoordinatesLambda
       SourceArn: !Sub "arn:aws:iot:us-east-2:${IotClientAccount}:rule/da_edge_j1939_EdgeIotRulePublicDataDataLogger_${ApplicationEnvironmentTag}"
+      Principal: iot.amazonaws.com
+  
+  LambdaInvokePSBUObfuscateGPSCoordinatesPermission:
+    Type: "AWS::Lambda::Permission"
+    Properties:
+      Action: "lambda:InvokeFunction"
+      FunctionName: !Ref ObfuscateGPSCoordinatesLambda
+      SourceArn: !Sub "arn:aws:iot:${AWS::Region}:${NimbusIoTAccount}:rule/cda_nimbus_public_datalogger_topicrule__${ApplicationEnvironmentTag}"
       Principal: iot.amazonaws.com
 
   EdgeJ1939CSVConverter:
