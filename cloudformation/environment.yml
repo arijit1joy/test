@@ -686,7 +686,7 @@ Resources:
     Properties:
       Action: "lambda:InvokeFunction"
       FunctionName: !Ref ObfuscateGPSCoordinatesLambda
-      SourceArn: !Sub "arn:aws:iot:${AWS::Region}:${NimbusIoTAccount}:rule/cda_nimbus_public_datalogger_topicrule__${ApplicationEnvironmentTag}"
+      SourceArn: !Sub "arn:aws:iot:${AWS::Region}:${NimbusIoTAccount}:rule/cda_nimbus_public_datalogger_topicrule_${ApplicationEnvironmentTag}"
       Principal: iot.amazonaws.com
 
   EdgeJ1939CSVConverter:
