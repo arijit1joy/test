@@ -50,12 +50,18 @@ Parameters:
     Type: String
   ProcessDataQuality:
     Type: String
+  MaxAttempts:
+    Type: String
   PrivateSubnetID:
     Type: AWS::SSM::Parameter::Value<String>
     Default: private-subnet-id
   CrossIOTRoleArn:
     Type: String
   IotClientAccount:
+    Type: String
+  NimbusIoTRoleArn:
+    Type: String
+  NimbusIoTAccount:
     Type: String
 
 Conditions:
@@ -336,7 +342,9 @@ Resources:
                 Resource: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
                 Effect: Allow
               - Action: "sts:AssumeRole"
-                Resource: !Ref CrossIOTRoleArn
+                Resource:
+                  - !Ref CrossIOTRoleArn
+                  - !Ref NimbusIoTRoleArn
                 Effect: Allow
       AssumeRolePolicyDocument:
         Statement:
@@ -672,6 +680,14 @@ Resources:
       FunctionName: !Ref ObfuscateGPSCoordinatesLambda
       SourceArn: !Sub "arn:aws:iot:us-east-2:${IotClientAccount}:rule/da_edge_j1939_EdgeIotRulePublicDataDataLogger_${ApplicationEnvironmentTag}"
       Principal: iot.amazonaws.com
+  
+  LambdaInvokePSBUObfuscateGPSCoordinatesPermission:
+    Type: "AWS::Lambda::Permission"
+    Properties:
+      Action: "lambda:InvokeFunction"
+      FunctionName: !Ref ObfuscateGPSCoordinatesLambda
+      SourceArn: !Sub "arn:aws:iot:${AWS::Region}:${NimbusIoTAccount}:rule/cda_nimbus_public_datalogger_topicrule_${ApplicationEnvironmentTag}"
+      Principal: iot.amazonaws.com
 
   EdgeJ1939CSVConverter:
     Type: "AWS::Lambda::Function"
@@ -890,6 +906,7 @@ Resources:
           metaWriteQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
           AuditTrailQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
           ProcessDataQuality: !Ref ProcessDataQuality
+          MaxAttempts: !Ref MaxAttempts
           mskSecretArn: !If
             - UseDevOrTestCondition
             - !ImportValue

@@ -1,5 +1,6 @@
 import os
 import json
+import time
 import uuid
 import boto3
 import requests
@@ -28,6 +29,7 @@ PowerGenValue = os.environ["PowerGenValue"]
 mapTspFromOwner = os.environ["mapTspFromOwner"]
 process_data_quality = os.environ["ProcessDataQuality"]
 data_quality_lambda = os.environ["DataQualityLambda"]
+MAX_ATTEMPTS = int(os.environ["MaxAttempts"])
 s3_client = boto3.client('s3')
 ssm_client = boto3.client('ssm')
 
@@ -43,21 +45,24 @@ def delete_message_from_sqs_queue(receipt_handle):
 def get_device_info(device_id):
     payload = env.get_dev_info_payload
     payload["input"]["Params"][0]["devId"] = device_id
+    attempts = 0
 
-    LOGGER.info(f"Retrieving the device details from the EDGE DB for Device ID: {device_id}")
+    LOGGER.debug(f"Retrieving the device details from the EDGE DB for Device ID: {device_id}")
 
     try:
-        response = requests.post(url=edgeCommonAPIURL, json=payload)
-        get_device_info_body = response.json()
-        get_device_info_code = response.status_code
-        LOGGER.debug(f"Get device info response code: {get_device_info_code}, body: {get_device_info_body}")
+        while attempts < MAX_ATTEMPTS:
+            time.sleep(2 * attempts / 10)  # Sleep for 200 ms exponentially
+            response = requests.post(url=edgeCommonAPIURL, json=payload)
+            get_device_info_body = response.json()
+            get_device_info_code = response.status_code
+            attempts += 1
+            LOGGER.debug(f"Get device info response code: {get_device_info_code}, body: {get_device_info_body}")
 
-        if get_device_info_code == 200 and get_device_info_body:
-            get_device_info_body = get_device_info_body[0]
-            return get_device_info_body
-        else:
-            LOGGER.error(f"An error occurred while trying to retrieve the device's details. Check EDGE common DB logs.")
-            return False
+            if get_device_info_code == 200 and get_device_info_body:
+                get_device_info_body = get_device_info_body[0]
+                return get_device_info_body
+        LOGGER.error(f"An error occurred while trying to retrieve the device's details. Check EDGE common DB logs.")
+        return False
     except Exception as e:
         LOGGER.error(f"An exception occurred while retrieving the device details: {e}")
         return False
@@ -76,7 +81,7 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
     event_json = json.dumps(s3_event_body)
 
     if process_data_quality.lower() == 'yes':
-        LOGGER.info("Initiating data quality...")
+        LOGGER.debug("Initiating data quality...")
         # Invoke data quality lambda - start
         try:
             data_quality(event_json)
@@ -84,7 +89,7 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
             LOGGER.error(f"ERROR Invoking data quality - {e}")
         # Invoke data quality lambda - end
     else:
-        LOGGER.info("data quality skipped...")
+        LOGGER.debug("data quality skipped...")
 
     bucket_name = s3_event_body['Records'][0]['s3']['bucket']['name']
     file_key = s3_event_body['Records'][0]['s3']['object']['key']
@@ -172,7 +177,7 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
 
         if device_owner in json.loads(os.environ["cd_device_owners"]):
             sqs_message = sqs_message.replace("FILE_RECEIVED", "CD_PT_POSTED")
-            post.send_to_cd(bucket_name, file_key, JSONFormat, s3_client, j1939_type, EndpointBucket,  endpointFile,
+            post.send_to_cd(bucket_name, file_key, JSONFormat, s3_client, j1939_type, EndpointBucket, endpointFile,
                             UseEndpointBucket, json_body, file_uuid, sqs_message, j1939_data_type)
 
         elif device_owner in json.loads(os.environ["psbu_device_owner"]):
@@ -214,7 +219,7 @@ def data_quality(event):
     if response['StatusCode'] != 202:
         raise RuntimeError("An error occurred while invoking the data quality lambda")
 
-    LOGGER.info("Successfully invoked the Data Quality lambda!")
+    LOGGER.debug("Successfully invoked the Data Quality lambda!")
 
 
 def lambda_handler(event, context):  # noqa

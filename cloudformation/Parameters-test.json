@@ -22,7 +22,10 @@
 		"DataQualityLambda":"da-EDGE-Olympus-BL-DataQuality",
         "SchedulerQueriesLayerVersion": "7",
 		"ProcessDataQuality" : "no",
+        "MaxAttempts" : "3",
  	    "CrossIOTRoleArn": "arn:aws:iam::148144240310:role/cda-edge-iot-service-role",
-        "IotClientAccount": "148144240310"
+        "IotClientAccount": "148144240310",
+        "NimbusIoTRoleArn": "arn:aws:iam::986156607038:role/edge-to-psbu-cross-account-access-role-test",
+		"NimbusIoTAccount": "986156607038"
     }
 }
