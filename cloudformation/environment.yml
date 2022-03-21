@@ -63,6 +63,8 @@ Parameters:
     Type: String
   NimbusIoTAccount:
     Type: String
+  PythonRequestsVersion:
+    Type: String
 
 Conditions:
   UseDevOrTestCondition: !Or
@@ -263,7 +265,7 @@ Resources:
     Type: "AWS::Lambda::Function"
     Properties:
       Layers:
-        - !Ref RequestsPythonLayer
+        - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:da-edge-device-python-requests:${PythonRequestsVersion}
         - !Sub >-
           arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:Edge-Core:${EdgeCoreLayerVersion}
         - !Sub >-
@@ -428,7 +430,7 @@ Resources:
     Properties:
       Layers:
         - !Ref PandasPythonLayer
-        - !Ref RequestsPythonLayer
+        - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:da-edge-device-python-requests:${PythonRequestsVersion}
         - !Sub >-
           arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:Edge-Core:${EdgeCoreLayerVersion}
         - !Sub >-
@@ -693,7 +695,7 @@ Resources:
     Type: "AWS::Lambda::Function"
     Properties:
       Layers:
-        - !Ref RequestsPythonLayer
+        - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:da-edge-device-python-requests:${PythonRequestsVersion}
         - !Sub >-
           arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:Edge-Core:${EdgeCoreLayerVersion}
         - !Sub >-
@@ -848,7 +850,7 @@ Resources:
     Type: "AWS::Lambda::Function"
     Properties:
       Layers:
-        - !Ref RequestsPythonLayer
+        - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:da-edge-device-python-requests:${PythonRequestsVersion}
         - !Sub >-
           arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:Edge-Core:${EdgeCoreLayerVersion}
         - !Sub >-
