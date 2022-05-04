@@ -127,7 +127,7 @@ def post_cd_message(data):
 
     # We are not sending payload to CD for Digital Cockpit Device
     if not data["Telematics_Box_ID"] == '192000000000101':
-        # In order to reattempt requests.get when we get sporadic network errors. Our current retry limit is 3
+        # In order to reattempt requests.post when we get sporadic network errors. Our current retry limit is 3
         retry_post_attempts = 0
         while retry_post_attempts < MAX_ATTEMPTS:
             try:
@@ -146,6 +146,7 @@ def post_cd_message(data):
                         f"Exception occurred while trying to post data to CD. Maximum retry attempts ({MAX_ATTEMPTS}) "
                         f"exceeded ")
                     raise e
+
 
 
 def get_active_faults(fault_list, address):
