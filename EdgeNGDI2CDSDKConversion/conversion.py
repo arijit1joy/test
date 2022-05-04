@@ -2,6 +2,7 @@ import os
 import sys
 import json
 import boto3
+import time
 import datetime
 import requests
 import utility as util
@@ -53,6 +54,7 @@ spn_indicator = os.getenv('spn_indicator')
 fmi_indicator = os.getenv('fmi_indicator')
 count_indicator = os.getenv('count_indicator')
 active_cd_parameter = os.getenv('active_cd_parameter')
+MAX_ATTEMPTS = int(os.environ["MaxAttempts"])
 
 s3_client = boto3.client('s3')
 
@@ -84,10 +86,26 @@ def post_cd_message(data):
     tsp_name = data["Telematics_Partner_Name"]
     LOGGER.debug(f"TSP From File: {tsp_name}")
     auth_url = auth_token_url.replace("{TSP-Name}", tsp_name)
-    req = requests.get(url=auth_url)
-    auth_token = json.loads(req.text)
-    auth_token_info = auth_token['authToken']
-    url = cd_url + auth_token_info
+    # In order to reattempt requests.get when we get sporadic network errors. Our current retry limit is 3
+    retry_auth_attempts = 0
+    while retry_auth_attempts < MAX_ATTEMPTS:
+        try:
+            req = requests.get(url=auth_url)
+            auth_token = json.loads(req.text)
+            auth_token_info = auth_token['authToken']
+            url = cd_url + auth_token_info
+        except Exception as e:
+            retry_auth_attempts += 1
+            if retry_auth_attempts < MAX_ATTEMPTS:
+                LOGGER.error(f"Exception occurred while trying to get Authentication Token. Retrying again. Attempt "
+                             f"No: {retry_auth_attempts}")
+                time.sleep(2 * retry_auth_attempts / 10)
+                continue
+            elif retry_auth_attempts >= MAX_ATTEMPTS:
+                LOGGER.error(f"Exception occurred while trying to get Authentication Token. Retry Attempts Exceeded "
+                             f"Maximum: {MAX_ATTEMPTS}")
+                raise e
+
     sent_date_time = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ')[:-4] + "Z"
     if sent_date_time:
         data["Sent_Date_Time"] = sent_date_time
@@ -109,9 +127,25 @@ def post_cd_message(data):
 
     # We are not sending payload to CD for Digital Cockpit Device
     if not data["Telematics_Box_ID"] == '192000000000101':
-        r = requests.post(url=url, json=data)
-        cp_response = r.text
-        LOGGER.info(f'CD Response: {cp_response}')
+        # In order to reattempt requests.get when we get sporadic network errors. Our current retry limit is 3
+        retry_post_attempts = 0
+        while retry_post_attempts < MAX_ATTEMPTS:
+            try:
+                r = requests.post(url=url, json=data)
+                cp_response = r.text
+                LOGGER.info(f'CD Response: {cp_response}')
+            except Exception as e:
+                retry_post_attempts += 1
+                if retry_post_attempts < MAX_ATTEMPTS:
+                    LOGGER.error(f"Exception occurred while trying to post data to CD. Retrying again. Attempt "
+                                 f"No: {retry_auth_attempts}")
+                    time.sleep(2 * retry_auth_attempts / 10)
+                    continue
+                elif retry_post_attempts >= MAX_ATTEMPTS:
+                    LOGGER.error(
+                        f"Exception occurred while trying to post data to CD. Maximum retry attempts ({MAX_ATTEMPTS}) "
+                        f"exceeded ")
+                    raise e
 
 
 def get_active_faults(fault_list, address):
