@@ -91,9 +91,6 @@ def post_cd_message(data):
     while retry_auth_attempts < MAX_ATTEMPTS:
         try:
             req = requests.get(url=auth_url)
-            auth_token = json.loads(req.text)
-            auth_token_info = auth_token['authToken']
-            url = cd_url + auth_token_info
         except Exception as e:
             retry_auth_attempts += 1
             if retry_auth_attempts < MAX_ATTEMPTS:
@@ -105,7 +102,9 @@ def post_cd_message(data):
                 LOGGER.error(f"Exception occurred while trying to get Authentication Token. Retry Attempts Exceeded "
                              f"Maximum: {MAX_ATTEMPTS}")
                 raise e
-
+    auth_token = json.loads(req.text)
+    auth_token_info = auth_token['authToken']
+    url = cd_url + auth_token_info
     sent_date_time = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ')[:-4] + "Z"
     if sent_date_time:
         data["Sent_Date_Time"] = sent_date_time
@@ -132,8 +131,6 @@ def post_cd_message(data):
         while retry_post_attempts < MAX_ATTEMPTS:
             try:
                 r = requests.post(url=url, json=data)
-                cp_response = r.text
-                LOGGER.info(f'CD Response: {cp_response}')
             except Exception as e:
                 retry_post_attempts += 1
                 if retry_post_attempts < MAX_ATTEMPTS:
@@ -146,6 +143,8 @@ def post_cd_message(data):
                         f"Exception occurred while trying to post data to CD. Maximum retry attempts ({MAX_ATTEMPTS}) "
                         f"exceeded ")
                     raise e
+        cp_response = r.text
+        LOGGER.info(f'CD Response: {cp_response}')
 
 
 def get_active_faults(fault_list, address):
