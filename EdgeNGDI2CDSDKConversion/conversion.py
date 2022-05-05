@@ -148,7 +148,6 @@ def post_cd_message(data):
                     raise e
 
 
-
 def get_active_faults(fault_list, address):
     LOGGER.info(f"Getting Active Faults")
     final_fc_list = []
