@@ -493,6 +493,7 @@ Resources:
           converted_equip_params: convertedEquipmentParameters
           delivery_stream_name: !Ref DeliveryStreamName
           auth_token_url: !Ref AuthToken
+          MaxAttempts: !Ref MaxAttempts
           QueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/${ApplicationName}-NGDI2CDSDKConversionQueue-${ApplicationEnvironmentTag}"
           metaWriteQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
           AuditTrailQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
