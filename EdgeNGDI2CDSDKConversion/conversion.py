@@ -91,6 +91,7 @@ def post_cd_message(data):
     while retry_auth_attempts < MAX_ATTEMPTS:
         try:
             req = requests.get(url=auth_url)
+            break
         except Exception as e:
             retry_auth_attempts += 1
             if retry_auth_attempts < MAX_ATTEMPTS:
