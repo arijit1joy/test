@@ -26,6 +26,7 @@
 	    "CrossIOTRoleArn": "arn:aws:iam::148144240310:role/cda-edge-iot-service-role",
         "IotClientAccount": "148144240310",
         "NimbusIoTRoleArn": "arn:aws:iam::024638897337:role/edge-to-psbu-cross-account-access-role-prod",
-		"NimbusIoTAccount": "024638897337"
+		"NimbusIoTAccount": "024638897337",
+        "PythonRequestsVersion": "9"
     }
 }
