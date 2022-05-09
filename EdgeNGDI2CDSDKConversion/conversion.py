@@ -132,6 +132,7 @@ def post_cd_message(data):
         while retry_post_attempts < MAX_ATTEMPTS:
             try:
                 r = requests.post(url=url, json=data)
+                break
             except Exception as e:
                 retry_post_attempts += 1
                 if retry_post_attempts < MAX_ATTEMPTS:
