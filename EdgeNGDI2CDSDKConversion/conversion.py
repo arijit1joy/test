@@ -137,8 +137,8 @@ def post_cd_message(data):
                 retry_post_attempts += 1
                 if retry_post_attempts < MAX_ATTEMPTS:
                     LOGGER.error(f"Exception occurred while trying to post data to CD. Retrying again. Attempt "
-                                 f"No: {retry_auth_attempts}")
-                    time.sleep(2 * retry_auth_attempts / 10)
+                                 f"No: {retry_post_attempts}")
+                    time.sleep(2 * retry_post_attempts / 10)
                     continue
                 elif retry_post_attempts >= MAX_ATTEMPTS:
                     LOGGER.error(
