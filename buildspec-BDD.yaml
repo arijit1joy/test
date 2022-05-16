@@ -10,14 +10,14 @@ phases:
       - export AWS_SECRET_ACCESS_KEY=$(echo "${TEMP_ROLE}" | jq -r '.Credentials.SecretAccessKey')
       - export AWS_SESSION_TOKEN=$(echo "${TEMP_ROLE}" | jq -r '.Credentials.SessionToken')
       - echo $path
-      - pip install --upgrade pip
+      - pip install --quiet --upgrade pip
       - curr_dir=$(pwd)
 
   build:
     commands:
       - cd EDGE-J1939-BDD
       - if [ -f requirements.txt ]; then
-          pip install -r requirements.txt;
+          pip install --quiet -r requirements.txt;
         else
           echo "The 'requirements.txt' file is missing for the current BDD project! Please include all your dependencies in a 'requirements.txt' file and store this in the root folder of your BDD project.";
           exit 1;

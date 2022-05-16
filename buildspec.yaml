@@ -6,7 +6,7 @@ phases:
   install:  
     commands:
     - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
-    - pip install awscli==1.16.209 
+    - pip install --quiet awscli==1.16.209 
     - apt-get install zip 
     - apt-get install unzip
     - curl -sL https://deb.nodesource.com/setup_10.x | bash - 
@@ -18,7 +18,7 @@ phases:
     - cd cloudformation 
     - versionId=$(date +"%m-%d-%Y-%H-%M-%S") 
     - echo $versionId
-    - pip install ruamel.yaml
+    - pip install --quiet ruamel.yaml
     - for paramsFile in ./Param*.json ;  
       do  
         echo $paramsFile;  
@@ -48,7 +48,7 @@ phases:
               echo "Current dir - $(pwd)"; 
               if [ -f requirements.txt ]; then
                 if [ -f dependencies.txt ]; then
-                  pip install -r dependencies.txt -t ./lib ;
+                  pip install --quiet -r dependencies.txt -t ./lib ;
                 fi;
                 zip -r "$mydir.zip" .;               
                 cp "$mydir.zip" "$curr_dir/target"; 

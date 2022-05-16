@@ -10,12 +10,12 @@ phases:
   install:  
     commands:  
     - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
-    - pip install awscli==1.16.209 
+    - pip install --quiet awscli==1.16.209 
     - apt-get install zip 
     - apt-get install unzip 
     - curl -sL https://deb.nodesource.com/setup_10.x | bash - 
     - apt-get install nodejs -y 
-    - pip install pytest coverage pytest-cov
+    - pip install --quiet pytest coverage pytest-cov
     - nodejs --version 
     - npm --version 
     - curr_dir=$(pwd) 
@@ -23,7 +23,7 @@ phases:
     - cd cloudformation
     - versionId=$(date +"%m-%d-%Y-%H-%M-%S")
     - echo "Current date for artifact file storage => $versionId"
-    - pip install ruamel.yaml
+    - pip install --quiet ruamel.yaml
     - for paramsFile in ./Param*.json ;  
       do  
         echo $paramsFile;  
@@ -43,11 +43,11 @@ phases:
       - echo HOME ${HOME} 
       - mkdir /opt/sonarscanner 
       - cd /opt/sonarscanner 
-      - wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.2.0.1227-linux.zip 
-      - unzip sonar-scanner-cli-3.2.0.1227-linux.zip 
-      - rm sonar-scanner-cli-3.2.0.1227-linux.zip 
-      - ln -s /opt/sonarscanner/sonar-scanner-3.2.0.1227-linux/bin/sonar-scanner /usr/local/bin/sonar-scanner 
-      - pip install pypika
+      - wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472-linux.zip 
+      - unzip sonar-scanner-cli-4.6.2.2472-linux.zip 
+      - rm sonar-scanner-cli-4.6.2.2472-linux.zip 
+      - ln -s /opt/sonarscanner/sonar-scanner-4.6.2.2472-linux/bin/sonar-scanner /usr/local/bin/sonar-scanner 
+      - pip install --quiet pypika
       - cd $curr_dir
       # build project folder and package build file 
       - ls -lrt "$curr_dir"
@@ -63,7 +63,7 @@ phases:
               echo "\n#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#\n";
               if [ -f requirements.txt ]; then
                 if [ -f dependencies.txt ]; then
-                  pip install -r dependencies.txt -t ./lib ;
+                  pip install --quiet -r dependencies.txt -t ./lib ;
                 fi;
                 zip -r "$mydir.zip" .;
                 coverage run -m unittest discover -s tests;

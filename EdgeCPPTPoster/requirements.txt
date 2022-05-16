@@ -1,3 +1,5 @@
 pypika
 boto3
 requests
+moto
+botocore
