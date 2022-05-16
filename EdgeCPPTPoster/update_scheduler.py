@@ -18,7 +18,7 @@ def _get_request_id_from_consumption_view_query(data_protocol, data_config_filen
     query = Query.from_(data_consumption_vw).select(data_consumption_vw.request_id) \
         .where(data_consumption_vw.data_type == data_protocol) \
         .where(data_consumption_vw.data_config_filename == data_config_filename) \
-        .where(data_consumption_vw.config_status == 'Config Accepted')
+        .where(data_consumption_vw.config_status.isin(['Config Accepted', 'Data Rx In Progress']))
     return query.get_sql(quote_char=None)
 
 
