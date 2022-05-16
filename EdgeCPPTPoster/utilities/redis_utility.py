@@ -14,15 +14,15 @@ from rediscluster import RedisCluster
 
 REDIS_CLIENT = None
 DB_API_URL = os.environ["edgeCommonAPIURL"]
+SECRET_NAME = os.environ['RedisSecretName']
+REGION = os.environ['region']
 
 
 def get_redis_connection():
     try:
-        secret_name = os.environ['redis_secret_name']
-        region = os.environ['region']
         session = boto3.session.Session()
-        client = session.client(service_name='secretsmanager', region_name=region)
-        get_secret_value_response = client.get_secret_value(SecretId=secret_name)
+        client = session.client(service_name='secretsmanager', region_name=REGION)
+        get_secret_value_response = client.get_secret_value(SecretId=SECRET_NAME)
         secret_string = get_secret_value_response['SecretString']
         secret_params = json.loads(secret_string)
 
