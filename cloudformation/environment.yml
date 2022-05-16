@@ -65,6 +65,8 @@ Parameters:
     Type: String
   PythonRequestsVersion:
     Type: String
+  EDGERedisSecretName:
+    Type: String
 
 Conditions:
   UseDevOrTestCondition: !Or
