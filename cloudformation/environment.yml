@@ -876,6 +876,7 @@ Resources:
           LoggingLevel: "info"
           cd_device_owners: '{"EBU": "EBU", "TATA": "TATA"}'
           Environment: !Sub "${ApplicationEnvironmentTag}"
+          RedisSecretName: !Ref EDGERedisSecretName
           edgeCommonAPIURL: !Ref EdgeCommonDBAPI
           APPLICATION_ENVIRONMENT: !Ref ApplicationEnvironmentTag
           PTJ1939Header: !Ref PTJ1939Header
