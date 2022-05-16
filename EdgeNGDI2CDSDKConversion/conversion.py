@@ -1,22 +1,22 @@
+import datetime
+import json
 import os
 import sys
-import json
-import boto3
 import time
-import datetime
-import requests
-import utility as util
-import edge_core as edge
-from lambda_cache import ssm
 from multiprocessing import Process
-from sqs_utility import sqs_send_message
-from obfuscate_gps_utility import handle_gps_coordinates
+
+import boto3
+import requests
+from lambda_cache import ssm
 from metadata_utility import write_health_parameter_to_database
-from cd_sdk_conversion.cd_snapshot_sdk import get_snapshot_data
+from obfuscate_gps_utility import handle_gps_coordinates
+from sqs_utility import sqs_send_message
+
+import utility as util
 from cd_sdk_conversion.cd_sdk import map_ngdi_sample_to_cd_payload
+from cd_sdk_conversion.cd_snapshot_sdk import get_snapshot_data
 
 sys.path.insert(1, './lib')
-from pypika import Query, Table, Order, functions as fn
 
 LOGGER = util.get_logger(__name__)
 
