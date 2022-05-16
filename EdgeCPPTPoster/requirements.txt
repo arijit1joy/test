@@ -3,3 +3,4 @@ boto3
 requests
 moto
 botocore
+redis-py-cluster
