@@ -10,12 +10,12 @@ phases:
   install:  
     commands:  
     - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
-    - pip install --quiet awscli==1.16.209 
+    - pip install -q awscli==1.16.209 
     - apt-get install zip 
     - apt-get install unzip 
     - curl -sL https://deb.nodesource.com/setup_10.x | bash - 
     - apt-get install nodejs -y 
-    - pip install --quiet pytest coverage pytest-cov
+    - pip install -q pytest coverage pytest-cov
     - nodejs --version 
     - npm --version 
     - curr_dir=$(pwd) 
@@ -23,7 +23,7 @@ phases:
     - cd cloudformation
     - versionId=$(date +"%m-%d-%Y-%H-%M-%S")
     - echo "Current date for artifact file storage => $versionId"
-    - pip install --quiet ruamel.yaml
+    - pip install -q ruamel.yaml
     - for paramsFile in ./Param*.json ;  
       do  
         echo $paramsFile;  
@@ -47,7 +47,7 @@ phases:
       - unzip sonar-scanner-cli-4.6.2.2472-linux.zip 
       - rm sonar-scanner-cli-4.6.2.2472-linux.zip 
       - ln -s /opt/sonarscanner/sonar-scanner-4.6.2.2472-linux/bin/sonar-scanner /usr/local/bin/sonar-scanner 
-      - pip install --quiet pypika
+      - pip install -q pypika
       - cd $curr_dir
       # build project folder and package build file 
       - ls -lrt "$curr_dir"
@@ -63,7 +63,7 @@ phases:
               echo "\n#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#\n";
               if [ -f requirements.txt ]; then
                 if [ -f dependencies.txt ]; then
-                  pip install --quiet -r dependencies.txt -t ./lib ;
+                  pip install -q -r dependencies.txt -t ./lib ;
                 fi;
                 zip -r "$mydir.zip" .;
                 coverage run -m unittest discover -s tests;
@@ -75,6 +75,8 @@ phases:
                 fi;
                 coverage report --omit tests/*,dependencies.txt && coverage xml;
                 sonar-scanner -X -Dsonar.login=$SONAR_LOGIN -Dsonar.host.url=$SONAR_HOST -Dsonar.python.coverage.reportPaths="coverage.xml";
+              echo "Printing dir contents to find the coverage.xml file . . . ";
+              ls -l;
                 if [ -f "../SonarqubeQualityChecker.sh" ] && [ -f "sonar-project.properties" ]; then
                   cd ..;
                   tr -d '\r' < SonarqubeQualityChecker.sh > CleanSonarqubeQualityChecker.sh;
