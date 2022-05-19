@@ -738,6 +738,7 @@ Resources:
             "Navistar": "Navistar", "N2": "Navistar" ,"Paccar":"Paccar", "Siemens":"Siemens"}
           delivery_stream_name: !Ref DeliveryStreamName
           Region: !Sub "${AWS::Region}"
+          MaxAttempts: !Ref MaxAttempts
           metaWriteQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
           AuditTrailQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
       Handler: ConverterLambda.lambda_handler
