@@ -52,7 +52,7 @@ phases:
       # build project folder and package build file 
       - ls -lrt "$curr_dir"
       - x=$(ls "$(pwd)")
-      - echo "\n#====================================================================================================================================================================================#\n\nEDGE Build Actions Start . . .\n\n#====================================================================================================================================================================================#\n"
+      - echo "\n#=======================#\n\nEDGE Build Actions Start . . .\n\n#=======================#\n"
       - for d in $x ;
         do
           mydir=${d};   
@@ -60,7 +60,7 @@ phases:
               cd "$mydir"; 
               echo "Processing - $mydir"; 
               echo "Current dir - $(pwd)";
-              echo "\n#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#\n";
+              echo "\n#--------------------------------------------------------------------------------#\n";
               if [ -f requirements.txt ]; then
                 if [ -f dependencies.txt ]; then
                   pip install -q -r dependencies.txt -t ./lib ;
@@ -69,9 +69,9 @@ phases:
                 coverage run -m unittest discover -s tests;
                 testCaseExecutionExitCode=$?;
                 if [ $testCaseExecutionExitCode -ne 0 ]; then
-                  echo "\n#====================================================================================================================================================================================#\n";
+                  echo "\n#===================================================================#\n";
                   echo "[ERROR] ---> Some of the TDD/Code Coverage test cases failed for the project '$mydir'. Exit code => '$testCaseExecutionExitCode'! Aborting Build!";
-                  echo "\n#====================================================================================================================================================================================#\n";
+                  echo "\n#===================================================================#\n";
                 fi;
                 coverage report --omit tests/*,dependencies.txt && coverage xml;
                 sonar-scanner -X -Dsonar.login=$SONAR_LOGIN -Dsonar.host.url=$SONAR_HOST -Dsonar.python.coverage.reportPaths="coverage.xml";
@@ -83,23 +83,25 @@ phases:
                   bash CleanSonarqubeQualityChecker.sh $mydir "/da-sca-sonar/sonar/sonar-common-token";
                   qualityCheckExitCode=$(echo $?);
                   if [ $qualityCheckExitCode -ne 0 ]; then
-                    echo "\n#====================================================================================================================================================================================#\n";
+                    echo "\n#===================================================================#\n";
                     echo "[ERROR] ---> The Sonarqube Quality Gate condition verification failed for the project '$mydir'! Aborting Build!";
-                    echo "\n#====================================================================================================================================================================================#\n";
+                    echo "\n#===================================================================#\n";
                  fi;
                   cd "$mydir";
                 else
-                  echo "\n#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#\n";
-                  echo "The Sonarqube Quality Gate condition verification script ('SonarQubeQualityChecker.sh') is missing from this repo AND/OR ('sonar-project.properties') is missing from this project => $mydir\n";
-                  echo "Please, add the 'SonarQubeQualityChecker.sh' file in the root repo (same folder as this build spec file) AND/OR the appropriate 'sonar-project.properties' in the project => $mydir\n";
-                  echo "Build will proceed, but note that there was no Sonaqube Quality Gate verification done for the project => $mydir\n";
-                  echo "\n#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#\n";
+                  echo "\n#--------------------------------------------------------------------------------#\n";
+                  echo "The Sonarqube Quality Gate condition verification script ('SonarQubeQualityChecker.sh') is missing from this repo";
+                  echo "AND/OR ('sonar-project.properties') is missing from this project => $mydir\n";
+                  echo "Please, add the 'SonarQubeQualityChecker.sh' file in the root repo (same folder as this build spec file)";
+                  echo "AND/OR the appropriate 'sonar-project.properties' in the project => $mydir";
+                  echo "The Build will proceed, but note that there was no Sonaqube Quality Gate verification done for the project => $mydir\n";
+                  echo "\n#--------------------------------------------------------------------------------#\n";
                 fi;
                 cp "$mydir.zip" "$curr_dir/target";
               else           
-                echo "\n#====================================================================================================================================================================================#\n";
+                echo "\n#===================================================================#\n";
                 echo "The programming platform for the project => $mydir could not be identified! Aborting build!";
-                echo "\n#====================================================================================================================================================================================#\n";
+                echo "\n#===================================================================#\n";
                 break;        
               fi;        
               cd ..;
