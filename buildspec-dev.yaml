@@ -73,7 +73,8 @@ phases:
                   echo "[ERROR] ---> Some of the TDD/Code Coverage test cases failed for the project '$mydir'. Exit code => '$testCaseExecutionExitCode'! Aborting Build!";
                   echo "\n#===================================================================#\n";
                 fi;
-                coverage report --omit tests/*,dependencies.txt && coverage xml;
+                coverage report --omit tests/*,dependencies.txt;
+                coverage xml;
                 sonar-scanner -X -Dsonar.login=$SONAR_LOGIN -Dsonar.host.url=$SONAR_HOST -Dsonar.python.coverage.reportPaths="coverage.xml";
               echo "Printing dir contents to find the coverage.xml file . . . ";
               ls -l;
