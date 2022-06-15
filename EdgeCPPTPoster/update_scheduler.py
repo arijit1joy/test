@@ -2,7 +2,7 @@ import os
 
 import edge_core as edge
 import scheduler_query as scheduler
-from pypika import Query, Table
+from pypika import Query, Table, functions as fn
 
 import utility as util
 from utilities.redis_utility import get_set_redis_value
@@ -14,11 +14,19 @@ DB_API_URL = os.environ["edgeCommonAPIURL"]
 
 # noinspection PyTypeChecker
 def _get_request_id_from_consumption_view_query(data_protocol, data_config_filename):
-    data_consumption_vw = Table('da_edge_olympus.edge_data_consumption_vw')
-    query = Query.from_(data_consumption_vw).select(data_consumption_vw.request_id) \
-        .where(data_consumption_vw.data_type == data_protocol) \
-        .where(data_consumption_vw.data_config_filename == data_config_filename) \
-        .where(data_consumption_vw.config_status.isin(['Config Accepted', 'Data Rx In Progress']))
+    data_requester_information = Table('da_edge_olympus.data_requester_information')
+    scheduler = Table('da_edge_olympus.scheduler')
+    split_config_filename = data_config_filename.split("_")
+    data_type = data_protocol.split("_")[0] + "_CD_" + data_protocol.split("_")[1]
+    query = Query.from_(data_requester_information) \
+        .join(scheduler) \
+        .on(data_requester_information.request_id == scheduler.request_id) \
+        .select(scheduler.request_id) \
+        .where(data_requester_information.data_type == data_type) \
+        .where(scheduler.device_id == split_config_filename[1]) \
+        .where(scheduler.engine_serial_number == split_config_filename[2]) \
+        .where(fn.Substring(scheduler.config_spec_file_name, 1, 6) == split_config_filename[3]) \
+        .where(scheduler.status.isin(['Config Accepted', 'Data Rx In Progress']))
     return query.get_sql(quote_char=None)
 
 
