@@ -55,6 +55,10 @@ Parameters:
   PrivateSubnetID:
     Type: AWS::SSM::Parameter::Value<String>
     Default: private-subnet-id
+  DbSubnet1:
+    Type: String
+  DbSubnet2:
+    Type: String
   CrossIOTRoleArn:
     Type: String
   IotClientAccount:
@@ -560,6 +564,7 @@ Resources:
                   - "secretsmanager:GetSecretValue"
                 Resource:
                   - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pt_xapi_key-??????"
+                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:da-EDGE-Olympus/elasticache/edge-rw-??????"
                   - !If
                     - UseDevOrTestCondition
                     - !ImportValue
@@ -932,14 +937,22 @@ Resources:
         - Arn
       Timeout: 900
       Runtime: python3.7
-      VpcConfig: !If
-        - UseDevOrTestCondition
-        - SecurityGroupIds:
+      VpcConfig:
+        SecurityGroupIds:
+          - !ImportValue
+            "Fn::Sub": "edge-redis-lambda-security-group-${ApplicationEnvironmentTag}"
+          - !If
+            - UseDevOrTestCondition
             - !ImportValue
-              "Fn::Sub": "${ApplicationNameCDA}-msk-cluster-security-group-${ApplicationEnvironmentTag}"
-          SubnetIds:
+                "Fn::Sub": "${ApplicationNameCDA}-msk-cluster-security-group-${ApplicationEnvironmentTag}"
+            - !Ref "AWS::NoValue"
+        SubnetIds:
+          - !Ref DbSubnet1
+          - !Ref DbSubnet2
+          - !If
+            - UseDevOrTestCondition
             - !Ref PrivateSubnetID
-        - !Ref "AWS::NoValue"
+            - !Ref "AWS::NoValue"
 
   EdgeCPPTPosterEventInvokeConfig:
     Type: AWS::Lambda::EventInvokeConfig

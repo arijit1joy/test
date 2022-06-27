@@ -28,6 +28,8 @@
         "NimbusIoTRoleArn": "arn:aws:iam::986156607038:role/edge-to-psbu-cross-account-access-role-test",
 		"NimbusIoTAccount": "986156607038",
         "PythonRequestsVersion": "4",
+        "DbSubnet1": "subnet-0aefb8b5c2531eef2",
+        "DbSubnet2": "subnet-006ba88b3114e3283",
         "EDGERedisSecretName": "/da-EDGE-Olympus/elasticache/edge-rw"
     }
 }
