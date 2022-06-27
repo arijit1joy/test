@@ -27,7 +27,7 @@ Allure Install allure behave
 ---------------------------
 use Command prompt or Pycharm Terminal
 
-pip install --quiet allure-behave
+pip install -q allure-behave
 
 ---------------------------
 Run Allure reports
