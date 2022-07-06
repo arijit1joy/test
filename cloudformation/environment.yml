@@ -688,7 +688,7 @@ Resources:
     Properties:
       Action: "lambda:InvokeFunction"
       FunctionName: !Ref ObfuscateGPSCoordinatesLambda
-      SourceArn: !Sub "arn:aws:iot:us-east-2:${IotClientAccount}:rule/da_edge_j1939_EdgeIotRulePublicDataDataLogger_${ApplicationEnvironmentTag}"
+      SourceArn: !Sub "arn:aws:iot:${AWS::Region}:${IotClientAccount}:rule/da_edge_j1939_EdgeIotRule_PublicDataDataLogger_${ApplicationEnvironmentTag}"
       Principal: iot.amazonaws.com
   
   LambdaInvokePSBUObfuscateGPSCoordinatesPermission:
