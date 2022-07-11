@@ -6,6 +6,7 @@ from pypika import Query, Table, functions as fn
 
 import utility as util
 from utilities.redis_utility import get_set_redis_value
+from utilities.connection_utility import invoke_db_common_api
 
 LOGGER = util.get_logger(__name__)
 REDIS_EXPIRY = 5 * 24 * 60 * 60  # expire after 5 days
@@ -59,7 +60,8 @@ def update_scheduler_table(req_id, device_id):
     query = scheduler.get_update_scheduler_query(req_id, device_id)
 
     try:
-        edge.api_request(DB_API_URL, "post", query)
+        # edge.api_request(DB_API_URL, "post", query) # TODO: remove after testing
+        invoke_db_common_api(query)
         LOGGER.info(f'Successfully updated scheduler table')
     except Exception as exception:
         # Using logging level 'info' in case exception occurred due to invalid query
