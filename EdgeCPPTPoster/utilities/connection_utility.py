@@ -1,7 +1,6 @@
 import json
 import os
 import utility as util
-from functools import wraps
 
 import boto3
 
@@ -23,7 +22,7 @@ def _invoke_lambda(function_name, query):
 def invoke_db_reader(read_query):
     edge_db_reader_name = os.environ["EDGEDBReader"]
 
-    LOGGER.debug("Invoking the EDGE DB Reader . . .")
+    LOGGER.debug("Invoking the EDGE DB Reader Lambda . . .")
 
     return _invoke_lambda(edge_db_reader_name, read_query)
 
@@ -31,6 +30,6 @@ def invoke_db_reader(read_query):
 def invoke_db_common_api(write_query):
     edge_common_api_name = os.environ["EDGECommonDBAPI"]
 
-    LOGGER.debug("Invoking the EDGE DB Common API . . .")
+    LOGGER.debug("Invoking the EDGE DB Common API Lambda . . .")
 
     return _invoke_lambda(edge_common_api_name, write_query)
