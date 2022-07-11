@@ -52,8 +52,8 @@ def get_set_redis_value(redis_key, sql_query, redis_expiry):
                 f"Could not find the Request ID for the key: '{redis_key}' in the Redis Cache. "
                 f"Retrieving it from the Data Base with the query: '{sql_query}'."
             )
-            response = edge.api_request(DB_API_URL, "get", sql_query)  # TODO: Remove after testing
-            # response = invoke_db_reader(sql_query)
+            # response = edge.api_request(DB_API_URL, "get", sql_query)  # TODO: Remove after testing
+            response = invoke_db_reader(sql_query)
             REDIS_CLIENT.set(redis_key, json.dumps(response), ex=redis_expiry)
 
         return response
