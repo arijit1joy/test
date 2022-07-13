@@ -99,7 +99,8 @@ def assert_j1939_fc_message_in_converted_files(context):
     get_key = get_key_from_list_of_s3_objects(context.final_bucket, file_key)
     assert get_key is not None
     if get_key:
-        os.mkdir(DOWNLOAD_FOLDER_PATH)
+        if not os.path.isdir(DOWNLOAD_FOLDER_PATH):
+            os.mkdir(DOWNLOAD_FOLDER_PATH)
         download_object_from_s3(context.final_bucket, get_key, context.download_converted_file_name)
         assert same_file_contents(context.compare_converted_file_name, context.download_converted_file_name) is True
         shutil.rmtree(DOWNLOAD_FOLDER_PATH)
@@ -115,7 +116,8 @@ def assert_j1939_fc_message_in_ngdi(context):
     get_key = get_key_from_list_of_s3_objects(context.final_bucket, file_key)
     assert get_key is not None
     if get_key:
-        os.mkdir(DOWNLOAD_FOLDER_PATH)
+        if os.path.isdir(DOWNLOAD_FOLDER_PATH):
+            os.mkdir(DOWNLOAD_FOLDER_PATH)
         download_object_from_s3(context.final_bucket, get_key, context.download_ngdi_file_name)
         assert same_file_contents(context.compare_ngdi_file_name, context.download_ngdi_file_name) is True
         shutil.rmtree(DOWNLOAD_FOLDER_PATH)
