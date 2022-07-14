@@ -10,6 +10,7 @@ import utility as util
 import environment_params as env
 from multiprocessing import Process
 from sqs_utility import sqs_send_message
+from utilities.connection_utility import invoke_db_reader
 from update_scheduler import update_scheduler_table, get_request_id_from_consumption_view
 
 LOGGER = util.get_logger(__name__)
@@ -52,7 +53,10 @@ def get_device_info(device_id):
     try:
         while attempts < MAX_ATTEMPTS:
             time.sleep(2 * attempts / 10)  # Sleep for 200 ms exponentially
-            response = requests.post(url=edgeCommonAPIURL, json=payload)
+            # response = requests.post(url=edgeCommonAPIURL, json=payload)  # TODO: delete after testing
+            query = payload["query"].replace("%(devId)s", device_id)
+            LOGGER.info(f"Attempting to get device info with query {query}")
+            response = invoke_db_reader(query)
             get_device_info_body = response.json()
             get_device_info_code = response.status_code
             attempts += 1
