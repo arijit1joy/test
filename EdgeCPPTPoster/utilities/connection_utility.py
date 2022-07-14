@@ -21,7 +21,7 @@ def _invoke_lambda(function_name, query):
 
 
 def invoke_db_reader(read_query):
-    edge_db_reader_name = os.environ["EDGEDBReader"]
+    edge_db_reader_name = os.environ["EDGEDBReader_ARN"]
 
     LOGGER.debug("Invoking the EDGE DB Reader Lambda . . .")
 
@@ -29,7 +29,7 @@ def invoke_db_reader(read_query):
 
 
 def invoke_db_common_api(write_query):
-    edge_common_api_name = os.environ["EDGECommonDBAPI"]
+    edge_common_api_name = os.environ["EDGECommonDBAPI_ARN"]
 
     LOGGER.debug("Invoking the EDGE DB Common API Lambda . . .")
 
