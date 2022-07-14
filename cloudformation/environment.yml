@@ -886,7 +886,7 @@ Resources:
           Environment: !Sub "${ApplicationEnvironmentTag}"
           RedisSecretName: !Ref EDGERedisSecretName
           edgeCommonAPIURL: !Ref EdgeCommonDBAPI
-          EDGEDBReader: !Sub "${ApplicationName}-EDGEDBReader-${ApplicationEnvironmentTag}"
+          EDGEDBReader: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-edge-common-lib-EDGEDBReader-${ApplicationEnvironmentTag}"
           APPLICATION_ENVIRONMENT: !Ref ApplicationEnvironmentTag
           PTJ1939Header: !Ref PTJ1939Header
           environment: !Ref ApplicationEnvironmentTag
