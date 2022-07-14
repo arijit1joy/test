@@ -39,22 +39,26 @@ def get_redis_connection():
 
 def get_set_redis_value(redis_key, sql_query, redis_expiry):
     try:
-        global REDIS_CLIENT
-        if REDIS_CLIENT is None:
-            REDIS_CLIENT = get_redis_connection()
+        # global REDIS_CLIENT
+        # if REDIS_CLIENT is None:
+        #     REDIS_CLIENT = get_redis_connection()
+        #
+        # redis_response = REDIS_CLIENT.get(redis_key)
+        # response = json.loads(redis_response) if redis_response else None
+        # LOGGER.debug(f"Value from Redis: {response}")
+        #
+        # if response is None:
+        #     LOGGER.info(
+        #         f"Could not find the Request ID for the key: '{redis_key}' in the Redis Cache. "
+        #         f"Retrieving it from the Data Base with the query: '{sql_query}'."
+        #     )
+        #     # response = edge.api_request(DB_API_URL, "get", sql_query)  # TODO: Remove after testing
+        #     response = invoke_db_reader(sql_query)
+        #     REDIS_CLIENT.set(redis_key, json.dumps(response), ex=redis_expiry)
 
-        redis_response = REDIS_CLIENT.get(redis_key)
-        response = json.loads(redis_response) if redis_response else None
-        LOGGER.debug(f"Value from Redis: {response}")
-
-        if response is None:
-            LOGGER.info(
-                f"Could not find the Request ID for the key: '{redis_key}' in the Redis Cache. "
-                f"Retrieving it from the Data Base with the query: '{sql_query}'."
-            )
-            # response = edge.api_request(DB_API_URL, "get", sql_query)  # TODO: Remove after testing
-            response = invoke_db_reader(sql_query)
-            REDIS_CLIENT.set(redis_key, json.dumps(response), ex=redis_expiry)
+        LOGGER.info(f"Attempting to force DB connection with query {sql_query}")
+        response = invoke_db_reader(sql_query)  # TODO: Remove after testing
+        LOGGER.info("DB connection returned")
 
         return response
     except Exception as error:
