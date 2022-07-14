@@ -57,7 +57,8 @@ def get_device_info(device_id):
             query = payload["query"].replace("%(devId)s", device_id)
             LOGGER.info(f"Attempting to get device info with query {query}")
             response = invoke_db_reader(query)
-            get_device_info_body = response.json()
+            LOGGER.info(f"Retrieved device information {response}")
+            get_device_info_body = response  # TODO: used to be response.json()
             get_device_info_code = response.status_code
             attempts += 1
             LOGGER.debug(f"Get device info response code: {get_device_info_code}, body: {get_device_info_body}")
