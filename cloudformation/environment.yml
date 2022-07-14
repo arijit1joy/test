@@ -886,6 +886,7 @@ Resources:
           Environment: !Sub "${ApplicationEnvironmentTag}"
           RedisSecretName: !Ref EDGERedisSecretName
           edgeCommonAPIURL: !Ref EdgeCommonDBAPI
+          EDGEDBReader: !Sub "${ApplicationName}-EDGEDBReader-${ApplicationEnvironmentTag}"
           APPLICATION_ENVIRONMENT: !Ref ApplicationEnvironmentTag
           PTJ1939Header: !Ref PTJ1939Header
           environment: !Ref ApplicationEnvironmentTag
