@@ -44,7 +44,7 @@ def delete_message_from_sqs_queue(receipt_handle):
 
 
 def get_device_info(device_id):
-    payload = env.get_dev_info_payload
+    payload = env.get_dev_info_payload["query"]
     payload = payload.replace("%(devId)s", f"'{device_id}'")  # We format directly because we need a query string
 
     attempts = 0
