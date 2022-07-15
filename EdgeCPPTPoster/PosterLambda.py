@@ -62,7 +62,7 @@ def get_device_info(device_id):
             LOGGER.info(f"DB Response: {response}")
             get_device_info_body = None
             if response:
-                get_device_info_body = json.loads(response)  # response.json()
+                get_device_info_body = json.loads(response[0])  # response.json()
             get_device_info_code = 200 if response else 500  # response.status_code
             attempts += 1
             LOGGER.debug(f"Get device info response code: {get_device_info_code}, body: {get_device_info_body}")
