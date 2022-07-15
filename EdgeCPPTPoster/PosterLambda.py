@@ -45,7 +45,8 @@ def delete_message_from_sqs_queue(receipt_handle):
 
 def get_device_info(device_id):
     payload = env.get_dev_info_payload
-    payload["input"]["Params"][0]["devId"] = device_id
+    payload = payload.replace("%(devId)s", f"'{device_id}'")  # We format directly because we need a query string
+
     attempts = 0
 
     LOGGER.debug(f"Retrieving the device details from the EDGE DB for Device ID: {device_id}")
@@ -53,22 +54,13 @@ def get_device_info(device_id):
     try:
         while attempts < MAX_ATTEMPTS:
             time.sleep(2 * attempts / 10)  # Sleep for 200 ms exponentially
-            # response = requests.post(url=edgeCommonAPIURL, json=payload)
-            query = payload["query"]
-            LOGGER.info(f"before formatting: {query}")
-            query = query.replace("%(devId)s", f"'{device_id}'")
-            LOGGER.info(f"Query: {query}")
-            get_device_info_body = invoke_db_reader(query) # Should be in JSON
-            LOGGER.info(f"DB Response: {get_device_info_body}")
-            # get_device_info_body = response.json()
-            get_device_info_code = 200 if get_device_info_body else 500  # response.status_code
+            get_device_info_body = invoke_db_reader(payload)  # This will return an object
             attempts += 1
-            LOGGER.debug(f"Get device info response code: {get_device_info_code}, body: {get_device_info_body}")
-
-            if get_device_info_code == 200 and get_device_info_body:
+            LOGGER.debug(f"Returned device info body: {get_device_info_body}")
+            if get_device_info_body:
                 get_device_info_body = get_device_info_body[0]
                 return get_device_info_body
-        LOGGER.error(f"An error occurred while trying to retrieve the device's details. Check EDGE common DB logs.")
+        LOGGER.error(f"An error occurred while trying to retrieve the device's details. Check EDGEDBReader logs.")
         return False
     except Exception as e:
         LOGGER.error(f"An exception occurred while retrieving the device details: {e}")
