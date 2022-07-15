@@ -60,13 +60,15 @@ def get_device_info(device_id):
             LOGGER.info(f"Query: {query}")
             response = invoke_db_reader(query)
             LOGGER.info(f"DB Response: {response}")
-            get_device_info_body = json.loads(response)  # response.json()
+            get_device_info_body = None
+            if response:
+                get_device_info_body = json.loads(response)  # response.json()
             get_device_info_code = 200 if response else 500  # response.status_code
             attempts += 1
             LOGGER.debug(f"Get device info response code: {get_device_info_code}, body: {get_device_info_body}")
 
             if get_device_info_code == 200 and get_device_info_body:
-                get_device_info_body = get_device_info_body[0]
+                # get_device_info_body = get_device_info_body[0]
                 return get_device_info_body
         LOGGER.error(f"An error occurred while trying to retrieve the device's details. Check EDGE common DB logs.")
         return False
