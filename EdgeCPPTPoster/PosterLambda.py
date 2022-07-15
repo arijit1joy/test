@@ -55,7 +55,9 @@ def get_device_info(device_id):
             time.sleep(2 * attempts / 10)  # Sleep for 200 ms exponentially
             # response = requests.post(url=edgeCommonAPIURL, json=payload)
             query = payload["query"]
+            LOGGER.info(f"before formatting: {query}")
             query = query.replace("%(devId)s", f"'{device_id}'")
+            LOGGER.info(f"Query: {query}")
             response = invoke_db_reader(query)
             LOGGER.info(f"DB Response: {response}")
             get_device_info_body = json.loads(response)  # response.json()
