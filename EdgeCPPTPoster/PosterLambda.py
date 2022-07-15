@@ -57,7 +57,7 @@ def get_device_info(device_id):
             query = payload["query"]
             query = query.replace("%(devId)s", f"'{device_id}'")
             response = invoke_db_reader(query)
-            LOGGER.info("DB Response: ", response)
+            LOGGER.info(f"DB Response: {response}")
             get_device_info_body = json.loads(response)  # response.json()
             get_device_info_code = 200 if response else 500  # response.status_code
             attempts += 1
