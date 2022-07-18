@@ -4,7 +4,7 @@ import os
 try:
     import boto3
 except ModuleNotFoundError:
-    print("ERROR: Connection Util cannot import boto3")
+    print("ERROR: Connection Util cannot import boto3. Is boto3 installed?")
 
 
 def _invoke_lambda(function_name, query):
