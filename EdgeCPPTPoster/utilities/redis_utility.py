@@ -6,8 +6,7 @@ import boto3
 import edge_core as edge
 
 import utility as util
-from utilities.connection_utility import invoke_db_common_api, invoke_db_reader
-
+from edge_db_lambda_client.connection_utility import invoke_db_reader
 LOGGER = util.get_logger(__name__)
 
 sys.path.insert(1, './lib')

@@ -1,5 +1,12 @@
 version:      0.2 
- 
+
+env:
+  secrets-manager:
+    SONAR_LOGIN: /da-sca-sonar/sonar/sonar-common-token:sonar_common_token
+    SONAR_HOST: /da-sca-sonar/sonar/sonar-common-token:sonar_host_https_url
+    ARTIFACTORY_API_KEY: /OPS/COMMON/INFRA/JFROG/ARTIFACTORY:ARTIFACTORY_TOKEN
+    ARTIFACTORY_USER: /OPS/COMMON/INFRA/JFROG/ARTIFACTORY:ARTIFACTORY_USER
+    ARTIFACTORY_URL: /OPS/COMMON/INFRA/JFROG/ARTIFACTORY:ARTIFACTORY_URL
 
 phases: 
  
@@ -28,6 +35,15 @@ phases:
       done; 
     - cp *.json .. 
     - cd ..
+  pre_build:
+    commands:
+      - echo Entering pre_build phase...
+      - echo $HOME
+      - sed -i -e "s|ARTIFACTORY_USER|$ARTIFACTORY_USER|g" pip.conf
+      - sed -i -e "s|ARTIFACTORY_PASSWORD|$ARTIFACTORY_API_KEY|g" pip.conf
+      - cat pip.conf
+      - mkdir /root/.pip/
+      - cp pip.conf /root/.pip/pip.conf
  
   build: 
     commands: 

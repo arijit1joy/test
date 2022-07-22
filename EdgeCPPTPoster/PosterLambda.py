@@ -10,7 +10,7 @@ import utility as util
 import environment_params as env
 from multiprocessing import Process
 from sqs_utility import sqs_send_message
-from utilities.connection_utility import invoke_db_reader
+from edge_db_lambda_client.connection_utility import invoke_db_reader
 from update_scheduler import update_scheduler_table, get_request_id_from_consumption_view
 
 LOGGER = util.get_logger(__name__)
