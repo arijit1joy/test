@@ -35,9 +35,9 @@ def invoke_db_reader(read_query):
 
 
 def invoke_db_common_api(write_query):
-    if "EDGECommonDBAPI_ARN" not in os.environ:
-        print("ERROR when connecting to CommonAPI: EDGECommonDBAPI_ARN does not exist in os.environ!")
+    if "EDGEDBCommonAPI_ARN" not in os.environ:
+        print("ERROR when connecting to CommonAPI: EDGEDBCommonAPI_ARN does not exist in os.environ!")
         return None
 
-    edge_common_api_name = os.environ["EDGECommonDBAPI_ARN"]
+    edge_common_api_name = os.environ["EDGEDBCommonAPI_ARN"]
     return _invoke_lambda(edge_common_api_name, write_query)
