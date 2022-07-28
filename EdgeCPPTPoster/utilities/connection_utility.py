@@ -20,9 +20,6 @@ def _invoke_lambda(function_name, query):
         return json.loads(db_read_lambda_response["Payload"].read().decode("utf-8"))
     except NameError:
         print("ERROR: boto3 has not been imported properly")
-        return None
-
-
 
 
 def invoke_db_reader(read_query):
