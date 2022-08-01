@@ -1,2 +1,4 @@
 pypika
 redis-py-cluster
+edge_db_lambda_client
+moto

@@ -76,7 +76,7 @@ phases:
               echo "\n#--------------------------------------------------------------------------------#\n";
               if [ -f requirements.txt ]; then
                 if [ -f dependencies.txt ]; then
-                  pip install -q -r dependencies.txt -t ./lib ;
+                  pip install -r dependencies.txt -t ./lib ;
                 fi;
                 zip -r "$mydir.zip" .;
                 coverage run -m unittest discover -s tests;
