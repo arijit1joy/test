@@ -35,6 +35,7 @@ phases:
       done; 
     - cp *.json .. 
     - cd ..
+
   pre_build:
     commands:
       - echo Entering pre_build phase...
