@@ -5,7 +5,10 @@ import sys
 sys.path.append('../')
 sys.modules['edge_logger'] = MagicMock()
 sys.modules['obfuscate_gps_utility'] = MagicMock()
-from lambda_function import lambda_handler
+with patch.dict("os.environ", {
+    "LoggingLevel": "debug"
+}):
+    from lambda_function import lambda_handler
 del sys.modules['edge_logger']
 del sys.modules['obfuscate_gps_utility']
 

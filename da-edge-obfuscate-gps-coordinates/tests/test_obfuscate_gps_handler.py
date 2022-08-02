@@ -8,7 +8,10 @@ import sys
 sys.path.append('../')
 sys.modules['edge_logger'] = MagicMock()
 sys.modules['obfuscate_gps_utility'] = MagicMock()
-from obfuscate_gps_handler import obfuscate_gps, send_file_to_s3
+with patch.dict("os.environ", {
+    "LoggingLevel": "debug"
+}):
+    from obfuscate_gps_handler import obfuscate_gps, send_file_to_s3
 del sys.modules['edge_logger']
 del sys.modules['obfuscate_gps_utility']
 

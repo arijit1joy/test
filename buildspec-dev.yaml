@@ -13,12 +13,15 @@ phases:
   install:  
     commands:  
     - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
-    - pip install -q awscli==1.16.209 
+    - pip install --upgrade pip
+    - pip install awscli
+    - pip install --upgrade awscli
+    # - pip install awscli==1.16.209 
     - apt-get install zip 
     - apt-get install unzip 
     - curl -sL https://deb.nodesource.com/setup_10.x | bash - 
     - apt-get install nodejs -y 
-    - pip install -q pytest coverage pytest-cov moto
+    - pip install pytest coverage pytest-cov moto
     - nodejs --version 
     - npm --version 
     - curr_dir=$(pwd) 
