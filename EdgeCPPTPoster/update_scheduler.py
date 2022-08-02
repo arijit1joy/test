@@ -1,4 +1,5 @@
 import os
+import sys
 
 import edge_core as edge
 import scheduler_query as scheduler
@@ -6,11 +7,13 @@ from pypika import Query, Table, functions as fn
 
 import utility as util
 from utilities.redis_utility import get_set_redis_value
-from edge_db_lambda_client import invoke_db_common_api
+sys.path.insert(1, './lib')
+from edge_db_lambda_client import EdgeDbLambdaClient
 
 LOGGER = util.get_logger(__name__)
 REDIS_EXPIRY = 5 * 24 * 60 * 60  # expire after 5 days
 DB_API_URL = os.environ["edgeCommonAPIURL"]
+EDGE_DB_CLIENT = EdgeDbLambdaClient()
 
 
 # noinspection PyTypeChecker
@@ -60,7 +63,7 @@ def update_scheduler_table(req_id, device_id):
     query = scheduler.get_update_scheduler_query(req_id, device_id)
 
     try:
-        invoke_db_common_api(query)
+        EDGE_DB_CLIENT.execute(query, method='WRITE')
         LOGGER.info(f'Successfully updated scheduler table')
     except Exception as exception:
         # Using logging level 'info' in case exception occurred due to invalid query

@@ -10,8 +10,10 @@ import utility as util
 import environment_params as env
 from multiprocessing import Process
 from sqs_utility import sqs_send_message
-from edge_db_lambda_client import invoke_db_reader
+import sys
 from update_scheduler import update_scheduler_table, get_request_id_from_consumption_view
+sys.path.insert(1, './lib')
+from edge_db_lambda_client import EdgeDbLambdaClient
 
 LOGGER = util.get_logger(__name__)
 
@@ -33,6 +35,7 @@ data_quality_lambda = os.environ["DataQualityLambda"]
 MAX_ATTEMPTS = int(os.environ["MaxAttempts"])
 s3_client = boto3.client('s3')
 ssm_client = boto3.client('ssm')
+EDGE_DB_CLIENT = EdgeDbLambdaClient()
 
 
 def delete_message_from_sqs_queue(receipt_handle):
@@ -54,7 +57,7 @@ def get_device_info(device_id):
     try:
         while attempts < MAX_ATTEMPTS:
             time.sleep(2 * attempts / 10)  # Sleep for 200 ms exponentially
-            get_device_info_body = invoke_db_reader(payload)  # This will return an object
+            get_device_info_body = EDGE_DB_CLIENT.execute(payload)  # This will return an object
             attempts += 1
             LOGGER.debug(f"Returned device info body: {get_device_info_body}")
             if get_device_info_body:

@@ -7,12 +7,13 @@ import utility as util
 LOGGER = util.get_logger(__name__)
 
 sys.path.insert(1, './lib')
-from edge_db_lambda_client import invoke_db_reader
+from edge_db_lambda_client import EdgeDbLambdaClient
 from rediscluster import RedisCluster
 
 REDIS_CLIENT = None
 SECRET_NAME = os.environ['RedisSecretName']
 REGION = os.environ['region']
+EDGE_DB_CLIENT = EdgeDbLambdaClient()
 
 
 def get_redis_connection():
@@ -48,7 +49,7 @@ def get_set_redis_value(redis_key, sql_query, redis_expiry):
                 f"Could not find the Request ID for the key: '{redis_key}' in the Redis Cache. "
                 f"Retrieving it from the Data Base with the query: '{sql_query}'."
             )
-            response = invoke_db_reader(sql_query)
+            response = EDGE_DB_CLIENT.execute(sql_query)
             REDIS_CLIENT.set(redis_key, json.dumps(response), ex=redis_expiry)
 
         LOGGER.info(f"Attempting to force DB connection with query {sql_query}")
