@@ -1,19 +1,16 @@
 import json
 import os
 import sys
-
 import boto3
-import edge_core as edge
 
 import utility as util
-from edge_db_lambda_client.connection_utility import invoke_db_reader
+from edge_db_lambda_client import invoke_db_reader
 LOGGER = util.get_logger(__name__)
 
 sys.path.insert(1, './lib')
 from rediscluster import RedisCluster
 
 REDIS_CLIENT = None
-DB_API_URL = os.environ["edgeCommonAPIURL"]
 SECRET_NAME = os.environ['RedisSecretName']
 REGION = os.environ['region']
 
