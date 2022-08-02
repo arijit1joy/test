@@ -1,5 +1,4 @@
 --extra-index-url https://jfrog.cummins.com/artifactory/api/pypi/da-dse-pypi-release-local/simple
 pypika
-boto3
 redis-py-cluster
 edge_db_lambda_client
