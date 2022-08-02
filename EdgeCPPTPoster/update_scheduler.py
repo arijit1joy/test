@@ -6,7 +6,7 @@ from pypika import Query, Table, functions as fn
 
 import utility as util
 from utilities.redis_utility import get_set_redis_value
-from edge_db_lambda_client.connection_utility import invoke_db_common_api
+from edge_db_lambda_client import invoke_db_common_api
 
 LOGGER = util.get_logger(__name__)
 REDIS_EXPIRY = 5 * 24 * 60 * 60  # expire after 5 days

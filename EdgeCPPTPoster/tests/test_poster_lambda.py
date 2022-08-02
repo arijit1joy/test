@@ -17,7 +17,9 @@ sys.modules["edge_db_lambda_client"] = MagicMock()
 with patch.dict("os.environ", {
     "LoggingLevel": "debug",
     "PTxAPIKey": "testKey",
-    "Region": "us-east-3",
+    "Region": "us-east-1",
+    "region": "us-east-1",
+    'EDGEDBReader_ARN': 'arn:::12345',
     "edgeCommonAPIURL": "testurl",
     "publishKafka": "true",
     "CDPTJ1939PostURL": "testurl",
