@@ -4,10 +4,10 @@ import sys
 import boto3
 
 import utility as util
-from edge_db_lambda_client import invoke_db_reader
 LOGGER = util.get_logger(__name__)
 
 sys.path.insert(1, './lib')
+from edge_db_lambda_client import invoke_db_reader
 from rediscluster import RedisCluster
 
 REDIS_CLIENT = None
