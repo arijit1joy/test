@@ -56,26 +56,26 @@ del sys.modules["edge_db_lambda_client"]
 class TestPosterLambda(unittest.TestCase):
     sample_device_id = '12345'
 
-    @patch("PosterLambda.invoke_db_reader")
+    @patch("PosterLambda.EDGE_DB_CLIENT")
     def test_getDeviceInfo_success(self, mock_db_reader):
-        mock_db_reader.return_value = [{'test': 'value'}]
+        mock_db_reader.execute.return_value = [{'test': 'value'}]
         result = PosterLambda.get_device_info(self.sample_device_id)
         self.assertEqual(result, {'test': 'value'})
-        mock_db_reader.assert_called_once()
+        mock_db_reader.execute.assert_called_once()
 
-    @patch("PosterLambda.invoke_db_reader")
+    @patch("PosterLambda.EDGE_DB_CLIENT")
     def test_getDeviceInfo_uncaughtException(self, mock_db_reader):
-        mock_db_reader.side_effect = Exception("Mock db reader exception")
+        mock_db_reader.execute.side_effect = Exception("Mock db reader exception")
         result = PosterLambda.get_device_info(self.sample_device_id)
         self.assertEqual(result, False)
-        mock_db_reader.assert_called_once()
+        mock_db_reader.execute.assert_called_once()
 
-    @patch("PosterLambda.invoke_db_reader")
+    @patch("PosterLambda.EDGE_DB_CLIENT")
     def test_getDeviceInfo_caughtException(self, mock_db_reader):
-        mock_db_reader.return_value = None
+        mock_db_reader.execute.return_value = None
         result = PosterLambda.get_device_info(self.sample_device_id)
         self.assertEqual(result, False)
-        self.assertEqual(mock_db_reader.call_count, 2)
+        self.assertEqual(mock_db_reader.execute.call_count, 2)
 
 if __name__ == '__main__':
     unittest.main()

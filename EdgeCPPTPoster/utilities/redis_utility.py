@@ -6,7 +6,7 @@ import boto3
 import utility as util
 LOGGER = util.get_logger(__name__)
 
-sys.path.insert(1, './lib')
+sys.path.insert(1, '../lib')
 from edge_db_lambda_client import EdgeDbLambdaClient
 from rediscluster import RedisCluster
 
