@@ -11,6 +11,7 @@ sys.modules["metadata_utility"] = MagicMock()
 sys.modules["edge_core"] = MagicMock()
 sys.modules["scheduler_query"] = MagicMock()
 sys.modules["boto3"] = MagicMock()
+sys.modules["edge_db_lambda_client"] = MagicMock()
 
 
 with patch.dict("os.environ", {
@@ -47,6 +48,7 @@ del sys.modules["metadata_utility"]
 del sys.modules["edge_core"]
 del sys.modules["scheduler_query"]
 del sys.modules["boto3"]
+del sys.modules["edge_db_lambda_client"]
 
 
 class TestPosterLambda(unittest.TestCase):
