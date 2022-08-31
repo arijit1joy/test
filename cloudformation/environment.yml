@@ -882,7 +882,7 @@ Resources:
       Environment:
         Variables:
           LoggingLevel: "info"
-          cd_device_owners: '{"EBU": "EBU", "TATA": "TATA"}'
+          cd_device_owners: '{"EBU": "EBU", "TATA": "TATA", "TataMotors":"Accumen"}'
           Environment: !Sub "${ApplicationEnvironmentTag}"
           RedisSecretName: !Ref EDGERedisSecretName
           edgeCommonAPIURL: !Ref EdgeCommonDBAPI
@@ -907,7 +907,7 @@ Resources:
           APPLICATION_NAME: !Ref ApplicationName
           mapTspFromOwner: >-
             {"EBU": "Cummins", "PSBU": "Cummins" ,"TATA": "India_Edge",
-            "Navistar": "Navistar", "N2": "Navistar" ,"Paccar":"Paccar", "Siemens":"Siemens"}
+            "Navistar": "Navistar", "N2": "Navistar" ,"Paccar":"Paccar", "Siemens":"Siemens", "TataMotors":"TataMotors"}
           UseEndpointBucket: "Y"
           CPPostBucket: !Sub "edge-j1939-${ApplicationEnvironmentTag}"
           region: !Sub "${AWS::Region}"
