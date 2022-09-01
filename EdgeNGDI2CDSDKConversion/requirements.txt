@@ -1,1 +1,3 @@
+--extra-index-url https://jfrog.cummins.com/artifactory/api/pypi/da-dse-pypi-release-local/simple
 pypika
+commonlib_jfrog_artifacts

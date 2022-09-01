@@ -11,6 +11,7 @@ from lambda_cache import ssm
 from metadata_utility import write_health_parameter_to_database
 from obfuscate_gps_utility import handle_gps_coordinates
 from sqs_utility import sqs_send_message
+from commonlib_jfrog_artifacts import auth_utility
 
 import utility as util
 from cd_sdk_conversion.cd_sdk import map_ngdi_sample_to_cd_payload
@@ -38,7 +39,6 @@ name = params['Names']
 edgeCommonAPIURL = os.environ['edgeCommonAPIURL']
 spn_bucket = os.getenv('spn_parameter_json_object')
 spn_bucket_key = os.getenv('spn_parameter_json_object_key')
-auth_token_url = os.getenv('auth_token_url')
 cd_url = os.getenv('cd_url')
 converted_equip_params_var = os.getenv('converted_equip_params')
 converted_device_params_var = os.getenv('converted_device_params')
@@ -85,26 +85,11 @@ def get_metadata_info(j1939_file):
 def post_cd_message(data):
     tsp_name = data["Telematics_Partner_Name"]
     LOGGER.debug(f"TSP From File: {tsp_name}")
-    auth_url = auth_token_url.replace("{TSP-Name}", tsp_name)
-    # In order to reattempt requests.get when we get sporadic network errors. Our current retry limit is 3
-    retry_auth_attempts = 0
-    while retry_auth_attempts < MAX_ATTEMPTS:
-        try:
-            req = requests.get(url=auth_url)
-            break
-        except Exception as e:
-            retry_auth_attempts += 1
-            if retry_auth_attempts < MAX_ATTEMPTS:
-                LOGGER.error(f"Exception occurred while trying to get Authentication Token. Retrying again. Attempt "
-                             f"No: {retry_auth_attempts}")
-                time.sleep(2 * retry_auth_attempts / 10)
-                continue
-            elif retry_auth_attempts >= MAX_ATTEMPTS:
-                LOGGER.error(f"Exception occurred while trying to get Authentication Token. Retry Attempts Exceeded "
-                             f"Maximum: {MAX_ATTEMPTS}")
-                raise e
-    auth_token = json.loads(req.text)
-    auth_token_info = auth_token['authToken']
+    try:
+        auth_token_info = auth_utility.generate_auth_token(tsp_name)
+    except Exception as e:
+        LOGGER.error(f"Exception occurred while trying to get Authentication Token.")
+        raise e
     url = cd_url + auth_token_info
     sent_date_time = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ')[:-4] + "Z"
     if sent_date_time:
