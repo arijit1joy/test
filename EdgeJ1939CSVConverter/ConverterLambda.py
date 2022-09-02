@@ -1,4 +1,5 @@
 import os
+import sys
 import csv
 import json
 import time
@@ -8,6 +9,8 @@ import datetime
 import utility as util
 from multiprocessing import Process
 from sqs_utility import sqs_send_message
+sys.path.insert(1, './lib')
+from edge_db_lambda_client import EdgeDbLambdaClient
 
 LOGGER = util.get_logger(__name__)
 
@@ -18,6 +21,7 @@ edgeCommonAPIURL = os.environ["edgeCommonAPIURL"]
 NGDIBody = json.loads(os.environ["NGDIBody"])
 mapTspFromOwner = os.environ["mapTspFromOwner"]
 MAX_ATTEMPTS = int(os.environ["MaxAttempts"])
+EDGE_DB_CLIENT = EdgeDbLambdaClient()
 
 
 def delete_message_from_sqs_queue(receipt_handle):
@@ -170,28 +174,31 @@ def get_device_id(ngdi_json_template):
 def get_tsp_and_cust_ref(device_id):
 
     attempts = 0
-    get_tsp_cust_ref_payload = {
-        "method": "get",
-        "query": "select cust_ref, device_owner from da_edge_olympus.device_information WHERE device_id = :devId;",
-        "input": {
-            "Params": [
-                {
-                    "name": "devId",
-                    "value": {
-                        "stringValue": device_id
-                    }
-                }
-            ]
-        }
-    }
+    # get_tsp_cust_ref_payload = {
+    #     "method": "get",
+    #     "query": "select cust_ref, device_owner from da_edge_olympus.device_information WHERE device_id = :devId;",
+    #     "input": {
+    #         "Params": [
+    #             {
+    #                 "name": "devId",
+    #                 "value": {
+    #                     "stringValue": device_id
+    #                 }
+    #             }
+    #         ]
+    #     }
+    # }
+    get_tsp_cust_ref_payload = f"select cust_ref, device_owner from da_edge_olympus.device_information WHERE device_id = '{device_id}';"
 
     LOGGER.debug(f"Get TSP and Cust_Ref payload:  {get_tsp_cust_ref_payload}")
     while attempts < MAX_ATTEMPTS:
         try:
             attempts += 1
-            get_tsp_cust_ref_response = requests.post(url=edgeCommonAPIURL, json=get_tsp_cust_ref_payload)
-            get_tsp_cust_ref_response_body = get_tsp_cust_ref_response.json()
-            get_tsp_cust_ref_response_code = get_tsp_cust_ref_response.status_code
+            get_tsp_cust_ref_response = EDGE_DB_CLIENT.execute(get_tsp_cust_ref_payload, method='WRITE')
+
+            # get_tsp_cust_ref_response = requests.post(url=edgeCommonAPIURL, json=get_tsp_cust_ref_payload)
+            get_tsp_cust_ref_response_body = json.loads(get_tsp_cust_ref_response['body'])
+            get_tsp_cust_ref_response_code = get_tsp_cust_ref_response['statusCode']
 
             LOGGER.debug(f"Get TSP and Cust_Ref response code: {get_tsp_cust_ref_response_code}, "
                          f"body: {get_tsp_cust_ref_response_body}")

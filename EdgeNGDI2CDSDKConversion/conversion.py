@@ -11,13 +11,12 @@ from lambda_cache import ssm
 from metadata_utility import write_health_parameter_to_database
 from obfuscate_gps_utility import handle_gps_coordinates
 from sqs_utility import sqs_send_message
-from commonlib_jfrog_artifacts import auth_utility
-
 import utility as util
 from cd_sdk_conversion.cd_sdk import map_ngdi_sample_to_cd_payload
 from cd_sdk_conversion.cd_snapshot_sdk import get_snapshot_data
 
 sys.path.insert(1, './lib')
+from commonlib_jfrog_artifacts import auth_utility
 
 LOGGER = util.get_logger(__name__)
 
