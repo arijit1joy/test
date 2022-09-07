@@ -257,6 +257,13 @@ Resources:
                   - "ssm:List*"
                 Resource: "*"
                 Effect: Allow
+              - Action:
+                  - "lambda:InvokeFunction"
+                  - "lambda:InvokeAsync"
+                Resource:
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:EdgeCommonAPI-${ApplicationEnvironmentTag}"
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-edge-common-lib-EDGEDBReader-${ApplicationEnvironmentTag}"
+                Effect: Allow
       AssumeRolePolicyDocument:
         Statement:
           - Action: "sts:AssumeRole"
@@ -338,11 +345,12 @@ Resources:
                   - "s3:List*"
                 Resource: !Sub "${EdgeJ1939ProcessingBucket.Arn}"
                 Effect: Allow
-              - Action:
-                  - "lambda:InvokeFunction"
-                  - "lambda:InvokeAsync"
-                Resource: "*"
-                Effect: Allow
+              ## --- I could not find any resources which this function currently calls
+              # - Action:
+              #     - "lambda:InvokeFunction"
+              #     - "lambda:InvokeAsync"
+              #   Resource: "*"
+              #   Effect: Allow
               - Action:
                   - "sqs:SendMessage"
                 Resource: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
@@ -571,7 +579,10 @@ Resources:
               - Action:
                   - "lambda:InvokeFunction"
                   - "lambda:InvokeAsync"
-                Resource: "*"
+                Resource:
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:EdgeCommonAPI-${ApplicationEnvironmentTag}"
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-edge-common-lib-EDGEDBReader-${ApplicationEnvironmentTag}"
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${DataQualityLambda}-${ApplicationEnvironmentTag}"
                 Effect: Allow
               - !If
                 - UseDevOrTestCondition
