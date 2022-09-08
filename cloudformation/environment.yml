@@ -211,7 +211,7 @@ Resources:
                   - "ssm:Describe*"
                   - "ssm:Get*"
                   - "ssm:List*"
-                Resource: "*"
+                Resource: "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/EDGECommonAPI"
                 Effect: Allow
       AssumeRolePolicyDocument:
         Statement:
@@ -251,12 +251,13 @@ Resources:
                   - "logs:*"
                 Resource: "arn:aws:logs:*:*:*"
                 Effect: Allow
-              - Action:
-                  - "ssm:Describe*"
-                  - "ssm:Get*"
-                  - "ssm:List*"
-                Resource: "*"
-                Effect: Allow
+              ## --- I could not find any ssm queries for this resource
+              # - Action:
+              #     - "ssm:Describe*"
+              #     - "ssm:Get*"
+              #     - "ssm:List*"
+              #   Resource: "*"
+              #   Effect: Allow
               - Action:
                   - "lambda:InvokeFunction"
                   - "lambda:InvokeAsync"
@@ -575,7 +576,7 @@ Resources:
                   - "ssm:Describe*"
                   - "ssm:Get*"
                   - "ssm:List*"
-                Resource: "*"
+                Resource: "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/da-edge-j1939-content-spec-value"
                 Effect: Allow
               - Action:
                   - "secretsmanager:GetSecretValue"
