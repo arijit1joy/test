@@ -307,6 +307,12 @@ Resources:
       Timeout: 300
       Runtime: python3.7
 
+  ObfuscateGPSCoordinatesLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${ObfuscateGPSCoordinatesLambda}'
+      RetentionInDays: 120 # 3 months, matches existing log group
+
   EdgePublicDataIoTTopicRule:
     Type: "AWS::IoT::TopicRule"
     Properties:
@@ -515,6 +521,12 @@ Resources:
       Timeout: 900
       Runtime: python3.7
       FunctionName: !Sub "${ApplicationName}-EdgeNGDI2CDSDKConversion-${ApplicationEnvironmentTag}"
+
+  EdgeNGDI2CDSDKConversionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${EdgeNGDI2CDSDKConversion}'
+      RetentionInDays: 120 # 3 months, matches existing log group
 
   LambdaInvokePermissionJ1939Bucket:
     Type: "AWS::Lambda::Permission"
@@ -761,6 +773,12 @@ Resources:
       Timeout: 900
       Runtime: python3.7
 
+  EdgeJ1939CSVConverterLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${EdgeJ1939CSVConverter}'
+      RetentionInDays: 120 # 3 months, matches existing log group
+
   PandasPythonLayer:
     Type: "AWS::Lambda::LayerVersion"
     Properties:
@@ -963,6 +981,12 @@ Resources:
             - UseDevOrTestCondition
             - !Ref PrivateSubnetID
             - !Ref "AWS::NoValue"
+
+  EdgeCPPTPosterLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${EdgeCPPTPoster}'
+      RetentionInDays: 120 # 3 months, matches existing log group
 
   EdgeCPPTPosterEventInvokeConfig:
     Type: AWS::Lambda::EventInvokeConfig
