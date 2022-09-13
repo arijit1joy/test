@@ -140,6 +140,11 @@ Resources:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
       BucketName: !Sub "${ApplicationName}-spn-list-${ApplicationEnvironmentTag}"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
       Tags:
         - Value: Edge
           Key: Name
@@ -176,6 +181,11 @@ Resources:
       Description: Storing the j1939 bucket name
       Value: !Ref EdgeJ1939DataLogBucket
       Name: da-edge-j1939-datalog-bucket
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
 
   EdgeNGDI2CDSDKConversionLambdaRole:
     Type: "AWS::IAM::Role"
@@ -608,12 +618,12 @@ Resources:
                       "Fn::Sub": "${ApplicationNameCDA}-msk-cluster-arn-${ApplicationEnvironmentTag}"
                   Effect: Allow
                 - !Ref "AWS::NoValue"
-              - Action:
-                  - "ec2:CreateNetworkInterface"
-                  - "ec2:DescribeNetworkInterfaces"
-                  - "ec2:DeleteNetworkInterface"
-                Resource: "*"
-                Effect: Allow
+              # - Action:
+              #     - "ec2:CreateNetworkInterface"
+              #     - "ec2:DescribeNetworkInterfaces"
+              #     - "ec2:DeleteNetworkInterface"
+              #   Resource: "*"
+              #   Effect: Allow
       AssumeRolePolicyDocument:
         Statement:
           - Action: "sts:AssumeRole"
@@ -648,6 +658,11 @@ Resources:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
       BucketName: !Sub "edge-j1939-${ApplicationEnvironmentTag}"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
       NotificationConfiguration:
         QueueConfigurations:
           - Queue: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${ApplicationName}-CPPTPosterQueue-${ApplicationEnvironmentTag}"
@@ -690,6 +705,11 @@ Resources:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
       BucketName: !Sub "${ApplicationName}-endpoint-bucket-${ApplicationEnvironmentTag}"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
       Tags:
         - Value: Edge
           Key: Name
