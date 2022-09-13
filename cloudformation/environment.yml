@@ -181,11 +181,6 @@ Resources:
       Description: Storing the j1939 bucket name
       Value: !Ref EdgeJ1939DataLogBucket
       Name: da-edge-j1939-datalog-bucket
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
 
   EdgeNGDI2CDSDKConversionLambdaRole:
     Type: "AWS::IAM::Role"
