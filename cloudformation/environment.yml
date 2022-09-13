@@ -216,7 +216,8 @@ Resources:
                   - "ssm:Describe*"
                   - "ssm:Get*"
                   - "ssm:List*"
-                Resource: "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/EDGECommonAPI"
+                Resource:
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/EDGECommonAPI"
                 Effect: Allow
       AssumeRolePolicyDocument:
         Statement:
