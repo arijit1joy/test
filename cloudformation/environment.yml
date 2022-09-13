@@ -298,7 +298,7 @@ Resources:
       FunctionName: !Sub "${ApplicationName}-ObfuscateGPSCoordinates-${ApplicationEnvironmentTag}"
       Tags:
         - Value: SAM
-          Key: "lambda:createdBy"
+          Key: "Lambda:CreatedBy"
         - Value: Edge
           Key: Name
       MemorySize: 512
@@ -477,7 +477,7 @@ Resources:
       Description: Function to convert the NDGI to CD SDK Format
       Tags:
         - Value: SAM
-          Key: "lambda:createdBy"
+          Key: "Lambda:CreatedBy"
         - Value: Edge
           Key: Name
       MemorySize: 1536
@@ -764,7 +764,7 @@ Resources:
       FunctionName: !Sub "${ApplicationName}-EdgeJ1939CSVConverter-${ApplicationEnvironmentTag}"
       Tags:
         - Value: SAM
-          Key: "lambda:createdBy"
+          Key: "Lambda:CreatedBy"
         - Value: Edge
           Key: Name
       MemorySize: 1024
@@ -926,7 +926,7 @@ Resources:
       FunctionName: !Sub "${ApplicationName}-EdgeCPPTPoster-${ApplicationEnvironmentTag}"
       Tags:
         - Value: SAM
-          Key: "lambda:createdBy"
+          Key: "Lambda:CreatedBy"
         - Value: Edge
           Key: Name
       MemorySize: 1536
