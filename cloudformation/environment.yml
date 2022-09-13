@@ -779,6 +779,8 @@ Resources:
             "dataEncryptionSchemeId": "", "numberOfSamples": "", "samples": []}
           environment: !Ref ApplicationEnvironmentTag
           edgeCommonAPIURL: !Ref EdgeCommonDBAPI
+          EDGEDBReader_ARN: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-edge-common-lib-EDGEDBReader-${ApplicationEnvironmentTag}"
+          EDGEDBCommonAPI_ARN: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:EdgeCommonAPI-${ApplicationEnvironmentTag}"
           APPLICATION_NAME: !Ref ApplicationName
           QueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/${ApplicationName}-DataLogFilesQueue-${ApplicationEnvironmentTag}"
           mapTspFromOwner: >-
