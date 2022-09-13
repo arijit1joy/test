@@ -317,7 +317,7 @@ Resources:
   ObfuscateGPSCoordinatesLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub '/aws/lambda/${ObfuscateGPSCoordinatesLambda}'
+      LogGroupName: !Sub '/aws/lambda/${ObfuscateGPSCoordinatesLambda}-logs'
       RetentionInDays: 120 # 3 months, matches existing log group
 
   EdgePublicDataIoTTopicRule:
@@ -537,7 +537,7 @@ Resources:
   EdgeNGDI2CDSDKConversionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub '/aws/lambda/${EdgeNGDI2CDSDKConversion}'
+      LogGroupName: !Sub '/aws/lambda/${EdgeNGDI2CDSDKConversion}-logs'
       RetentionInDays: 120 # 3 months, matches existing log group
 
   LambdaInvokePermissionJ1939Bucket:
@@ -799,7 +799,7 @@ Resources:
   EdgeJ1939CSVConverterLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub '/aws/lambda/${EdgeJ1939CSVConverter}'
+      LogGroupName: !Sub '/aws/lambda/${EdgeJ1939CSVConverter}-logs'
       RetentionInDays: 120 # 3 months, matches existing log group
 
   PandasPythonLayer:
@@ -1008,7 +1008,7 @@ Resources:
   EdgeCPPTPosterLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub '/aws/lambda/${EdgeCPPTPoster}'
+      LogGroupName: !Sub '/aws/lambda/${EdgeCPPTPoster}-logs'
       RetentionInDays: 120 # 3 months, matches existing log group
 
   EdgeCPPTPosterEventInvokeConfig:
