@@ -587,7 +587,8 @@ Resources:
                   - "ssm:Describe*"
                   - "ssm:Get*"
                   - "ssm:List*"
-                Resource: "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/da-edge-j1939-content-spec-value"
+                Resource:
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/da-edge-j1939-content-spec-value"
                 Effect: Allow
               - Action:
                   - "secretsmanager:GetSecretValue"
