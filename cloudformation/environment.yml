@@ -740,7 +740,7 @@ Resources:
           QueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/${ApplicationName}-DataLogFilesQueue-${ApplicationEnvironmentTag}"
           mapTspFromOwner: >-
             {"EBU": "Cummins", "PSBU": "Cummins" ,"TATA": "India_Edge",
-            "Navistar": "Navistar", "N2": "Navistar" ,"Paccar":"Paccar", "Siemens":"Siemens"}
+            "Navistar": "Navistar", "N2": "Navistar" ,"Paccar":"Paccar", "Siemens":"Siemens", "TataMotors":"Accolade"}
           delivery_stream_name: !Ref DeliveryStreamName
           Region: !Sub "${AWS::Region}"
           MaxAttempts: !Ref MaxAttempts
@@ -882,7 +882,7 @@ Resources:
       Environment:
         Variables:
           LoggingLevel: "info"
-          cd_device_owners: '{"EBU": "EBU", "TATA": "TATA", "TataMotors":"Accolade"}'
+          cd_device_owners: '{"EBU": "EBU", "TATA": "TATA", "TataMotors":"TataMotors"}'
           Environment: !Sub "${ApplicationEnvironmentTag}"
           RedisSecretName: !Ref EDGERedisSecretName
           edgeCommonAPIURL: !Ref EdgeCommonDBAPI
@@ -907,7 +907,7 @@ Resources:
           APPLICATION_NAME: !Ref ApplicationName
           mapTspFromOwner: >-
             {"EBU": "Cummins", "PSBU": "Cummins" ,"TATA": "India_Edge",
-            "Navistar": "Navistar", "N2": "Navistar" ,"Paccar":"Paccar", "Siemens":"Siemens", "TataMotors":"TataMotors"}
+            "Navistar": "Navistar", "N2": "Navistar" ,"Paccar":"Paccar", "Siemens":"Siemens", "TataMotors":"Accolade"}
           UseEndpointBucket: "Y"
           CPPostBucket: !Sub "edge-j1939-${ApplicationEnvironmentTag}"
           region: !Sub "${AWS::Region}"
