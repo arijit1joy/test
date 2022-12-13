@@ -625,12 +625,12 @@ Resources:
                       "Fn::Sub": "${ApplicationNameCDA}-msk-cluster-arn-${ApplicationEnvironmentTag}"
                   Effect: Allow
                 - !Ref "AWS::NoValue"
-              # - Action:
-              #     - "ec2:CreateNetworkInterface"
-              #     - "ec2:DescribeNetworkInterfaces"
-              #     - "ec2:DeleteNetworkInterface"
-              #   Resource: "*"
-              #   Effect: Allow
+              - Action:
+                  - "ec2:CreateNetworkInterface"
+                  - "ec2:DescribeNetworkInterfaces"
+                  - "ec2:DeleteNetworkInterface"
+                Resource: 'arn:aws:ec2:*:*:*'
+                Effect: Allow
       AssumeRolePolicyDocument:
         Statement:
           - Action: "sts:AssumeRole"
