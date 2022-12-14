@@ -174,20 +174,6 @@ def get_device_id(ngdi_json_template):
 def get_tsp_and_cust_ref(device_id):
 
     attempts = 0
-    # get_tsp_cust_ref_payload = {
-    #     "method": "get",
-    #     "query": "select cust_ref, device_owner from da_edge_olympus.device_information WHERE device_id = :devId;",
-    #     "input": {
-    #         "Params": [
-    #             {
-    #                 "name": "devId",
-    #                 "value": {
-    #                     "stringValue": device_id
-    #                 }
-    #             }
-    #         ]
-    #     }
-    # }
     get_tsp_cust_ref_payload = f"select cust_ref, device_owner from da_edge_olympus.device_information WHERE device_id = '{device_id}';"
 
     LOGGER.debug(f"Get TSP and Cust_Ref payload:  {get_tsp_cust_ref_payload}")
