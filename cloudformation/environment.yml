@@ -1188,3 +1188,68 @@ Resources:
       Enabled: true
       EventSourceArn: !GetAtt EDGEJ1939NGDI2CDSDKConversionQueue.Arn
       FunctionName: !GetAtt EdgeNGDI2CDSDKConversion.Arn
+
+  ActiveFaultCodesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: "esn"
+          AttributeType: "S"
+        - AttributeName: "timestamp"
+          AttributeType: "S"
+      BillingMode: "PAY_PER_REQUEST"
+      KeySchema:
+        - AttributeName: "pk"
+          KeyType: "HASH"
+        - AttributeName: "sk"
+          KeyType: "RANGE"
+      ProvisionedThroughput:
+        ReadCapacityUnits: "5"
+        WriteCapacityUnits: "5"
+      TableName: !Sub "DTNACheckpointStore-${ApplicationEnvironmentTag}"
+      # GlobalSecondaryIndexes:
+      #   - IndexName: "DtnaPartitionOwnerGSI"
+      #     KeySchema:
+      #       - AttributeName: "pk"
+      #         KeyType: "HASH"
+      #     ProvisionedThroughput:
+      #       ReadCapacityUnits: "5"
+      #       WriteCapacityUnits: "5"
+      #     Projection:
+      #       NonKeyAttributes:
+      #         - "e_tag"
+      #         - "last_modified_time"
+      #         - "owner_id"
+      #       ProjectionType: "INCLUDE"
+      #   - IndexName: "DtnaCheckpointGSI"
+      #     KeySchema:
+      #       - AttributeName: "pk"
+      #         KeyType: "HASH"
+      #     ProvisionedThroughput:
+      #       ReadCapacityUnits: "5"
+      #       WriteCapacityUnits: "5"
+      #     Projection:
+      #       NonKeyAttributes:
+      #         - "offset"
+      #         - "sequence_number"
+      #       ProjectionType: "INCLUDE"
+      # LocalSecondaryIndexes:
+      #   - IndexName: "DtnaPartitionOwnerLSI"
+      #     KeySchema:
+      #       - AttributeName: "pk"
+      #         KeyType: "HASH"
+      #     Projection:
+      #       NonKeyAttributes:
+      #         - "e_tag"
+      #         - "last_modified_time"
+      #         - "owner_id"
+      #       ProjectionType: "INCLUDE"
+      #   - IndexName: "DtnaCheckpointLSI"
+      #     KeySchema:
+      #       - AttributeName: "pk"
+      #         KeyType: "HASH"
+      #     Projection:
+      #       NonKeyAttributes:
+      #         - "offset"
+      #         - "sequence_number"
+      #       ProjectionType: "INCLUDE"
