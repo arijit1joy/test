@@ -1206,7 +1206,7 @@ Resources:
       ProvisionedThroughput:
         ReadCapacityUnits: "5"
         WriteCapacityUnits: "5"
-      TableName: !Sub "DTNACheckpointStore-${ApplicationEnvironmentTag}"
+      TableName: !Sub "ActiveFaultCodesTable-${ApplicationEnvironmentTag}"
       # GlobalSecondaryIndexes:
       #   - IndexName: "DtnaPartitionOwnerGSI"
       #     KeySchema:

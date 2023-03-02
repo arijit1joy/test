@@ -85,7 +85,7 @@ def check_active_fault_codes_timestamp(db_esn_ac_fcs,timestamp):
         db_timestamp = db_esn_ac_fcs.get('timestamp')
         print("db_timestamp :",db_timestamp)
         print("timestamp :", timestamp)
-        if db_timestamp <  timestamp:
+        if db_timestamp < timestamp:
             print("db_timestamp < timestamp")
             return True
         else:
