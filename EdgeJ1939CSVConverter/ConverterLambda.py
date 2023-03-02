@@ -24,8 +24,8 @@ NGDIBody = json.loads(os.environ["NGDIBody"])
 mapTspFromOwner = os.environ["mapTspFromOwner"]
 MAX_ATTEMPTS = int(os.environ["MaxAttempts"])
 EDGE_DB_CLIENT = EdgeDbLambdaClient()
-
-TABLE_NAME="ACTIVE_FAULT_CODES"#new code
+APP_ENV = os.environ["APPLICATION_ENVIRONMENT"]
+TABLE_NAME = f"ActiveFaultCodeTable-{APP_ENV}"
 # ENDPOINT_URL="http://localhost:8000"#new code
 
 def delete_message_from_sqs_queue(receipt_handle):
@@ -502,23 +502,21 @@ def lambda_handler(lambda_event, context):  # noqa
     for process in processes:
         process.join()
 
-def get_active_fault_codes_from_dynamodb(esn, dynamodb=None):
-    if not dynamodb:
-        dynamodb = boto3.resource('dynamodb', ENDPOINT_URL)
-
+def get_active_fault_codes_from_dynamodb(esn):
+    #if not dynamodb:
+    dynamodb = boto3.resource('dynamodb')
     table = dynamodb.Table(TABLE_NAME)
     try:
         response = table.get_item(Key={'esn': esn})
-        LOGGER.info (f'get_active_fault_codes_from_dynamodb response is :{response}')
+        LOGGER.info(f'get_active_fault_codes_from_dynamodb response is :{response}')
     except ClientError as e:
         LOGGER.error(e.response['Error']['Message'])
     else:
         return response
 
-def put_active_fault_codes(esn, ts, ac_fc, dynamodb=None):
-    if not dynamodb:
-        dynamodb = boto3.resource('dynamodb', ENDPOINT_URL)
-
+def put_active_fault_codes(esn, ts, ac_fc):
+    #if not dynamodb:
+    dynamodb = boto3.resource('dynamodb')
     table = dynamodb.Table(TABLE_NAME)
     response = table.put_item(
        Item={
@@ -541,12 +539,12 @@ def check_active_fault_codes_timestamp(db_esn_ac_fcs,timestamp):
         return True
     else:
         db_timestamp = db_esn_ac_fcs.get('timestamp')
-        if db_timestamp <  timestamp:
+        if db_timestamp < timestamp:
             return True
         else:
             return False
 
-def generate_active_fault_codes(esn, ac_fc, conc_eq_fc_obj, db_esn_ac_fcs,timestamp, dynamodb=None):
+def generate_active_fault_codes(esn, ac_fc, conc_eq_fc_obj, db_esn_ac_fcs,timestamp):
     LOGGER.info(f"ESN : {esn}")
     LOGGER.info(f"AC_FC : {ac_fc}") #spn:1001~fmi:4~count:1|
     LOGGER.info(f"conc_eq_fc_obj : {conc_eq_fc_obj}")
@@ -585,7 +583,7 @@ def generate_active_fault_codes(esn, ac_fc, conc_eq_fc_obj, db_esn_ac_fcs,timest
         LOGGER.info(f"insert fault_code into database for new esn : {insert_spn_fmi_fcs_db}")
         LOGGER.info(f"insert esn into database for new esn : {esn}")
         LOGGER.info(f"insert timestamp into database for new esn : {timestamp}")
-        put_active_fault_codes(esn,timestamp,insert_spn_fmi_fcs_db,dynamodb)
+        put_active_fault_codes(esn,timestamp,insert_spn_fmi_fcs_db)
         LOGGER.info("fault_codes inserted successfully into the database for new esn:",insert_spn_fmi_fcs_db)
 
 
@@ -597,7 +595,7 @@ def generate_active_fault_codes(esn, ac_fc, conc_eq_fc_obj, db_esn_ac_fcs,timest
         existing_spn_fmi_fcs = db_esn_ac_fcs.get('fcs')
         for key, value in update_spn_fmi_fcs_db.items():
             existing_spn_fmi_fcs[key] = value
-        put_active_fault_codes(esn, timestamp, existing_spn_fmi_fcs, dynamodb)
+        put_active_fault_codes(esn, timestamp, existing_spn_fmi_fcs)
         LOGGER.info("new fault_codes inserted successfully into the database for existing esn:", esn)
 
     LOGGER.info(f'conc_eq_fc_obj is:{conc_eq_fc_obj}')
