@@ -1203,7 +1203,7 @@ Resources:
           KeyType: "HASH"
         - AttributeName: "timestamp"
           KeyType: "RANGE"
-      TableName: !Sub "ActiveFaultCodesTable-${ApplicationEnvironmentTag}"
+      TableName: !Sub "ActiveFaultCodeTable-${ApplicationEnvironmentTag}"
       # GlobalSecondaryIndexes:
       #   - IndexName: "DtnaPartitionOwnerGSI"
       #     KeySchema:
