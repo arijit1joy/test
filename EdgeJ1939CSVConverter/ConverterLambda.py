@@ -1,15 +1,15 @@
 import os
 import sys
+sys.path.insert(1, './lib')
+
 import csv
 import json
 import time
 import boto3
-import requests
 import datetime
 import utility as util
 from multiprocessing import Process
-from sqs_utility import sqs_send_message
-sys.path.insert(1, './lib')
+from edge_sqs_utility_layer.sqs_utility import sqs_send_message
 from edge_db_lambda_client import EdgeDbLambdaClient
 import re
 from botocore.exceptions import ClientError
