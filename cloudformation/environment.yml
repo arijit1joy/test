@@ -1202,12 +1202,8 @@ Resources:
       AttributeDefinitions:
         - AttributeName: "esn"
           AttributeType: "S"
-        - AttributeName: "timestamp"
-          AttributeType: "N"
       BillingMode: "PAY_PER_REQUEST"
       KeySchema:
         - AttributeName: "esn"
           KeyType: "HASH"
-        - AttributeName: "timestamp"
-          KeyType: "RANGE"
       TableName: !Sub "ActiveFaultCodeTable-${ApplicationEnvironmentTag}"
