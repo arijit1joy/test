@@ -25,7 +25,7 @@ mapTspFromOwner = os.environ["mapTspFromOwner"]
 MAX_ATTEMPTS = int(os.environ["MaxAttempts"])
 EDGE_DB_CLIENT = EdgeDbLambdaClient()
 APP_ENV = os.environ["APPLICATION_ENVIRONMENT"]
-TABLE_NAME = os.environ["J1939ActiveFaultCodeTable"]
+TABLE_NAME = os.environ["J1939ActiveFaultCodesTable"]
 
 
 def delete_message_from_sqs_queue(receipt_handle):
