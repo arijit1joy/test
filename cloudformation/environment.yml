@@ -232,64 +232,59 @@ Resources:
               Service:
                 - lambda.amazonaws.com
 
-    EdgeJ1939CSVConverterLambdaRole:
-      Type: "AWS::IAM::Role"
-      Properties:
-        RoleName: !Sub >-
-          ${ApplicationName}-${ApplicationEnvironmentTag}-EdgeJ1939CSVConverterLambdaRole
-        Path: /
-        Policies:
-          - PolicyName: !Sub >-
-              ${ApplicationName}-${ApplicationEnvironmentTag}-EdgeJ1939CSVConverterLambdaWorkerPolicy
-            PolicyDocument:
-              Version: 2012-10-17
-              Statement:
-                - Action:
-                    - "dynamodb:GetItem"
-                    - "dynamodb:PutItem"
-                    - "dynamodb:UpdateItem"
-                  Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/ActiveFaultCodeTable"
-                  Effect: Allow
-                - Action:
-                    - "dynamodb:Query"
-                  Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/ActiveFaultCodeTable/index/*"
-                  Effect: Allow
-                - Action:
-                    - "dynamodb:Scan"
-                  Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/ActiveFaultCodeTable"
-                  Effect: Allow
-                - Action:
-                    - "sqs:ReceiveMessage"
-                    - "sqs:DeleteMessage"
-                    - "sqs:GetQueueAttributes"
-                  Resource: !GetAtt EDGEJ1939DataLogFilesQueue.Arn
-                  Effect: Allow
-                - Action:
-                    - "sqs:SendMessage"
-                  Resource:
-                    - !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
-                    - !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
-                  Effect: Allow
-                - Action:
-                    - "logs:*"
-                  Resource: "arn:aws:logs:*:*:*"
-                  Effect: Allow
-                - Action:
-                    - "lambda:InvokeFunction"
-                    - "lambda:InvokeAsync"
-                  Resource:
-                    - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:EdgeCommonAPI-${ApplicationEnvironmentTag}"
-                    - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-edge-common-lib-EDGEDBReader-${ApplicationEnvironmentTag}"
-                  Effect: Allow
-        AssumeRolePolicyDocument:
-          Statement:
-            - Action: "sts:AssumeRole"
-              Effect: Allow
-              Principal:
-                Service:
-                  - lambda.amazonaws.com
+  EdgeJ1939CSVConverterLambdaRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Sub >-
+        ${ApplicationName}-${ApplicationEnvironmentTag}-EdgeJ1939CSVConverterLambdaRole
+      Path: /
+      Policies:
+        - PolicyName: !Sub >-
+            ${ApplicationName}-${ApplicationEnvironmentTag}-EdgeJ1939CSVConverterLambdaWorkerPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Action:
+                  - "sqs:ReceiveMessage"
+                  - "sqs:DeleteMessage"
+                  - "sqs:GetQueueAttributes"
+                Resource: !GetAtt
+                  - EDGEJ1939DataLogFilesQueue
+                  - Arn
+                Effect: Allow
+              - Action:
+                  - "sqs:SendMessage"
+                Resource:
+                  - !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
+                  - !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
+                Effect: Allow
+              - Action:
+                  - "logs:*"
+                Resource: "arn:aws:logs:*:*:*"
+                Effect: Allow
+              ## --- I could not find any ssm queries for this resource
+              # - Action:
+              #     - "ssm:Describe*"
+              #     - "ssm:Get*"
+              #     - "ssm:List*"
+              #   Resource: "*"
+              #   Effect: Allow
+              - Action:
+                  - "lambda:InvokeFunction"
+                  - "lambda:InvokeAsync"
+                Resource:
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:EdgeCommonAPI-${ApplicationEnvironmentTag}"
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-edge-common-lib-EDGEDBReader-${ApplicationEnvironmentTag}"
+                Effect: Allow
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: "sts:AssumeRole"
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
 
-    ObfuscateGPSCoordinatesLambda:
+  ObfuscateGPSCoordinatesLambda:
     Type: "AWS::Lambda::Function"
     Properties:
       Layers:
@@ -1209,4 +1204,3 @@ Resources:
         - AttributeName: "timestamp"
           KeyType: "RANGE"
       TableName: !Sub "ActiveFaultCodeTable-${ApplicationEnvironmentTag}"
-
