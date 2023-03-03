@@ -794,6 +794,7 @@ Resources:
           EDGEDBReader_ARN: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-edge-common-lib-EDGEDBReader-${ApplicationEnvironmentTag}"
           EDGEDBCommonAPI_ARN: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:EdgeCommonAPI-${ApplicationEnvironmentTag}"
           APPLICATION_NAME: !Ref ApplicationName
+          J1939ActiveFaultCodesTable: !Sub "J1939ActiveFaultCodeTable-${ApplicationEnvironmentTag}"
           QueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/${ApplicationName}-DataLogFilesQueue-${ApplicationEnvironmentTag}"
           mapTspFromOwner: >-
             {"EBU": "Cummins", "PSBU": "Cummins" ,"TATA": "India_Edge",

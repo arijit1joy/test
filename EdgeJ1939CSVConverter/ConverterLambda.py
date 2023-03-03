@@ -25,7 +25,7 @@ mapTspFromOwner = os.environ["mapTspFromOwner"]
 MAX_ATTEMPTS = int(os.environ["MaxAttempts"])
 EDGE_DB_CLIENT = EdgeDbLambdaClient()
 APP_ENV = os.environ["APPLICATION_ENVIRONMENT"]
-TABLE_NAME = f"ActiveFaultCodeTable-{APP_ENV}"
+TABLE_NAME = os.environ["J1939ActiveFaultCodeTable"]
 
 
 def delete_message_from_sqs_queue(receipt_handle):
@@ -526,7 +526,7 @@ def get_active_fault_codes_from_dynamodb(esn):
         return response
 
 def put_active_fault_codes(esn, ts, ac_fc):
-    
+
     dynamodb = boto3.resource('dynamodb')
     table = dynamodb.Table(TABLE_NAME)
     response = table.put_item(
