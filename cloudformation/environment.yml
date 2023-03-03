@@ -1206,4 +1206,4 @@ Resources:
       KeySchema:
         - AttributeName: "esn"
           KeyType: "HASH"
-      TableName: !Sub "ActiveFaultCodeTable-${ApplicationEnvironmentTag}"
+      TableName: !Sub "J1939ActiveFaultCodeTable-${ApplicationEnvironmentTag}"

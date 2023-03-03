@@ -514,7 +514,7 @@ def lambda_handler(lambda_event, context):  # noqa
         process.join()
 
 def get_active_fault_codes_from_dynamodb(esn):
-    #if not dynamodb:
+
     dynamodb = boto3.resource('dynamodb')
     table = dynamodb.Table(TABLE_NAME)
     try:
@@ -526,7 +526,7 @@ def get_active_fault_codes_from_dynamodb(esn):
         return response
 
 def put_active_fault_codes(esn, ts, ac_fc):
-    #if not dynamodb:
+    
     dynamodb = boto3.resource('dynamodb')
     table = dynamodb.Table(TABLE_NAME)
     response = table.put_item(
