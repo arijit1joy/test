@@ -26,7 +26,7 @@ MAX_ATTEMPTS = int(os.environ["MaxAttempts"])
 EDGE_DB_CLIENT = EdgeDbLambdaClient()
 APP_ENV = os.environ["APPLICATION_ENVIRONMENT"]
 TABLE_NAME = f"ActiveFaultCodeTable-{APP_ENV}"
-# ENDPOINT_URL="http://localhost:8000"#new code
+
 
 def delete_message_from_sqs_queue(receipt_handle):
     queue_url = os.environ["QueueUrl"]
@@ -85,8 +85,16 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header, a
     json_sample_head = ngdi_json_template
     json_sample_head["numberOfSamples"] = len(as_rows)
     converted_prot_header = as_converted_prot_header.split("~")
-    esn=""#new code
-    timestamp=""#new code
+    esn = ngdi_json_template["componentSerialNumber"]
+    timestamp=""
+
+    LOGGER.info(f"process_as as_rows:{as_rows}")
+    LOGGER.info(f"process_as as_dict:{as_dict}")
+    LOGGER.info(f"process_as ngdi_json_template:{ngdi_json_template}")
+    LOGGER.info(f"process_as json_sample_head:{json_sample_head}")
+    LOGGER.info(f"process_as as_converted_prot_header:{as_converted_prot_header}")
+    LOGGER.info(f"process_as as_converted_device_parameters:{as_converted_device_parameters}")
+    LOGGER.info(f"process_as esn:{esn}")
 
     try:
         protocol = converted_prot_header[1]
@@ -114,7 +122,7 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header, a
             if param:
                 if "datetimestamp" in param.lower():
                     sample["dateTimestamp"] = values[new_as_dict[param]]
-                    timestamp=values[new_as_dict[param]] #new code
+                    timestamp=values[new_as_dict[param]]
                 elif param != "activeFaultCodes" and param != "inactiveFaultCodes" and param != "pendingFaultCodes":
                     parameters[param] = values[new_as_dict[param]]
 
@@ -124,6 +132,8 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header, a
                           "inactiveFaultCodes": [], "pendingFaultCodes": []}
 
         #new code start
+        LOGGER.info(f"ESN is {esn}")
+        LOGGER.info(f"TimeStamp is {timestamp}")
         active_fc_from_db=get_active_fault_codes_from_dynamodb(esn)
         db_esn_ac_fcs = None
         if 'Item' in active_fc_from_db:
@@ -132,10 +142,11 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header, a
         db_timestamp_check = check_active_fault_codes_timestamp(db_esn_ac_fcs, timestamp)
         if db_timestamp_check:
             if "activeFaultCodes" in new_as_dict:
-                ac_fc = values[new_as_dict["activeFaultCodes"]] #spn:1001~fmi:4~count:1
+                ac_fc = values[new_as_dict["activeFaultCodes"]]
                 generate_active_fault_codes(esn, ac_fc, conv_eq_fc_obj, db_esn_ac_fcs, timestamp)
         else:
             LOGGER.info(f"db_timestamp is greater than timestamp")
+        LOGGER.info(f"conv_eq_fc_obj with activeFaultCodes {conv_eq_fc_obj}")
         #new code end
 
         '''if "activeFaultCodes" in new_as_dict:

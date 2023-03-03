@@ -151,6 +151,125 @@ def generate_active_fault_codes(esn, ac_fc, conc_eq_fc_obj, db_esn_ac_fcs,timest
     #return conc_eq_fc_obj
     print(f'conc_eq_fc_obj is:{conc_eq_fc_obj}')
 
+
+
+def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header, as_converted_device_parameters):
+    old_as_dict = as_dict
+    json_sample_head = ngdi_json_template
+    json_sample_head["numberOfSamples"] = len(as_rows)
+    converted_prot_header = as_converted_prot_header.split("~")
+    esn = ngdi_json_template["componentSerialNumber"]
+    timestamp = ""
+
+    print(f"process_as as_rows:{as_rows}")
+    print(f"process_as as_dict:{as_dict}")
+    print(f"process_as ngdi_json_template:{ngdi_json_template}")
+    print(f"process_as json_sample_head:{json_sample_head}")
+    print(f"process_as as_converted_prot_header:{as_converted_prot_header}")
+    print(f"process_as as_converted_device_parameters:{as_converted_device_parameters}")
+    print(f"process_as esn:{esn}")
+
+    try:
+        protocol = converted_prot_header[1]
+        network_id = converted_prot_header[2]
+        address = converted_prot_header[3]
+    except IndexError as e:
+        print(f"An exception occurred while trying to retrieve the AS protocols network_id and Address: {e}")
+        return
+
+    for values in as_rows:
+        new_as_dict = {x: old_as_dict[x] for x in old_as_dict}
+        parameters = {}
+        sample = {"convertedDeviceParameters": {}, "rawEquipmentParameters": [], "convertedEquipmentParameters": [],
+                  "convertedEquipmentFaultCodes": []}
+
+        for key in as_converted_device_parameters:
+            if key:
+                sample["convertedDeviceParameters"][key] = values[new_as_dict[key]]
+
+            del new_as_dict[key]
+
+        conv_eq_obj = {"protocol": protocol, "networkId": network_id, "deviceId": address}
+
+        for param in new_as_dict:
+            if param:
+                if "datetimestamp" in param.lower():
+                    sample["dateTimestamp"] = values[new_as_dict[param]]
+                    timestamp = values[new_as_dict[param]]
+                elif param != "activeFaultCodes" and param != "inactiveFaultCodes" and param != "pendingFaultCodes":
+                    parameters[param] = values[new_as_dict[param]]
+
+        conv_eq_obj["parameters"] = parameters
+        sample["convertedEquipmentParameters"].append(conv_eq_obj)
+        conv_eq_fc_obj = {"protocol": protocol, "networkId": network_id, "deviceId": address, "activeFaultCodes": [],
+                          "inactiveFaultCodes": [], "pendingFaultCodes": []}
+
+        # new code start
+        print(f"ESN is {esn}")
+        print(f"TimeStamp is {timestamp}")
+        active_fc_from_db = get_active_fault_codes_from_dynamodb(esn)
+        db_esn_ac_fcs = None
+        if 'Item' in active_fc_from_db:
+            db_esn_ac_fcs = active_fc_from_db['Item']
+
+        db_timestamp_check = check_active_fault_codes_timestamp(db_esn_ac_fcs, timestamp)
+        if db_timestamp_check:
+            if "activeFaultCodes" in new_as_dict:
+                ac_fc = values[new_as_dict["activeFaultCodes"]]
+                generate_active_fault_codes(esn, ac_fc, conv_eq_fc_obj, db_esn_ac_fcs, timestamp)
+        else:
+            print(f"db_timestamp is greater than timestamp")
+        print(f"conv_eq_fc_obj with activeFaultCodes {conv_eq_fc_obj}")
+        # new code end
+
+        '''if "activeFaultCodes" in new_as_dict:
+            ac_fc = values[new_as_dict["activeFaultCodes"]]
+
+            if ac_fc:
+                ac_fc_array = ac_fc.split("|")
+                for fc in ac_fc_array:
+                    if fc:
+                        fc_obj = {}
+                        fc_arr = fc.split("~")
+                        for fc_val in fc_arr:
+                            fc_obj[fc_val.split(":")[0]] = fc_val.split(":")[1]
+
+                        conv_eq_fc_obj["activeFaultCodes"].append(fc_obj)'''
+
+        if "inactiveFaultCodes" in new_as_dict:
+            inac_fc = values[new_as_dict["inactiveFaultCodes"]]
+            if inac_fc:
+                ac_fc_array = inac_fc.split("|")
+                for fc in ac_fc_array:
+                    if fc:
+                        fc_obj = {}
+                        fc_arr = fc.split("~")
+                        for fc_val in fc_arr:
+                            fc_obj[fc_val.split(":")[0]] = fc_val.split(":")[1]
+
+                        conv_eq_fc_obj["inactiveFaultCodes"].append(fc_obj)
+
+        if "pendingFaultCodes" in new_as_dict:
+            pen_fc = values[new_as_dict["pendingFaultCodes"]]
+            if pen_fc:
+                ac_fc_array = pen_fc.split("|")
+                for fc in ac_fc_array:
+                    if fc:
+                        fc_obj = {}
+                        fc_arr = fc.split("~")
+                        for fc_val in fc_arr:
+                            fc_obj[fc_val.split(":")[0]] = fc_val.split(":")[1]
+
+                        conv_eq_fc_obj["pendingFaultCodes"].append(fc_obj)
+
+        sample["convertedEquipmentFaultCodes"].append(conv_eq_fc_obj)
+
+        json_sample_head["samples"].append(sample)
+        print(f"Process AS JSON Sample Head: {json_sample_head}")
+
+    return json_sample_head
+
+
 if __name__ == '__main__':
     movie_table = create_active_fault_codes_table()
     print("Table status:", movie_table.table_status)
