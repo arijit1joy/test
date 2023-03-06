@@ -1202,6 +1202,8 @@ Resources:
       AttributeDefinitions:
         - AttributeName: "esn"
           AttributeType: "S"
+        - AttributeName: "ttl"
+          AttributeType: "N"
       BillingMode: "PAY_PER_REQUEST"
       KeySchema:
         - AttributeName: "esn"
@@ -1210,11 +1212,10 @@ Resources:
       TimeToLiveSpecification:
         AttributeName: "ttl"
         Enabled: true
-        TimeUnit: "DAYS"
         TimeToLiveAttribute: !GetAtt TTLParameter.Value
   TTLParameter:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: !Sub "/J1939ActiveFaultCodeTable-${ApplicationEnvironmentTag}/ttl"
+      Name: !Sub "/J1939ActiveFaultCodeTable-${ApplicationEnvironmentTag}/ttl-in-seconds"
       Type: String
       Value: "86400"
