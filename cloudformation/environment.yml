@@ -1217,4 +1217,4 @@ Resources:
     Properties:
       Name: !Sub "/J1939ActiveFaultCodeTable-${ApplicationEnvironmentTag}/ttl"
       Type: String
-      Value: "86400"
+      Value: "7"
