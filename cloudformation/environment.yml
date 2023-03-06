@@ -1210,3 +1210,11 @@ Resources:
       TimeToLiveSpecification:
         AttributeName: "ttl"
         Enabled: true
+        TimeUnit: "DAYS"
+        TimeToLiveAttribute: "{{resolve:ssm:/J1939ActiveFaultCodeTable-${ApplicationEnvironmentTag}/ttl}}"
+  TTLParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/J1939ActiveFaultCodeTable-${ApplicationEnvironmentTag}/ttl"
+      Type: String
+      Value: "86400"
