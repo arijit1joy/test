@@ -1211,10 +1211,10 @@ Resources:
         AttributeName: "ttl"
         Enabled: true
         TimeUnit: "DAYS"
-        TimeToLiveAttribute: "{{resolve:ssm:/J1939ActiveFaultCodeTable-${ApplicationEnvironmentTag}/ttl:1}}"
+        TimeToLiveAttribute: !GetAtt TTLParameter.Value
   TTLParameter:
     Type: AWS::SSM::Parameter
     Properties:
       Name: !Sub "/J1939ActiveFaultCodeTable-${ApplicationEnvironmentTag}/ttl"
       Type: String
-      Value: "7"
+      Value: "86400"
