@@ -1207,3 +1207,6 @@ Resources:
         - AttributeName: "esn"
           KeyType: "HASH"
       TableName: !Sub "J1939ActiveFaultCodeTable-${ApplicationEnvironmentTag}"
+      TimeToLiveSpecification:
+        AttributeName: "ttl"
+        Enabled: true
