@@ -248,9 +248,7 @@ Resources:
                 Action:
                   - "dynamodb:GetItem"
                   - "dynamodb:UpdateItem"
-                Resource: !GetAtt
-                  - ActiveFaultCodesTable
-                  - Arn
+                Resource: !GetAtt [ActiveFaultCodesTable, Arn]
               - Action:
                   - "sqs:ReceiveMessage"
                   - "sqs:DeleteMessage"
