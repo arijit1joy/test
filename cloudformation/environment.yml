@@ -1212,7 +1212,6 @@ Resources:
       TimeToLiveSpecification:
         AttributeName: "ttl"
         Enabled: true
-        TimeToLiveAttribute: !GetAtt TTLParameter.Value
   TTLParameter:
     Type: AWS::SSM::Parameter
     Properties:
