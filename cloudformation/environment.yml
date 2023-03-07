@@ -1208,6 +1208,8 @@ Resources:
       KeySchema:
         - AttributeName: "esn"
           KeyType: "HASH"
+        - AttributeName: "ttl"
+          KeyType: "RANGE"
       TableName: !Sub "J1939ActiveFaultCodeTable-${ApplicationEnvironmentTag}"
       TimeToLiveSpecification:
         AttributeName: "ttl"
