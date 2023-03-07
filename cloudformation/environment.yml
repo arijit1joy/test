@@ -793,7 +793,7 @@ Resources:
           EDGEDBReader_ARN: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-edge-common-lib-EDGEDBReader-${ApplicationEnvironmentTag}"
           EDGEDBCommonAPI_ARN: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:EdgeCommonAPI-${ApplicationEnvironmentTag}"
           APPLICATION_NAME: !Ref ApplicationName
-          J1939ActiveFaultCodesTable: !Sub "J1939ActiveFaultCodeTable-${ApplicationEnvironmentTag}"
+          J1939ActiveFaultCodesTable: !Sub "J1939ActiveFaultCodesTable-${ApplicationEnvironmentTag}"
           QueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/${ApplicationName}-DataLogFilesQueue-${ApplicationEnvironmentTag}"
           mapTspFromOwner: >-
             {"EBU": "Cummins", "PSBU": "Cummins" ,"TATA": "India_Edge",
@@ -1210,13 +1210,13 @@ Resources:
           KeyType: "HASH"
         - AttributeName: "ttl"
           KeyType: "RANGE"
-      TableName: !Sub "J1939ActiveFaultCodeTable-${ApplicationEnvironmentTag}"
+      TableName: !Sub "J1939ActiveFaultCodesTable-${ApplicationEnvironmentTag}"
       TimeToLiveSpecification:
         AttributeName: "ttl"
         Enabled: true
   TTLParameter:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: !Sub "/J1939ActiveFaultCodeTable-${ApplicationEnvironmentTag}/ttl-in-seconds"
+      Name: !Sub "/J1939ActiveFaultCodesTable-${ApplicationEnvironmentTag}/ttl-in-seconds"
       Type: String
       Value: "86400"
