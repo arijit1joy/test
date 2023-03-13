@@ -1202,8 +1202,6 @@ Resources:
       AttributeDefinitions:
         - AttributeName: "esn"
           AttributeType: "S"
-        - AttributeName: "ttl"
-          AttributeType: "N"
       BillingMode: "PAY_PER_REQUEST"
       KeySchema:
         - AttributeName: "esn"
