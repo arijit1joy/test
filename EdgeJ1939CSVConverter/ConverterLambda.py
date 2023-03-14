@@ -88,14 +88,6 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header, a
     esn = ngdi_json_template["componentSerialNumber"]
     timestamp=""
 
-    LOGGER.info(f"process_as as_rows:{as_rows}")
-    LOGGER.info(f"process_as as_dict:{as_dict}")
-    LOGGER.info(f"process_as ngdi_json_template:{ngdi_json_template}")
-    LOGGER.info(f"process_as json_sample_head:{json_sample_head}")
-    LOGGER.info(f"process_as as_converted_prot_header:{as_converted_prot_header}")
-    LOGGER.info(f"process_as as_converted_device_parameters:{as_converted_device_parameters}")
-    LOGGER.info(f"process_as esn:{esn}")
-
     try:
         protocol = converted_prot_header[1]
         network_id = converted_prot_header[2]
@@ -131,7 +123,6 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header, a
         conv_eq_fc_obj = {"protocol": protocol, "networkId": network_id, "deviceId": address, "activeFaultCodes": [],
                           "inactiveFaultCodes": [], "pendingFaultCodes": []}
 
-        #new code start
         LOGGER.info(f"ESN is {esn}")
         LOGGER.info(f"TimeStamp is {timestamp}")
         active_fc_from_db=get_active_fault_codes_from_dynamodb(esn)
@@ -146,22 +137,7 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header, a
                 generate_active_fault_codes(esn, ac_fc, conv_eq_fc_obj, db_esn_ac_fcs, timestamp)
         else:
             LOGGER.info(f"db_timestamp is greater than timestamp")
-        LOGGER.info(f"conv_eq_fc_obj with activeFaultCodes {conv_eq_fc_obj}")
-        #new code end
 
-        '''if "activeFaultCodes" in new_as_dict:
-            ac_fc = values[new_as_dict["activeFaultCodes"]]
-
-            if ac_fc:
-                ac_fc_array = ac_fc.split("|")
-                for fc in ac_fc_array:
-                    if fc:
-                        fc_obj = {}
-                        fc_arr = fc.split("~")
-                        for fc_val in fc_arr:
-                            fc_obj[fc_val.split(":")[0]] = fc_val.split(":")[1]
-
-                        conv_eq_fc_obj["activeFaultCodes"].append(fc_obj)'''
 
         if "inactiveFaultCodes" in new_as_dict:
             inac_fc = values[new_as_dict["inactiveFaultCodes"]]
@@ -519,7 +495,6 @@ def get_active_fault_codes_from_dynamodb(esn):
     table = dynamodb.Table(TABLE_NAME)
     try:
         response = table.get_item(Key={'esn': esn})
-        LOGGER.info(f'get_active_fault_codes_from_dynamodb response is :{response}')
     except ClientError as e:
         LOGGER.error(e.response['Error']['Message'])
     else:
@@ -556,24 +531,16 @@ def check_active_fault_codes_timestamp(db_esn_ac_fcs,timestamp):
             return False
 
 def generate_active_fault_codes(esn, ac_fc, conc_eq_fc_obj, db_esn_ac_fcs,timestamp):
-    LOGGER.info(f"ESN : {esn}")
-    LOGGER.info(f"AC_FC : {ac_fc}") #spn:1001~fmi:4~count:1|
-    LOGGER.info(f"conc_eq_fc_obj : {conc_eq_fc_obj}")
-    LOGGER.info(f"fault_codes from database for esn : {db_esn_ac_fcs}")
-    LOGGER.info(f"timestamp from database for esn : {timestamp}")
 
     spn_fmi_combo_list = re.split("\|", ac_fc)
     if spn_fmi_combo_list and not spn_fmi_combo_list[-1].strip():
         spn_fmi_combo_list.pop()
 
-    LOGGER.info(f"spn_fmi_combo_list : {spn_fmi_combo_list}")
     sorted_spn_fmi_combo_list = sorted(spn_fmi_combo_list)
-    LOGGER.info(f"sorted_spn_fmi_combo_list : {sorted_spn_fmi_combo_list}")#spn:1001~fmi:4~count:1
     insert_spn_fmi_fcs_db = {}
     update_spn_fmi_fcs_db = {}
 
     for actual_ac_fc in sorted_spn_fmi_combo_list:#
-        LOGGER.info(f"actual_ac_fc : {actual_ac_fc}")#spn:1001~fmi:4~count:1
         db_ac_fc = actual_ac_fc.rsplit('~', 1)[0] #spn:1001~fmi:4
         if db_esn_ac_fcs == None:
             LOGGER.info(f"new esn found does not exist in database : {esn}")
@@ -591,22 +558,13 @@ def generate_active_fault_codes(esn, ac_fc, conc_eq_fc_obj, db_esn_ac_fcs,timest
                 LOGGER.info(f"duplicate fault_code for exiting esn : {actual_ac_fc}")
 
     if len(insert_spn_fmi_fcs_db) > 0:
-        LOGGER.info(f"insert fault_code into database for new esn : {insert_spn_fmi_fcs_db}")
-        LOGGER.info(f"insert esn into database for new esn : {esn}")
-        LOGGER.info(f"insert timestamp into database for new esn : {timestamp}")
         put_active_fault_codes(esn,timestamp,insert_spn_fmi_fcs_db)
         LOGGER.info("fault_codes inserted successfully into the database for new esn:",insert_spn_fmi_fcs_db)
 
 
     if len(update_spn_fmi_fcs_db) > 0:
-        LOGGER.info(f"insert fault_code into database for existing esn : {update_spn_fmi_fcs_db}")
-        LOGGER.info(f"insert esn into database for existing  esn : {esn}")
-        LOGGER.info(f"insert timestamp into database for existing  esn : {timestamp}")
-
         existing_spn_fmi_fcs = db_esn_ac_fcs.get('fcs')
         for key, value in update_spn_fmi_fcs_db.items():
             existing_spn_fmi_fcs[key] = value
         put_active_fault_codes(esn, timestamp, existing_spn_fmi_fcs)
         LOGGER.info("new fault_codes inserted successfully into the database for existing esn:", esn)
-
-    LOGGER.info(f'conc_eq_fc_obj is:{conc_eq_fc_obj}')
