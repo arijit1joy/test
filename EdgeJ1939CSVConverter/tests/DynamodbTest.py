@@ -90,14 +90,15 @@ class TestDatabaseFunctions(unittest.TestCase):
         ac_fc = {
             "spn:100~fmi:4": 1,
             "spn:2623~fmi:3": 1,
-            "spn:101~fmi:5": 1
+            "spn:101~fmi:5": 1,
+            "spn:100~fmi:4": 8
         }
         ac_fc1 = {
             "spn:100~fmi:4": 1,
             "spn:2623~fmi:3": 1
         }
 
-        put_active_fault_codes(12345, '2023-01-01 10:10:29', ac_fc, self.dynamodb)
+        put_active_fault_codes(123456, '2023-01-01 10:10:29', ac_fc, self.dynamodb)
         put_active_fault_codes(1234, '2023-02-01 10:10:29', ac_fc1, self.dynamodb)
 
         #GET FAULT FORM DATABSE FOR ESN
@@ -112,7 +113,8 @@ class TestDatabaseFunctions(unittest.TestCase):
         else:
             print('esn does not exist in database')
 
-        csv_ac_fc="spn:1001~fmi:4~count:1|"
+        #csv_ac_fc="spn:1001~fmi:4~count:1|"
+        csv_ac_fc = "spn:1001~fmi:4~count:1|spn:2623~fmi:3~count:2|spn:2456~fmi:3~count:5|"
         conc_eq_fc_obj = {}
         conc_eq_fc_obj['activeFaultCodes'] = []
 
@@ -165,14 +167,15 @@ class TestDatabaseFunctions(unittest.TestCase):
 
         print('test_generate_active_fault_codes_duplicate_fc_for_esn')
         csv_esn = 123456
-        csv_ac_fc = "spn:100~fmi:4~count:1|"
+        #csv_ac_fc = "spn:100~fmi:4~count:1|"
+        csv_ac_fc = "spn:100~fmi:4~count:3|"
         conc_eq_fc_obj = {}
         conc_eq_fc_obj['activeFaultCodes'] = []
         csv_timestamp = '2023-02-10 10:20:34'
         #csv_timestamp = '2023-01-10 01:20:34'
 
         ac_fc = {
-            "spn:100~fmi:4": 1
+            "spn:100~fmi:4": 3
 
         }
 
@@ -215,7 +218,8 @@ class TestDatabaseFunctions(unittest.TestCase):
         if 'Item' in get_result_db:
             db_esn_ac_fcs=get_result_db['Item']
 
-        csv_ac_fc="spn:1001~fmi:4~count:1|"
+        csv_ac_fc="spn:100~fmi:4~count:1|spn:1001~fmi:4~count:1|"
+
         conc_eq_fc_obj = {}
         conc_eq_fc_obj['activeFaultCodes'] = []
 
@@ -229,6 +233,42 @@ class TestDatabaseFunctions(unittest.TestCase):
         else:
             print("db_timestamp is greather than timestamp ")
 
+    def test_generate_active_fault_codes_fc_oocu_esn(self):
+        from DynamodbSample import get_active_fault_codes_from_dynamodb
+        from DynamodbSample import generate_active_fault_codes
+        from DynamodbSample import put_active_fault_codes
+        from DynamodbSample import check_active_fault_codes_timestamp
+
+        print('test_generate_active_fault_codes_one_new_duplicate_fc_esn')
+        csv_esn = 123456
+
+        ac_fc = {
+            "spn:100~fmi:4": 1
+        }
+
+        put_active_fault_codes(csv_esn, '2023-01-01 10:10:29', ac_fc, self.dynamodb)
+
+        #GET FAULT FORM DATABSE FOR ESN
+        csv_esn = 123456
+        get_result_db = get_active_fault_codes_from_dynamodb(csv_esn, self.dynamodb)
+        print('get_result_db :', get_result_db)
+        db_esn_ac_fcs=None
+        if 'Item' in get_result_db:
+            db_esn_ac_fcs=get_result_db['Item']
+
+        csv_ac_fc="spn:100~fmi:4~count:2|"
+        conc_eq_fc_obj = {}
+        conc_eq_fc_obj['activeFaultCodes'] = []
+
+        csv_timestamp='2023-02-10 10:20:34'
+
+        db_timestamp_check = check_active_fault_codes_timestamp(db_esn_ac_fcs, csv_timestamp)
+        print('db_timestamp_check status:', db_timestamp_check)
+        if db_timestamp_check:
+            result=generate_active_fault_codes(csv_esn,csv_ac_fc,conc_eq_fc_obj,db_esn_ac_fcs,csv_timestamp,self.dynamodb)
+            print('result:', result)
+        else:
+            print("db_timestamp is greather than timestamp ")
     def test_timestamp_check_true(self):
         from DynamodbSample import put_active_fault_codes
         from DynamodbSample import get_active_fault_codes_from_dynamodb

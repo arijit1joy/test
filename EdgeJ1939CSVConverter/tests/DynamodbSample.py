@@ -113,17 +113,28 @@ def generate_active_fault_codes(esn, ac_fc, conc_eq_fc_obj, db_esn_ac_fcs,timest
         print(f"actual_ac_fc : {actual_ac_fc}")
         db_ac_fc = actual_ac_fc.rsplit('~', 1)[0]
         print(f"db_ac_fc : {db_ac_fc}")
+        ac_fc_cnt=actual_ac_fc.split('~', 2)[2].split(":")[1]
+        print("ac_fc_cnt :",ac_fc_cnt)
+
+
         if db_esn_ac_fcs == None:
             print(f"new esn found does not exist in database : {esn}")
-            insert_spn_fmi_fcs_db[db_ac_fc] = 1
+            insert_spn_fmi_fcs_db[db_ac_fc] = ac_fc_cnt
             generate_spn_fmi_fc_obj(actual_ac_fc, conc_eq_fc_obj)
         else:
             existing_fc_db = db_esn_ac_fcs.get('fcs')
             print(f"existing fault_codes from database for esn: {existing_fc_db}")
+            ac_fc_db_cnt=existing_fc_db.get(db_ac_fc)
+            print("ac_fc_db_cnt:",ac_fc_db_cnt)
             #checking if the fault_codes contains  in the database
             if existing_fc_db.get(db_ac_fc) == None:
                 print(f"fault_code not found in database for exiting esn : {actual_ac_fc}")
-                update_spn_fmi_fcs_db[db_ac_fc] = 1
+                update_spn_fmi_fcs_db[db_ac_fc] = ac_fc_cnt
+                generate_spn_fmi_fc_obj(actual_ac_fc, conc_eq_fc_obj)
+            elif int(ac_fc_cnt) != int(ac_fc_db_cnt):
+                print(f"fault_code found in database for exiting esn and count not matching: {actual_ac_fc}")
+                #update_spn_fmi_fcs_db[db_ac_fc] = ac_fc_cnt
+                insert_spn_fmi_fcs_db[db_ac_fc] = ac_fc_cnt
                 generate_spn_fmi_fc_obj(actual_ac_fc, conc_eq_fc_obj)
             else:
                 print(f"duplicate fault_code for exiting esn : {actual_ac_fc}")

@@ -123,8 +123,8 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header, a
         conv_eq_fc_obj = {"protocol": protocol, "networkId": network_id, "deviceId": address, "activeFaultCodes": [],
                           "inactiveFaultCodes": [], "pendingFaultCodes": []}
 
-        LOGGER.info(f"ESN is {esn}")
-        LOGGER.info(f"TimeStamp is {timestamp}")
+        LOGGER.debug(f"ESN is {esn}")
+        LOGGER.debug(f"TimeStamp is {timestamp}")
         active_fc_from_db=get_active_fault_codes_from_dynamodb(esn)
         db_esn_ac_fcs = None
         if 'Item' in active_fc_from_db:
@@ -496,7 +496,7 @@ def get_active_fault_codes_from_dynamodb(esn):
     try:
         response = table.get_item(Key={'esn': esn})
     except ClientError as e:
-        LOGGER.error(e.response['Error']['Message'])
+        LOGGER.error('error', e.response['Error']['Message'])
     else:
         return response
 
@@ -541,21 +541,27 @@ def generate_active_fault_codes(esn, ac_fc, conc_eq_fc_obj, db_esn_ac_fcs,timest
     update_spn_fmi_fcs_db = {}
 
     for actual_ac_fc in sorted_spn_fmi_combo_list:#
-        db_ac_fc = actual_ac_fc.rsplit('~', 1)[0] #spn:1001~fmi:4
+        db_ac_fc = actual_ac_fc.rsplit('~', 1)[0]
+        ac_fc_cnt = actual_ac_fc.split('~', 2)[2].split(":")[1]
         if db_esn_ac_fcs == None:
-            LOGGER.info(f"new esn found does not exist in database : {esn}")
-            insert_spn_fmi_fcs_db[db_ac_fc] = 1
+            LOGGER.debug(f"new esn found does not exist in database : {esn}")
+            insert_spn_fmi_fcs_db[db_ac_fc] = ac_fc_cnt
             generate_spn_fmi_fc_obj(actual_ac_fc, conc_eq_fc_obj)
         else:
             existing_fc_from_db = db_esn_ac_fcs.get('fcs')
-            LOGGER.info(f"existing fault_codes from database for esn: {existing_fc_from_db}")
+            ac_fc_db_cnt = existing_fc_from_db.get(db_ac_fc)
+            LOGGER.debug(f"existing fault_codes from database for esn: {existing_fc_from_db}")
             #checking if the fault_codes contains  in the database
             if existing_fc_from_db.get(db_ac_fc) == None:
-                LOGGER.info(f"fault_code not found in database for exiting esn : {actual_ac_fc}")
-                update_spn_fmi_fcs_db[db_ac_fc] = 1
+                LOGGER.debug(f"fault_code not found in database for exiting esn : {actual_ac_fc}")
+                update_spn_fmi_fcs_db[db_ac_fc] = ac_fc_cnt
+                generate_spn_fmi_fc_obj(actual_ac_fc, conc_eq_fc_obj)
+            elif int(ac_fc_cnt) != int(ac_fc_db_cnt):
+                LOGGER.debug(f"fault_code found in database for exiting esn and count not matching: {actual_ac_fc}")
+                update_spn_fmi_fcs_db[db_ac_fc] = ac_fc_cnt
                 generate_spn_fmi_fc_obj(actual_ac_fc, conc_eq_fc_obj)
             else:
-                LOGGER.info(f"duplicate fault_code for exiting esn : {actual_ac_fc}")
+                LOGGER.debug(f"duplicate fault_code for exiting esn : {actual_ac_fc}")
 
     if len(insert_spn_fmi_fcs_db) > 0:
         put_active_fault_codes(esn,timestamp,insert_spn_fmi_fcs_db)
