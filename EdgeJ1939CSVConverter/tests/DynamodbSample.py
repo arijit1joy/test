@@ -159,8 +159,9 @@ def generate_active_fault_codes(esn, ac_fc, conc_eq_fc_obj, db_esn_ac_fcs,timest
         print("new fault_codes inserted successfully into the database for existing esn:", esn)
 
 
-    #return conc_eq_fc_obj
+
     print(f'conc_eq_fc_obj is:{conc_eq_fc_obj}')
+    return conc_eq_fc_obj
 
 
 

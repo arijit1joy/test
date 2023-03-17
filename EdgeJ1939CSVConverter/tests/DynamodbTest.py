@@ -158,6 +158,7 @@ class TestDatabaseFunctions(unittest.TestCase):
             print('result:',result)
         else:
             print("db_timestamp is greather than timestamp ")
+        print('conc_eq_fc_obj:123:',conc_eq_fc_obj)
 
     def test_generate_active_fault_codes_duplicate_fc_for_esn(self):
         from DynamodbSample import put_active_fault_codes
@@ -224,6 +225,7 @@ class TestDatabaseFunctions(unittest.TestCase):
         conc_eq_fc_obj['activeFaultCodes'] = []
 
         csv_timestamp='2023-02-10 10:20:34'
+        print('db_esn_ac_fcs:',db_esn_ac_fcs)
 
         db_timestamp_check = check_active_fault_codes_timestamp(db_esn_ac_fcs, csv_timestamp)
         print('db_timestamp_check status:', db_timestamp_check)
@@ -261,6 +263,7 @@ class TestDatabaseFunctions(unittest.TestCase):
         conc_eq_fc_obj['activeFaultCodes'] = []
 
         csv_timestamp='2023-02-10 10:20:34'
+        print('db_esn_ac_fcs:',db_esn_ac_fcs)
 
         db_timestamp_check = check_active_fault_codes_timestamp(db_esn_ac_fcs, csv_timestamp)
         print('db_timestamp_check status:', db_timestamp_check)

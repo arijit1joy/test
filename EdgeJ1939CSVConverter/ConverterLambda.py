@@ -136,7 +136,7 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header, a
                 ac_fc = values[new_as_dict["activeFaultCodes"]]
                 generate_active_fault_codes(esn, ac_fc, conv_eq_fc_obj, db_esn_ac_fcs, timestamp)
         else:
-            LOGGER.info(f"db_timestamp is greater than timestamp")
+            LOGGER.debug(f"db_timestamp is greater than timestamp")
 
 
         if "inactiveFaultCodes" in new_as_dict:
@@ -490,7 +490,6 @@ def lambda_handler(lambda_event, context):  # noqa
         process.join()
 
 def get_active_fault_codes_from_dynamodb(esn):
-
     dynamodb = boto3.resource('dynamodb')
     table = dynamodb.Table(TABLE_NAME)
     try:
@@ -565,12 +564,43 @@ def generate_active_fault_codes(esn, ac_fc, conc_eq_fc_obj, db_esn_ac_fcs,timest
 
     if len(insert_spn_fmi_fcs_db) > 0:
         put_active_fault_codes(esn,timestamp,insert_spn_fmi_fcs_db)
-        LOGGER.info("fault_codes inserted successfully into the database for new esn:",insert_spn_fmi_fcs_db)
-
+        LOGGER.debug("fault_codes inserted successfully into the database for new esn:",insert_spn_fmi_fcs_db)
 
     if len(update_spn_fmi_fcs_db) > 0:
         existing_spn_fmi_fcs = db_esn_ac_fcs.get('fcs')
         for key, value in update_spn_fmi_fcs_db.items():
             existing_spn_fmi_fcs[key] = value
         put_active_fault_codes(esn, timestamp, existing_spn_fmi_fcs)
-        LOGGER.info("new fault_codes inserted successfully into the database for existing esn:", esn)
+        LOGGER.debug("new fault_codes inserted successfully into the database for existing esn:", esn)
+
+    return conc_eq_fc_obj
+
+def create_active_fault_codes_table(dynamodb=None):
+    if not dynamodb:
+        dynamodb = boto3.resource('dynamodb', endpoint_url='http://localhost:8000')
+
+    table = dynamodb.create_table(
+        TableName=TABLE_NAME,
+        KeySchema=[
+            {
+                'AttributeName': 'esn',
+                'KeyType': 'HASH'
+            }
+        ],
+        AttributeDefinitions=[
+            {
+                'AttributeName': 'esn',
+                'AttributeType': 'N'
+            }
+        ],
+        ProvisionedThroughput={
+            'ReadCapacityUnits': 1,
+            'WriteCapacityUnits': 1
+        }
+    )
+
+    # Wait until the table exists.
+    table.meta.client.get_waiter('table_exists').wait(TableName=TABLE_NAME)
+    assert table.table_status == 'ACTIVE'
+
+    return table
