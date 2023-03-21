@@ -29,18 +29,14 @@ with CDAModuleMockingContext(sys) as cda_module_mocking_context, patch.dict("os.
 class TestConverterLambda(unittest.TestCase):
     def setUp(self):
         """
-        Create database resource and mock table
+        Create database resource
         """
         self.dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
 
-        from ConverterLambda import create_active_fault_codes_table
-        self.table = create_active_fault_codes_table(self.dynamodb)
-
     def tearDown(self):
         """
-        Delete database resource and mock table
+        Delete database resource
         """
-        self.table.delete()
         self.dynamodb = None
 
     @patch("ConverterLambda.EDGE_DB_CLIENT")
@@ -56,10 +52,6 @@ class TestConverterLambda(unittest.TestCase):
         result = ConverterLambda.get_active_fault_codes_from_dynamodb(csv_esn)
         self.assertTrue(result)
 
-    #def test_get_active_fault_codes_from_dynamodb_exception(self) :
-    #    #with self.assertRaises(Exception) as context:
-    #    result = ConverterLambda.get_active_fault_codes_from_dynamodb('abc')
-    #    print(result)
 
     def test_check_active_fault_codes_timestamp_none(self) :
         csv_timestamp = '2023-02-10 10:20:34'
@@ -124,6 +116,16 @@ class TestConverterLambda(unittest.TestCase):
         csv_timestamp='2023-02-10 10:20:34'
         result = ConverterLambda.generate_active_fault_codes(csv_esn, csv_ac_fc, conc_eq_fc_obj, db_esn_ac_fcs, csv_timestamp)
         self.assertEqual(result, expected_result)
+
+    def test_generate_active_fault_codes_empty_ac_fc(self):
+        conv_eq_fc_obj = {"activeFaultCodes": []}
+        esn = 123456
+        ac_fc = ""
+        db_esn_ac_fcs=None
+        timestamp = '2023-02-10 10:20:34'
+        expected_conv_eq_fc_obj={"activeFaultCodes": []}
+        result = ConverterLambda.generate_active_fault_codes(esn, ac_fc, conv_eq_fc_obj, db_esn_ac_fcs, timestamp)
+        self.assertEqual(result, expected_conv_eq_fc_obj)
 
     def test_generate_active_fault_codes_new_esn(self):
         conv_eq_fc_obj = {"activeFaultCodes": []}

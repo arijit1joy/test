@@ -535,6 +535,10 @@ def generate_active_fault_codes(esn, ac_fc, conc_eq_fc_obj, db_esn_ac_fcs,timest
     if spn_fmi_combo_list and not spn_fmi_combo_list[-1].strip():
         spn_fmi_combo_list.pop()
 
+    if not spn_fmi_combo_list:
+        LOGGER.debug(f"spn_fmi_combo_list is empty : {spn_fmi_combo_list}")
+        return conc_eq_fc_obj
+
     sorted_spn_fmi_combo_list = sorted(spn_fmi_combo_list)
     insert_spn_fmi_fcs_db = {}
     update_spn_fmi_fcs_db = {}
@@ -575,32 +579,3 @@ def generate_active_fault_codes(esn, ac_fc, conc_eq_fc_obj, db_esn_ac_fcs,timest
 
     return conc_eq_fc_obj
 
-def create_active_fault_codes_table(dynamodb=None):
-    if not dynamodb:
-        dynamodb = boto3.resource('dynamodb', endpoint_url='http://localhost:8000')
-
-    table = dynamodb.create_table(
-        TableName=TABLE_NAME,
-        KeySchema=[
-            {
-                'AttributeName': 'esn',
-                'KeyType': 'HASH'
-            }
-        ],
-        AttributeDefinitions=[
-            {
-                'AttributeName': 'esn',
-                'AttributeType': 'N'
-            }
-        ],
-        ProvisionedThroughput={
-            'ReadCapacityUnits': 1,
-            'WriteCapacityUnits': 1
-        }
-    )
-
-    # Wait until the table exists.
-    table.meta.client.get_waiter('table_exists').wait(TableName=TABLE_NAME)
-    assert table.table_status == 'ACTIVE'
-
-    return table
