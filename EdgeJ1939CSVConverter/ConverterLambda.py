@@ -134,7 +134,10 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header, a
         if db_timestamp_check:
             if "activeFaultCodes" in new_as_dict:
                 ac_fc = values[new_as_dict["activeFaultCodes"]]
-                generate_active_fault_codes(esn, ac_fc, conv_eq_fc_obj, db_esn_ac_fcs, timestamp)
+                if ac_fc:
+                    generate_active_fault_codes(esn, ac_fc, conv_eq_fc_obj, db_esn_ac_fcs, timestamp)
+                else:
+                    LOGGER.debug(f"{ac_fc} is empty")
         else:
             LOGGER.debug(f"db_timestamp is greater than timestamp")
 
