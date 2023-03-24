@@ -138,6 +138,8 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header, a
                     generate_active_fault_codes(esn, ac_fc, conv_eq_fc_obj, db_esn_ac_fcs, timestamp)
                 else:
                     LOGGER.debug(f"{ac_fc} is empty")
+                    response=delete_esn(esn)
+                    LOGGER.debug(f"deleted esn from database response {response}")
         else:
             LOGGER.debug(f"db_timestamp is greater than timestamp")
 
@@ -516,6 +518,17 @@ def put_active_fault_codes(esn, ts, ac_fc):
     )
 
     return response
+
+def delete_esn_from_dynamodb(esn):
+
+    dynamodb = boto3.resource('dynamodb')
+    table = dynamodb.Table(TABLE_NAME)
+    response = table.delete_item(
+        Key={
+            'esn': esn
+        }
+    )
+    return response
 def generate_spn_fmi_fc_obj( actual_ac_fc, conc_eq_fc_obj):
     fc_obj = {}
     fc_arr = actual_ac_fc.split("~")
@@ -584,4 +597,8 @@ def generate_active_fault_codes(esn, ac_fc, conc_eq_fc_obj, db_esn_ac_fcs,timest
         LOGGER.debug("new fault_codes inserted successfully into the database for existing esn:", esn)
 
     return conc_eq_fc_obj
+
+
+
+
 

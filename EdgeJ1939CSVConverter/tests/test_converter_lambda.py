@@ -185,3 +185,9 @@ class TestConverterLambda(unittest.TestCase):
 
         result = ConverterLambda.generate_active_fault_codes(csv_esn, csv_ac_fc, conc_eq_fc_obj, db_esn_ac_fcs, csv_timestamp)
         self.assertEqual(result, expected_conv_eq_fc_obj)
+
+    def test_delete_esn_from_dynamodb(self):
+        csv_esn = 123456
+        response = ConverterLambda.delete_esn_from_dynamodb(csv_esn)
+        self.assertTrue(response)
+
