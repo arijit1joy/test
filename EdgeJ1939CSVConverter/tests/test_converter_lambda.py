@@ -105,7 +105,14 @@ class TestConverterLambda(unittest.TestCase):
 
         #GET FAULT FORM DATABSE FOR ESN
         csv_esn = 123456
-        get_result_db = get_active_fault_codes_from_dynamodb(csv_esn)
+        #get_result_db = get_active_fault_codes_from_dynamodb(csv_esn)
+        get_result_db = {'Item': {'esn': 123456, 'timestamp': '2023-01-01 10:10:29', 'fcs': {'spn:100~fmi:4': 3}},
+                         'ResponseMetadata': {'RequestId': 'hulL0SeuT55JJtu1ClvOn3IW1B2OPxGhGLOx1LCrFgWme2GCL0Ah',
+                                              'HTTPStatusCode': 200, 'HTTPHeaders': {'server': 'amazon.com',
+                                                                                     'x-amzn-requestid': 'hulL0SeuT55JJtu1ClvOn3IW1B2OPxGhGLOx1LCrFgWme2GCL0Ah',
+                                                                                     'x-amz-crc32': '2810715295'},
+                                              'RetryAttempts': 0}}
+
         db_esn_ac_fcs=None
         if 'Item' in get_result_db:
             db_esn_ac_fcs=get_result_db['Item']
@@ -131,7 +138,17 @@ class TestConverterLambda(unittest.TestCase):
         conv_eq_fc_obj = {"activeFaultCodes": []}
         esn = 123456
         ac_fc = "spn:1001~fmi:4~count:1|"
-        db_esn_ac_fcs=None
+        #db_esn_ac_fcs=None
+        get_result_db = {'Item': {'esn': 123456, 'timestamp': '2023-01-01 10:10:29', 'fcs': {'spn:100~fmi:4': 3}},
+                         'ResponseMetadata': {'RequestId': 'hulL0SeuT55JJtu1ClvOn3IW1B2OPxGhGLOx1LCrFgWme2GCL0Ah',
+                                              'HTTPStatusCode': 200, 'HTTPHeaders': {'server': 'amazon.com',
+                                                                                     'x-amzn-requestid': 'hulL0SeuT55JJtu1ClvOn3IW1B2OPxGhGLOx1LCrFgWme2GCL0Ah',
+                                                                                     'x-amz-crc32': '2810715295'},
+                                              'RetryAttempts': 0}}
+
+        db_esn_ac_fcs = None
+        if 'Item' in get_result_db:
+            db_esn_ac_fcs = get_result_db['Item']
         timestamp = '2023-02-10 10:20:34'
         expected_conv_eq_fc_obj={'activeFaultCodes': [{'spn': '1001', 'fmi': '4', 'count': '1'}]}
         result = ConverterLambda.generate_active_fault_codes(esn, ac_fc, conv_eq_fc_obj, db_esn_ac_fcs, timestamp)
