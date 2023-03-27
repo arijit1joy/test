@@ -557,7 +557,9 @@ def generate_active_fault_codes(esn, ac_fc, conc_eq_fc_obj, db_esn_ac_fcs,timest
     sorted_spn_fmi_combo_list = sorted(spn_fmi_combo_list)
     insert_spn_fmi_fcs_db = {}
     update_spn_fmi_fcs_db = {}
-    existing_fc_from_db = db_esn_ac_fcs.get('fcs')
+    existing_fc_from_db = {}
+    if db_esn_ac_fcs.get('fcs') is not None:
+        existing_fc_from_db = db_esn_ac_fcs.get('fcs')
     LOGGER.debug(f"existing fault_codes from database for esn: {existing_fc_from_db}")
     for actual_ac_fc in sorted_spn_fmi_combo_list:#
         db_ac_fc = actual_ac_fc.rsplit('~', 1)[0]
