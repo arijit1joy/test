@@ -28,8 +28,8 @@ phases:
           echo "The 'bdd_run_file.py' file is missing for the current BDD project! Please include the 'bdd_run_file.py' in the root folder of your BDD project.";
           exit 1;
         fi;
-reports:
-  EdgeJ1939BDDReports-${environment}:
-    files:
-      - "**/*"
-    base-directory: "EDGE-J1939-BDD/reports"
+#reports:
+#  EdgeJ1939BDDReports-${environment}:
+#    files:
+#      - "**/*"
+#    base-directory: "EDGE-J1939-BDD/reports"
