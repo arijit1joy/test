@@ -574,11 +574,9 @@ def generate_active_fault_codes(esn, ac_fc, conc_eq_fc_obj, db_esn_ac_fcs,timest
             #checking if the fault_codes contains  in the database
             if ac_fc_db_cnt == None:
                 LOGGER.debug(f"fault_code not found in database for exiting esn : {actual_ac_fc}")
-                #update_spn_fmi_fcs_db[db_ac_fc] = ac_fc_cnt
                 generate_spn_fmi_fc_obj(actual_ac_fc, conc_eq_fc_obj)
             elif int(ac_fc_cnt) != int(ac_fc_db_cnt):
                 LOGGER.debug(f"fault_code found in database for exiting esn and count not matching: {actual_ac_fc}")
-                #update_spn_fmi_fcs_db[db_ac_fc] = ac_fc_cnt
                 generate_spn_fmi_fc_obj(actual_ac_fc, conc_eq_fc_obj)
             else:
                 LOGGER.debug(f"duplicate fault_code for exiting esn : {actual_ac_fc}")
@@ -588,7 +586,6 @@ def generate_active_fault_codes(esn, ac_fc, conc_eq_fc_obj, db_esn_ac_fcs,timest
         LOGGER.debug("fault_codes inserted successfully into the database for new esn: ", insert_spn_fmi_fcs_db)
 
     if len(update_spn_fmi_fcs_db) > 0:
-        #existing_spn_fmi_fcs = db_esn_ac_fcs.get('fcs')
         existing_spn_fmi_fcs = {}
         for key, value in update_spn_fmi_fcs_db.items():
             existing_spn_fmi_fcs[key] = value
