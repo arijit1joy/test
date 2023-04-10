@@ -1,5 +1,6 @@
 import os
 import sys
+
 sys.path.insert(1, './lib')
 
 import csv
@@ -26,6 +27,7 @@ MAX_ATTEMPTS = int(os.environ["MaxAttempts"])
 EDGE_DB_CLIENT = EdgeDbLambdaClient()
 APP_ENV = os.environ["APPLICATION_ENVIRONMENT"]
 TABLE_NAME = os.environ["J1939ActiveFaultCodeTable"]
+BDD_ESN = ["19299951", "19299955", "19299956", "19299952", "19299954"]
 
 
 def delete_message_from_sqs_queue(receipt_handle):
@@ -86,7 +88,7 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header, a
     json_sample_head["numberOfSamples"] = len(as_rows)
     converted_prot_header = as_converted_prot_header.split("~")
     esn = ngdi_json_template["componentSerialNumber"]
-    timestamp=""
+    timestamp = ""
 
     try:
         protocol = converted_prot_header[1]
@@ -114,7 +116,7 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header, a
             if param:
                 if "datetimestamp" in param.lower():
                     sample["dateTimestamp"] = values[new_as_dict[param]]
-                    timestamp=values[new_as_dict[param]]
+                    timestamp = values[new_as_dict[param]]
                 elif param != "activeFaultCodes" and param != "inactiveFaultCodes" and param != "pendingFaultCodes":
                     parameters[param] = values[new_as_dict[param]]
 
@@ -125,7 +127,7 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header, a
 
         LOGGER.debug(f"ESN is {esn}")
         LOGGER.debug(f"TimeStamp is {timestamp}")
-        active_fc_from_db=get_active_fault_codes_from_dynamodb(esn)
+        active_fc_from_db = get_active_fault_codes_from_dynamodb(esn)
         db_esn_ac_fcs = None
         if 'Item' in active_fc_from_db:
             db_esn_ac_fcs = active_fc_from_db['Item']
@@ -134,7 +136,7 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header, a
         if db_timestamp_check:
             if "activeFaultCodes" in new_as_dict:
                 ac_fc = values[new_as_dict["activeFaultCodes"]]
-                if ac_fc:
+                if ac_fc and esn not in BDD_ESN:
                     generate_active_fault_codes(esn, ac_fc, conv_eq_fc_obj, db_esn_ac_fcs, timestamp)
                 else:
                     LOGGER.debug(f"{ac_fc} is empty")
@@ -168,8 +170,9 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header, a
                             fc_obj[fc_val.split(":")[0]] = fc_val.split(":")[1]
 
                         conv_eq_fc_obj["pendingFaultCodes"].append(fc_obj)
-        if conv_eq_fc_obj['activeFaultCodes'] or conv_eq_fc_obj["inactiveFaultCodes"] or conv_eq_fc_obj["pendingFaultCodes"]:
-         sample["convertedEquipmentFaultCodes"].append(conv_eq_fc_obj)
+        if conv_eq_fc_obj['activeFaultCodes'] or conv_eq_fc_obj["inactiveFaultCodes"] or conv_eq_fc_obj[
+            "pendingFaultCodes"]:
+            sample["convertedEquipmentFaultCodes"].append(conv_eq_fc_obj)
         json_sample_head["samples"].append(sample)
         LOGGER.debug(f"Process AS JSON Sample Head: {json_sample_head}")
 
@@ -184,7 +187,6 @@ def get_device_id(ngdi_json_template):
 
 
 def get_tsp_and_cust_ref(device_id):
-
     attempts = 0
     get_tsp_cust_ref_payload = f"select cust_ref, device_owner from da_edge_olympus.device_information WHERE device_id = '{device_id}';"
 
@@ -202,8 +204,10 @@ def get_tsp_and_cust_ref(device_id):
                          f"body: {get_tsp_cust_ref_response_body}")
 
             if (get_tsp_cust_ref_response_body and get_tsp_cust_ref_response_code == 200) and \
-                    ("cust_ref" in get_tsp_cust_ref_response_body[0] and get_tsp_cust_ref_response_body[0]["cust_ref"]) and \
-                    ("device_owner" in get_tsp_cust_ref_response_body[0] and get_tsp_cust_ref_response_body[0]["device_owner"]):
+                    ("cust_ref" in get_tsp_cust_ref_response_body[0] and get_tsp_cust_ref_response_body[0][
+                        "cust_ref"]) and \
+                    ("device_owner" in get_tsp_cust_ref_response_body[0] and get_tsp_cust_ref_response_body[0][
+                        "device_owner"]):
                 return get_tsp_cust_ref_response_body[0]
         except Exception as e:
             pass
@@ -492,6 +496,7 @@ def lambda_handler(lambda_event, context):  # noqa
     for process in processes:
         process.join()
 
+
 def get_active_fault_codes_from_dynamodb(esn):
     dynamodb = boto3.resource('dynamodb')
     table = dynamodb.Table(TABLE_NAME)
@@ -502,12 +507,12 @@ def get_active_fault_codes_from_dynamodb(esn):
     else:
         return response
 
-def put_active_fault_codes(esn, ts, ac_fc):
 
+def put_active_fault_codes(esn, ts, ac_fc):
     dynamodb = boto3.resource('dynamodb')
     table = dynamodb.Table(TABLE_NAME)
     response = table.put_item(
-       Item={
+        Item={
             'esn': esn,
             'timestamp': ts,
             'fcs': ac_fc
@@ -516,8 +521,8 @@ def put_active_fault_codes(esn, ts, ac_fc):
 
     return response
 
-def delete_esn_from_dynamodb(esn):
 
+def delete_esn_from_dynamodb(esn):
     dynamodb = boto3.resource('dynamodb')
     table = dynamodb.Table(TABLE_NAME)
     response = table.delete_item(
@@ -526,14 +531,17 @@ def delete_esn_from_dynamodb(esn):
         }
     )
     return response
-def generate_spn_fmi_fc_obj( actual_ac_fc, conc_eq_fc_obj):
+
+
+def generate_spn_fmi_fc_obj(actual_ac_fc, conc_eq_fc_obj):
     fc_obj = {}
     fc_arr = actual_ac_fc.split("~")
     for fc_val in fc_arr:
         fc_obj[fc_val.split(":")[0]] = fc_val.split(":")[1]
     conc_eq_fc_obj['activeFaultCodes'].append(fc_obj)
 
-def check_active_fault_codes_timestamp(db_esn_ac_fcs,timestamp):
+
+def check_active_fault_codes_timestamp(db_esn_ac_fcs, timestamp):
     if db_esn_ac_fcs is None:
         return True
     else:
@@ -543,8 +551,8 @@ def check_active_fault_codes_timestamp(db_esn_ac_fcs,timestamp):
         else:
             return False
 
-def generate_active_fault_codes(esn, ac_fc, conc_eq_fc_obj, db_esn_ac_fcs,timestamp):
 
+def generate_active_fault_codes(esn, ac_fc, conc_eq_fc_obj, db_esn_ac_fcs, timestamp):
     spn_fmi_combo_list = re.split("\|", ac_fc)
     if spn_fmi_combo_list and not spn_fmi_combo_list[-1].strip():
         spn_fmi_combo_list.pop()
@@ -561,7 +569,7 @@ def generate_active_fault_codes(esn, ac_fc, conc_eq_fc_obj, db_esn_ac_fcs,timest
     if db_esn_ac_fcs is not None:
         existing_fc_from_db = db_esn_ac_fcs.get('fcs')
     LOGGER.debug(f"existing fault_codes from database for esn: {existing_fc_from_db}")
-    for actual_ac_fc in sorted_spn_fmi_combo_list:#
+    for actual_ac_fc in sorted_spn_fmi_combo_list:  #
         db_ac_fc = actual_ac_fc.rsplit('~', 1)[0]
         ac_fc_cnt = actual_ac_fc.split('~', 2)[2].split(":")[1]
         if db_esn_ac_fcs == None:
@@ -571,7 +579,7 @@ def generate_active_fault_codes(esn, ac_fc, conc_eq_fc_obj, db_esn_ac_fcs,timest
         else:
             ac_fc_db_cnt = existing_fc_from_db.get(db_ac_fc)
             update_spn_fmi_fcs_db[db_ac_fc] = ac_fc_cnt
-            #checking if the fault_codes contains  in the database
+            # checking if the fault_codes contains  in the database
             if ac_fc_db_cnt == None:
                 LOGGER.debug(f"fault_code not found in database for exiting esn : {actual_ac_fc}")
                 generate_spn_fmi_fc_obj(actual_ac_fc, conc_eq_fc_obj)
@@ -582,7 +590,7 @@ def generate_active_fault_codes(esn, ac_fc, conc_eq_fc_obj, db_esn_ac_fcs,timest
                 LOGGER.debug(f"duplicate fault_code for exiting esn : {actual_ac_fc}")
 
     if len(insert_spn_fmi_fcs_db) > 0:
-        put_active_fault_codes(esn,timestamp,insert_spn_fmi_fcs_db)
+        put_active_fault_codes(esn, timestamp, insert_spn_fmi_fcs_db)
         LOGGER.debug("fault_codes inserted successfully into the database for new esn: ", insert_spn_fmi_fcs_db)
 
     if len(update_spn_fmi_fcs_db) > 0:
@@ -590,11 +598,7 @@ def generate_active_fault_codes(esn, ac_fc, conc_eq_fc_obj, db_esn_ac_fcs,timest
         for key, value in update_spn_fmi_fcs_db.items():
             existing_spn_fmi_fcs[key] = value
         put_active_fault_codes(esn, timestamp, existing_spn_fmi_fcs)
-        LOGGER.debug("new fault_codes inserted successfully into the database for existing esn: ", update_spn_fmi_fcs_db)
+        LOGGER.debug("new fault_codes inserted successfully into the database for existing esn: ",
+                     update_spn_fmi_fcs_db)
 
     return conc_eq_fc_obj
-
-
-
-
-
