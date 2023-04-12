@@ -15,6 +15,8 @@ if __name__ == '__main__':
     # Delete the "reports" folder if it is already there
     if os.path.exists("reports"):
         shutil.rmtree("reports")
+    
+    os.makedirs("reports")
 
     # Get the current date for reporting
     current_date_time = datetime.utcnow()
