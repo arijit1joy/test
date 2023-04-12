@@ -50,6 +50,7 @@ if __name__ == '__main__':
             if back_up_s3_copy_exit_code != 0:
                 print(s3_error.format(exit_code=back_up_s3_copy_exit_code, action="BACKING UP"))
 
+        print(f"Behave Exit Code --->{behave_execution_exit_code}")
         if behave_execution_exit_code != 0:
             print("BDD Execution Failed! Aborting Deployment!")
             exit(behave_execution_exit_code)
