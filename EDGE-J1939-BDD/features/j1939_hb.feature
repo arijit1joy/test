@@ -1,12 +1,12 @@
-Feature: Regression Test Cases for J1939 Heart Beat Process
+# Feature: Regression Test Cases for J1939 Heart Beat Process
 
-  """
-    'When' steps are being executed before running J1939 HB feature that's why we don't have 'When' steps for J1939 HB feature
-  """
+#   """
+#     'When' steps are being executed before running J1939 HB feature that's why we don't have 'When' steps for J1939 HB feature
+#   """
 
-# skipping the feature due to failure in BDD stage
+# # skipping the feature due to failure in BDD stage
 
-Scenarios for EBU Devices
+#Scenarios for EBU Devices
  Scenario: HB message is received to EDGE cloud with the valid data for EBU
    Given A valid EBU HB message in JSON format containing a valid data
    Then Stored J1939 HB metadata stages in EDGE DB
@@ -31,7 +31,7 @@ Scenarios for EBU Devices
    Then A JSON file is created with the HB message as its content and is stored in the edge-j1939-<env> bucket under the file path ConvertedFiles/esn/device_id/yyyy/mm/dd/hb_file.json with no metadata
    Then A JSON file is created with the HB message as its content and is stored in the edge-j1939-<env> bucket under the file path NGDI/esn/device_id/yyyy/mm/dd/hb_file.json with no metadata
 
-Scenarios for PSBU Devices
+#Scenarios for PSBU Devices
  Scenario: HB message is received to EDGE cloud with the valid data for PSBU
    Given A valid PSBU HB message in JSON format containing a valid data
    Then Stored J1939 HB metadata stages in EDGE DB

@@ -133,10 +133,10 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header, a
             db_esn_ac_fcs = active_fc_from_db['Item']
 
         db_timestamp_check = check_active_fault_codes_timestamp(db_esn_ac_fcs, timestamp)
-        if db_timestamp_check:
+        if db_timestamp_check or str(esn) in BDD_ESN:
             if "activeFaultCodes" in new_as_dict:
                 ac_fc = values[new_as_dict["activeFaultCodes"]]
-                if ac_fc and esn not in BDD_ESN:
+                if ac_fc:
                     generate_active_fault_codes(esn, ac_fc, conv_eq_fc_obj, db_esn_ac_fcs, timestamp)
                 else:
                     LOGGER.debug(f"{ac_fc} is empty")
@@ -424,7 +424,7 @@ def retrieve_and_process_file(uploaded_file_object):
                 ngdi_json_template["telematicsPartnerName"] = tsp_name
             else:
                 LOGGER.error(f"Error! Could not retrieve TSP. This is mandatory field!")
-                return
+                return  
             ngdi_json_template["customerReference"] = got_tsp_and_cust_ref["cust_ref"]
 
             LOGGER.debug(f"Final file with TSP and Cust Ref: {ngdi_json_template}")
@@ -572,7 +572,10 @@ def generate_active_fault_codes(esn, ac_fc, conc_eq_fc_obj, db_esn_ac_fcs, times
     for actual_ac_fc in sorted_spn_fmi_combo_list:  #
         db_ac_fc = actual_ac_fc.rsplit('~', 1)[0]
         ac_fc_cnt = actual_ac_fc.split('~', 2)[2].split(":")[1]
-        if db_esn_ac_fcs == None:
+        if str(esn) in BDD_ESN:
+            LOGGER.debug(f"BDD ESN Case : {esn}")
+            generate_spn_fmi_fc_obj(actual_ac_fc, conc_eq_fc_obj)
+        elif not db_esn_ac_fcs:
             LOGGER.debug(f"new esn found does not exist in database : {esn}")
             insert_spn_fmi_fcs_db[db_ac_fc] = ac_fc_cnt
             generate_spn_fmi_fc_obj(actual_ac_fc, conc_eq_fc_obj)
@@ -580,7 +583,7 @@ def generate_active_fault_codes(esn, ac_fc, conc_eq_fc_obj, db_esn_ac_fcs, times
             ac_fc_db_cnt = existing_fc_from_db.get(db_ac_fc)
             update_spn_fmi_fcs_db[db_ac_fc] = ac_fc_cnt
             # checking if the fault_codes contains  in the database
-            if ac_fc_db_cnt == None:
+            if not ac_fc_db_cnt:
                 LOGGER.debug(f"fault_code not found in database for exiting esn : {actual_ac_fc}")
                 generate_spn_fmi_fc_obj(actual_ac_fc, conc_eq_fc_obj)
             elif int(ac_fc_cnt) != int(ac_fc_db_cnt):

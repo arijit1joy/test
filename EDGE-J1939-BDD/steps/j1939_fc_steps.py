@@ -87,6 +87,8 @@ def assert_j1939_fc_stages_in_edge_db(context):
     edge_db_payload = get_edge_db_payload('get', query)
     edge_db_response = rest_api.post(context.edge_common_db_url, edge_db_payload)
     received_stages = [stage["data_pipeline_stage"] for stage in edge_db_response["body"]]
+    print(f"Expected Stages-->{set(context.j1939_fc_stages)}")
+    print(f"Recieved Stages-->{set(received_stages)}")
     assert set(context.j1939_fc_stages) == set(received_stages)
 
 

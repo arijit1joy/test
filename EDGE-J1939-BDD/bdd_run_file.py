@@ -16,8 +16,6 @@ if __name__ == '__main__':
     if os.path.exists("reports"):
         shutil.rmtree("reports")
     
-    os.makedirs("reports")
-
     # Get the current date for reporting
     current_date_time = datetime.utcnow()
     time_path = f"{current_date_time.year}/{current_date_time.month:02d}/{current_date_time.day:02d}T" \
