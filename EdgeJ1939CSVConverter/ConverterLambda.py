@@ -27,7 +27,7 @@ MAX_ATTEMPTS = int(os.environ["MaxAttempts"])
 EDGE_DB_CLIENT = EdgeDbLambdaClient()
 APP_ENV = os.environ["APPLICATION_ENVIRONMENT"]
 TABLE_NAME = os.environ["J1939ActiveFaultCodeTable"]
-BDD_ESN = ["19299951", "19299955", "19299956", "19299952", "19299954"]
+BDD_ESN = ["19299951", "19299955", "19299956", "19299952", "19299954", "CMMNS**19299954**************************************************************"]
 
 
 def delete_message_from_sqs_queue(receipt_handle):
@@ -171,7 +171,7 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header, a
 
                         conv_eq_fc_obj["pendingFaultCodes"].append(fc_obj)
         if conv_eq_fc_obj['activeFaultCodes'] or conv_eq_fc_obj["inactiveFaultCodes"] or conv_eq_fc_obj[
-            "pendingFaultCodes"]:
+            "pendingFaultCodes"] or str(esn) in BDD_ESN:
             sample["convertedEquipmentFaultCodes"].append(conv_eq_fc_obj)
         json_sample_head["samples"].append(sample)
         LOGGER.debug(f"Process AS JSON Sample Head: {json_sample_head}")
