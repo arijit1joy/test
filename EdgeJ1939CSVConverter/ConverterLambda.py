@@ -173,7 +173,7 @@ def process_as(as_rows, as_dict, ngdi_json_template, as_converted_prot_header, a
 
                         conv_eq_fc_obj["pendingFaultCodes"].append(fc_obj)
         if conv_eq_fc_obj['activeFaultCodes'] or conv_eq_fc_obj["inactiveFaultCodes"] or conv_eq_fc_obj[
-            "pendingFaultCodes"] or str(esn) in BDD_ESN:
+            "pendingFaultCodes"]:
             sample["convertedEquipmentFaultCodes"].append(conv_eq_fc_obj)
         json_sample_head["samples"].append(sample)
         LOGGER.debug(f"Process AS JSON Sample Head: {json_sample_head}")
