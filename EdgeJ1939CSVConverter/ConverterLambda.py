@@ -19,6 +19,7 @@ LOGGER = util.get_logger(__name__)
 
 s3 = boto3.client('s3')
 s3_client = boto3.client('s3')
+ssm_client = boto3.client('ssm')
 cp_post_bucket = os.environ["CPPostBucket"]
 edgeCommonAPIURL = os.environ["edgeCommonAPIURL"]
 NGDIBody = json.loads(os.environ["NGDIBody"])
@@ -27,8 +28,9 @@ MAX_ATTEMPTS = int(os.environ["MaxAttempts"])
 EDGE_DB_CLIENT = EdgeDbLambdaClient()
 APP_ENV = os.environ["APPLICATION_ENVIRONMENT"]
 TABLE_NAME = os.environ["J1939ActiveFaultCodeTable"]
-BDD_ESN = ["19299951", "19299955", "19299956", "19299952", "19299954", "CMMNS**19299954**************************************************************"]
-
+# BDD_ESN = ["19299951", "19299955", "19299956", "19299952", "19299954", "CMMNS**19299954**************************************************************"]
+BDD_ESN = ssm_client.get_parameter(Name='da-edge-j1939-bdd-esn-list', WithDecryption=False)
+BDD_ESN = json.loads(BDD_ESN["esn"])
 
 def delete_message_from_sqs_queue(receipt_handle):
     queue_url = os.environ["QueueUrl"]

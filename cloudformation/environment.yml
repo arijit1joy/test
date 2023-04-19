@@ -710,6 +710,15 @@ Resources:
       Value: '{"FC" : "Event1_5", "Periodic" : "Periodic1_9","PT_TSP": "Cummins"}'
       Name: da-edge-j1939-content-spec-value
 
+  EdgeJ1939CSVConverterBDDEsnSSM:
+    Type: "AWS::SSM::Parameter"
+    Properties:
+      Tier: Standard
+      Type: String
+      Description: j1939 csv converter lambda bdd esn list
+      Value: '{"esn":["19299951","19299955","19299956","19299952","19299954","CMMNS**19299954**************************************************************"]}'
+      Name: da-edge-j1939-bdd-esn-list
+
   EndpointBucket:
     Type: "AWS::S3::Bucket"
     Properties:
