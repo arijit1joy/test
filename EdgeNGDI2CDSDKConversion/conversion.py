@@ -14,6 +14,7 @@ from sqs_utility import sqs_send_message
 import utility as util
 from cd_sdk_conversion.cd_sdk import map_ngdi_sample_to_cd_payload
 from cd_sdk_conversion.cd_snapshot_sdk import get_snapshot_data
+import audit_utility as audit_utility
 
 sys.path.insert(1, './lib')
 from commonlib_jfrog_artifacts import auth_utility
@@ -150,6 +151,9 @@ def get_active_faults(fault_list, address):
 def handle_hb(converted_device_params, converted_equip_params, converted_equip_fc, metadata, time_stamp):
     var_dict = {}
     address = ""
+    cust_ref = metadata["customerReference"]
+    esn = metadata["componentSerialNumber"]
+    box_id = metadata["telematicsDeviceId"]
     LOGGER.info(f"Retrieving parameters for creating HB SDK Class Object")
     try:
         for arg in class_arg_map:
@@ -205,15 +209,26 @@ def handle_hb(converted_device_params, converted_equip_params, converted_equip_f
     except Exception as e:
         error_message = f"An exception occurred while handling HB sample: {e}"
         LOGGER.error(error_message)
-        util.write_to_audit_table("J1939_HB", error_message)
+        # ITTFCD87 starts
+        if cust_ref and (cust_ref.lower() == 'tatamotors' or cust_ref.lower() == 'tata') :
+            audit_utility.ERROR_PARAMS["device_id"] = box_id
+            audit_utility.ERROR_PARAMS["engine_serial_number"] = esn
+            audit_utility.ERROR_PARAMS["device_owner"] = "tatamotors"
+            audit_utility.write_to_audit_table('400', error_message)
+        # ITTFCD87 end
+        else:
+            util.write_to_audit_table("J1939_HB", error_message)
 
 
 def handle_fc(converted_device_params, converted_equip_params, converted_equip_fc, metadata, time_stamp):
     var_dict = {}
     address = ""
     found_fcs = False
-    LOGGER.info(f"Retrieving parameters for creating FC SDK Class Object")
+    cust_ref = metadata["customerReference"]
+    esn = metadata["componentSerialNumber"]
+    box_id = metadata["telematicsDeviceId"]
     try:
+        LOGGER.info(f"Retrieving parameters for creating FC SDK Class Object")
         for arg in class_arg_map:
             LOGGER.debug(f"Handling the arg: {arg}")
             if class_arg_map[arg] and type(class_arg_map[arg]) == str:
@@ -290,7 +305,13 @@ def handle_fc(converted_device_params, converted_equip_params, converted_equip_f
     except Exception as e:
         error_message = f"An exception occurred while handling FC sample: {e}"
         LOGGER.error(error_message)
-        util.write_to_audit_table("J1939_FC", error_message)
+        if cust_ref.lower() == 'tatamotors' or cust_ref.lower() == 'tata':
+            audit_utility.ERROR_PARAMS["device_id"] = box_id
+            audit_utility.ERROR_PARAMS["engine_serial_number"] = esn
+            audit_utility.ERROR_PARAMS["device_owner"] = "tatamotors"
+            audit_utility.write_to_audit_table('500', error_message)
+        else:
+            util.write_to_audit_table("J1939_FC", error_message)
 
 
 def create_fc_class(fc, f_codes, fc_index, fc_param, var_dict, active_or_inactive, active_fault_array=None):
@@ -378,6 +399,7 @@ def retrieve_and_process_file(uploaded_file_object, api_url):
     sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message, edgeCommonAPIURL)
     samples = j1939_file["samples"] if "samples" in j1939_file else None
     metadata = get_metadata_info(j1939_file)
+    cust_ref = j1939_file['customerReference']
     if metadata:
         if samples:
             for sample in samples:
@@ -385,12 +407,28 @@ def retrieve_and_process_file(uploaded_file_object, api_url):
         else:
             error_message = f"There are no samples in this file for the device: {device_id}."
             LOGGER.error(error_message)
-            util.write_to_audit_table(data_protocol, error_message, device_id)
+            # ITTFCD87 starts
+            if cust_ref.lower() == 'tatamotors' or cust_ref.lower() == 'tata':
+                audit_utility.ERROR_PARAMS["device_id"] = device_id
+                audit_utility.ERROR_PARAMS["engine_serial_number"] = esn
+                audit_utility.ERROR_PARAMS["device_owner"] = "tatamotors"
+                audit_utility.write_to_audit_table('400', error_message)
+            else:
+                util.write_to_audit_table(data_protocol, error_message, device_id)
+            # ITTFCD87 ends
         delete_message_from_sqs_queue(uploaded_file_object["sqs_receipt_handle"])
     else:
         error_message = f"Metadata retrieval failed for the device: {device_id}."
         LOGGER.error(error_message)
-        util.write_to_audit_table(data_protocol, error_message, device_id)
+        # ITTFCD87 starts
+        if cust_ref.lower() == 'tatamotors' or cust_ref.lower() == 'tata':
+            audit_utility.ERROR_PARAMS["device_id"] = device_id
+            audit_utility.ERROR_PARAMS["engine_serial_number"] = esn
+            audit_utility.ERROR_PARAMS["device_owner"] = "tatamotors"
+            audit_utility.write_to_audit_table('400', error_message)
+        # ITTFCD87 ends
+        else:
+            util.write_to_audit_table(data_protocol, error_message, device_id)
 
 
 @ssm.cache(parameter=name, entry_name='parameters')  # noqa-cache accepts list as a parameter but expects a str

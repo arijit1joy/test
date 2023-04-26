@@ -1,0 +1,13 @@
+{
+            "messageFormatVersion": "1.1.1",
+            "telematicsPartnerName": "Accolade",
+            "customerReference": "TataMotors",
+            "componentSerialNumber": "30311606",
+            "equipmentId": "",
+            "vin": "",
+            "telematicsDeviceId": "864337059675703",
+            "dataSamplingConfigId": "SC3078",
+            "dataEncryptionSchemeId": "ES1",
+            "numberOfSamples": 1,
+            "samples": []
+        }
