@@ -14,10 +14,10 @@ from sqs_utility import sqs_send_message
 import utility as util
 from cd_sdk_conversion.cd_sdk import map_ngdi_sample_to_cd_payload
 from cd_sdk_conversion.cd_snapshot_sdk import get_snapshot_data
-import audit_utility as audit_utility
 
 sys.path.insert(1, './lib')
 from commonlib_jfrog_artifacts import auth_utility
+import audit_utility as audit_utility
 
 LOGGER = util.get_logger(__name__)
 
