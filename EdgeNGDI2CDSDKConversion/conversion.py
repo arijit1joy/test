@@ -151,9 +151,6 @@ def get_active_faults(fault_list, address):
 def handle_hb(converted_device_params, converted_equip_params, converted_equip_fc, metadata, time_stamp):
     var_dict = {}
     address = ""
-    cust_ref = metadata["customerReference"]
-    esn = metadata["componentSerialNumber"]
-    box_id = metadata["telematicsDeviceId"]
     LOGGER.info(f"Retrieving parameters for creating HB SDK Class Object")
     try:
         for arg in class_arg_map:
@@ -209,24 +206,12 @@ def handle_hb(converted_device_params, converted_equip_params, converted_equip_f
     except Exception as e:
         error_message = f"An exception occurred while handling HB sample: {e}"
         LOGGER.error(error_message)
-        # ITTFCD87 starts
-        if cust_ref and (cust_ref.lower() == 'tatamotors' or cust_ref.lower() == 'tata') :
-            audit_utility.ERROR_PARAMS["device_id"] = box_id
-            audit_utility.ERROR_PARAMS["engine_serial_number"] = esn
-            audit_utility.ERROR_PARAMS["device_owner"] = "tatamotors"
-            audit_utility.write_to_audit_table('400', error_message)
-        # ITTFCD87 end
-        else:
-            util.write_to_audit_table("J1939_HB", error_message)
-
+        tml_audit_error(metadata["customerReference"], metadata["telematicsDeviceId"], metadata["componentSerialNumber"], error_message,"J1939_HB", "")
 
 def handle_fc(converted_device_params, converted_equip_params, converted_equip_fc, metadata, time_stamp):
     var_dict = {}
     address = ""
     found_fcs = False
-    cust_ref = metadata["customerReference"]
-    esn = metadata["componentSerialNumber"]
-    box_id = metadata["telematicsDeviceId"]
     try:
         LOGGER.info(f"Retrieving parameters for creating FC SDK Class Object")
         for arg in class_arg_map:
@@ -305,13 +290,7 @@ def handle_fc(converted_device_params, converted_equip_params, converted_equip_f
     except Exception as e:
         error_message = f"An exception occurred while handling FC sample: {e}"
         LOGGER.error(error_message)
-        if cust_ref.lower() == 'tatamotors' or cust_ref.lower() == 'tata':
-            audit_utility.ERROR_PARAMS["device_id"] = box_id
-            audit_utility.ERROR_PARAMS["engine_serial_number"] = esn
-            audit_utility.ERROR_PARAMS["device_owner"] = "tatamotors"
-            audit_utility.write_to_audit_table('500', error_message)
-        else:
-            util.write_to_audit_table("J1939_FC", error_message)
+        tml_audit_error(metadata["customerReference"], metadata["telematicsDeviceId"], metadata["componentSerialNumber"],error_message, "J1939_FC","")
 
 
 def create_fc_class(fc, f_codes, fc_index, fc_param, var_dict, active_or_inactive, active_fault_array=None):
@@ -399,7 +378,6 @@ def retrieve_and_process_file(uploaded_file_object, api_url):
     sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message, edgeCommonAPIURL)
     samples = j1939_file["samples"] if "samples" in j1939_file else None
     metadata = get_metadata_info(j1939_file)
-    cust_ref = j1939_file['customerReference']
     if metadata:
         if samples:
             for sample in samples:
@@ -407,28 +385,12 @@ def retrieve_and_process_file(uploaded_file_object, api_url):
         else:
             error_message = f"There are no samples in this file for the device: {device_id}."
             LOGGER.error(error_message)
-            # ITTFCD87 starts
-            if cust_ref.lower() == 'tatamotors' or cust_ref.lower() == 'tata':
-                audit_utility.ERROR_PARAMS["device_id"] = device_id
-                audit_utility.ERROR_PARAMS["engine_serial_number"] = esn
-                audit_utility.ERROR_PARAMS["device_owner"] = "tatamotors"
-                audit_utility.write_to_audit_table('400', error_message)
-            else:
-                util.write_to_audit_table(data_protocol, error_message, device_id)
-            # ITTFCD87 ends
+            tml_audit_error(j1939_file['customerReference'], device_id, esn, error_message, "",data_protocol)
         delete_message_from_sqs_queue(uploaded_file_object["sqs_receipt_handle"])
     else:
         error_message = f"Metadata retrieval failed for the device: {device_id}."
         LOGGER.error(error_message)
-        # ITTFCD87 starts
-        if cust_ref.lower() == 'tatamotors' or cust_ref.lower() == 'tata':
-            audit_utility.ERROR_PARAMS["device_id"] = device_id
-            audit_utility.ERROR_PARAMS["engine_serial_number"] = esn
-            audit_utility.ERROR_PARAMS["device_owner"] = "tatamotors"
-            audit_utility.write_to_audit_table('400', error_message)
-        # ITTFCD87 ends
-        else:
-            util.write_to_audit_table(data_protocol, error_message, device_id)
+        tml_audit_error(j1939_file['customerReference'], device_id, esn, error_message, "",data_protocol)
 
 
 @ssm.cache(parameter=name, entry_name='parameters')  # noqa-cache accepts list as a parameter but expects a str
@@ -510,3 +472,17 @@ def store_health_parameters_into_redshift(converted_device_params, time_stamp, j
                                                   new_timestamp, device_id, esn, os.environ["edgeCommonAPIURL"])
     else:
         LOGGER.info(f"There is no Converted Device Parameter")
+
+
+def tml_audit_error(cust_ref, device_id, esn, error_message,module_name, data_protocol):
+    # ITTFCD87 starts
+    if cust_ref and cust_ref.lower() == 'tatamotors' or cust_ref.lower() == 'tata':
+        audit_utility.ERROR_PARAMS["device_id"] = device_id
+        audit_utility.ERROR_PARAMS["engine_serial_number"] = esn
+        audit_utility.ERROR_PARAMS["device_owner"] = "tatamotors"
+        audit_utility.write_to_audit_table('400', error_message)
+    elif "J1939_HB" == module_name or "J1939_FC" == module_name:
+        util.write_to_audit_table(module_name, error_message)
+    else:
+        util.write_to_audit_table(data_protocol, error_message, device_id)
+    # ITTFCD87 ends

@@ -96,7 +96,8 @@ class TestConversion(unittest.TestCase):
             "sample": []
         }
         patch("builtins.open", MagicMock())
-        fetch_cs_reg_payload = open("tests\\test.json", "r")
+
+        fetch_cs_reg_payload = open("tests//test.json", "r")
 
         uploaded_file_object = {"source_bucket_name": "test",
                                 "file_key": "edge_864337059675703_30311606_20230424064925_SC3078_2023-04-24T06_49_25.956Z",
@@ -138,4 +139,50 @@ class TestConversion(unittest.TestCase):
                      'dataSamplingConfigId': 'SC3141', 'customerReference': 'TataMotors',
                      'telematicsDeviceId': '1208a80e828bb1b7', 'vin': '2XTESTTEAMS917257'}
         conversion.handle_fc(converted_device_params, converted_equip_params, converted_fc, meta_data, "")
+
+    @patch("conversion.LOGGER")
+    @patch.dict('os.environ', {'metaWriteQueueUrl': 'metaWriteQueueUrl', 'AuditTrailQueueUrl': 'AuditTrailQueueUrl',
+                               'QueueUrl': 'QueueUrl', 'class_arg_map': ''})
+    def test_handle_fc_exception_when_tml_is_cummins(self, LOGGER_mock):
+        converted_device_params = None
+        converted_equip_params = None
+        converted_fc = None
+        LOGGER_mock.info.side_effect = Exception
+        meta_data = {'componentSerialNumber': '67384774', 'telematicsPartnerName': 'TataMotors',
+                     'dataSamplingConfigId': 'SC3141', 'customerReference': 'Cummins',
+                     'telematicsDeviceId': '1208a80e828bb1b7', 'vin': '2XTESTTEAMS917257'}
+        conversion.handle_fc(converted_device_params, converted_equip_params, converted_fc, meta_data, "")
+
+    @patch("conversion.s3_client")
+    @patch("conversion.json")
+    @patch.dict('os.environ', {'metaWriteQueueUrl': 'metaWriteQueueUrl', 'AuditTrailQueueUrl': 'AuditTrailQueueUrl',
+                               'QueueUrl': 'QueueUrl'})
+    def test_retrieve_and_process_file_when_oem_cummins(self, json, s3_client):
+        body = {
+            "messageFormatVersion": "1.1.1",
+            "telematicsPartnerName": "Accolade",
+            "customerReference": "Cummins",
+            "componentSerialNumber": "30311606",
+            "equipmentId": "",
+            "vin": "",
+            "telematicsDeviceId": "864337059675703",
+            "dataSamplingConfigId": "SC3078",
+            "dataEncryptionSchemeId": "ES1",
+            "numberOfSamples": 1,
+            "samples": []
+        }
+        patch("builtins.open", MagicMock())
+        fetch_cs_reg_payload = open("tests\\test.json", "r")
+
+        uploaded_file_object = {"source_bucket_name": "test",
+                                "file_key": "edge_864337059675703_30311606_20230424064925_SC3078_2023-04-24T06_49_25.956Z",
+                                "file_size": "1", "sqs_receipt_handle": "sqs_receipt_handle"}
+        s3_object = {"Metadata": {"uuid": "469448c0-e34e-11ed-b5ea-0242ac120002", "j1939type": "FC"},
+                     "LastModified": "edge_864337059675703_30311606_20230424064925_SC3078_2023-04-24T06_49_25.956Z",
+                     "Body": fetch_cs_reg_payload,
+                     "sqs_receipt_handle": "sqs_receipt_handle"
+                     }
+        s3_client.get_object.return_value = s3_object
+        json.loads.return_value = body
+        conversion.retrieve_and_process_file(uploaded_file_object, "")
 
