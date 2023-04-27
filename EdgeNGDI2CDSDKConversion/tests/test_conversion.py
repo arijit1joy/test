@@ -97,7 +97,7 @@ class TestConversion(unittest.TestCase):
         }
         patch("builtins.open", MagicMock())
 
-        fetch_cs_reg_payload = open("tests//test.json", "r")
+        fetch_cs_reg_payload = open("tests\\test.json", "r")
 
         uploaded_file_object = {"source_bucket_name": "test",
                                 "file_key": "edge_864337059675703_30311606_20230424064925_SC3078_2023-04-24T06_49_25.956Z",
@@ -123,7 +123,10 @@ class TestConversion(unittest.TestCase):
         converted_device_params = {}
         converted_equip_params =  {}
         converted_fc = {}
-        meta_data = {'componentSerialNumber': '67384774', 'telematicsPartnerName': 'TataMotors', 'dataSamplingConfigId': 'SC3141', 'customerReference': 'TataMotors', 'dataEncryptionSchemeId': 'temp', 'equipmentId': 'COSMOS_56890121', 'messageFormatVersion': '1.1.1', 'numberofSamples': 1, 'telematicsDeviceId': '1208a80e828bb1b7', 'vin': '2XTESTTEAMS917257'}
+        meta_data = {'componentSerialNumber': '67384774', 'telematicsPartnerName': 'TataMotors',
+                     'dataSamplingConfigId': 'SC3141', 'dataEncryptionSchemeId': 'temp', 'equipmentId': 'COSMOS_56890121',
+                     'messageFormatVersion': '1.1.1', 'numberofSamples': 1, 'telematicsDeviceId': '1208a80e828bb1b7',
+                     'customerReference': 'TataMotors','vin': '2XTESTTEAMS917257'}
         conversion.map_ngdi_sample_to_cd_payload.return_value = Exception
         conversion.handle_hb(converted_device_params, converted_equip_params, converted_fc,meta_data ,"" )
 
@@ -149,7 +152,7 @@ class TestConversion(unittest.TestCase):
         converted_fc = None
         LOGGER_mock.info.side_effect = Exception
         meta_data = {'componentSerialNumber': '67384774', 'telematicsPartnerName': 'TataMotors',
-                     'dataSamplingConfigId': 'SC3141', 'customerReference': 'Cummins',
+                     'dataSamplingConfigId': 'SC3141', 'customerReference': '',
                      'telematicsDeviceId': '1208a80e828bb1b7', 'vin': '2XTESTTEAMS917257'}
         conversion.handle_fc(converted_device_params, converted_equip_params, converted_fc, meta_data, "")
 
