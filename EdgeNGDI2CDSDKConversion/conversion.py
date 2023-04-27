@@ -390,7 +390,7 @@ def retrieve_and_process_file(uploaded_file_object, api_url):
     else:
         error_message = f"Metadata retrieval failed for the device: {device_id}."
         LOGGER.error(error_message)
-        process_audit_error(error_message=error_message, data_protocol=data_protocol, meta_data=metadata)
+        process_audit_error(error_message=error_message, data_protocol=data_protocol, meta_data=j1939_file)
 
 
 @ssm.cache(parameter=name, entry_name='parameters')  # noqa-cache accepts list as a parameter but expects a str
