@@ -117,7 +117,7 @@ class TestConversion(unittest.TestCase):
     @patch("conversion.json")
     @patch.dict('os.environ', {'metaWriteQueueUrl': 'metaWriteQueueUrl', 'AuditTrailQueueUrl': 'AuditTrailQueueUrl',
                                'QueueUrl': 'QueueUrl'})
-    def test_handle_hb_exception_when_tml_is_tata_motors(self, json, mock_map_ngdi_sample_to_cd_payload):
+    def test_handle_exception_for_hb_when_cust_ref_is_tata_motors(self, json, mock_map_ngdi_sample_to_cd_payload):
 
         conversion.get_metadata_info.return_value = None
         converted_device_params = {}
@@ -133,7 +133,7 @@ class TestConversion(unittest.TestCase):
     @patch("conversion.LOGGER")
     @patch.dict('os.environ', {'metaWriteQueueUrl': 'metaWriteQueueUrl', 'AuditTrailQueueUrl': 'AuditTrailQueueUrl',
                                'QueueUrl': 'QueueUrl', 'class_arg_map': ''})
-    def test_handle_fc_exception_when_tml_is_tata_motors(self, LOGGER_mock):
+    def test_handle_exception_for_fc_when_cust_ref_is_tata_motors(self, LOGGER_mock):
         converted_device_params = None
         converted_equip_params = None
         converted_fc = None
@@ -146,7 +146,7 @@ class TestConversion(unittest.TestCase):
     @patch("conversion.LOGGER")
     @patch.dict('os.environ', {'metaWriteQueueUrl': 'metaWriteQueueUrl', 'AuditTrailQueueUrl': 'AuditTrailQueueUrl',
                                'QueueUrl': 'QueueUrl', 'class_arg_map': ''})
-    def test_handle_fc_exception_when_tml_is_cummins(self, LOGGER_mock):
+    def test_handle_exception_for_fc_when_cust_ref_is_cummins(self, LOGGER_mock):
         converted_device_params = None
         converted_equip_params = None
         converted_fc = None
@@ -160,7 +160,7 @@ class TestConversion(unittest.TestCase):
     @patch("conversion.json")
     @patch.dict('os.environ', {'metaWriteQueueUrl': 'metaWriteQueueUrl', 'AuditTrailQueueUrl': 'AuditTrailQueueUrl',
                                'QueueUrl': 'QueueUrl'})
-    def test_retrieve_and_process_file_when_oem_cummins(self, json, s3_client):
+    def test_retrieve_and_process_file_when_cust_ref_is_cummins(self, json, s3_client):
         body = {
             "messageFormatVersion": "1.1.1",
             "telematicsPartnerName": "Accolade",
