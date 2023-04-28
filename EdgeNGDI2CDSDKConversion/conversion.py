@@ -17,6 +17,7 @@ from cd_sdk_conversion.cd_snapshot_sdk import get_snapshot_data
 
 sys.path.insert(1, './lib')
 from commonlib_jfrog_artifacts import auth_utility
+import audit_utility as audit_utility
 
 LOGGER = util.get_logger(__name__)
 
@@ -205,15 +206,14 @@ def handle_hb(converted_device_params, converted_equip_params, converted_equip_f
     except Exception as e:
         error_message = f"An exception occurred while handling HB sample: {e}"
         LOGGER.error(error_message)
-        util.write_to_audit_table("J1939_HB", error_message)
-
+        process_audit_error(error_message=error_message, module_name="J1939_HB", meta_data=metadata)
 
 def handle_fc(converted_device_params, converted_equip_params, converted_equip_fc, metadata, time_stamp):
     var_dict = {}
     address = ""
     found_fcs = False
-    LOGGER.info(f"Retrieving parameters for creating FC SDK Class Object")
     try:
+        LOGGER.info(f"Retrieving parameters for creating FC SDK Class Object")
         for arg in class_arg_map:
             LOGGER.debug(f"Handling the arg: {arg}")
             if class_arg_map[arg] and type(class_arg_map[arg]) == str:
@@ -290,7 +290,7 @@ def handle_fc(converted_device_params, converted_equip_params, converted_equip_f
     except Exception as e:
         error_message = f"An exception occurred while handling FC sample: {e}"
         LOGGER.error(error_message)
-        util.write_to_audit_table("J1939_FC", error_message)
+        process_audit_error(error_message=error_message, module_name="J1939_FC", meta_data=metadata)
 
 
 def create_fc_class(fc, f_codes, fc_index, fc_param, var_dict, active_or_inactive, active_fault_array=None):
@@ -385,12 +385,12 @@ def retrieve_and_process_file(uploaded_file_object, api_url):
         else:
             error_message = f"There are no samples in this file for the device: {device_id}."
             LOGGER.error(error_message)
-            util.write_to_audit_table(data_protocol, error_message, device_id)
+            process_audit_error(error_message=error_message, data_protocol=data_protocol, meta_data=metadata)
         delete_message_from_sqs_queue(uploaded_file_object["sqs_receipt_handle"])
     else:
         error_message = f"Metadata retrieval failed for the device: {device_id}."
         LOGGER.error(error_message)
-        util.write_to_audit_table(data_protocol, error_message, device_id)
+        process_audit_error(error_message=error_message, data_protocol=data_protocol, meta_data=j1939_file)
 
 
 @ssm.cache(parameter=name, entry_name='parameters')  # noqa-cache accepts list as a parameter but expects a str
@@ -472,3 +472,18 @@ def store_health_parameters_into_redshift(converted_device_params, time_stamp, j
                                                   new_timestamp, device_id, esn, os.environ["edgeCommonAPIURL"])
     else:
         LOGGER.info(f"There is no Converted Device Parameter")
+
+
+# ITTFCD87 starts
+def process_audit_error(error_message, module_name=None, data_protocol=None, meta_data=None):
+    cust_ref = meta_data['customerReference'] if meta_data and "customerReference" in meta_data else ""
+    if cust_ref and cust_ref.lower() == 'tatamotors' or cust_ref.lower() == 'tata':
+        audit_utility.ERROR_PARAMS["device_id"] = meta_data["telematicsDeviceId"] if meta_data and "telematicsDeviceId" in meta_data else ""
+        audit_utility.ERROR_PARAMS["engine_serial_number"] = meta_data["componentSerialNumber"] if meta_data and "componentSerialNumber" in meta_data else ""
+        audit_utility.ERROR_PARAMS["device_owner"] = cust_ref.lower()
+        audit_utility.write_to_audit_table('400', error_message)
+    elif "J1939_HB" == module_name or "J1939_FC" == module_name:
+        util.write_to_audit_table(module_name, error_message, meta_data["telematicsDeviceId"] if meta_data and "telematicsDeviceId" in meta_data else "")
+    else:
+        util.write_to_audit_table(data_protocol, error_message, meta_data["telematicsDeviceId"] if meta_data and "telematicsDeviceId" in meta_data else "")
+    # ITTFCD87 ends
