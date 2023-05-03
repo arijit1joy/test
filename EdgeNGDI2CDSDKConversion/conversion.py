@@ -385,12 +385,14 @@ def retrieve_and_process_file(uploaded_file_object, api_url):
         else:
             error_message = f"There are no samples in this file for the device: {device_id}."
             LOGGER.error(error_message)
-            process_audit_error(error_message=error_message, data_protocol=data_protocol, meta_data=metadata)
+            process_audit_error(error_message=error_message, data_protocol=data_protocol,
+                                meta_data=metadata, device_id=device_id)
         delete_message_from_sqs_queue(uploaded_file_object["sqs_receipt_handle"])
     else:
         error_message = f"Metadata retrieval failed for the device: {device_id}."
         LOGGER.error(error_message)
-        process_audit_error(error_message=error_message, data_protocol=data_protocol, meta_data=j1939_file)
+        process_audit_error(error_message=error_message, data_protocol=data_protocol,
+                            meta_data=j1939_file, device_id=device_id)
 
 
 @ssm.cache(parameter=name, entry_name='parameters')  # noqa-cache accepts list as a parameter but expects a str
@@ -475,7 +477,7 @@ def store_health_parameters_into_redshift(converted_device_params, time_stamp, j
 
 
 # ITTFCD87 starts
-def process_audit_error(error_message, module_name=None, data_protocol=None, meta_data=None):
+def process_audit_error(error_message, module_name=None, data_protocol=None, meta_data=None, device_id=None):
     cust_ref = meta_data['customerReference'] if meta_data and "customerReference" in meta_data else ""
     if cust_ref and cust_ref.lower() == 'tatamotors' or cust_ref.lower() == 'tata':
         audit_utility.ERROR_PARAMS["device_id"] = meta_data["telematicsDeviceId"] if meta_data and "telematicsDeviceId" in meta_data else ""
@@ -483,7 +485,7 @@ def process_audit_error(error_message, module_name=None, data_protocol=None, met
         audit_utility.ERROR_PARAMS["device_owner"] = cust_ref.lower()
         audit_utility.write_to_audit_table('400', error_message)
     elif "J1939_HB" == module_name or "J1939_FC" == module_name:
-        util.write_to_audit_table(module_name, error_message, meta_data["telematicsDeviceId"] if meta_data and "telematicsDeviceId" in meta_data else "")
+        util.write_to_audit_table(module_name, error_message, meta_data["telematicsDeviceId"] if meta_data and "telematicsDeviceId" in meta_data else None)
     else:
-        util.write_to_audit_table(data_protocol, error_message, meta_data["telematicsDeviceId"] if meta_data and "telematicsDeviceId" in meta_data else "")
+        util.write_to_audit_table(data_protocol, error_message, device_id)
     # ITTFCD87 ends
