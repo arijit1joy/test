@@ -151,6 +151,7 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
     sqs_message = file_uuid + "," + str(device_id) + "," + str(file_name) + "," + str(file_size) + "," + str(
         file_date_time) + "," + str(j1939_data_type) + "," + str('FILE_RECEIVED') + "," + str(
         esn) + "," + config_spec_and_req_id + "," + str(None) + "," + " " + "," + " "
+    
 
     if j1939_type.lower() == 'hb':
         sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message, edgeCommonAPIURL)
@@ -194,7 +195,7 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
 
             LOGGER.debug(f"Json_body before calling SEND_TO_PT function: {json_body}")
             sqs_message = sqs_message.replace("FILE_RECEIVED", "FILE_SENT")
-            pt_poster.send_to_pt(PTJ1939PostURL, PTJ1939Header, json_body, sqs_message, j1939_data_type)
+            pt_poster.send_to_pt(PTJ1939PostURL, PTJ1939Header, json_body, sqs_message, j1939_data_type, j1939_type.lower(),file_uuid,device_id,esn)
         else:
             error_message = f"The boxApplication value is not recorded in the EDGE DB for the device: {device_id}"
             LOGGER.error(error_message)

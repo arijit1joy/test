@@ -48,8 +48,27 @@ def get_brokers(mskcluster_arn):
         LOGGER.error("Error while getting broker list", e)
     return cluster_response['BootstrapBrokerStringSaslScram'].split(',')
 
-
-def publish_message(message_object, j1939_data_type):
+def _create_kafka_message(message_id, body, device_id, esn, topic, file_type, bu, file_sent_sqs_message):
+    """
+    Create the Expected TSB IRS Payload with the actual data to be sent
+    """
+    return {
+        "metadata": {
+            "messageID": message_id,
+            "deviceID": [
+                f"{device_id}"
+            ],
+            "esn": [
+                f"{esn}"
+            ],
+            "bu": bu,
+            "topic": f"{topic}",
+            "fileType": file_type,
+            "fileSentSQSMessage": file_sent_sqs_message,  # The FILE_SENT SQS message for the da_edge_metadata table
+        },
+        "data": body,
+    }
+def publish_message(message_object, j1939_data_type, topic_name):
     # Get credentials
     LOGGER.debug("Inside publish_message()")
     secret_object = get_secret_value()
@@ -67,7 +86,7 @@ def publish_message(message_object, j1939_data_type):
             sasl_plain_password=sec['password']
         )
 
-        topic_name = os.environ['topicName']
+        
         producer.send(topic_name, str(message_object).encode('utf-8'))
         producer.flush()
         producer.close()

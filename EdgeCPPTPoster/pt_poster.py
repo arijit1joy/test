@@ -7,6 +7,7 @@ import traceback
 import utility as util
 from sqs_utility import sqs_send_message
 from kafka_producer import publish_message
+from kafka_producer import _create_kafka_message
 from obfuscate_gps_utility import handle_gps_coordinates
 from metadata_utility import write_health_parameter_to_database
 
@@ -88,7 +89,7 @@ def store_device_health_params(converted_device_params, sample_time_stamp, devic
         LOGGER.info(f"There is no messageId in Converted Device Parameter.")
 
 
-def send_to_pt(post_url, headers, json_body, sqs_message, j1939_data_type):
+def send_to_pt(post_url, headers, json_body, sqs_message_template, j1939_data_type, j1939_type,file_uuid,device_id,esn):
     try:
         headers_json = json.loads(headers)
         get_secret_value_response = sec_client.get_secret_value(SecretId=secret_name)
@@ -125,18 +126,32 @@ def send_to_pt(post_url, headers, json_body, sqs_message, j1939_data_type):
 
             # Send to Cluster
             if (os.environ["APPLICATION_ENVIRONMENT"].lower() in ["dev", "test"]) and (publishKafka == "true"):
-                publish_message(json_body, j1939_data_type)
+                current_dt = datetime.now()
 
-            pt_response = requests.post(url=post_url, data=json.dumps(final_json_body), headers=headers_json)
-            pt_response_body = pt_response.json()
-            pt_response_code = pt_response.status_code
-            LOGGER.info(f"Post to PT response code: {pt_response_code}, body: {pt_response_body}")
+                file_received_sqs_message = sqs_message_template \
+                                    .replace("{FILE_METADATA_CURRENT_DATE_TIME}",
+                                             current_dt.strftime('%Y-%m-%d %H:%M:%S')) \
+                                    .replace("{FILE_METADATA_FILE_STAGE}", "FILE_RECEIVED")
 
-            if "statusCode" in pt_response_body and pt_response_body["statusCode"] == 200:
-                sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message, edgeCommonAPIURL)
+                file_sent_sqs_message = sqs_message_template \
+                                    .replace("{FILE_METADATA_FILE_STAGE}", "FILE_SENT")
+                topicInformation = os.environ["topicInfo"]
+                topic=topicInformation["topicName"].format(j1939_type=j1939_type)
+                file_type = topicInformation["JSON"]
+                bu= topicInformation["bu"]
+                kafka_message =_create_kafka_message(file_uuid,json_body,device_id,esn,topic,file_type,bu,file_sent_sqs_message)
+                publish_message(kafka_message, j1939_data_type, topic)
             else:
-                LOGGER.error(f"ERROR! Posting PT : {pt_response_body}")
-                util.write_to_audit_table(j1939_data_type, pt_response_body, json_body["telematicsDeviceId"])
+                pt_response = requests.post(url=post_url, data=json.dumps(final_json_body), headers=headers_json)
+                pt_response_body = pt_response.json()
+                pt_response_code = pt_response.status_code
+                LOGGER.info(f"Post to PT response code: {pt_response_code}, body: {pt_response_body}")
+
+                if "statusCode" in pt_response_body and pt_response_body["statusCode"] == 200:
+                    sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message, edgeCommonAPIURL)
+                else:
+                    LOGGER.error(f"ERROR! Posting PT : {pt_response_body}")
+                    util.write_to_audit_table(j1939_data_type, pt_response_body, json_body["telematicsDeviceId"])
 
     except Exception as e:
         error_message = f"An exception occurred while posting to PT endpoint: {e}"
