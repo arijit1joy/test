@@ -127,7 +127,7 @@ def send_to_pt(post_url, headers, json_body, sqs_message_template, j1939_data_ty
 
             # Send to Cluster
             if (os.environ["APPLICATION_ENVIRONMENT"].lower() in ["dev", "test"]) and (publishKafka == "true"):
-                # fielsent 
+                # fiel_sent 
 
                 file_sent_sqs_message = sqs_message_template \
                                     .replace("{FILE_METADATA_FILE_STAGE}", "FILE_SENT")
@@ -139,7 +139,7 @@ def send_to_pt(post_url, headers, json_body, sqs_message_template, j1939_data_ty
                 publish_message(kafka_message, j1939_data_type, topic)
 
             else:
-                        # fielsent and curdatetime
+                # file_sent with curdatetime
                 current_dt = datetime.now()
                 file_sent_sqs_message = sqs_message_template \
                                     .replace("{FILE_METADATA_CURRENT_DATE_TIME}",
