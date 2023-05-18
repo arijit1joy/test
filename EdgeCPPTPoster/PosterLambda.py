@@ -2,6 +2,7 @@ import os
 import json
 import time
 import uuid
+import datetime
 import boto3
 import requests
 import post
@@ -149,12 +150,25 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
                            "The 'j1939type' S3 object metadata for FC files should be 'FC'!")
 
     sqs_message = file_uuid + "," + str(device_id) + "," + str(file_name) + "," + str(file_size) + "," + str(
-        file_date_time) + "," + str(j1939_data_type) + "," + str('FILE_RECEIVED') + "," + str(
+       file_date_time) + "," + str(j1939_data_type) + "," + str('FILE_RECEIVED') + "," + str(
         esn) + "," + config_spec_and_req_id + "," + str(None) + "," + " " + "," + " "
     
+    sqs_message_template = \
+                            f"{file_uuid},{device_id},{file_name},{str(file_size)}," \
+                            f"{'{FILE_METADATA_CURRENT_DATE_TIME}'},{j1939_data_type}," \
+                            f"{'{FILE_METADATA_FILE_STAGE}'},{esn},{config_spec_and_req_id},,,,"
 
+    
+
+    
     if j1939_type.lower() == 'hb':
-        sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message, edgeCommonAPIURL)
+        current_dt = datetime.now()
+
+        file_received_sqs_message = sqs_message_template \
+        .replace("{FILE_METADATA_CURRENT_DATE_TIME}",str(file_date_time)) \
+        .replace("{FILE_METADATA_FILE_STAGE}", "FILE_RECEIVED")
+        # fielsent and fildatetime
+        sqs_send_message(os.environ["metaWriteQueueUrl"], file_received_sqs_message, edgeCommonAPIURL)
 
     device_info = get_device_info(device_id)  # type: dict
 
@@ -195,7 +209,7 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
 
             LOGGER.debug(f"Json_body before calling SEND_TO_PT function: {json_body}")
             sqs_message = sqs_message.replace("FILE_RECEIVED", "FILE_SENT")
-            pt_poster.send_to_pt(PTJ1939PostURL, PTJ1939Header, json_body, sqs_message, j1939_data_type, j1939_type.lower(),file_uuid,device_id,esn)
+            pt_poster.send_to_pt(PTJ1939PostURL, PTJ1939Header, json_body, sqs_message_template, j1939_data_type, j1939_type.lower(),file_uuid,device_id,esn)
         else:
             error_message = f"The boxApplication value is not recorded in the EDGE DB for the device: {device_id}"
             LOGGER.error(error_message)
