@@ -141,6 +141,8 @@ def send_to_pt(post_url, headers, json_body, sqs_message_template, j1939_data_ty
                 bu= topicInformation["bu"]
                 kafka_message =_create_kafka_message(file_uuid,json_body,device_id,esn,topic,file_type,bu,file_sent_sqs_message)
                 publish_message(kafka_message, j1939_data_type, topic)
+                sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message_template, edgeCommonAPIURL)
+
             else:
                 pt_response = requests.post(url=post_url, data=json.dumps(final_json_body), headers=headers_json)
                 pt_response_body = pt_response.json()
@@ -148,7 +150,7 @@ def send_to_pt(post_url, headers, json_body, sqs_message_template, j1939_data_ty
                 LOGGER.info(f"Post to PT response code: {pt_response_code}, body: {pt_response_body}")
 
                 if "statusCode" in pt_response_body and pt_response_body["statusCode"] == 200:
-                    sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message, edgeCommonAPIURL)
+                    sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message_template, edgeCommonAPIURL)
                 else:
                     LOGGER.error(f"ERROR! Posting PT : {pt_response_body}")
                     util.write_to_audit_table(j1939_data_type, pt_response_body, json_body["telematicsDeviceId"])
