@@ -90,7 +90,7 @@ def store_device_health_params(converted_device_params, sample_time_stamp, devic
         LOGGER.info(f"There is no messageId in Converted Device Parameter.")
 
 
-def send_to_pt(post_url, headers, json_body, sqs_message_template, j1939_data_type, j1939_type,file_uuid,device_id,esn,sqs_message):
+def send_to_pt(post_url, headers, json_body, sqs_message_template, j1939_data_type, j1939_type,file_uuid,device_id,esn):
     try:
         headers_json = json.loads(headers)
         get_secret_value_response = sec_client.get_secret_value(SecretId=secret_name)
