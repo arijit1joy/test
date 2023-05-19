@@ -24,6 +24,7 @@ def get_secret_value():
             LOGGER.debug("Inside get_secret_value() method")
             kwargs = {'SecretId': secret_arn}
             secret_response = secrets_client.get_secret_value(**kwargs)
+            LOGGER.debug("Successfully retrieved secret")
     except ClientError as e:
         if e.response['Error']['Code'] == 'ResourceNotFoundException':
             LOGGER.error("The requested secret was not found")
@@ -31,6 +32,8 @@ def get_secret_value():
             LOGGER.error("The request was invalid due to:", e)
         elif e.response['Error']['Code'] == 'InvalidParameterException':
             LOGGER.error("The request had invalid params:", e)
+        else:
+            LOGGER.error("The request had other error:", e)
     return secret_response
 
 
