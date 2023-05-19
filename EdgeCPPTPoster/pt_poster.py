@@ -126,14 +126,16 @@ def send_to_pt(post_url, headers, json_body, sqs_message_template, j1939_data_ty
             final_json_body = [json_body]
 
             # Send to Cluster
-            if  publishKafka == "true":
+            if  publishKafka:
                 # file_sent 
 
                 file_sent_sqs_message = sqs_message_template \
                                     .replace("{FILE_METADATA_FILE_STAGE}", "FILE_SENT")
                 topicInformation = json.loads(PT_TOPIC_INFO)
+                LOGGER.info(f"topicInformation :{topicInformation}")
+
                 topic = topicInformation["topicName"].format(j1939_type=j1939_type)
-                file_type = topicInformation["JSON"]
+                file_type = topicInformation["file_type"]
                 bu = topicInformation["bu"]
                 kafka_message =_create_kafka_message(file_uuid,json_body,device_id,esn,topic,file_type,bu,file_sent_sqs_message)
                 LOGGER.info(f"Data sent without IRS with kafka message :{kafka_message}, topic:{topic},fileType:{file_type},bu:{bu}")
