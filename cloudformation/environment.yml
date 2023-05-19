@@ -575,6 +575,8 @@ Resources:
     Type: "AWS::IAM::Role"
     Properties:
       RoleName: !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeCPPTPosterLambdaRole"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/SecretsManagerReadWrite"
       Path: /
       Policies:
         - PolicyName: !Sub >-
