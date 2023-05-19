@@ -15,6 +15,7 @@ sys.modules["edge_db_lambda_client"] = MagicMock()
 
 
 with patch.dict("os.environ", {
+    "ptTopicInfo":'{"topicName": "nimbuspt_j1939-{j1939_type}", "bu":"PSBU","file_type":"JSON"}',
     "LoggingLevel": "debug",
     "PTxAPIKey": "testKey",
     "Region": "us-east-1",

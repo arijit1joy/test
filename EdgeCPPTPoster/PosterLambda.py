@@ -165,8 +165,8 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
         current_dt = datetime.now()
 
         file_received_sqs_message = sqs_message_template \
-        .replace("{FILE_METADATA_CURRENT_DATE_TIME}",str(file_date_time)) \
-        .replace("{FILE_METADATA_FILE_STAGE}", "FILE_RECEIVED")
+            .replace("{FILE_METADATA_CURRENT_DATE_TIME}",str(file_date_time)) \
+            .replace("{FILE_METADATA_FILE_STAGE}", "FILE_RECEIVED")
         # fielsent and fildatetime
         sqs_send_message(os.environ["metaWriteQueueUrl"], file_received_sqs_message, edgeCommonAPIURL)
 
