@@ -2,7 +2,6 @@ import os
 import json
 import time
 import uuid
-import datetime
 import boto3
 import requests
 import post
@@ -162,7 +161,7 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
 
     
     if j1939_type.lower() == 'hb':
-        current_dt = datetime.now()
+        #current_dt = datetime.now()
 
         file_received_sqs_message = sqs_message_template \
             .replace("{FILE_METADATA_CURRENT_DATE_TIME}",str(file_date_time)) \

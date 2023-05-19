@@ -1,7 +1,7 @@
 import os
 import json
 import boto3
-import datetime
+from datetime import datetime
 import requests
 import traceback
 import utility as util
