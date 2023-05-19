@@ -1,7 +1,7 @@
 import os
 import json
 import boto3
-from datetime import datetime
+import datetime
 import requests
 import traceback
 import utility as util
@@ -145,7 +145,7 @@ def send_to_pt(post_url, headers, json_body, sqs_message_template, j1939_data_ty
             else:
                 LOGGER.info("Data sent without IRS")
                 # file_sent with curdatetime
-                current_dt = datetime.now()
+                current_dt =  datetime.datetime.now()
                 file_sent_sqs_message = sqs_message_template \
                                     .replace("{FILE_METADATA_CURRENT_DATE_TIME}",
                                              current_dt.strftime('%Y-%m-%d %H:%M:%S')) \
