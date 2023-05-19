@@ -585,6 +585,13 @@ Resources:
             Version: 2012-10-17
             Statement:
               - Action:
+                  - kms:DescribeKey
+                  - kms:ListAliases
+                  - kms:ListKeys
+                  - "kms:*"
+                Resource: "*"
+                Effect: Allow
+              - Action:
                   - "sqs:ReceiveMessage"
                   - "sqs:DeleteMessage"
                   - "sqs:GetQueueAttributes"
