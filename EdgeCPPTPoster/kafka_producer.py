@@ -93,6 +93,8 @@ def publish_message(message_object, j1939_data_type, topic_name):
         json_obj = {
             "response": "200"
         }
+        LOGGER.debug(f"Publish message: {json_obj}")
+
         return json_obj
     except ClientError as e:
         error_message = f"Error while publishing the message to cluster: {e}"

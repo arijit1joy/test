@@ -90,7 +90,7 @@ def store_device_health_params(converted_device_params, sample_time_stamp, devic
         LOGGER.info(f"There is no messageId in Converted Device Parameter.")
 
 
-def send_to_pt(post_url, headers, json_body, sqs_message_template, j1939_data_type, j1939_type,file_uuid,device_id,esn):
+def send_to_pt(post_url, headers, json_body, sqs_message_template, j1939_data_type, j1939_type,file_uuid,device_id,esn,sqs_message):
     try:
         headers_json = json.loads(headers)
         get_secret_value_response = sec_client.get_secret_value(SecretId=secret_name)
@@ -126,19 +126,22 @@ def send_to_pt(post_url, headers, json_body, sqs_message_template, j1939_data_ty
             final_json_body = [json_body]
 
             # Send to Cluster
-            if (os.environ["APPLICATION_ENVIRONMENT"].lower() in ["dev", "test"]) and (publishKafka == "true"):
-                # fiel_sent 
+            if  publishKafka == "true":
+                # file_sent 
 
                 file_sent_sqs_message = sqs_message_template \
                                     .replace("{FILE_METADATA_FILE_STAGE}", "FILE_SENT")
                 topicInformation = json.loads(PT_TOPIC_INFO)
-                topic=topicInformation["topicName"].format(j1939_type=j1939_type)
+                topic = topicInformation["topicName"].format(j1939_type=j1939_type)
                 file_type = topicInformation["JSON"]
-                bu= topicInformation["bu"]
+                bu = topicInformation["bu"]
                 kafka_message =_create_kafka_message(file_uuid,json_body,device_id,esn,topic,file_type,bu,file_sent_sqs_message)
+                LOGGER.info(f"Data sent without IRS with kafka message :{kafka_message}, topic:{topic},fileType:{file_type},bu:{bu}")
+
                 publish_message(kafka_message, j1939_data_type, topic)
 
             else:
+                LOGGER.info("Data sent without IRS")
                 # file_sent with curdatetime
                 current_dt = datetime.now()
                 file_sent_sqs_message = sqs_message_template \
