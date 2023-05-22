@@ -167,6 +167,7 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
             .replace("{FILE_METADATA_CURRENT_DATE_TIME}",str(file_date_time)) \
             .replace("{FILE_METADATA_FILE_STAGE}", "FILE_RECEIVED")
         # fielsent and fildatetime
+        LOGGER.debug(f"Sending Metadata message for HB with: {file_received_sqs_message}")
         sqs_send_message(os.environ["metaWriteQueueUrl"], file_received_sqs_message, edgeCommonAPIURL)
 
     device_info = get_device_info(device_id)  # type: dict
@@ -193,6 +194,7 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
 
         if device_owner in json.loads(os.environ["cd_device_owners"]):
             sqs_message = sqs_message.replace("FILE_RECEIVED", "CD_PT_POSTED")
+            LOGGER.debug(f"Metadata Message sent to CD: {sqs_message}")
             post.send_to_cd(bucket_name, file_key, JSONFormat, s3_client, j1939_type, EndpointBucket, endpointFile,
                             UseEndpointBucket, json_body, file_uuid, sqs_message, j1939_data_type)
 
@@ -208,7 +210,8 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
 
             LOGGER.debug(f"Json_body before calling SEND_TO_PT function: {json_body}")
             sqs_message = sqs_message.replace("FILE_RECEIVED", "FILE_SENT")
-            pt_poster.send_to_pt(PTJ1939PostURL, PTJ1939Header, json_body, sqs_message_template, j1939_data_type, j1939_type.lower(),file_uuid,device_id,esn)
+            LOGGER.debug(f"Metadata Message sent to PT: {sqs_message}")
+            pt_poster.send_to_pt(PTJ1939PostURL, PTJ1939Header, json_body, sqs_message, j1939_data_type, j1939_type.lower(),file_uuid,device_id,esn)
         else:
             error_message = f"The boxApplication value is not recorded in the EDGE DB for the device: {device_id}"
             LOGGER.error(error_message)
