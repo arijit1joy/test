@@ -585,11 +585,15 @@ Resources:
             Version: 2012-10-17
             Statement:
               - Action:
+                  - "kafka:*" # TODO, tighten
+                Resource: "*" # TODO, tighten
+                Effect: Allow
+              - Action:
                   - kms:DescribeKey
                   - kms:ListAliases
                   - kms:ListKeys
                   - "kms:*"
-                Resource: "*"
+                Resource: "*" # TODO, tighten
                 Effect: Allow
               - Action:
                   - "sqs:ReceiveMessage"
