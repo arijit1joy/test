@@ -70,7 +70,7 @@ def valid_psbu_fc_message_without_esn_in_filename(context):
 
 
 @exception_handler
-@when(u'The FC file is uploaded to the da-edge-j1939-datalog-files-<env> bucket')
+@when(u'The FC file is uploaded to the device-data-log-<env> bucket')
 def j1939_fc_file_uploaded_to_s3(context):
     file_key = "bosch-device/" + context.file_name
     get_key = get_key_from_list_of_s3_objects(context.device_upload_bucket, file_key)

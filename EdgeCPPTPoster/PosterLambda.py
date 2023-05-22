@@ -210,8 +210,7 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
 
             LOGGER.debug(f"Json_body before calling SEND_TO_PT function: {json_body}")
             sqs_message = sqs_message.replace("FILE_RECEIVED", "FILE_SENT")
-            LOGGER.debug(f"Metadata Message sent to PT: {sqs_message}")
-            pt_poster.send_to_pt(PTJ1939PostURL, PTJ1939Header, json_body, sqs_message, j1939_data_type, j1939_type.lower(),file_uuid,device_id,esn)
+            pt_poster.send_to_pt(PTJ1939PostURL, PTJ1939Header, json_body, sqs_message_template, j1939_data_type, j1939_type.lower(),file_uuid,device_id,esn)
         else:
             error_message = f"The boxApplication value is not recorded in the EDGE DB for the device: {device_id}"
             LOGGER.error(error_message)
