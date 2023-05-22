@@ -155,7 +155,7 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
     sqs_message_template = \
                             f"{file_uuid},{device_id},{file_name},{str(file_size)}," \
                             f"{'{FILE_METADATA_CURRENT_DATE_TIME}'},{j1939_data_type}," \
-                            f"{'{FILE_METADATA_FILE_STAGE}'},{esn},{config_spec_and_req_id},,,,"
+                            f"{'{FILE_METADATA_FILE_STAGE}'},{esn},{config_spec_and_req_id},,,"
 
     
 
