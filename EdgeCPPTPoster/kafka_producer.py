@@ -70,11 +70,11 @@ def _create_kafka_message(message_id, body, device_id, esn, topic, file_type, bu
     }
 def publish_message(message_object, j1939_data_type, topic_name):
     # Get credentials
-    LOGGER.debug("Inside publish_message()")
+    LOGGER.info("Inside publish_message()")
     secret_object = get_secret_value()
     LOGGER.debug(f"secret_object: {secret_object}")
     sec = json.loads(secret_object['SecretString'])
-
+    LOGGER.info("SecretString",sec)
     # Get msk brokers
     mskcluster_arn = os.environ['mskClusterArn']
     list_brokers = get_brokers(mskcluster_arn)
@@ -87,8 +87,10 @@ def publish_message(message_object, j1939_data_type, topic_name):
             sasl_plain_password=sec['password']
         )
 
-        
-        producer.send(topic_name, str(message_object).encode('utf-8'))
+        string_kafka_message = json.dumps(message_object)
+        LOGGER.info(f"string_kafka_message:{string_kafka_message}")
+        LOGGER.info(f"topic_name: {topic_name}")
+        producer.send(topic_name, string_kafka_message.encode('utf-8'))
         producer.flush()
         producer.close()
         json_obj = {

@@ -1011,7 +1011,7 @@ Resources:
             - !Ref "AWS::NoValue"
           topicName: "j1939-pt-topic"
           publishKafka: true
-          ptTopicInfo: '{"topicName": "nimbuspt_j1939-{j1939_type}", "bu":"PSBU","file_type":"JSON"}'
+          ptTopicInfo: '{"topicName": "nimbuspt-j1939-{j1939_type}", "bu":"PSBU","file_type":"JSON"}'
       Handler: PosterLambda.lambda_handler
       Role: !GetAtt
         - EdgeCPPTPosterLambdaRole

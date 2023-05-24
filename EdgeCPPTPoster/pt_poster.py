@@ -11,13 +11,13 @@ from kafka_producer import _create_kafka_message
 from obfuscate_gps_utility import handle_gps_coordinates
 from metadata_utility import write_health_parameter_to_database
 
-
 LOGGER = util.get_logger(__name__)
+print("calling sendto p_method", os.environ)
 secret_name = os.environ['PTxAPIKey']
 region_name = os.environ['Region']
 edgeCommonAPIURL = os.environ['edgeCommonAPIURL']
-publishKafka = os.environ['publishKafka']
-PT_TOPIC_INFO= os.environ["ptTopicInfo"]
+
+PT_TOPIC_INFO = os.environ["ptTopicInfo"]
 
 # Create a Secrets Manager client
 session = boto3.session.Session()
@@ -90,7 +90,8 @@ def store_device_health_params(converted_device_params, sample_time_stamp, devic
         LOGGER.info(f"There is no messageId in Converted Device Parameter.")
 
 
-def send_to_pt(post_url, headers, json_body, sqs_message_template, j1939_data_type, j1939_type,file_uuid,device_id,esn):
+def send_to_pt(post_url, headers, json_body, sqs_message_template, j1939_data_type, j1939_type, file_uuid, device_id,
+               esn):
     try:
         headers_json = json.loads(headers)
         get_secret_value_response = sec_client.get_secret_value(SecretId=secret_name)
@@ -124,32 +125,33 @@ def send_to_pt(post_url, headers, json_body, sqs_message_template, j1939_data_ty
         # We are not sending payload to PT for Digital Cockpit Device
         if not json_body["telematicsDeviceId"] == '192000000000101':
             final_json_body = [json_body]
-
-            # Send to Cluster
-            if  publishKafka:
+             # Send to Cluster
+            if os.environ['publishKafka'] == "True":
                 # file_sent 
 
                 file_sent_sqs_message = sqs_message_template \
-                                    .replace("{FILE_METADATA_FILE_STAGE}", "FILE_SENT")
+                    .replace("{FILE_METADATA_FILE_STAGE}", "FILE_SENT")
                 topicInformation = json.loads(PT_TOPIC_INFO)
                 LOGGER.info(f"topicInformation :{topicInformation}")
 
                 topic = topicInformation["topicName"].format(j1939_type=j1939_type)
                 file_type = topicInformation["file_type"]
                 bu = topicInformation["bu"]
-                kafka_message =_create_kafka_message(file_uuid,json_body,device_id,esn,topic,file_type,bu,file_sent_sqs_message)
-                LOGGER.info(f"Data sent without IRS with kafka message :{kafka_message}, topic:{topic},fileType:{file_type},bu:{bu}")
+                kafka_message = _create_kafka_message(file_uuid, json_body, device_id, esn, topic, file_type, bu,
+                                                      file_sent_sqs_message)
+                LOGGER.info(
+                    f"Data sent with IRS with kafka message :{kafka_message}, topic:{topic},fileType:{file_type},bu:{bu}")
 
                 publish_message(kafka_message, j1939_data_type, topic)
 
             else:
                 LOGGER.info("Data sent without IRS")
                 # file_sent with curdatetime
-                current_dt =  datetime.datetime.now()
+                current_dt = datetime.datetime.now()
                 file_sent_sqs_message = sqs_message_template \
-                                    .replace("{FILE_METADATA_CURRENT_DATE_TIME}",
-                                             current_dt.strftime('%Y-%m-%d %H:%M:%S')) \
-                                    .replace("{FILE_METADATA_FILE_STAGE}", "FILE_SENT")
+                    .replace("{FILE_METADATA_CURRENT_DATE_TIME}",
+                             current_dt.strftime('%Y-%m-%d %H:%M:%S')) \
+                    .replace("{FILE_METADATA_FILE_STAGE}", "FILE_SENT")
                 pt_response = requests.post(url=post_url, data=json.dumps(final_json_body), headers=headers_json)
                 pt_response_body = pt_response.json()
                 pt_response_code = pt_response.status_code
