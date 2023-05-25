@@ -77,7 +77,6 @@ def publish_message(message_object, j1939_data_type, topic_name):
     secret_object = get_secret_value()
     LOGGER.debug(f"secret_object: {secret_object}")
     sec = json.loads(secret_object['SecretString'])
-    LOGGER.debug("SecretString",sec)
     # Get msk brokers
     mskcluster_arn = os.environ['mskClusterArn']
     list_brokers = get_brokers(mskcluster_arn)
