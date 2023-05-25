@@ -139,8 +139,8 @@ def send_to_pt(post_url, headers, json_body, sqs_message_template, j1939_data_ty
                 bu = topicInformation["bu"]
                 kafka_message = _create_kafka_message(file_uuid, json_body, device_id, esn, topic, file_type, bu,
                                                       file_sent_sqs_message)
-                LOGGER.info(
-                    f"Data sent without IRS with kafka message :{kafka_message}, topic:{topic},fileType:{file_type},bu:{bu}")
+                LOGGER.info(f"Data sent with IRS with kafka message :{kafka_message}, topic:{topic},fileType:{file_type},bu:{bu}")
+
 
                 publish_message(kafka_message, j1939_data_type, topic)
 

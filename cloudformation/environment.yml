@@ -1023,8 +1023,8 @@ Resources:
               "Fn::Sub": "${ApplicationNameCDA}-msk-cluster-arn-${ApplicationEnvironmentTag}"
             - !Ref "AWS::NoValue"
           topicName: "j1939-pt-topic"
-          publishKafka: 'True'
-          ptTopicInfo: '{"topicName": "nimbuspt_j1939-{j1939_type}", "bu":"PSBU","file_type":"JSON"}'
+          publishKafka: true
+          ptTopicInfo: '{"topicName": "nimbuspt-j1939-{j1939_type}", "bu":"PSBU","file_type":"JSON"}'
       Handler: PosterLambda.lambda_handler
       Role: !GetAtt
         - EdgeCPPTPosterLambdaRole
