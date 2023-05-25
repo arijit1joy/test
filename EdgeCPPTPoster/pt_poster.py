@@ -132,14 +132,14 @@ def send_to_pt(post_url, headers, json_body, sqs_message_template, j1939_data_ty
                 file_sent_sqs_message = sqs_message_template \
                     .replace("{FILE_METADATA_FILE_STAGE}", "FILE_SENT")
                 topicInformation = json.loads(PT_TOPIC_INFO)
-                LOGGER.info(f"topicInformation :{topicInformation}")
+                LOGGER.debug(f"topicInformation :{topicInformation}")
 
                 topic = topicInformation["topicName"].format(j1939_type=j1939_type)
                 file_type = topicInformation["file_type"]
                 bu = topicInformation["bu"]
                 kafka_message = _create_kafka_message(file_uuid, json_body, device_id, esn, topic, file_type, bu,
                                                       file_sent_sqs_message)
-                LOGGER.info(f"Data sent with IRS with kafka message :{kafka_message}, topic:{topic},fileType:{file_type},bu:{bu}")
+                LOGGER.debug(f"Data sent with IRS with kafka message :{kafka_message}, topic:{topic},fileType:{file_type},bu:{bu}")
 
 
                 publish_message(kafka_message, j1939_data_type, topic)
@@ -155,7 +155,7 @@ def send_to_pt(post_url, headers, json_body, sqs_message_template, j1939_data_ty
                 pt_response = requests.post(url=post_url, data=json.dumps(final_json_body), headers=headers_json)
                 pt_response_body = pt_response.json()
                 pt_response_code = pt_response.status_code
-                LOGGER.info(f"Post to PT response code: {pt_response_code}, body: {pt_response_body}")
+                LOGGER.debug(f"Post to PT response code: {pt_response_code}, body: {pt_response_body}")
 
                 if "statusCode" in pt_response_body and pt_response_body["statusCode"] == 200:
                     sqs_send_message(os.environ["metaWriteQueueUrl"], file_sent_sqs_message, edgeCommonAPIURL)
