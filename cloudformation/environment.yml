@@ -725,7 +725,8 @@ Resources:
       Tier: Standard
       Type: String
       Description: j1939 PT FC and Periodic Datacontent Spec values
-      Value: '{"FC" : "Event1_5", "Periodic" : "Periodic1_9","PT_TSP": "Cummins"}'
+      #Value: '{"FC" : "Event1_5", "Periodic" : "Periodic1_9","PT_TSP": "Cummins"}'
+      Value: '{"FC" : "Event1_5", "Periodic" : "Periodic1_9","PT_TSP": "Cummins","EngineStatOverride":"EngineStat_9","LoadFactorOverride":"LoadFactor_9","EngineStatSc":"SC8091","LoadFactorSc":"SC8093"}'
       Name: da-edge-j1939-content-spec-value
 
   EdgeJ1939CSVConverterBDDEsnSSM:

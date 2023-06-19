@@ -37,10 +37,6 @@ MAX_ATTEMPTS = int(os.environ["MaxAttempts"])
 s3_client = boto3.client('s3')
 ssm_client = boto3.client('ssm')
 EDGE_DB_CLIENT = EdgeDbLambdaClient()
-engine_stat_override = os.environ["EngineStatOverride"]
-load_factor_override = os.environ["LoadFactorOverride"]
-engine_stat_sc = os.environ["EngineStatSc"]
-load_factor_sc = os.environ["LoadFactorSc"]
 
 
 def delete_message_from_sqs_queue(receipt_handle):
@@ -204,15 +200,17 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
             parameter = ssm_client.get_parameter(Name='da-edge-j1939-content-spec-value', WithDecryption=False)
             config_spec_value = json.loads(parameter['Parameter']['Value'])
 
-            '''engine_stat_override = "EngineStat_9" # TODO validate exact value
-            load_factor_override = "LoadFactor_9" # TODO validate exact value
-            engine_stat_sc = 'SC8091' # TODO validate if any others needed besides this
-            load_factor_sc = 'SC8093' # TODO validate if any other needed besides this'''
-            print('dataSamplingConfigId:', json_body['dataSamplingConfigId'])
-            print('engine_stat_sc:', engine_stat_sc)
-            print('load_factor_sc:', load_factor_sc)
+            engine_stat_override = config_spec_value['EngineStatOverride']
+            load_factor_override = config_spec_value['LoadFactorOverride']
+            engine_stat_sc = config_spec_value['EngineStatSc']
+            load_factor_sc = config_spec_value['LoadFactorSc']
+            LOGGER.debug(f"Data Sampling Config Id: {json_body['dataSamplingConfigId']}")
+            LOGGER.debug(f"Engine Stat Override: {engine_stat_override}")
+            LOGGER.debug(f"Load Factor Override: {load_factor_override}")
+            LOGGER.debug(f"Engine Stat SC: {engine_stat_sc}")
+            LOGGER.debug(f"Load Factor SC: {load_factor_sc}")
+
             override_sampling_configs = [engine_stat_sc, load_factor_sc]
-            print('override_sampling_configs:', override_sampling_configs)
 
             if json_body['dataSamplingConfigId'] in override_sampling_configs:
                 if json_body['dataSamplingConfigId'] == engine_stat_sc:
