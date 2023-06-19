@@ -5,6 +5,7 @@ from unittest.mock import patch, MagicMock
 sys.path.append("../")
 sys.modules["edge_logger"] = MagicMock()
 sys.modules["rediscluster"] = MagicMock()
+sys.modules["edge_db_lambda_client"] = MagicMock()
 
 with patch.dict("os.environ", {'RedisSecretName': 'test_secret_name',
                                'region': 'us-east-1',
@@ -15,7 +16,7 @@ with patch.dict("os.environ", {'RedisSecretName': 'test_secret_name',
 
 del sys.modules["edge_logger"]
 del sys.modules["rediscluster"]
-
+del sys.modules["edge_db_lambda_client"]
 
 class TestRedisUtility(unittest.TestCase):
 

@@ -199,7 +199,6 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
         elif device_owner in json.loads(os.environ["psbu_device_owner"]):
             parameter = ssm_client.get_parameter(Name='da-edge-j1939-content-spec-value', WithDecryption=False)
             config_spec_value = json.loads(parameter['Parameter']['Value'])
-
             engine_stat_override = config_spec_value['EngineStatOverride']
             load_factor_override = config_spec_value['LoadFactorOverride']
             engine_stat_sc = config_spec_value['EngineStatSc']

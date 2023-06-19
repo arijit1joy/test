@@ -17,7 +17,6 @@ sys.modules["kafka_producer"] = MagicMock()
 sys.modules["obfuscate_gps_utility"] = MagicMock()
 sys.modules["metadata_utility"] = MagicMock()
 sys.modules["utility"] = MagicMock()
-print("before", os.environ)
 from cda_module_mock_context import CDAModuleMockingContext
 
 with  CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.environ", {
@@ -44,14 +43,7 @@ with  CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.en
     #         )
     #     )
     # )
-    print("calling sendto pt")
     import pt_poster
-
-    # from EdgeCPPTPoster.pt_poster import send_to_pt
-
-    print("after", os.environ)
-
-
 class MyTestCase(unittest.TestCase):
     post_url = "https://json"
     headers = '{"Content-Type": "application/json", "Prefer": "param=single-object", "x-api-key": ""}'
@@ -111,6 +103,8 @@ class MyTestCase(unittest.TestCase):
                      }
 
     @patch.dict('os.environ', {'publishKafka': 'False'})
+    @patch("pt_poster.util")
+    @patch("pt_poster.requests")
     @patch("pt_poster.LOGGER")
     @patch("pt_poster.publish_message")
     @patch("pt_poster._create_kafka_message")
@@ -120,10 +114,10 @@ class MyTestCase(unittest.TestCase):
     def test_send_to_pt_given(self, mocK_sec_client: MagicMock,
                               hb_params: MagicMock(), health_params: MagicMock,
                               create_kafka: MagicMock, publish_message: MagicMock,
-                              mock_util: MagicMock):
+                              mock_logger: MagicMock, mock_requests: MagicMock, mock_util: MagicMock):
         mocK_sec_client.return_value = self.headers_json
         hb_params.return_value = self.hb_param_json
-        print("inside test")
+
         pt_poster.send_to_pt(self.post_url,
                              self.headers, self.json_body, self.sqs_message_template, self.j1939_data_type,
                              self.j1939_type,
@@ -133,6 +127,7 @@ class MyTestCase(unittest.TestCase):
 
     @patch.dict('os.environ', {'publishKafka': 'True'})
     @patch("pt_poster.LOGGER")
+    @patch("pt_poster.requests")
     @patch("pt_poster.publish_message")
     @patch("pt_poster._create_kafka_message")
     @patch("pt_poster.store_device_health_params")
@@ -141,7 +136,7 @@ class MyTestCase(unittest.TestCase):
     def test_send_to_pt_given_publish_kafka_then_publish_message(self, mocK_sec_client: MagicMock,
                                                                  hb_params: MagicMock(), health_params: MagicMock,
                                                                  create_kafka: MagicMock, publish_message: MagicMock,
-                                                                 mock_util: MagicMock):
+                                                                 mock_requests: MagicMock, mock_util: MagicMock):
         mocK_sec_client.return_value = self.headers_json
         hb_params.return_value = self.hb_param_json
         pt_poster.send_to_pt(self.post_url,

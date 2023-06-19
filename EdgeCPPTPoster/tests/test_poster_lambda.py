@@ -13,7 +13,7 @@ sys.modules["edge_core"] = MagicMock()
 sys.modules["scheduler_query"] = MagicMock()
 sys.modules["boto3"] = MagicMock()
 sys.modules["edge_db_lambda_client"] = MagicMock()
-
+sys.modules["update_scheduler"] = MagicMock()
 
 with patch.dict("os.environ", {
     "ptTopicInfo":'{"topicName": "nimbuspt_j1939-{j1939_type}", "bu":"PSBU","file_type":"JSON"}',
@@ -58,7 +58,7 @@ del sys.modules["edge_core"]
 del sys.modules["scheduler_query"]
 del sys.modules["boto3"]
 del sys.modules["edge_db_lambda_client"]
-
+del sys.modules["update_scheduler"]
 
 class TestPosterLambda(unittest.TestCase):
     sample_device_id = '12345'
