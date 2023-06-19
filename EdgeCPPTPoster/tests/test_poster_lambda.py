@@ -1,4 +1,5 @@
 import sys
+import json
 import unittest
 from unittest.mock import patch, MagicMock
 
@@ -39,7 +40,12 @@ with patch.dict("os.environ", {
     "mapTspFromOwner": "true",
     "ProcessDataQuality": "true",
     "DataQualityLambda": "DataQualityLambda",
-    "MaxAttempts": "2"
+    "MaxAttempts": "2",
+    "EngineStatOverride":"EngineStat_9",
+    "LoadFactorOverride":"LoadFactor_9",
+    "EngineStatSc":"SC8091",
+    "LoadFactorSc":"SC8093"
+
 }):
     import PosterLambda
 
@@ -77,6 +83,17 @@ class TestPosterLambda(unittest.TestCase):
         result = PosterLambda.get_device_info(self.sample_device_id)
         self.assertEqual(result, False)
         self.assertEqual(mock_db_reader.execute.call_count, 2)
+
+    '''@patch("PosterLambda.EDGE_DB_CLIENT")
+    def test_retrieve_and_process_file(self, mock_db_reader):
+        mock_db_reader.execute.return_value = None
+        record=""
+        s3_event_body = json.loads(record["body"])
+        receipt_handle = record["receiptHandle"]
+        result = PosterLambda.retrieve_and_process_file(self.s3_event_body,self.receipt_handle)
+
+        #self.assertEqual(result, False)
+        #self.assertEqual(mock_db_reader.execute.call_count, 2)'''
 
 if __name__ == '__main__':
     unittest.main()
