@@ -81,7 +81,10 @@ def get_business_partner(device_type):
 
 
 def retrieve_and_process_file(s3_event_body, receipt_handle):
+    LOGGER.info(f"s3_event_body: {s3_event_body}")
+    LOGGER.info(f"receipt_handle: {receipt_handle}")
     event_json = json.dumps(s3_event_body)
+    LOGGER.info(f"event_json: {event_json}")
 
     if process_data_quality.lower() == 'yes':
         LOGGER.debug("Initiating data quality...")
@@ -97,20 +100,20 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
     bucket_name = s3_event_body['Records'][0]['s3']['bucket']['name']
     file_key = s3_event_body['Records'][0]['s3']['object']['key']
     file_size = s3_event_body['Records'][0]['s3']['object']['size']
-    LOGGER.debug(f"Bucket Name: {bucket_name} File Key: {file_key}")
+    LOGGER.info(f"Bucket Name: {bucket_name} File Key: {file_key}")
     file_key = file_key.replace("%3A", ":")
     LOGGER.info(f"New FileKey: {file_key}")
 
     file_object = s3_client.get_object(Bucket=bucket_name, Key=file_key)
-    LOGGER.debug(f"Get File Object Response: {file_object}")
+    LOGGER.info(f"Get File Object Response: {file_object}")
 
     file_date_time = str(file_object['LastModified'])[:19]
     file_object_stream = file_object['Body'].read()
     json_body = json.loads(file_object_stream)
-    LOGGER.debug(f"File as JSON: {json_body}")
+    LOGGER.info(f"File as JSON: {json_body}")
 
     file_metadata = file_object["Metadata"]
-    LOGGER.debug(f"File Metadata: {file_metadata}")
+    LOGGER.info(f"File Metadata: {file_metadata}")
 
     j1939_type = file_metadata["j1939type"] if "j1939type" in file_metadata else 'HB'
 
@@ -203,11 +206,11 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
             load_factor_override = config_spec_value['LoadFactorOverride']
             engine_stat_sc = config_spec_value['EngineStatSc']
             load_factor_sc = config_spec_value['LoadFactorSc']
-            LOGGER.debug(f"Data Sampling Config Id: {json_body['dataSamplingConfigId']}")
-            LOGGER.debug(f"Engine Stat Override: {engine_stat_override}")
-            LOGGER.debug(f"Load Factor Override: {load_factor_override}")
-            LOGGER.debug(f"Engine Stat SC: {engine_stat_sc}")
-            LOGGER.debug(f"Load Factor SC: {load_factor_sc}")
+            LOGGER.info(f"Data Sampling Config Id: {json_body['dataSamplingConfigId']}")
+            LOGGER.info(f"Engine Stat Override: {engine_stat_override}")
+            LOGGER.info(f"Load Factor Override: {load_factor_override}")
+            LOGGER.info(f"Engine Stat SC: {engine_stat_sc}")
+            LOGGER.info(f"Load Factor SC: {load_factor_sc}")
 
             override_sampling_configs = [engine_stat_sc, load_factor_sc]
 
@@ -223,7 +226,7 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
                     json_body['dataSamplingConfigId'] = config_spec_value['Periodic']
                 json_body['telematicsPartnerName'] = config_spec_value['PT_TSP']
 
-            LOGGER.debug(f"Json_body before calling SEND_TO_PT function: {json_body}")
+            LOGGER.info(f"Json_body before calling SEND_TO_PT function: {json_body}")
             sqs_message = sqs_message.replace("FILE_RECEIVED", "FILE_SENT")
             pt_poster.send_to_pt(PTJ1939PostURL, PTJ1939Header, json_body, sqs_message, j1939_data_type,
                                  j1939_type.lower(), file_uuid, device_id, esn)
