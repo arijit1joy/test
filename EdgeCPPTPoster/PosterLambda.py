@@ -106,15 +106,15 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
     LOGGER.info(f"New FileKey: {file_key}")
 
     file_object = s3_client.get_object(Bucket=bucket_name, Key=file_key)
-    LOGGER.info(f"Get File Object Response: {file_object}")
+    LOGGER.debug(f"Get File Object Response: {file_object}")
 
     file_date_time = str(file_object['LastModified'])[:19]
     file_object_stream = file_object['Body'].read()
     json_body = json.loads(file_object_stream)
-    LOGGER.info(f"File as JSON: {json_body}")
+    LOGGER.debug(f"File as JSON: {json_body}")
 
     file_metadata = file_object["Metadata"]
-    LOGGER.info(f"File Metadata: {file_metadata}")
+    LOGGER.debug(f"File Metadata: {file_metadata}")
 
     j1939_type = file_metadata["j1939type"] if "j1939type" in file_metadata else 'HB'
 
