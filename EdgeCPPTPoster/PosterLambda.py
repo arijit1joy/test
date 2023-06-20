@@ -12,6 +12,7 @@ from multiprocessing import Process
 from sqs_utility import sqs_send_message
 import sys
 from update_scheduler import update_scheduler_table, get_request_id_from_consumption_view
+
 sys.path.insert(1, './lib')
 from edge_db_lambda_client import EdgeDbLambdaClient
 
@@ -80,7 +81,10 @@ def get_business_partner(device_type):
 
 
 def retrieve_and_process_file(s3_event_body, receipt_handle):
+    LOGGER.info(f"s3_event_body: {s3_event_body}")
+    LOGGER.info(f"receipt_handle: {receipt_handle}")
     event_json = json.dumps(s3_event_body)
+    print(f"event_json: {event_json}")
 
     if process_data_quality.lower() == 'yes':
         LOGGER.debug("Initiating data quality...")
@@ -93,10 +97,11 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
     else:
         LOGGER.debug("data quality skipped...")
 
+    print(s3_event_body['Records'])
     bucket_name = s3_event_body['Records'][0]['s3']['bucket']['name']
     file_key = s3_event_body['Records'][0]['s3']['object']['key']
     file_size = s3_event_body['Records'][0]['s3']['object']['size']
-    LOGGER.debug(f"Bucket Name: {bucket_name} File Key: {file_key}")
+    LOGGER.info(f"Bucket Name: {bucket_name} File Key: {file_key}")
     file_key = file_key.replace("%3A", ":")
     LOGGER.info(f"New FileKey: {file_key}")
 
@@ -149,22 +154,19 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
                            "The 'j1939type' S3 object metadata for FC files should be 'FC'!")
 
     sqs_message = file_uuid + "," + str(device_id) + "," + str(file_name) + "," + str(file_size) + "," + str(
-       file_date_time) + "," + str(j1939_data_type) + "," + str('FILE_RECEIVED') + "," + str(
+        file_date_time) + "," + str(j1939_data_type) + "," + str('FILE_RECEIVED') + "," + str(
         esn) + "," + config_spec_and_req_id + "," + str(None) + "," + " " + "," + " "
-    
+
     sqs_message_template = \
-                            f"{file_uuid},{device_id},{file_name},{str(file_size)}," \
-                            f"{'{FILE_METADATA_CURRENT_DATE_TIME}'},{j1939_data_type}," \
-                            f"{'{FILE_METADATA_FILE_STAGE}'},{esn},{config_spec_and_req_id},,,"
+        f"{file_uuid},{device_id},{file_name},{str(file_size)}," \
+        f"{'{FILE_METADATA_CURRENT_DATE_TIME}'},{j1939_data_type}," \
+        f"{'{FILE_METADATA_FILE_STAGE}'},{esn},{config_spec_and_req_id},,,"
 
-    
-
-    
     if j1939_type.lower() == 'hb':
-        #current_dt = datetime.now()
+        # current_dt = datetime.now()
 
         file_received_sqs_message = sqs_message_template \
-            .replace("{FILE_METADATA_CURRENT_DATE_TIME}",str(file_date_time)) \
+            .replace("{FILE_METADATA_CURRENT_DATE_TIME}", str(file_date_time)) \
             .replace("{FILE_METADATA_FILE_STAGE}", "FILE_RECEIVED")
         # fielsent and fildatetime
         LOGGER.debug(f"Sending Metadata message for HB with: {file_received_sqs_message}")
@@ -201,16 +203,34 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
         elif device_owner in json.loads(os.environ["psbu_device_owner"]):
             parameter = ssm_client.get_parameter(Name='da-edge-j1939-content-spec-value', WithDecryption=False)
             config_spec_value = json.loads(parameter['Parameter']['Value'])
-            if j1939_type.lower() == 'fc':
-                json_body['dataSamplingConfigId'] = config_spec_value['FC']
+            engine_stat_override = config_spec_value['EngineStatOverride']
+            load_factor_override = config_spec_value['LoadFactorOverride']
+            engine_stat_sc = config_spec_value['EngineStatSc']
+            load_factor_sc = config_spec_value['LoadFactorSc']
+            LOGGER.info(f"Data Sampling Config Id: {json_body['dataSamplingConfigId']}")
+            LOGGER.info(f"Engine Stat Override: {engine_stat_override}")
+            LOGGER.info(f"Load Factor Override: {load_factor_override}")
+            LOGGER.info(f"Engine Stat SC: {engine_stat_sc}")
+            LOGGER.info(f"Load Factor SC: {load_factor_sc}")
+
+            override_sampling_configs = [engine_stat_sc, load_factor_sc]
+
+            if json_body['dataSamplingConfigId'] in override_sampling_configs:
+                if json_body['dataSamplingConfigId'] == engine_stat_sc:
+                    json_body['dataSamplingConfigId'] = engine_stat_override
+                else:
+                    json_body['dataSamplingConfigId'] = load_factor_override
             else:
-                json_body['dataSamplingConfigId'] = config_spec_value['Periodic']
+                if j1939_type.lower() == 'fc':
+                    json_body['dataSamplingConfigId'] = config_spec_value['FC']
+                else:
+                    json_body['dataSamplingConfigId'] = config_spec_value['Periodic']
+                json_body['telematicsPartnerName'] = config_spec_value['PT_TSP']
 
-            json_body['telematicsPartnerName'] = config_spec_value['PT_TSP']
-
-            LOGGER.debug(f"Json_body before calling SEND_TO_PT function: {json_body}")
+            LOGGER.info(f"Json_body before calling SEND_TO_PT function: {json_body}")
             sqs_message = sqs_message.replace("FILE_RECEIVED", "FILE_SENT")
-            pt_poster.send_to_pt(PTJ1939PostURL, PTJ1939Header, json_body, sqs_message, j1939_data_type, j1939_type.lower(),file_uuid,device_id,esn)
+            pt_poster.send_to_pt(PTJ1939PostURL, PTJ1939Header, json_body, sqs_message, j1939_data_type,
+                                 j1939_type.lower(), file_uuid, device_id, esn)
         else:
             error_message = f"The boxApplication value is not recorded in the EDGE DB for the device: {device_id}"
             LOGGER.error(error_message)

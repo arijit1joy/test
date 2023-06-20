@@ -12,7 +12,6 @@ from obfuscate_gps_utility import handle_gps_coordinates
 from metadata_utility import write_health_parameter_to_database
 
 LOGGER = util.get_logger(__name__)
-print("calling sendto p_method", os.environ)
 secret_name = os.environ['PTxAPIKey']
 region_name = os.environ['Region']
 edgeCommonAPIURL = os.environ['edgeCommonAPIURL']
