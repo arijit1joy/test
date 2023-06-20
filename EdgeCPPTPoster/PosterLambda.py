@@ -84,7 +84,7 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
     LOGGER.info(f"s3_event_body: {s3_event_body}")
     LOGGER.info(f"receipt_handle: {receipt_handle}")
     event_json = json.dumps(s3_event_body)
-    LOGGER.info(f"event_json: {event_json}")
+    print(f"event_json: {event_json}")
 
     if process_data_quality.lower() == 'yes':
         LOGGER.debug("Initiating data quality...")
@@ -97,6 +97,7 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
     else:
         LOGGER.debug("data quality skipped...")
 
+    print(s3_event_body['Records'])
     bucket_name = s3_event_body['Records'][0]['s3']['bucket']['name']
     file_key = s3_event_body['Records'][0]['s3']['object']['key']
     file_size = s3_event_body['Records'][0]['s3']['object']['size']

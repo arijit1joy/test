@@ -84,16 +84,16 @@ class TestPosterLambda(unittest.TestCase):
         self.assertEqual(result, False)
         self.assertEqual(mock_db_reader.execute.call_count, 2)
 
-    '''@patch("PosterLambda.EDGE_DB_CLIENT")
+    @patch("PosterLambda.EDGE_DB_CLIENT")
     def test_retrieve_and_process_file(self, mock_db_reader):
         mock_db_reader.execute.return_value = None
-        record=""
-        s3_event_body = json.loads(record["body"])
-        receipt_handle = record["receiptHandle"]
-        result = PosterLambda.retrieve_and_process_file(self.s3_event_body,self.receipt_handle)
+        #record="{'Records': [{'eventVersion': '2.1', 'eventSource': 'aws:s3', 'awsRegion': 'us-east-1', 'eventTime': '2023-06-20T13:39:14.168Z', 'eventName': 'ObjectCreated:Put', 'userIdentity': {'principalId': 'AWS:AROA2VJPF5G4LHXPR7XXA:da-edge-j1939-ObfuscateGPSCoordinates-dev'}, 'requestParameters': {'sourceIPAddress': '3.227.253.155'}, 'responseElements': {'x-amz-request-id': 'DZ0JTJRECFJJM1JF', 'x-amz-id-2': 'cwXhQMeFC2CakRlyIHlos2yO4w66mchIgq9TTalxwkelR0P1EtM1ra8feH2UuDs7AasL5FBWPYM1yQDjZ6RZWAcZxlt1RyZC+ejRIhpELhw='}, 's3': {'s3SchemaVersion': '1.0', 'configurationId': '3930cedb-6716-4db5-af13-d93125ae976b', 'bucket': {'name': 'edge-j1939-dev', 'ownerIdentity': {'principalId': 'A2LE772XLDSELB'}, 'arn': 'arn:aws:s3:::edge-j1939-dev'}, 'object': {'key': 'ConvertedFiles/19299951/192999999999953/2023/06/20/EDGE_192999999999953_19299951_BDD002_1687268354.json', 'size': 1768, 'eTag': '63f216bb2036a645b07df7ffe1e07974', 'sequencer': '006491AC02212B7B66'}}}]}"
+        s3_event_body = '{"Records":"abc"}'
+        receipt_handle = "AQEBvlwydQHQJU4agXcgek9j3OTsyXYIym6xFUk/Kkq3Djt1vbEu4yoA43cNSPM6euyILXuZaaqjp2kApLPBYER6bnK9IFRb53ZhkGUDOONkVINRxMgGdywOHl8xvoAo1OeNpoL0efs08aO+diR+RVrKo1mGrNC6DGMv5GrtVFtquJ4+GPs9T28ioKUpAOvSlwbvLaEg7L+w4y16AGRf56axVOK84I/EdYdtZhLhAqqZDxz/GvAMWF2+B3GAEmtpJ7iPu/ddDarQbESH3MyvpfS0R6aIRo6oSmZsroxX8sfjznG6/RFbw2eLtU9+ffOan+yXKd4Nn3PUfx9m6aXjjP4o9zB4qlfa9/MXsAnGrMCvKq52ejsUrdtO4JKAtowArn0J4l+99K8WufYnS0LxoDuE5goaFoK5UNUopzsK5lDIMDM="#record["receiptHandle"]
+        #result = PosterLambda.retrieve_and_process_file(s3_event_body,receipt_handle)
 
         #self.assertEqual(result, False)
-        #self.assertEqual(mock_db_reader.execute.call_count, 2)'''
+        #self.assertEqual(mock_db_reader.execute.call_count, 2)
 
 if __name__ == '__main__':
     unittest.main()
