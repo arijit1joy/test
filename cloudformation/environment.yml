@@ -95,7 +95,6 @@ Resources:
       Description: python-requests for restful API calls
       CompatibleRuntimes:
         - python3.6
-        - python3.7
         - python3.9
 
   EdgeJ1939DataLogBucketPolicy:
@@ -856,7 +855,6 @@ Resources:
       Description: python-requests for restful API calls
       CompatibleRuntimes:
         - python3.6
-        - python3.7
         - python3.9
 
   J1939StreamingBucketPolicy:
