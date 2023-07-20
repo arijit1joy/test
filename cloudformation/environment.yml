@@ -1031,7 +1031,7 @@ Resources:
         - EdgeCPPTPosterLambdaRole
         - Arn
       Timeout: 900
-      Runtime: python3.7
+      Runtime: python3.9
       VpcConfig:
         SecurityGroupIds:
           - !ImportValue
