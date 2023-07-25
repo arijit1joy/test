@@ -41,7 +41,8 @@ def valid_ebu_fc_message_with_not_exist_device(context):
 def invalid_ebu_fc_message_without_device_id(context):
     context.j1939_fc_stages = ["FILE_RECEIVED", "UNCOMPRESSED", "CSV_JSON_CONVERTED"]
     context.file_name = context.file_name_for_ebu_scenario_3
-    context.device_id = context.ebu_esn_1
+    context.device_id = context.ebu_device_id_1
+    context.esn = context.ebu_esn_1
 
 
 @exception_handler
