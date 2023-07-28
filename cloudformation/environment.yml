@@ -69,6 +69,9 @@ Parameters:
     Type: String
   EDGERedisSecretName:
     Type: String
+  EDGESQSUtilityPythonLayer:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: layer-EdgeSQSUtilityPythonLayer
 
 Conditions:
   UseDevOrTestCondition: !Or
@@ -958,8 +961,7 @@ Resources:
           arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:edge_db_utility:${EdgeDBUtilityLayerVersion}
         - !Sub >-
           arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:Scheduler-queries:${SchedulerQueriesLayerVersion}
-        - !ImportValue
-          "Fn::Sub": "EDGESQSUtilityPythonLayer-${ApplicationEnvironmentTag}"
+        - !Ref EDGESQSUtilityPythonLayer
       Code:
         S3Bucket: !Ref ArtifactsBucket
         S3Key: !Sub "${VersionId}/EdgeCPPTPoster.zip"
