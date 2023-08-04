@@ -30,7 +30,7 @@ def send_to_pcc(json_body, device_id, j1939_data_type, sqs_message_template):
                     converted_device_params = sample["convertedDeviceParameters"]
                     store_device_health_params(converted_device_params, sample["dateTimestamp"],
                                                json_body["telematicsDeviceId"], json_body["componentSerialNumber"])
-                    device_health_params = handle_hb_params(converted_device_params)
+                    device_health_params = handle_hb_params(converted_device_params, False)
                     if device_health_params:
                         sample["convertedDeviceParameters"] = device_health_params
                     else:
