@@ -6,6 +6,7 @@ import boto3
 import requests
 import post
 import pt_poster
+import pcc_poster
 import utility as util
 import environment_params as env
 from multiprocessing import Process
@@ -176,6 +177,7 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
 
     if device_info:
         device_owner = device_info["device_owner"] if "device_owner" in device_info else None
+        pcc_claim_status = device_info["pcc_claim_status"] if "pcc_claim_status" in device_info else None
 
         # Get Cust Ref, VIN, EquipmentID from EDGEDB and update in the json before posting to CD and PT
         if "cust_ref" in device_info:
@@ -229,8 +231,13 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
 
             LOGGER.info(f"Json_body before calling SEND_TO_PT function: {json_body}")
             sqs_message = sqs_message.replace("FILE_RECEIVED", "FILE_SENT")
-            pt_poster.send_to_pt(PTJ1939PostURL, PTJ1939Header, json_body, sqs_message, j1939_data_type,
-                                 j1939_type.lower(), file_uuid, device_id, esn)
+
+            # check whether pcc_claim_status is claimed or not
+            if pcc_claim_status and "claimed" == pcc_claim_status.lower():
+                pcc_poster.send_to_pcc(json_body, device_id, j1939_data_type, sqs_message_template)
+            else:
+                pt_poster.send_to_pt(PTJ1939PostURL, PTJ1939Header, json_body, sqs_message, j1939_data_type,
+                                     j1939_type.lower(), file_uuid, device_id, esn)
         else:
             error_message = f"The boxApplication value is not recorded in the EDGE DB for the device: {device_id}"
             LOGGER.error(error_message)

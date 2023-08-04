@@ -41,7 +41,7 @@ def handle_fc_params(converted_fc_params):
     return converted_fc_params
 
 
-def handle_hb_params(converted_device_params):
+def handle_hb_params(converted_device_params, ignore_params=True):
     # De-obfuscate GPS co-ordinates
     if "Latitude" in converted_device_params and "Longitude" in converted_device_params:
         latitude = converted_device_params["Latitude"]
@@ -50,8 +50,9 @@ def handle_hb_params(converted_device_params):
             handle_gps_coordinates(latitude, longitude, deobfuscate=True)
 
     # Remove unnecessary params from device parameters for PT payload
-    converted_device_params = {key.lower(): value for key, value in converted_device_params.items() if
-                               key in ["Latitude", "Longitude", "Altitude"]}
+    if ignore_params:
+        converted_device_params = {key.lower(): value for key, value in converted_device_params.items() if
+                                   key in ["Latitude", "Longitude", "Altitude"]}
     LOGGER.debug(f"Converted Device Params: {converted_device_params}")
     return converted_device_params
 
