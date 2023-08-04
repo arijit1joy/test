@@ -2,7 +2,7 @@ import os
 import boto3
 import json
 import utility as util
-from pt_poster import handle_fc_params, handle_hb_params, store_device_health_params
+from pt_poster import handle_hb_params, store_device_health_params
 from sqs_utility import sqs_send_message
 
 LOGGER = util.get_logger(__name__)
@@ -11,6 +11,7 @@ edgeCommonAPIURL = os.environ['edgeCommonAPIURL']
 
 PCC_ROLE_ARN = os.environ["pcc_role_arn"]
 J19139_STREAM_ARN = os.environ["j1939_stream_arn"]
+PCC_REGION = os.environ["pcc_region"]
 
 
 def send_to_pcc(json_body, device_id, j1939_data_type, sqs_message_template):
@@ -47,7 +48,8 @@ def send_to_pcc(json_body, device_id, j1939_data_type, sqs_message_template):
         LOGGER.debug('Successfully retrieved STS credentials')
         kinesis = boto3.client('kinesis', aws_access_key_id=access_key,
                                aws_secret_access_key=secret_key,
-                               aws_session_token=session_token, )
+                               aws_session_token=session_token,
+                               region_name=PCC_REGION)
         LOGGER.debug('dumping the json to string')
         payload = json.dumps(json_body, indent=2).encode('utf-8')
         LOGGER.info(f"Kinesis partition key: {partition_key}")
@@ -64,3 +66,24 @@ def send_to_pcc(json_body, device_id, j1939_data_type, sqs_message_template):
         error_message = f"An Error Occurred while Streaming Data to Kinesis: {kinesis_streaming_exception}"
         LOGGER.error(error_message)
         util.write_to_audit_table(j1939_data_type, error_message, json_body['telematicsDeviceId'])
+
+
+def handle_fc_params(converted_fc_params):
+    for fc_param in converted_fc_params:
+        if "activeFaultCodes" in fc_param:
+            for afc in fc_param["activeFaultCodes"]:
+                if "count" in afc:
+                    afc["occurenceCount"] = str(afc["count"])
+                    afc.pop("count")
+        if "inactiveFaultCodes" in fc_param:
+            for ifc in fc_param["activeFaultCodes"]:
+                if "count" in ifc:
+                    ifc["occurenceCount"] = str(ifc["count"])
+                    ifc.pop("count")
+        if "pendingFaultCodes" in fc_param:
+            for pfc in fc_param["pendingFaultCodes"]:
+                if "count" in pfc:
+                    pfc["occurenceCount"] = str(pfc["count"])
+                    pfc.pop("count")
+    LOGGER.debug(f"Converted FC Params: {converted_fc_params}")
+    return converted_fc_params

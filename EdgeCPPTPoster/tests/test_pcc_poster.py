@@ -28,7 +28,8 @@ with  CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.en
     "Latitude": "39.202938",
     "Longitude": "-85.88672",
     "pcc_role_arn": "test",
-    "j1939_stream_arn": "test"
+    "j1939_stream_arn": "test",
+    "pcc_region": "us-east-1"
 
 }):
     cda_module_mock_context.mock_module("kafka_producer.publish_message")
