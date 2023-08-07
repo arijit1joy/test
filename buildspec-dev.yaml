@@ -27,6 +27,11 @@ phases:
     - curr_dir=$(pwd) 
     - mkdir "$curr_dir/target" 
     - cd cloudformation
+    - |
+        for file in $(find . -type f -name "*.yml" -o -name "*.yaml"); do
+          echo "CloudFormation Template File Name: $file"
+          aws cloudformation validate-template --template-body "file://$file" --region $AWS_REGION || exit 1
+        done
     - versionId=$(date +"%m-%d-%Y-%H-%M-%S")
     - echo "Current date for artifact file storage => $versionId"
     - pip install -q ruamel.yaml

@@ -7,6 +7,7 @@ LOGGER = util.get_logger(__name__)
 
 def lambda_handler(event, context):  # noqa
     try:
+        LOGGER.info("Called from Cosmos IOT")
         body = event
         obfuscate_gps(body)
     except Exception as e:

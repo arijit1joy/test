@@ -31,6 +31,8 @@
         "DbSubnet2": "subnet-092da360f371962aa",
         "EDGERedisSecretName": "/da-EDGE-Olympus/elasticache/edge-rw",
         "PCCAccountId": "656225973293",
-        "PCCRegion": "us-east-1"
+        "PCCRegion": "us-east-1",
+        "CosmosIoTRoleArn": "arn:aws:iam::459837242287:role/cosmos-to-cda-cross-account-access-role-prod",
+		"CosmosIoTAccount": "459837242287"
     }
 }

@@ -9,6 +9,7 @@ LOGGER = util.get_logger(__name__)
 
 
 def obfuscate_gps(body):
+    LOGGER.info("Called from Cosmos IOT")
     if "samples" in body:
         for sample in body["samples"]:
             if "convertedDeviceParameters" in sample:
