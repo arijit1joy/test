@@ -32,7 +32,6 @@
         "EDGERedisSecretName": "/da-EDGE-Olympus/elasticache/edge-rw",
          "PCCAccountId": "884739393817",
          "PCCRegion": "us-east-1",
-         "CosmosIoTRoleArn": "arn:aws:iam::071171162566:role/cosmos-to-cda-cross-account-access-role-test",
-         "CosmosIoTAccount": "071171162566"
+         "CosmosIoTRoleArn": "arn:aws:iam::071171162566:role/cosmos-to-cda-cross-account-access-role-test"
     }
 }
