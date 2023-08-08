@@ -6,15 +6,6 @@ from unittest.mock import patch, MagicMock
 from tests.cda_module_mock_context import CDAModuleMockingContext
 
 sys.path.append("../")
-sys.modules["boto3"] = MagicMock()
-sys.modules["obfuscate_gps_utility"] = MagicMock()
-sys.modules["metadata_utility"] = MagicMock()
-sys.modules["sqs_utility"] = MagicMock()
-sys.modules["edge_core_layer"] = MagicMock()
-sys.modules["edge_logger"] = MagicMock()
-sys.modules["requests"] = MagicMock()
-sys.modules["json"] = MagicMock()
-sys.modules["lambda_cache"] = MagicMock()
 
 
 with CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.environ", {
@@ -33,16 +24,16 @@ with CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.env
     cda_module_mock_context.mock_module('edge_core_layer.edge_errors')
     cda_module_mock_context.mock_module('edge_core_layer.edge_s3')
     cda_module_mock_context.mock_module('edge_core_layer.edge_tata')
+    cda_module_mock_context.mock_module('edge_sqs_utility_layer.sqs_utility')
+    cda_module_mock_context.mock_module('lambda_cache')
+    cda_module_mock_context.mock_module('metadata_utility')
+    cda_module_mock_context.mock_module('obfuscate_gps_utility')
+    cda_module_mock_context.mock_module('aws_utils')
     cda_module_mock_context.mock_module("boto3")
     cda_module_mock_context.mock_module('cd_sdk_conversion.cd_sdk')
 
     import conversion
 
-del sys.modules["obfuscate_gps_utility"]
-del sys.modules["metadata_utility"]
-del sys.modules["sqs_utility"]
-del sys.modules["edge_core_layer"]
-del sys.modules["edge_logger"]
 
 class TestConversion(unittest.TestCase):
 
@@ -50,6 +41,8 @@ class TestConversion(unittest.TestCase):
     @patch("conversion.json")
     @patch.dict('os.environ', {'metaWriteQueueUrl': 'metaWriteQueueUrl','AuditTrailQueueUrl':'AuditTrailQueueUrl','QueueUrl':'QueueUrl'})
     def test_retrieve_and_process_file_when_no_samples(self,json, s3_client):
+        print("<---------- test_retrieve_and_process_file_when_no_samples ---------->")
+
         body = {
             "messageFormatVersion": "1.1.1",
             "telematicsPartnerName": "Accolade",
@@ -82,6 +75,8 @@ class TestConversion(unittest.TestCase):
     @patch.dict('os.environ', {'metaWriteQueueUrl': 'metaWriteQueueUrl', 'AuditTrailQueueUrl': 'AuditTrailQueueUrl',
                                'QueueUrl': 'QueueUrl'})
     def test_retrieve_and_process_file_when_no_meta_data(self, json, s3_client):
+        print("<---------- test_retrieve_and_process_file_when_no_meta_data ---------->")
+
         body = {
             "messageFormatVersion": "1.1.1",
             "telematicsPartnerName": "Accolade",
@@ -118,6 +113,7 @@ class TestConversion(unittest.TestCase):
     @patch.dict('os.environ', {'metaWriteQueueUrl': 'metaWriteQueueUrl', 'AuditTrailQueueUrl': 'AuditTrailQueueUrl',
                                'QueueUrl': 'QueueUrl'})
     def test_handle_exception_for_hb_when_cust_ref_is_tata_motors(self, json, mock_map_ngdi_sample_to_cd_payload):
+        print("<---------- test_handle_exception_for_hb_when_cust_ref_is_tata_motors ---------->")
 
         conversion.get_metadata_info.return_value = None
         converted_device_params = {}
@@ -134,6 +130,8 @@ class TestConversion(unittest.TestCase):
     @patch.dict('os.environ', {'metaWriteQueueUrl': 'metaWriteQueueUrl', 'AuditTrailQueueUrl': 'AuditTrailQueueUrl',
                                'QueueUrl': 'QueueUrl', 'class_arg_map': ''})
     def test_handle_exception_for_fc_when_cust_ref_is_tata_motors(self, LOGGER_mock):
+        print("<---------- test_handle_exception_for_fc_when_cust_ref_is_tata_motors ---------->")
+
         converted_device_params = None
         converted_equip_params = None
         converted_fc = None
@@ -147,6 +145,8 @@ class TestConversion(unittest.TestCase):
     @patch.dict('os.environ', {'metaWriteQueueUrl': 'metaWriteQueueUrl', 'AuditTrailQueueUrl': 'AuditTrailQueueUrl',
                                'QueueUrl': 'QueueUrl', 'class_arg_map': ''})
     def test_handle_exception_for_fc_when_cust_ref_is_cummins(self, LOGGER_mock):
+        print("<---------- test_handle_exception_for_fc_when_cust_ref_is_cummins ---------->")
+
         converted_device_params = None
         converted_equip_params = None
         converted_fc = None
@@ -161,6 +161,8 @@ class TestConversion(unittest.TestCase):
     @patch.dict('os.environ', {'metaWriteQueueUrl': 'metaWriteQueueUrl', 'AuditTrailQueueUrl': 'AuditTrailQueueUrl',
                                'QueueUrl': 'QueueUrl'})
     def test_retrieve_and_process_file_when_cust_ref_is_cummins(self, json, s3_client):
+        print("<---------- test_retrieve_and_process_file_when_cust_ref_is_cummins ---------->")
+
         body = {
             "messageFormatVersion": "1.1.1",
             "telematicsPartnerName": "Accolade",
