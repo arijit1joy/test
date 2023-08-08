@@ -123,7 +123,7 @@ def send_to_pt(post_url, headers, json_body, sqs_message_template, j1939_data_ty
                         sample.pop("convertedDeviceParameters")
 
         # We are not sending payload to PT for Digital Cockpit Device
-        if not json_body["telematicsDeviceId"] == '192000000000101':
+        if json_body["telematicsDeviceId"] != '192000000000101':
             final_json_body = [json_body]
              # Send to Cluster
             if os.environ['publishKafka'] == "True":
