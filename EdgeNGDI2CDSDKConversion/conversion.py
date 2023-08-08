@@ -11,6 +11,7 @@ from lambda_cache import ssm
 from metadata_utility import write_health_parameter_to_database
 from obfuscate_gps_utility import handle_gps_coordinates
 from edge_sqs_utility_layer.sqs_utility import sqs_send_message
+from aws_utils import spn_file_json
 
 import utility as util
 from cd_sdk_conversion.cd_sdk import map_ngdi_sample_to_cd_payload
@@ -38,8 +39,6 @@ params = set_parameters()
 name = params['Names']
 
 edgeCommonAPIURL = os.environ['edgeCommonAPIURL']
-spn_bucket = os.getenv('spn_parameter_json_object')
-spn_bucket_key = os.getenv('spn_parameter_json_object_key')
 cd_url = os.getenv('cd_url')
 converted_equip_params_var = os.getenv('converted_equip_params')
 converted_device_params_var = os.getenv('converted_device_params')
@@ -58,10 +57,6 @@ active_cd_parameter = os.getenv('active_cd_parameter')
 MAX_ATTEMPTS = int(os.environ["MaxAttempts"])
 
 s3_client = boto3.client('s3')
-
-spn_file_stream = s3_client.get_object(Bucket=spn_bucket, Key=spn_bucket_key)
-spn_file = spn_file_stream['Body'].read()
-spn_file_json = json.loads(spn_file)
 
 
 def delete_message_from_sqs_queue(receipt_handle):

@@ -85,6 +85,13 @@ phases:
               if [ -f requirements.txt ]; then
                 if [ -f dependencies.txt ]; then
                   pip install -r dependencies.txt -t ./lib ;
+                  pipInstallCheckExitCode=$(echo $?);
+                  if [ $pipInstallCheckExitCode -ne 0 ]; then
+                    echo "\n#===================================================================#\n";
+                    echo "[ERROR] ---> pip install of dependencies failed for the project '$mydir'. Exit code => '$pipInstallCheckExitCode'! Aborting Build!";
+                    echo "\n#===================================================================#\n";
+                    exit 1;
+                  fi;
                 fi;
                 zip -r "$mydir.zip" .;
                 coverage run -m unittest discover -s tests;
@@ -93,6 +100,7 @@ phases:
                   echo "\n#===================================================================#\n";
                   echo "[ERROR] ---> Some of the TDD/Code Coverage test cases failed for the project '$mydir'. Exit code => '$testCaseExecutionExitCode'! Aborting Build!";
                   echo "\n#===================================================================#\n";
+                  exit 1;
                 fi;
                 coverage report --omit tests/*,dependencies.txt;
                 coverage xml;
@@ -108,6 +116,7 @@ phases:
                     echo "\n#===================================================================#\n";
                     echo "[ERROR] ---> The Sonarqube Quality Gate condition verification failed for the project '$mydir'! Aborting Build!";
                     echo "\n#===================================================================#\n";
+                    exit 1;
                  fi;
                   cd "$mydir";
                 else
@@ -124,6 +133,7 @@ phases:
                 echo "\n#===================================================================#\n";
                 echo "The programming platform for the project => $mydir could not be identified! Aborting build!";
                 echo "\n#===================================================================#\n";
+                exit 1;
                 break;        
               fi;        
               cd ..;
