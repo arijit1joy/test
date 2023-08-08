@@ -164,7 +164,6 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
         f"{'{FILE_METADATA_FILE_STAGE}'},{esn},{config_spec_and_req_id},,,"
 
     if j1939_type.lower() == 'hb':
-        # current_dt = datetime.now()
 
         file_received_sqs_message = sqs_message_template \
             .replace("{FILE_METADATA_CURRENT_DATE_TIME}", str(file_date_time)) \
@@ -267,7 +266,7 @@ def data_quality(event):
     LOGGER.debug("Successfully invoked the Data Quality lambda!")
 
 
-def lambda_handler(event, context):  # noqa
+def lambda_handler(event, _):  # noqa
     records = event.get("Records", [])
     processes = []
     LOGGER.debug(f"Received SQS Records: {records}.")
