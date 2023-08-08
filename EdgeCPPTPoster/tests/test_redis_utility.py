@@ -3,20 +3,20 @@ import unittest
 from unittest.mock import patch, MagicMock
 
 sys.path.append("../")
-sys.modules["edge_logger"] = MagicMock()
-sys.modules["rediscluster"] = MagicMock()
-sys.modules["edge_db_lambda_client"] = MagicMock()
 
-with patch.dict("os.environ", {'RedisSecretName': 'test_secret_name',
+from tests.cda_module_mock_context import CDAModuleMockingContext
+
+with  CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.environ", {'RedisSecretName': 'test_secret_name',
                                'region': 'us-east-1',
                                "LoggingLevel": "debug",
                                'EDGEDBReader_ARN': 'arn:::12345'
                                }):
+    cda_module_mock_context.mock_module("edge_logger"),
+    cda_module_mock_context.mock_module("edge_db_lambda_client"),
+    cda_module_mock_context.mock_module("rediscluster")
+
     from utilities.redis_utility import get_redis_connection, get_set_redis_value
 
-del sys.modules["edge_logger"]
-del sys.modules["rediscluster"]
-del sys.modules["edge_db_lambda_client"]
 
 class TestRedisUtility(unittest.TestCase):
 
