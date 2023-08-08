@@ -336,7 +336,7 @@ Resources:
         - ObfuscateGPSCoordinatesLambdaRole
         - Arn
       Timeout: 300
-      Runtime: python3.7
+      Runtime: python3.9
 
   ObfuscateGPSCoordinatesLambdaLogGroup:
     Type: AWS::Logs::LogGroup
@@ -555,7 +555,7 @@ Resources:
         - EdgeNGDI2CDSDKConversionLambdaRole
         - Arn
       Timeout: 900
-      Runtime: python3.7
+      Runtime: python3.9
       FunctionName: !Sub "${ApplicationName}-EdgeNGDI2CDSDKConversion-${ApplicationEnvironmentTag}"
 
   EdgeNGDI2CDSDKConversionLogGroup:
@@ -849,7 +849,7 @@ Resources:
         - EdgeJ1939CSVConverterLambdaRole
         - Arn
       Timeout: 900
-      Runtime: python3.7
+      Runtime: python3.9
 
   EdgeJ1939CSVConverterLogGroup:
     Type: AWS::Logs::LogGroup
@@ -1046,7 +1046,7 @@ Resources:
         - EdgeCPPTPosterLambdaRole
         - Arn
       Timeout: 900
-      Runtime: python3.7
+      Runtime: python3.9
       VpcConfig:
         SecurityGroupIds:
           - !ImportValue
