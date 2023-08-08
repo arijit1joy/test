@@ -4,7 +4,7 @@ import boto3
 import traceback
 import pt_poster
 import utility as util
-from sqs_utility import sqs_send_message
+from edge_sqs_utility_layer.sqs_utility import sqs_send_message
 
 LOGGER = util.get_logger(__name__)
 

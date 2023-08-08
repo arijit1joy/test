@@ -10,7 +10,8 @@ import requests
 from lambda_cache import ssm
 from metadata_utility import write_health_parameter_to_database
 from obfuscate_gps_utility import handle_gps_coordinates
-from sqs_utility import sqs_send_message
+from edge_sqs_utility_layer.sqs_utility import sqs_send_message
+
 import utility as util
 from cd_sdk_conversion.cd_sdk import map_ngdi_sample_to_cd_payload
 from cd_sdk_conversion.cd_snapshot_sdk import get_snapshot_data

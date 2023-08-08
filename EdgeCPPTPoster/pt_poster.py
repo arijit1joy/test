@@ -5,7 +5,7 @@ import datetime
 import requests
 import traceback
 import utility as util
-from sqs_utility import sqs_send_message
+from edge_sqs_utility_layer.sqs_utility import sqs_send_message
 from kafka_producer import publish_message
 from kafka_producer import _create_kafka_message
 from obfuscate_gps_utility import handle_gps_coordinates

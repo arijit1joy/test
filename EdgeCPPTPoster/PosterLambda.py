@@ -10,7 +10,7 @@ import pcc_poster
 import utility as util
 import environment_params as env
 from multiprocessing import Process
-from sqs_utility import sqs_send_message
+from edge_sqs_utility_layer.sqs_utility import sqs_send_message
 import sys
 from update_scheduler import update_scheduler_table, get_request_id_from_consumption_view
 

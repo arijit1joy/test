@@ -15,7 +15,9 @@ sys.modules["boto3"] = MagicMock()
 sys.modules["edge_db_lambda_client"] = MagicMock()
 sys.modules["update_scheduler"] = MagicMock()
 
-with patch.dict("os.environ", {
+from tests.cda_module_mocking_context import CDAModuleMockingContext
+
+with  CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.environ", {
     "ptTopicInfo":'{"topicName": "nimbuspt_j1939-{j1939_type}", "bu":"PSBU","file_type":"JSON"}',
     "LoggingLevel": "debug",
     "PTxAPIKey": "testKey",
@@ -50,6 +52,14 @@ with patch.dict("os.environ", {
     "pcc_region": "us-east-1"
 
 }):
+    cda_module_mock_context.mock_module("edge_core_layer"),
+    cda_module_mock_context.mock_module("edge_db_lambda_client"),
+    cda_module_mock_context.mock_module("kafka_producer.publish_message")
+    cda_module_mock_context.mock_module("edge_sqs_utility_layer")
+    cda_module_mock_context.mock_module("edge_sqs_utility_layer.sqs_utility")
+    cda_module_mock_context.mock_module("kafka_producer")
+    cda_module_mock_context.mock_module("obfuscate_gps_utility")
+    cda_module_mock_context.mock_module("metadata_utility")
     import PosterLambda
 
 del sys.modules["edge_logger"]

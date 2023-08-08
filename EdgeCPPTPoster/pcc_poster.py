@@ -3,7 +3,7 @@ import boto3
 import json
 import utility as util
 from pt_poster import handle_hb_params, store_device_health_params
-from sqs_utility import sqs_send_message
+from edge_sqs_utility_layer.sqs_utility import sqs_send_message
 
 LOGGER = util.get_logger(__name__)
 

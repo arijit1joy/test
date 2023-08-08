@@ -136,7 +136,7 @@ class TestObfuscateGPSHandler(unittest.TestCase):
         bucket.objects.all().delete()
         bucket.delete()
 
-    @patch.dict('os.environ', {'j1939_end_bucket': 'test_bucket'})
+    @patch.dict('os.environ', {'j1939_end_bucket': 'test_bucket','AuditTrailQueueUrl':'https://testurl.com'})
     def test_sendFileToS3_givenErrorOccurredWhileStoringFile_thenRaiseException(self):
         print("<-----test_sendFileToS3_givenErrorOccurredWhileStoringFile_thenRaiseException----->")
         body = {"componentSerialNumber": "10290001", "telematicsPartnerName": "Cummins",

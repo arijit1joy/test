@@ -6,18 +6,12 @@ sys.path.append("../")
 import unittest
 from unittest.mock import patch, MagicMock
 
-sys.modules["edge_logger"] = MagicMock()
-sys.modules["sqs_utility"] = MagicMock()
 sys.modules["kafka"] = MagicMock()
 sys.modules["boto3"] = MagicMock()
 sys.modules["requests"] = MagicMock()
 sys.modules["kafka_producer"] = MagicMock()
 
-# sys.modules["kafka_producer"] = MagicMock()
-sys.modules["obfuscate_gps_utility"] = MagicMock()
-sys.modules["metadata_utility"] = MagicMock()
-sys.modules["utility"] = MagicMock()
-from cda_module_mock_context import CDAModuleMockingContext
+from tests.cda_module_mocking_context import CDAModuleMockingContext
 
 with  CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.environ", {
     "LoggingLevel": "debug",
@@ -30,12 +24,19 @@ with  CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.en
     "Longitude": "-85.88672"
 
 }):
-    # cda_module_mock_context.mock_module("edge_logger"),
+    cda_module_mock_context.mock_module("edge_core_layer"),
     # cda_module_mock_context.mock_module("sqs_send_message"),
     cda_module_mock_context.mock_module("kafka_producer.publish_message")
-    # cda_module_mock_context.mock_module("kafka_producer._create_kafka_message")
-    # cda_module_mock_context.mock_module("obfuscate_gps_utility.handle_gps_coordinates")
-    # cda_module_mock_context.mock_module("metadata_utility.write_health_parameter_to_database")
+    cda_module_mock_context.mock_module("edge_sqs_utility_layer")
+    cda_module_mock_context.mock_module("edge_sqs_utility_layer.sqs_utility")
+    cda_module_mock_context.mock_module("kafka_producer")
+    cda_module_mock_context.mock_module("obfuscate_gps_utility")
+    cda_module_mock_context.mock_module("metadata_utility")
+    cda_module_mock_context.mock_module("edge_sqs_utility_layer.sqs_utility")
+    cda_module_mock_context.mock_module("kafka_producer")
+    cda_module_mock_context.mock_module("obfuscate_gps_utility")
+    cda_module_mock_context.mock_module("metadata_utility")
+
     # cda_module_mock_context.mock_module(
     #     "utility.util", mock_object=MagicMock(
     #         get_logger=MagicMock(
