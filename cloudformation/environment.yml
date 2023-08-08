@@ -986,7 +986,7 @@ Resources:
       Environment:
         Variables:
           LoggingLevel: "info"
-          cd_device_owners: '{"EBU": "EBU", "TATA": "TATA", "TataMotors":"TataMotors"}'
+          cd_device_owners: '{"EBU": "EBU", "TATA": "TATA", "TataMotors":"TataMotors", "Cummins":"Cummins"}'
           Environment: !Sub "${ApplicationEnvironmentTag}"
           RedisSecretName: !Ref EDGERedisSecretName
           edgeCommonAPIURL: !Ref EdgeCommonDBAPI
