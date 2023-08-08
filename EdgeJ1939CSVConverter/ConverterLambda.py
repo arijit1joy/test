@@ -14,12 +14,12 @@ from edge_sqs_utility_layer.sqs_utility import sqs_send_message
 from edge_db_lambda_client import EdgeDbLambdaClient
 import re
 from botocore.exceptions import ClientError
+from aws_utils import BDD_ESN
 
 LOGGER = util.get_logger(__name__)
 
 s3 = boto3.client('s3')
 s3_client = boto3.client('s3')
-ssm_client = boto3.client('ssm')
 cp_post_bucket = os.environ["CPPostBucket"]
 edgeCommonAPIURL = os.environ["edgeCommonAPIURL"]
 NGDIBody = json.loads(os.environ["NGDIBody"])
@@ -28,9 +28,7 @@ MAX_ATTEMPTS = int(os.environ["MaxAttempts"])
 EDGE_DB_CLIENT = EdgeDbLambdaClient()
 APP_ENV = os.environ["APPLICATION_ENVIRONMENT"]
 TABLE_NAME = os.environ["J1939ActiveFaultCodeTable"]
-BDD_ESN = ssm_client.get_parameter(Name='da-edge-j1939-bdd-esn-list', WithDecryption=False)
-BDD_ESN = json.loads(BDD_ESN['Parameter']['Value'])
-BDD_ESN = BDD_ESN['esn']
+
 
 def delete_message_from_sqs_queue(receipt_handle):
     queue_url = os.environ["QueueUrl"]
