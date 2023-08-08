@@ -9,6 +9,7 @@ from utilities.common_utility import exception_handler
 from utilities.file_utility.file_handler import same_file_contents
 from utilities.aws_utilities.s3_utility import get_key_from_list_of_s3_objects, download_object_from_s3, \
     delete_object_from_s3
+import time
 
 DOWNLOAD_FOLDER_PATH = "data/j1939_fc/download"
 DATE_TIME_STAMP = "%Y-%m-%dT%H"
@@ -82,6 +83,7 @@ def j1939_fc_file_uploaded_to_s3(context):
 @exception_handler
 @then(u'Stored J1939 FC metadata stages in EDGE DB')
 def assert_j1939_fc_stages_in_edge_db(context):
+    time.sleep(60)
     da_edge_metadata = Table(context.edge_metadata_table)
     query = Query.from_(da_edge_metadata).select(da_edge_metadata.data_pipeline_stage).where(
         da_edge_metadata.device_id == context.device_id).where(da_edge_metadata.data_protocol == "J1939_FC")  # noqa
