@@ -72,6 +72,10 @@ Parameters:
   EDGESQSUtilityPythonLayer:
     Type: AWS::SSM::Parameter::Value<String>
     Default: layer-EdgeSQSUtilityPythonLayer
+  PCCAccountId:
+    Type: String
+  PCCRegion:
+    Type: String
 
 Conditions:
   UseDevOrTestCondition: !Or
@@ -659,6 +663,11 @@ Resources:
                   - "ec2:DeleteNetworkInterface"
                 Resource: 'arn:aws:ec2:*:*:*'
                 Effect: Allow
+              - Action:
+                  - "sts:AssumeRole"
+                Resource:
+                  - !Sub "arn:aws:iam::${PCCAccountId}:role/EdgeKinesisProducerRole"
+                Effect: Allow
       AssumeRolePolicyDocument:
         Statement:
           - Action: "sts:AssumeRole"
@@ -1028,6 +1037,10 @@ Resources:
           topicName: "j1939-pt-topic"
           publishKafka: True
           ptTopicInfo: '{"topicName": "nimbuspt-j1939-{j1939_type}", "bu":"PSBU","file_type":"JSON"}'
+          pcc_role_arn: !Sub "arn:aws:iam::${PCCAccountId}:role/EdgeKinesisProducerRole"
+          j1939_stream_arn: !Sub "arn:aws:kinesis:${PCCRegion}:${PCCAccountId}:stream/J1939Events"
+          pcc_region: !Ref PCCRegion
+
       Handler: PosterLambda.lambda_handler
       Role: !GetAtt
         - EdgeCPPTPosterLambdaRole

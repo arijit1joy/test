@@ -29,6 +29,8 @@
         "PythonRequestsVersion": "11",
         "DbSubnet1": "subnet-00f3685739e424682",
         "DbSubnet2": "subnet-02663aad51b9d6cea",
-        "EDGERedisSecretName": "/da-EDGE-Olympus/elasticache/edge-rw"
+        "EDGERedisSecretName": "/da-EDGE-Olympus/elasticache/edge-rw",
+        "PCCAccountId": "884739393817",
+        "PCCRegion": "us-east-1"
     }
 }

@@ -44,7 +44,10 @@ with patch.dict("os.environ", {
     "EngineStatOverride":"EngineStat_9",
     "LoadFactorOverride":"LoadFactor_9",
     "EngineStatSc":"SC8091",
-    "LoadFactorSc":"SC8093"
+    "LoadFactorSc":"SC8093",
+    "pcc_role_arn": "arn",
+    "j1939_stream_arn": "arn",
+    "pcc_region": "us-east-1"
 
 }):
     import PosterLambda
