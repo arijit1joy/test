@@ -21,7 +21,7 @@ phases:
     - apt-get install unzip 
     - curl -sL https://deb.nodesource.com/setup_10.x | bash - 
     - apt-get install nodejs -y 
-    - pip install pytest coverage pytest-cov
+    - pip install pytest coverage pytest-cov moto
     - nodejs --version 
     - npm --version 
     - curr_dir=$(pwd) 

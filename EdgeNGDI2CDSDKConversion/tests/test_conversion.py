@@ -7,7 +7,6 @@ from tests.cda_module_mock_context import CDAModuleMockingContext
 
 sys.path.append("../")
 
-
 with CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.environ", {
             "edgeCommonAPIURL": "testurl","spn_parameter_json_object": "test","spn_parameter_json_object_key": "test",
             "cd_url": "test_url","converted_equip_params": "1","converted_device_params": "1","converted_equip_fc": "1",
@@ -57,7 +56,7 @@ class TestConversion(unittest.TestCase):
             "samples": []
         }
         patch("builtins.open", MagicMock())
-        fetch_cs_reg_payload = open("tests\\test.json", "r")
+        fetch_cs_reg_payload = open(os.path.join("tests", "test.json"), "r")
 
         uploaded_file_object = {"source_bucket_name": "test", "file_key": "edge_864337059675703_30311606_20230424064925_SC3078_2023-04-24T06_49_25.956Z",
                                 "file_size": "1","sqs_receipt_handle":"sqs_receipt_handle" }
@@ -92,7 +91,7 @@ class TestConversion(unittest.TestCase):
         }
         patch("builtins.open", MagicMock())
 
-        fetch_cs_reg_payload = open("tests\\test.json", "r")
+        fetch_cs_reg_payload = open(os.path.join("tests", "test.json"), "r")
 
         uploaded_file_object = {"source_bucket_name": "test",
                                 "file_key": "edge_864337059675703_30311606_20230424064925_SC3078_2023-04-24T06_49_25.956Z",
@@ -177,7 +176,7 @@ class TestConversion(unittest.TestCase):
             "samples": []
         }
         patch("builtins.open", MagicMock())
-        fetch_cs_reg_payload = open("tests\\test.json", "r")
+        fetch_cs_reg_payload = open(os.path.join("tests", "test.json"), "r")
 
         uploaded_file_object = {"source_bucket_name": "test",
                                 "file_key": "edge_864337059675703_30311606_20230424064925_SC3078_2023-04-24T06_49_25.956Z",
