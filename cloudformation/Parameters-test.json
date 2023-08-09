@@ -30,7 +30,7 @@
         "DbSubnet1": "subnet-0aefb8b5c2531eef2",
         "DbSubnet2": "subnet-006ba88b3114e3283",
         "EDGERedisSecretName": "/da-EDGE-Olympus/elasticache/edge-rw",
-         "PCCAccountId": "884739393817",
+         "PCCAccountId": "924917633645",
          "PCCRegion": "us-east-1"
     }
 }
