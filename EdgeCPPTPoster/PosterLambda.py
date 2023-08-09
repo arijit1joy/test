@@ -194,8 +194,9 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
             else:
                 LOGGER.error(f"Error! Could not retrieve TSP. This is mandatory field!")
                 return
-
+        LOGGER.info(f"Retrieved TSP name is {tsp_name}")
         if device_owner in json.loads(os.environ["cd_device_owners"]):
+            LOGGER.info("Inside CD device owner case")
             sqs_message = sqs_message.replace("FILE_RECEIVED", "CD_PT_POSTED")
             LOGGER.debug(f"Metadata Message sent to CD: {sqs_message}")
             post.send_to_cd(bucket_name, file_key, JSONFormat, s3_client, j1939_type, EndpointBucket, endpointFile,

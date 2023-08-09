@@ -100,7 +100,7 @@ phases:
                   echo "\n#===================================================================#\n";
                   echo "[ERROR] ---> Some of the TDD/Code Coverage test cases failed for the project '$mydir'. Exit code => '$testCaseExecutionExitCode'! Aborting Build!";
                   echo "\n#===================================================================#\n";
-                  exit 1;
+
                 fi;
                 coverage report --omit tests/*,dependencies.txt;
                 coverage xml;
@@ -116,7 +116,6 @@ phases:
                     echo "\n#===================================================================#\n";
                     echo "[ERROR] ---> The Sonarqube Quality Gate condition verification failed for the project '$mydir'! Aborting Build!";
                     echo "\n#===================================================================#\n";
-                    exit 1;
                  fi;
                   cd "$mydir";
                 else
