@@ -303,7 +303,7 @@ def create_fc_class(fc, f_codes, fc_index, fc_param, var_dict, active_or_inactiv
     post_cd_message(fc_sdk_object)
 
 
-def send_sample(sample, metadata, fc_or_hb):
+def send_sample(sample, metadata, fc_or_hb, tsp_name):
     converted_equip_params = []
     converted_device_params = {}
     converted_equip_fc = []
@@ -325,7 +325,9 @@ def send_sample(sample, metadata, fc_or_hb):
     if fc_or_hb.lower() == "hb":
         store_health_parameters_into_redshift(converted_device_params, time_stamp, metadata)
         LOGGER.info(f"Handling HB...")
-        handle_hb(converted_device_params, converted_equip_params, converted_equip_fc, metadata, time_stamp)
+        # If device owner is Cosmos, do not send downstream
+        if tsp_name!= "COSPA":
+            handle_hb(converted_device_params, converted_equip_params, converted_equip_fc, metadata, time_stamp)
     else:
         LOGGER.info(f"Handling FC...")
         handle_fc(converted_device_params, converted_equip_params, converted_equip_fc, metadata, time_stamp)
@@ -352,6 +354,7 @@ def retrieve_and_process_file(uploaded_file_object, api_url):
     j1939_file = json.loads(j1939_file_stream)
     LOGGER.debug(f"File as JSON: {j1939_file}")
     if fc_or_hb.lower() == 'hb':
+        LOGGER.info("This is an hb file")
         esn = j1939_file['componentSerialNumber']
         # Please note that the order is expected to be <Make>*<Model>***<ESN>**** for Improper PSBU ESN
         if esn and "*" in esn:
@@ -363,7 +366,7 @@ def retrieve_and_process_file(uploaded_file_object, api_url):
         esn = key.split('_')[2]
         config_spec_name = key.split('_')[3]
         data_protocol = 'J1939_FC'
-
+    tsp_name = j1939_file['telematicsPartnerName']
     # Commented/deleted consumption request id fetch from view as it does not deliver any business value
     consumption_per_request = None
     request_id = None
@@ -377,7 +380,8 @@ def retrieve_and_process_file(uploaded_file_object, api_url):
     if metadata:
         if samples:
             for sample in samples:
-                send_sample(sample, metadata, fc_or_hb)
+                LOGGER.info("Sending HB sample data")
+                send_sample(sample, metadata, fc_or_hb, tsp_name)
         else:
             error_message = f"There are no samples in this file for the device: {device_id}."
             LOGGER.error(error_message)
