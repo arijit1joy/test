@@ -9,7 +9,6 @@ LOGGER = util.get_logger(__name__)
 
 
 def obfuscate_gps(body):
-    LOGGER.info("Called from Cosmos IOT")
     if "samples" in body:
         for sample in body["samples"]:
             if "convertedDeviceParameters" in sample:
@@ -32,6 +31,10 @@ def send_file_to_s3(body):
         device_id = body["telematicsDeviceId"]
 
         esn = body["componentSerialNumber"]
+        tsp_name = body["telematicsPartnerName"]
+        if tsp_name=="COSPA":
+            LOGGER.info("This is a COSMOS HB file")
+
         # Please note that the order is expected to be <Make>*<Model>***<ESN>**** for Improper PSBU ESN
         if esn and "*" in esn:
             esn = [esn_component for esn_component in esn.split("*") if esn_component][-1]
