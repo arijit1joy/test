@@ -385,8 +385,7 @@ Resources:
               - Action:
                   - "lambda:InvokeFunction"
                   - "lambda:InvokeAsync"
-                Resource:
-                  - !Ref CosmosIoTRoleArn
+                Resource: "*"
                 Effect: Allow
               - Action:
                   - "sqs:SendMessage"
