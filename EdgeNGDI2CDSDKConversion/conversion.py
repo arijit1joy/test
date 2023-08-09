@@ -98,7 +98,7 @@ def post_cd_message(data):
         data["VIN"] = ""
         LOGGER.debug(f"New VIN {data['VIN']}")
 
-    # TODO Temporary address to the Equipment_ID retrieval issue. Renaming to EDGE_<ESN> if not there already . . .
+    # Temporary address to the Equipment_ID retrieval issue. Renaming to EDGE_<ESN> if not there already . . .
     if "Equipment_ID" not in data or not data["Equipment_ID"]:
         LOGGER.info(f"Equipment ID is not in the file. Creating it in the format EDGE_<ESN> . . .")
         data["Equipment_ID"] = "EDGE_" + data["Engine_Serial_Number"]  # Setting the Equipment ID to EDGE_<ESN>
@@ -107,7 +107,7 @@ def post_cd_message(data):
     LOGGER.debug(f'File to send to CD: {data}')
 
     # We are not sending payload to CD for Digital Cockpit Device
-    if not data["Telematics_Box_ID"] == '192000000000101':
+    if data["Telematics_Box_ID"] != '192000000000101':
         # In order to reattempt requests.post when we get sporadic network errors. Our current retry limit is 3
         retry_post_attempts = 0
         while retry_post_attempts < MAX_ATTEMPTS:
@@ -144,49 +144,101 @@ def get_active_faults(fault_list, address):
     return final_fc_list
 
 
+def process_hb_param(fc_param, converted_equip_fc, address, var_dict, sample_obj):
+    final_fc = []
+    if fc_param in converted_equip_fc:
+        final_fc = get_active_faults(converted_equip_fc[fc_param], address)
+        var_dict[sample_obj[fc_param]] = final_fc
+    return var_dict
+
+
+def process_fc_param(fc_param, converted_equip_fc, address, sample_obj, var_dict, found_fcs):
+    if fc_param in converted_equip_fc and fc_param == active_fault_code_indicator:
+        all_active_fcs = converted_equip_fc[fc_param].copy()
+        if not all_active_fcs:
+            return var_dict, found_fcs
+        found_fcs = True  # Indicating that we found Fault Codes in this file.
+        fc_index = 0
+        final_fc = get_active_faults(all_active_fcs, address)
+        for fc in all_active_fcs:
+            create_fc_class(fc, final_fc, fc_index, sample_obj[fc_param], var_dict, 1)
+            fc_index = fc_index + 1
+    elif fc_param in converted_equip_fc and fc_param == inactive_fault_code_indicator:
+        all_inactive_fcs = converted_equip_fc[fc_param].copy()
+        if not all_inactive_fcs:
+            return var_dict, found_fcs
+        found_fcs = True  # Indicating that we found Fault Codes in this file.
+        all_active_fcs = converted_equip_fc[active_fault_code_indicator].copy() if \
+            active_fault_code_indicator in converted_equip_fc else []
+        fc_index = 0
+        inactive_final_fc = get_active_faults(all_inactive_fcs, address)
+        active_final_fc = get_active_faults(all_active_fcs, address)
+        for fc in all_inactive_fcs:
+            create_fc_class(fc, inactive_final_fc, fc_index, sample_obj[fc_param],
+                            var_dict, 0, active_final_fc)
+            fc_index = fc_index + 1
+    else:
+        # Handle Pending Fault Codes.
+        LOGGER.info(f"There are either no, fc_param in this file -- We are not "
+                    f"handling pending FCs for now.")
+    return var_dict, found_fcs
+
+
+def process_hb_fc(var_dict, metadata, time_stamp, converted_device_params, converted_equip_params, converted_equip_fc,
+                  is_hb=False):
+    found_fcs = False
+    for arg in class_arg_map:
+        LOGGER.debug(f"Handling the arg: {arg}")
+        if class_arg_map[arg] and type(class_arg_map[arg]) == str:
+            if arg == message_format_version_indicator:
+                var_dict[class_arg_map[arg]] = notification_version
+            elif arg in metadata and metadata[arg]:
+                var_dict[class_arg_map[arg]] = metadata[arg]
+        if class_arg_map[arg] and type(class_arg_map[arg]) == dict:
+            samples = class_arg_map[arg]
+            for param in samples:
+                if samples[param] and type(samples[param]) == str and param == time_stamp_param:
+                    var_dict[samples[param]] = time_stamp
+                else:
+                    if samples[param]:
+                        if param == converted_device_params_var:
+                            sample_obj = samples[param]
+                            for val in sample_obj:
+                                var_dict[sample_obj[val]] = converted_device_params[val] \
+                                    if val in converted_device_params else ""
+                        elif param == converted_equip_params_var:
+                            sample_obj = samples[param][0]
+                            address = converted_equip_params["deviceId"] \
+                                if "deviceId" in converted_equip_params else ""
+                            for equip_param in sample_obj:
+                                if equip_param == param_indicator:
+                                    var_dict[sample_obj[equip_param]] = get_snapshot_data(
+                                        converted_equip_params[equip_param].copy(), time_stamp, address, spn_file_json) \
+                                        if equip_param in converted_equip_params else ""
+                                else:
+                                    var_dict[sample_obj[equip_param]] = converted_equip_params[equip_param] \
+                                        if equip_param in converted_equip_params else ""
+                        else:
+                            sample_obj = samples[param][0]
+                            for fc_param in sample_obj:
+                                if is_hb:
+                                    var_dict = process_hb_param(fc_param, converted_equip_fc, address, var_dict,
+                                                                sample_obj)
+                                else:
+                                    var_dict, found_fcs = process_fc_param(fc_param, converted_equip_fc, address,
+                                                                           sample_obj, var_dict, found_fcs)
+
+    return var_dict, found_fcs
+
+
 def handle_hb(converted_device_params, converted_equip_params, converted_equip_fc, metadata, time_stamp):
     var_dict = {}
     address = ""
     LOGGER.info(f"Retrieving parameters for creating HB SDK Class Object")
     try:
-        for arg in class_arg_map:
-            LOGGER.debug(f"Handling the arg: {arg}")
-            if class_arg_map[arg] and type(class_arg_map[arg]) == str:
-                if arg == message_format_version_indicator:
-                    var_dict[class_arg_map[arg]] = notification_version
-                elif arg in metadata and metadata[arg]:
-                    var_dict[class_arg_map[arg]] = metadata[arg]
-            if class_arg_map[arg] and type(class_arg_map[arg]) == dict:
-                samples = class_arg_map[arg]
-                for param in samples:
-                    if samples[param] and type(samples[param]) == str and param == time_stamp_param:
-                        var_dict[samples[param]] = time_stamp
-                    else:
-                        if samples[param]:
-                            if param == converted_device_params_var:
-                                sample_obj = samples[param]
-                                for val in sample_obj:
-                                    var_dict[sample_obj[val]] = converted_device_params[val] \
-                                        if val in converted_device_params else ""
-                            elif param == converted_equip_params_var:
-                                sample_obj = samples[param][0]
-                                address = converted_equip_params["deviceId"] \
-                                    if "deviceId" in converted_equip_params else ""
-                                for equip_param in sample_obj:
-                                    if equip_param == param_indicator:
-                                        var_dict[sample_obj[equip_param]] = get_snapshot_data(
-                                            converted_equip_params[equip_param], time_stamp, address, spn_file_json) \
-                                            if equip_param in converted_equip_params else ""
-                                    else:
-                                        var_dict[sample_obj[equip_param]] = converted_equip_params[equip_param] \
-                                            if equip_param in converted_equip_params else ""
-                            else:
-                                sample_obj = samples[param][0]
-                                for fc_param in sample_obj:
-                                    final_fc = []
-                                    if fc_param in converted_equip_fc:
-                                        final_fc = get_active_faults(converted_equip_fc[fc_param], address)
-                                    var_dict[sample_obj[fc_param]] = final_fc
+        var_dict, found_fcs = process_hb_fc(var_dict, metadata, time_stamp, converted_device_params,
+                                            converted_equip_params,
+                                            converted_equip_fc, is_hb=True)
         LOGGER.debug(f"HB CD SDK Class Variable Dict: {var_dict}")
         hb_sdk_object = map_ngdi_sample_to_cd_payload(var_dict)
 
@@ -204,75 +256,16 @@ def handle_hb(converted_device_params, converted_equip_params, converted_equip_f
         LOGGER.error(error_message)
         process_audit_error(error_message=error_message, module_name="J1939_HB", meta_data=metadata)
 
+
 def handle_fc(converted_device_params, converted_equip_params, converted_equip_fc, metadata, time_stamp):
     var_dict = {}
     address = ""
     found_fcs = False
     try:
         LOGGER.info(f"Retrieving parameters for creating FC SDK Class Object")
-        for arg in class_arg_map:
-            LOGGER.debug(f"Handling the arg: {arg}")
-            if class_arg_map[arg] and type(class_arg_map[arg]) == str:
-                if arg == message_format_version_indicator:
-                    var_dict[class_arg_map[arg]] = notification_version
-                elif arg in metadata and metadata[arg]:
-                    var_dict[class_arg_map[arg]] = metadata[arg]
-            if class_arg_map[arg] and type(class_arg_map[arg]) == dict:
-                samples = class_arg_map[arg]
-                for param in samples:
-                    if samples[param] and type(samples[param]) == str and param == time_stamp_param:
-                        var_dict[samples[param]] = time_stamp
-                    else:
-                        if samples[param]:
-                            if param == converted_device_params_var:
-                                sample_obj = samples[param]
-                                for val in sample_obj:
-                                    var_dict[sample_obj[val]] = converted_device_params[val] \
-                                        if val in converted_device_params else ""
-                            elif param == converted_equip_params_var:
-                                sample_obj = samples[param][0]
-                                address = converted_equip_params["deviceId"] \
-                                    if "deviceId" in converted_equip_params else ""
-                                for equip_param in sample_obj:
-                                    if equip_param == param_indicator:
-                                        var_dict[sample_obj[equip_param]] = get_snapshot_data(
-                                            converted_equip_params[equip_param].copy(), time_stamp, address,
-                                            spn_file_json) \
-                                            if equip_param in converted_equip_params else ""
-                                    else:
-                                        var_dict[sample_obj[equip_param]] = converted_equip_params[equip_param] \
-                                            if equip_param in converted_equip_params else ""
-                            else:
-                                sample_obj = samples[param][0]
-                                for fc_param in sample_obj:
-                                    if fc_param in converted_equip_fc and fc_param == active_fault_code_indicator:
-                                        all_active_fcs = converted_equip_fc[fc_param].copy()
-                                        if not all_active_fcs:
-                                            continue
-                                        found_fcs = True  # Indicating that we found Fault Codes in this file.
-                                        fc_index = 0
-                                        final_fc = get_active_faults(all_active_fcs, address)
-                                        for fc in all_active_fcs:
-                                            create_fc_class(fc, final_fc, fc_index, sample_obj[fc_param], var_dict, 1)
-                                            fc_index = fc_index + 1
-                                    elif fc_param in converted_equip_fc and fc_param == inactive_fault_code_indicator:
-                                        all_inactive_fcs = converted_equip_fc[fc_param].copy()
-                                        if not all_inactive_fcs:
-                                            continue
-                                        found_fcs = True  # Indicating that we found Fault Codes in this file.
-                                        all_active_fcs = converted_equip_fc[active_fault_code_indicator].copy() if \
-                                            active_fault_code_indicator in converted_equip_fc else []
-                                        fc_index = 0
-                                        inactive_final_fc = get_active_faults(all_inactive_fcs, address)
-                                        active_final_fc = get_active_faults(all_active_fcs, address)
-                                        for fc in all_inactive_fcs:
-                                            create_fc_class(fc, inactive_final_fc, fc_index, sample_obj[fc_param],
-                                                            var_dict, 0, active_final_fc)
-                                            fc_index = fc_index + 1
-                                    else:
-                                        # TODO Handle Pending Fault Codes.
-                                        LOGGER.info(f"There are either no, fc_param in this file -- We are not "
-                                                    f"handling pending FCs for now.")
+        var_dict, found_fcs = process_hb_fc(var_dict, metadata, time_stamp, converted_device_params,
+                                            converted_equip_params,
+                                            converted_equip_fc, is_hb=False)
         if found_fcs:
             LOGGER.info("We have already processed this sample since it had fault codes. Continuing to the next sample")
         else:
@@ -333,6 +326,25 @@ def send_sample(sample, metadata, fc_or_hb, tsp_name):
         handle_fc(converted_device_params, converted_equip_params, converted_equip_fc, metadata, time_stamp)
 
 
+def _handle_metadata(metadata, samples, fc_or_hb, device_id, data_protocol, uploaded_file_object, j1939_file, tsp_name):
+    if metadata:
+        if samples:
+            for sample in samples:
+                LOGGER.info("Sending HB sample data")
+                send_sample(sample, metadata, fc_or_hb, tsp_name)
+        else:
+            error_message = f"There are no samples in this file for the device: {device_id}."
+            LOGGER.error(error_message)
+            process_audit_error(error_message=error_message, data_protocol=data_protocol,
+                                meta_data=metadata, device_id=device_id)
+        delete_message_from_sqs_queue(uploaded_file_object["sqs_receipt_handle"])
+    else:
+        error_message = f"Metadata retrieval failed for the device: {device_id}."
+        LOGGER.error(error_message)
+        process_audit_error(error_message=error_message, data_protocol=data_protocol,
+                            meta_data=j1939_file, device_id=device_id)
+
+
 def retrieve_and_process_file(uploaded_file_object, api_url):
     bucket = uploaded_file_object["source_bucket_name"]
     key = uploaded_file_object["file_key"]
@@ -377,22 +389,7 @@ def retrieve_and_process_file(uploaded_file_object, api_url):
     sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message, edgeCommonAPIURL)
     samples = j1939_file["samples"] if "samples" in j1939_file else None
     metadata = get_metadata_info(j1939_file)
-    if metadata:
-        if samples:
-            for sample in samples:
-                LOGGER.info("Sending HB sample data")
-                send_sample(sample, metadata, fc_or_hb, tsp_name)
-        else:
-            error_message = f"There are no samples in this file for the device: {device_id}."
-            LOGGER.error(error_message)
-            process_audit_error(error_message=error_message, data_protocol=data_protocol,
-                                meta_data=metadata, device_id=device_id)
-        delete_message_from_sqs_queue(uploaded_file_object["sqs_receipt_handle"])
-    else:
-        error_message = f"Metadata retrieval failed for the device: {device_id}."
-        LOGGER.error(error_message)
-        process_audit_error(error_message=error_message, data_protocol=data_protocol,
-                            meta_data=j1939_file, device_id=device_id)
+    _handle_metadata(metadata, samples, fc_or_hb, device_id, data_protocol, uploaded_file_object, j1939_file, tsp_name)
 
 
 @ssm.cache(parameter=name, entry_name='parameters')  # noqa-cache accepts list as a parameter but expects a str
@@ -480,12 +477,15 @@ def store_health_parameters_into_redshift(converted_device_params, time_stamp, j
 def process_audit_error(error_message, module_name=None, data_protocol=None, meta_data=None, device_id=None):
     cust_ref = meta_data['customerReference'] if meta_data and "customerReference" in meta_data else ""
     if cust_ref and cust_ref.lower() == 'tatamotors' or cust_ref.lower() == 'tata':
-        audit_utility.ERROR_PARAMS["device_id"] = meta_data["telematicsDeviceId"] if meta_data and "telematicsDeviceId" in meta_data else ""
-        audit_utility.ERROR_PARAMS["engine_serial_number"] = meta_data["componentSerialNumber"] if meta_data and "componentSerialNumber" in meta_data else ""
+        audit_utility.ERROR_PARAMS["device_id"] = meta_data[
+            "telematicsDeviceId"] if meta_data and "telematicsDeviceId" in meta_data else ""
+        audit_utility.ERROR_PARAMS["engine_serial_number"] = meta_data[
+            "componentSerialNumber"] if meta_data and "componentSerialNumber" in meta_data else ""
         audit_utility.ERROR_PARAMS["device_owner"] = cust_ref.lower()
         audit_utility.write_to_audit_table('400', error_message)
     elif "J1939_HB" == module_name or "J1939_FC" == module_name:
-        util.write_to_audit_table(module_name, error_message, meta_data["telematicsDeviceId"] if meta_data and "telematicsDeviceId" in meta_data else None)
+        util.write_to_audit_table(module_name, error_message, meta_data[
+            "telematicsDeviceId"] if meta_data and "telematicsDeviceId" in meta_data else None)
     else:
         util.write_to_audit_table(data_protocol, error_message, device_id)
     # ITTFCD87 ends
