@@ -184,56 +184,84 @@ def process_fc_param(fc_param, converted_equip_fc, address, sample_obj, var_dict
     return var_dict, found_fcs
 
 
+def process_hb_fc_apply_class_arg_map(arg, metadata, var_dict):
+    if class_arg_map[arg] and type(class_arg_map[arg]) == str:
+        if arg == message_format_version_indicator:
+            var_dict[class_arg_map[arg]] = notification_version
+        elif arg in metadata and metadata[arg]:
+            var_dict[class_arg_map[arg]] = metadata[arg]
+    return var_dict
+
+
+def process_hb_fc_non_time_stamp_device_param(samples, param, var_dict, converted_device_params):
+    sample_obj = samples[param]
+    for val in sample_obj:
+        var_dict[sample_obj[val]] = converted_device_params[val] \
+            if val in converted_device_params else ""
+    return var_dict
+
+
+def process_hb_fc_non_time_stamp_equip_param(samples, param, var_dict, converted_equip_params, time_stamp):
+    sample_obj = samples[param][0]
+    address = converted_equip_params["deviceId"] \
+        if "deviceId" in converted_equip_params else ""
+    for equip_param in sample_obj:
+        if equip_param == param_indicator:
+            var_dict[sample_obj[equip_param]] = get_snapshot_data(
+                converted_equip_params[equip_param].copy(), time_stamp, address, spn_file_json) \
+                if equip_param in converted_equip_params else ""
+        else:
+            var_dict[sample_obj[equip_param]] = converted_equip_params[equip_param] \
+                if equip_param in converted_equip_params else ""
+    return var_dict
+
+
+def process_hb_fc_non_time_stamp_param(var_dict, param, time_stamp, converted_device_params, converted_equip_params,
+                                       converted_equip_fc, samples,
+                                       is_hb=False):
+    address = ''
+    if param == converted_device_params_var:
+        var_dict = process_hb_fc_non_time_stamp_device_param(samples, param, var_dict, converted_device_params)
+    elif param == converted_equip_params_var:
+        var_dict = process_hb_fc_non_time_stamp_equip_param(samples, param, var_dict, converted_equip_params,
+                                                            time_stamp)
+    else:
+        sample_obj = samples[param][0]
+        for fc_param in sample_obj:
+            if is_hb:
+                var_dict = process_hb_param(fc_param, converted_equip_fc, address, var_dict,
+                                            sample_obj)
+            else:
+                var_dict, found_fcs = process_fc_param(fc_param, converted_equip_fc, address,
+                                                       sample_obj, var_dict, found_fcs)
+    return var_dict, found_fcs
+
+
 def process_hb_fc(var_dict, metadata, time_stamp, converted_device_params, converted_equip_params, converted_equip_fc,
                   is_hb=False):
     found_fcs = False
+    address = ""
+
     for arg in class_arg_map:
         LOGGER.debug(f"Handling the arg: {arg}")
-        if class_arg_map[arg] and type(class_arg_map[arg]) == str:
-            if arg == message_format_version_indicator:
-                var_dict[class_arg_map[arg]] = notification_version
-            elif arg in metadata and metadata[arg]:
-                var_dict[class_arg_map[arg]] = metadata[arg]
+        var_dict = process_hb_fc_apply_class_arg_map(arg, metadata, var_dict)
         if class_arg_map[arg] and type(class_arg_map[arg]) == dict:
             samples = class_arg_map[arg]
             for param in samples:
                 if samples[param] and type(samples[param]) == str and param == time_stamp_param:
                     var_dict[samples[param]] = time_stamp
-                else:
-                    if samples[param]:
-                        if param == converted_device_params_var:
-                            sample_obj = samples[param]
-                            for val in sample_obj:
-                                var_dict[sample_obj[val]] = converted_device_params[val] \
-                                    if val in converted_device_params else ""
-                        elif param == converted_equip_params_var:
-                            sample_obj = samples[param][0]
-                            address = converted_equip_params["deviceId"] \
-                                if "deviceId" in converted_equip_params else ""
-                            for equip_param in sample_obj:
-                                if equip_param == param_indicator:
-                                    var_dict[sample_obj[equip_param]] = get_snapshot_data(
-                                        converted_equip_params[equip_param].copy(), time_stamp, address, spn_file_json) \
-                                        if equip_param in converted_equip_params else ""
-                                else:
-                                    var_dict[sample_obj[equip_param]] = converted_equip_params[equip_param] \
-                                        if equip_param in converted_equip_params else ""
-                        else:
-                            sample_obj = samples[param][0]
-                            for fc_param in sample_obj:
-                                if is_hb:
-                                    var_dict = process_hb_param(fc_param, converted_equip_fc, address, var_dict,
-                                                                sample_obj)
-                                else:
-                                    var_dict, found_fcs = process_fc_param(fc_param, converted_equip_fc, address,
-                                                                           sample_obj, var_dict, found_fcs)
+                elif samples[param]:
+                    var_dict, found_fcs = process_hb_fc_non_time_stamp_param(var_dict, param, time_stamp,
+                                                                             converted_device_params,
+                                                                             converted_equip_params, converted_equip_fc,
+                                                                             samples,
+                                                                             is_hb=is_hb)
 
     return var_dict, found_fcs
 
 
 def handle_hb(converted_device_params, converted_equip_params, converted_equip_fc, metadata, time_stamp):
     var_dict = {}
-    address = ""
     LOGGER.info(f"Retrieving parameters for creating HB SDK Class Object")
     try:
         var_dict, found_fcs = process_hb_fc(var_dict, metadata, time_stamp, converted_device_params,
@@ -259,7 +287,6 @@ def handle_hb(converted_device_params, converted_equip_params, converted_equip_f
 
 def handle_fc(converted_device_params, converted_equip_params, converted_equip_fc, metadata, time_stamp):
     var_dict = {}
-    address = ""
     found_fcs = False
     try:
         LOGGER.info(f"Retrieving parameters for creating FC SDK Class Object")
@@ -319,7 +346,7 @@ def send_sample(sample, metadata, fc_or_hb, tsp_name):
         store_health_parameters_into_redshift(converted_device_params, time_stamp, metadata)
         LOGGER.info(f"Handling HB...")
         # If device owner is Cosmos, do not send downstream
-        if tsp_name!= "COSPA":
+        if tsp_name != "COSPA":
             handle_hb(converted_device_params, converted_equip_params, converted_equip_fc, metadata, time_stamp)
     else:
         LOGGER.info(f"Handling FC...")
@@ -476,14 +503,14 @@ def store_health_parameters_into_redshift(converted_device_params, time_stamp, j
 # ITTFCD87 starts
 def process_audit_error(error_message, module_name=None, data_protocol=None, meta_data=None, device_id=None):
     cust_ref = meta_data['customerReference'] if meta_data and "customerReference" in meta_data else ""
-    if cust_ref and cust_ref.lower() == 'tatamotors' or cust_ref.lower() == 'tata':
+    if cust_ref and cust_ref.lower() in ['tatamotors', 'tata']:
         audit_utility.ERROR_PARAMS["device_id"] = meta_data[
             "telematicsDeviceId"] if meta_data and "telematicsDeviceId" in meta_data else ""
         audit_utility.ERROR_PARAMS["engine_serial_number"] = meta_data[
             "componentSerialNumber"] if meta_data and "componentSerialNumber" in meta_data else ""
         audit_utility.ERROR_PARAMS["device_owner"] = cust_ref.lower()
         audit_utility.write_to_audit_table('400', error_message)
-    elif "J1939_HB" == module_name or "J1939_FC" == module_name:
+    elif module_name in ["J1939_HB", "J1939_FC"]:
         util.write_to_audit_table(module_name, error_message, meta_data[
             "telematicsDeviceId"] if meta_data and "telematicsDeviceId" in meta_data else None)
     else:
