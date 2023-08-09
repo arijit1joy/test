@@ -486,10 +486,6 @@ Resources:
         - !Ref PandasPythonLayer
         - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:da-edge-device-python-requests:${PythonRequestsVersion}
         - !Sub >-
-          arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:Edge-Core:${EdgeCoreLayerVersion}
-        - !Sub >-
-          arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:edge_db_utility:${EdgeDBUtilityLayerVersion}
-        - !Sub >-
           arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:EDGEDeviceMetadataSQSLayer:${EdgeSQSUtilityVersion}
       Code:
         S3Bucket: !Ref ArtifactsBucket
@@ -800,11 +796,7 @@ Resources:
       Layers:
         - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:da-edge-device-python-requests:${PythonRequestsVersion}
         - !Sub >-
-          arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:Edge-Core:${EdgeCoreLayerVersion}
-        - !Sub >-
           arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:kinesis_utility:${KinesisLayerVersion}
-        - !Sub >-
-          arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:edge_db_utility:${EdgeDBUtilityLayerVersion}
         - !Sub >-
           arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:EDGEDeviceMetadataSQSLayer:${EdgeSQSUtilityVersion}
       Code:
@@ -965,13 +957,8 @@ Resources:
       Layers:
         - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:da-edge-device-python-requests:${PythonRequestsVersion}
         - !Sub >-
-          arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:Edge-Core:${EdgeCoreLayerVersion}
-        - !Sub >-
-          arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:edge_db_utility:${EdgeDBUtilityLayerVersion}
-        - !Sub >-
           arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:Scheduler-queries:${SchedulerQueriesLayerVersion}
-        # - !ImportValue
-        #   "Fn::Sub": "EDGESQSUtilityPythonLayer-${ApplicationEnvironmentTag}"
+
       Code:
         S3Bucket: !Ref ArtifactsBucket
         S3Key: !Sub "${VersionId}/EdgeCPPTPoster.zip"
@@ -992,7 +979,7 @@ Resources:
           edgeCommonAPIURL: !Ref EdgeCommonDBAPI
           EDGEDBReader_ARN: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-edge-common-lib-EDGEDBReader-${ApplicationEnvironmentTag}"
           EDGEDBCommonAPI_ARN: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:EdgeCommonAPI-${ApplicationEnvironmentTag}"
-          APPLICATION_ENVIRONMENT: !Ref ApplbucicationEnvironmentTag
+          APPLICATION_ENVIRONMENT: !Ref ApplicationEnvironmentTag
           PTJ1939Header: !Ref PTJ1939Header
           environment: !Ref ApplicationEnvironmentTag
           PSBUSpecifier: psbu
