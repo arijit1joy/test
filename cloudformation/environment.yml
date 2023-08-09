@@ -382,11 +382,12 @@ Resources:
                 Resource: !Sub "${EdgeJ1939ProcessingBucket.Arn}"
                 Effect: Allow
               ## --- I could not find any resources which this function currently calls
-              # - Action:
-              #     - "lambda:InvokeFunction"
-              #     - "lambda:InvokeAsync"
-              #   Resource: "*"
-              #   Effect: Allow
+              - Action:
+                  - "lambda:InvokeFunction"
+                  - "lambda:InvokeAsync"
+                Resource:
+                  - !Ref CosmosIoTRoleArn
+                Effect: Allow
               - Action:
                   - "sqs:SendMessage"
                 Resource: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
