@@ -5,5 +5,4 @@ edge_core_layer
 edge_sqs_utility_layer
 edge_db_utility_layer
 PyPika
-requests
 edge_db_lambda_client

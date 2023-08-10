@@ -3,4 +3,4 @@ pypika
 edge_db_lambda_client
 edge_core_layer
 edge_sqs_utility_layer
-python_request_layer
+requests

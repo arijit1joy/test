@@ -3,3 +3,4 @@ pypika
 commonlib_jfrog_artifacts
 edge_core_layer==1.5.0
 lambda_cache
+edge_db_utility_layer
