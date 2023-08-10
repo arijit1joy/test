@@ -8,7 +8,7 @@ import utility as util
 from edge_sqs_utility_layer.sqs_utility import sqs_send_message
 from kafka_producer import publish_message
 from kafka_producer import _create_kafka_message
-from obfuscate_gps_utility import handle_gps_coordinates
+from edge_db_utility_layer.obfuscate_gps_utility import handle_gps_coordinates
 from metadata_utility import write_health_parameter_to_database
 
 LOGGER = util.get_logger(__name__)

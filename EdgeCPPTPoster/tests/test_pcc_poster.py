@@ -35,6 +35,7 @@ with  CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.en
     cda_module_mock_context.mock_module("kafka")
     cda_module_mock_context.mock_module("boto3")
     cda_module_mock_context.mock_module("requests")
+    cda_module_mock_context.mock_module("edge_db_utility_layer.obfuscate_gps_utility")
     cda_module_mock_context.mock_module("metadata_utility")
     import pcc_poster
 
