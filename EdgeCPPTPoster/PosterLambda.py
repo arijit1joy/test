@@ -201,6 +201,8 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
             else:
                 LOGGER.error(f"Error! Could not retrieve TSP. This is mandatory field!")
                 return
+        else:
+            tsp_name = json_body["telematicsPartnerName"]
         LOGGER.info(f"Retrieved TSP name is {tsp_name}")
         if device_owner in json.loads(os.environ["cd_device_owners"]):
             LOGGER.info("Inside CD device owner case")
