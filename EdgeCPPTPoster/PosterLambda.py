@@ -4,7 +4,10 @@ import time
 import uuid
 import boto3
 import traceback
+import sys
+sys.path.insert(1, './lib')
 try:
+
     import requests
     import post
     import pt_poster
@@ -13,10 +16,9 @@ try:
     import environment_params as env
     from multiprocessing import Process
     from edge_sqs_utility_layer.sqs_utility import sqs_send_message
-    import sys
+
     from update_scheduler import update_scheduler_table, get_request_id_from_consumption_view
 
-    sys.path.insert(1, './lib')
     from edge_db_lambda_client import EdgeDbLambdaClient
 except Exception as e:
     traceback.print_exc()
