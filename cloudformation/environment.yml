@@ -93,18 +93,6 @@ Resources:
       Value: !Ref EdgeJ1939ProcessingBucket
       Name: da-edge-j1939-processing-bucket
 
-  RequestsPythonLayer:
-    Type: "AWS::Lambda::LayerVersion"
-    Properties:
-      Content:
-        S3Bucket: !Ref ArtifactsBucket
-        S3Key: python-requests.zip
-      LayerName: !Sub "${ApplicationName}-python-requests"
-      Description: python-requests for restful API calls
-      CompatibleRuntimes:
-        - python3.6
-        - python3.7
-
   EdgeJ1939DataLogBucketPolicy:
     Type: "AWS::S3::BucketPolicy"
     Properties:

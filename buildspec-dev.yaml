@@ -37,7 +37,6 @@ phases:
     - pip install -q ruamel.yaml
     - for paramsFile in ./Param*.json ;  
       do  
-        echo $paramsFile;  
         tmp=$(mktemp); 
         sed "s/"empty"/${versionId}/g" $paramsFile > "$tmp" && mv "$tmp" $paramsFile;
         sh "${curr_dir}/cloudformation/layer-helper.sh" $paramsFile;
