@@ -1,5 +1,7 @@
---extra-index-url https://jfrog.cummins.com/artifactory/api/pypi/da-dse-pypi-release-local/simple
+--extra-index-url https://jfrog.cummins.com/ui/native/da-dse-pypi-release-local/edge/
 pypika
+edge_db_lambda_client
+edge_core_layer
 boto3
 requests
 moto
