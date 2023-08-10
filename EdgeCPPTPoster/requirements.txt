@@ -1,14 +1,12 @@
---extra-index-url https://jfrog.cummins.com/ui/native/da-dse-pypi-release-local/edge/
-pypika
-edge_db_lambda_client
-edge_core_layer
-boto3
-requests
+--extra-index-url https://jfrog.cummins.com/artifactory/api/pypi/da-dse-pypi-release-local/simple
+edge_core_layer==1.1.0
+python_request_layer==1.1.0
+edge_sqs_utility_layer==1.1.0
+edge_db_utility_layer==1.4.0
 moto
+boto3
+PyPika
+requests
 botocore
 redis-py-cluster
-edge_db_lambda_client
-edge_db_utility_layer
-edge_core_layer
-python_request_layer
-edge_sqs_utility_layer
+edge_db_lambda_client==0.3.0
