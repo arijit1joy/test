@@ -30,6 +30,7 @@ with CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.env
     cda_module_mock_context.mock_module('aws_utils')
     cda_module_mock_context.mock_module("boto3")
     cda_module_mock_context.mock_module('cd_sdk_conversion.cd_sdk')
+    cda_module_mock_context.mock_module('edge_db_utility_layer.metadata_utility')
 
     import conversion
 

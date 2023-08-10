@@ -9,7 +9,7 @@ sys.path.insert(1, './lib')
 import boto3
 import requests
 from lambda_cache import ssm
-from metadata_utility import write_health_parameter_to_database
+from edge_db_utility_layer.metadata_utility import write_health_parameter_to_database
 from obfuscate_gps_utility import handle_gps_coordinates
 from edge_sqs_utility_layer.sqs_utility import sqs_send_message
 from aws_utils import spn_file_json
