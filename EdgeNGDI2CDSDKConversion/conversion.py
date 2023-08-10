@@ -78,6 +78,29 @@ def get_metadata_info(j1939_file):
         return False
 
 
+def _post_cd_message(url, data):
+    # In order to reattempt requests.post when we get sporadic network errors. Our current retry limit is 3
+    retry_post_attempts = 0
+    while retry_post_attempts < MAX_ATTEMPTS:
+        try:
+            r = requests.post(url=url, json=data)
+            break
+        except Exception as e:
+            retry_post_attempts += 1
+            if retry_post_attempts < MAX_ATTEMPTS:
+                LOGGER.error(f"Exception occurred while trying to post data to CD. Retrying again. Attempt "
+                             f"No: {retry_post_attempts}")
+                time.sleep(2 * retry_post_attempts / 10)
+                continue
+            elif retry_post_attempts >= MAX_ATTEMPTS:
+                LOGGER.error(
+                    f"Exception occurred while trying to post data to CD. Maximum retry attempts ({MAX_ATTEMPTS}) "
+                    f"exceeded ")
+                raise e
+    cp_response = r.text
+    LOGGER.info(f'CD Response: {cp_response}')
+
+
 def post_cd_message(data):
     tsp_name = data["Telematics_Partner_Name"]
     LOGGER.debug(f"TSP From File: {tsp_name}")
@@ -108,26 +131,7 @@ def post_cd_message(data):
 
     # We are not sending payload to CD for Digital Cockpit Device
     if data["Telematics_Box_ID"] != '192000000000101':
-        # In order to reattempt requests.post when we get sporadic network errors. Our current retry limit is 3
-        retry_post_attempts = 0
-        while retry_post_attempts < MAX_ATTEMPTS:
-            try:
-                r = requests.post(url=url, json=data)
-                break
-            except Exception as e:
-                retry_post_attempts += 1
-                if retry_post_attempts < MAX_ATTEMPTS:
-                    LOGGER.error(f"Exception occurred while trying to post data to CD. Retrying again. Attempt "
-                                 f"No: {retry_post_attempts}")
-                    time.sleep(2 * retry_post_attempts / 10)
-                    continue
-                elif retry_post_attempts >= MAX_ATTEMPTS:
-                    LOGGER.error(
-                        f"Exception occurred while trying to post data to CD. Maximum retry attempts ({MAX_ATTEMPTS}) "
-                        f"exceeded ")
-                    raise e
-        cp_response = r.text
-        LOGGER.info(f'CD Response: {cp_response}')
+        _post_cd_message(url, data)
 
 
 def get_active_faults(fault_list, address):
@@ -458,6 +462,13 @@ def lambda_handler(event, context):
         process.join()
 
 
+def resolve_value_from_converted_device_parameters(converted_device_params, key):
+    if key in converted_device_params:
+        return converted_device_params[key]
+    else:
+        return None
+
+
 '''
 Function to get Health Parameter and store into Redshift Table
 '''
@@ -467,27 +478,23 @@ def store_health_parameters_into_redshift(converted_device_params, time_stamp, j
     LOGGER.info(f"Starting Kinesis Process... ")
     if 'messageID' in converted_device_params:
         message_id = converted_device_params['messageID']
-        cpu_temperature = converted_device_params[
-            'CPU_temperature'] if 'CPU_temperature' in converted_device_params else None
+
+        cpu_temperature = resolve_value_from_converted_device_parameters(converted_device_params, 'CPU_temperature')
         pmic_temperature = converted_device_params[
             'PMIC_temperature'] if ('PMIC_temperature' in converted_device_params) and converted_device_params[
             'PMIC_temperature'] else None
-        latitude = converted_device_params['Latitude'] if 'Latitude' in converted_device_params else None
-        longitude = converted_device_params['Longitude'] if 'Longitude' in converted_device_params else None
-        altitude = converted_device_params['Altitude'] if 'Altitude' in converted_device_params else None
-        pdop = converted_device_params['PDOP'] if 'PDOP' in converted_device_params else None
-        satellites_used = converted_device_params[
-            'Satellites_Used'] if 'Satellites_Used' in converted_device_params else None
-        lte_rssi = converted_device_params['LTE_RSSI'] if 'LTE_RSSI' in converted_device_params else None
-        lte_rscp = converted_device_params['LTE_RSCP'] if 'LTE_RSCP' in converted_device_params else None
-        lte_rsrq = converted_device_params['LTE_RSRQ'] if 'LTE_RSRQ' in converted_device_params else None
-        lte_rsrp = converted_device_params['LTE_RSRP'] if 'LTE_RSRP' in converted_device_params else None
-        cpu_usage_level = converted_device_params[
-            'CPU_Usage_Level'] if 'CPU_Usage_Level' in converted_device_params else None
-        ram_usage_level = converted_device_params[
-            'RAM_Usage_Level'] if 'RAM_Usage_Level' in converted_device_params else None
-        snr_per_satellite = converted_device_params[
-            'SNR_per_Satellite'] if 'SNR_per_Satellite' in converted_device_params else None
+        latitude = resolve_value_from_converted_device_parameters(converted_device_params, 'Latitude')
+        longitude = resolve_value_from_converted_device_parameters(converted_device_params, 'Longitude')
+        altitude = resolve_value_from_converted_device_parameters(converted_device_params, 'Altitude') 
+        pdop = resolve_value_from_converted_device_parameters(converted_device_params, 'PDOP')
+        satellites_used = resolve_value_from_converted_device_parameters(converted_device_params, 'Satellites_Used')
+        lte_rssi = resolve_value_from_converted_device_parameters(converted_device_params, 'LTE_RSSI')
+        lte_rscp = resolve_value_from_converted_device_parameters(converted_device_params, 'LTE_RSCP')
+        lte_rsrq = resolve_value_from_converted_device_parameters(converted_device_params, 'LTE_RSRQ')
+        lte_rsrp = resolve_value_from_converted_device_parameters(converted_device_params, 'LTE_RSRP')
+        cpu_usage_level = resolve_value_from_converted_device_parameters(converted_device_params, 'CPU_Usage_Level')
+        ram_usage_level = resolve_value_from_converted_device_parameters(converted_device_params, 'RAM_Usage_Level')
+        snr_per_satellite = resolve_value_from_converted_device_parameters(converted_device_params, 'SNR_per_Satellite')
         device_id = j1939_file_val['telematicsDeviceId']
         esn = j1939_file_val['componentSerialNumber']
         convert_timestamp = datetime.datetime.strptime(time_stamp, '%Y-%m-%dT%H:%M:%S.%fZ')
