@@ -2,3 +2,11 @@
 pypika
 redis-py-cluster
 edge_db_lambda_client
+edge_core_layer
+edge_sqs_utility_layer
+edge_db_utility_layer
+PyPika
+requests
+botocore
+redis-py-cluster
+edge_db_lambda_client
