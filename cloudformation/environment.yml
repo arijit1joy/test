@@ -459,7 +459,6 @@ Resources:
     Type: "AWS::Lambda::Function"
     Properties:
       Layers:
-        - !Ref PandasPythonLayer
         - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:da-edge-device-python-requests:${PythonRequestsVersion}
         - !Sub >-
           arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:EDGEDeviceMetadataSQSLayer:${EdgeSQSUtilityVersion}
@@ -824,17 +823,17 @@ Resources:
       LogGroupName: !Sub '/aws/lambda/${EdgeJ1939CSVConverter}-logs'
       RetentionInDays: 120 # 3 months, matches existing log group
 
-  PandasPythonLayer:
-    Type: "AWS::Lambda::LayerVersion"
-    Properties:
-      Content:
-        S3Bucket: !Ref ArtifactsBucket
-        S3Key: python_pandas.zip
-      LayerName: pandas-requests
-      Description: python-requests for restful API calls
-      CompatibleRuntimes:
-        - python3.6
-        - python3.7
+  # PandasPythonLayer:
+  #   Type: "AWS::Lambda::LayerVersion"
+  #   Properties:
+  #     Content:
+  #       S3Bucket: !Ref ArtifactsBucket
+  #       S3Key: python_pandas.zip
+  #     LayerName: pandas-requests
+  #     Description: python-requests for restful API calls
+  #     CompatibleRuntimes:
+  #       - python3.6
+  #       - python3.7
 
   J1939StreamingBucketPolicy:
     Type: "AWS::S3::BucketPolicy"
