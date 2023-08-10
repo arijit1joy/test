@@ -4,6 +4,7 @@ import os
 import sys
 import time
 from multiprocessing import Process
+sys.path.insert(1, './lib')
 
 import boto3
 import requests
@@ -17,7 +18,6 @@ import utility as util
 from cd_sdk_conversion.cd_sdk import map_ngdi_sample_to_cd_payload
 from cd_sdk_conversion.cd_snapshot_sdk import get_snapshot_data
 
-sys.path.insert(1, './lib')
 from commonlib_jfrog_artifacts import auth_utility
 import audit_utility as audit_utility
 
