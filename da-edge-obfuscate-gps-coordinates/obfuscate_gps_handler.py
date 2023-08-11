@@ -32,8 +32,7 @@ def send_file_to_s3(body):
 
         esn = body["componentSerialNumber"]
         tsp_name = body["telematicsPartnerName"]
-        if tsp_name=="COSPA":
-            LOGGER.info("This is a COSMOS HB file")
+
 
         # Please note that the order is expected to be <Make>*<Model>***<ESN>**** for Improper PSBU ESN
         if esn and "*" in esn:
@@ -41,7 +40,11 @@ def send_file_to_s3(body):
 
         config_id = body["dataSamplingConfigId"]
         current_dt = datetime.now()
-        file_name = "EDGE_{0}_{1}_{2}_{3}.json".format(device_id, esn, config_id, int(current_dt.timestamp()))
+        if tsp_name == "COSPA":
+            LOGGER.debug("This is a COSMOS HB file")
+            file_name = "COSPA_{0}_{1}_{2}_{3}.json".format(device_id, esn, config_id, int(current_dt.timestamp()))
+        else:
+            file_name = "EDGE_{0}_{1}_{2}_{3}.json".format(device_id, esn, config_id, int(current_dt.timestamp()))
         file_key = "ConvertedFiles/{0}/{1}/{2}/{3}/{4}/{5}".format(
             esn, device_id, current_dt.strftime("%Y"), current_dt.strftime("%m"), current_dt.strftime("%d"), file_name)
         LOGGER.info(f"File Name: {file_name}, File Key:  {file_key}")
