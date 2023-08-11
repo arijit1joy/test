@@ -42,7 +42,7 @@ def valid_ebu_hb_message_with_not_exist_device(context):
 @given(u'An invalid EBU HB message in JSON format containing a valid deviceID but missing the telematicsPartnerName '
        u'and customerReference')
 def valid_ebu_hb_message_without_tpn_and_cr(context):
-    context.j1939_hb_stages = ["FILE_RECEIVED", "CD_PT_POSTED", "FILE_SENT"]
+    context.j1939_hb_stages = []
     context.download_converted_file_name = \
         "data/j1939_hb/download/received_j1939_hb_ebu_converted_file_without_tpn_and_cr.json"
     context.compare_converted_file_name = \
