@@ -165,4 +165,5 @@ class TestObfuscateGPSHandler(unittest.TestCase):
         mock_handle_gps_coordinates.return_value = ("-12.345", "12.345")
         result = obfuscate_gps(body)
         print("Result: ", result)
+
         mock_send_file_to_s3.assert_called()

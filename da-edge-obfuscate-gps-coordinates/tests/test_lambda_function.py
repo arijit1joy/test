@@ -15,6 +15,7 @@ del sys.modules['obfuscate_gps_utility']
 
 class TestLambdaFunction(unittest.TestCase):
     @patch('lambda_function.obfuscate_gps')
+    @patch.dict('os.environ', {'j1939_end_bucket': 'test_bucket', 'AuditTrailQueueUrl': 'https://testurl.com'})
     def test_lambdaHandler_givenValidEvent_thenCalledObfuscateGPS(self, mock_obfuscate_gps):
         print('<-----test_lambdaHandler_givenValidEvent_thenCalledObfuscateGPS----->')
         event = {"telematicsDeviceId": "1234567890"}
@@ -23,7 +24,7 @@ class TestLambdaFunction(unittest.TestCase):
         mock_obfuscate_gps.assert_called()
 
     @patch('lambda_function.obfuscate_gps')
-    @patch.dict('os.environ', {'j1939_end_bucket': 'test_bucket','AuditTrailQueueUrl':'https://testurl.com'})
+    @patch.dict('os.environ', {'j1939_end_bucket': 'test_bucket', 'AuditTrailQueueUrl':'https://testurl.com'})
     def test_lambdaHandler_givenValidEvent_whenExceptionOccurred_thenLogException(self, mock_obfuscate_gps):
         print('<-----test_lambdaHandler_givenValidEvent_whenExceptionOccurred_thenLogException----->')
         event = {"telematicsDeviceId": "1234567890"}
