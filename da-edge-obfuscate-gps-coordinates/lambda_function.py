@@ -8,6 +8,7 @@ LOGGER = util.get_logger(__name__)
 def lambda_handler(event, context):  # noqa
     try:
         body = event
+        LOGGER.debug(f"Event posted to obfuscate lambda function is: {event}")
         obfuscate_gps(body)
     except Exception as e:
         LOGGER.error(f"An error occurred while obfuscating gps coordinates: {e}")
