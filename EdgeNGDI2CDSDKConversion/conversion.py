@@ -354,6 +354,8 @@ def send_sample(sample, metadata, fc_or_hb, tsp_name):
         # If device owner is Cosmos, do not send downstream
         if tsp_name != "COSPA":
             handle_hb(converted_device_params, converted_equip_params, converted_equip_fc, metadata, time_stamp)
+        else:
+            LOGGER.info("Not sending HB file to CD since it is a COSMOS HB file")
     else:
         LOGGER.info(f"Handling FC...")
         handle_fc(converted_device_params, converted_equip_params, converted_equip_fc, metadata, time_stamp)
