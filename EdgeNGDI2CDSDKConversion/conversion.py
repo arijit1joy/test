@@ -222,7 +222,7 @@ def process_hb_fc_non_time_stamp_equip_param(samples, param, var_dict, converted
 
 
 def process_hb_fc_non_time_stamp_param(var_dict, param, time_stamp, converted_device_params, converted_equip_params,
-                                       converted_equip_fc, samples,
+                                       converted_equip_fc, samples, found_fcs,
                                        is_hb=False):
     address = ''
     if param == converted_device_params_var:
@@ -259,7 +259,7 @@ def process_hb_fc(var_dict, metadata, time_stamp, converted_device_params, conve
                     var_dict, found_fcs = process_hb_fc_non_time_stamp_param(var_dict, param, time_stamp,
                                                                              converted_device_params,
                                                                              converted_equip_params, converted_equip_fc,
-                                                                             samples,
+                                                                             samples, found_fcs,
                                                                              is_hb=is_hb)
 
     return var_dict, found_fcs
