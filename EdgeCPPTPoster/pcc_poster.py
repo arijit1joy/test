@@ -61,7 +61,7 @@ def send_to_pcc(json_body, device_id, j1939_data_type, sqs_message_template):
         current_dt = datetime.datetime.now()
 
         file_sent_sqs_message = sqs_message_template.replace("{FILE_METADATA_FILE_STAGE}", "FILE_SENT")
-        file_sent_sqs_message = sqs_message_template.replace("{FILE_METADATA_CURRENT_DATE_TIME}", current_dt.strftime('%Y-%m-%d %H:%M:%S'))
+        file_sent_sqs_message = file_sent_sqs_message.replace("{FILE_METADATA_CURRENT_DATE_TIME}", current_dt.strftime('%Y-%m-%d %H:%M:%S'))
 
         sqs_send_message(os.environ["metaWriteQueueUrl"], file_sent_sqs_message, edgeCommonAPIURL)
         return kinesis_response
