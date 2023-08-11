@@ -119,6 +119,7 @@ def handle_j1939_process(context):
     for device_id, j1939_hb_payload in j1939_hb_data_set.items():
         print(f" - {j1939_hb_payload}")
         topic = context.j1939_public_topic.replace("{device_id}", device_id)
+        print(f" - {topic}")
         mqtt_publish_response = publish_to_mqtt_topic(topic, j1939_hb_payload, context.region)
         print(f" - {mqtt_publish_response}")
 
