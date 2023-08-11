@@ -3,6 +3,7 @@ import json
 import os
 import sys
 import time
+import traceback
 from multiprocessing import Process
 sys.path.insert(1, './lib')
 
@@ -286,6 +287,7 @@ def handle_hb(converted_device_params, converted_equip_params, converted_equip_f
     except Exception as e:
         error_message = f"An exception occurred while handling HB sample: {e}"
         LOGGER.error(error_message)
+        traceback.print_exc()
         process_audit_error(error_message=error_message, module_name="J1939_HB", meta_data=metadata)
 
 
