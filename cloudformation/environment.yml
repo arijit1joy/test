@@ -375,7 +375,6 @@ Resources:
                 Resource:
                   - !Ref CrossIOTRoleArn
                   - !Ref NimbusIoTRoleArn
-                  # - !Ref CosmosIoTRoleArn
                 Effect: Allow
       AssumeRolePolicyDocument:
         Statement:

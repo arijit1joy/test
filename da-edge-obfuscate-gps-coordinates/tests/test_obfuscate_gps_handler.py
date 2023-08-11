@@ -146,3 +146,24 @@ class TestObfuscateGPSHandler(unittest.TestCase):
                                                            "Longitude": "30.9876543"}}]}
         result = send_file_to_s3(body)
         print("Result: ", result)
+
+
+    @mock_s3
+    @patch.dict('os.environ', {'j1939_end_bucket': 'test_bucket'})
+    @patch('obfuscate_gps_handler.send_file_to_s3')
+    @patch('obfuscate_gps_handler.handle_gps_coordinates')
+    def test_sendFileToS3_givenValidBody_tsp_name_cospa_thenPutFileIntoBucket(self, mock_handle_gps_coordinates,
+                                                                              mock_send_file_to_s3):
+        print("<-----test_sendFileToS3_givenValidBody_tsp_name_cospa_thenPutFileIntoBucket----->")
+        s3_client = boto3.client("s3")
+        s3_client.create_bucket(Bucket=os.environ['j1939_end_bucket'])
+        body = {"componentSerialNumber": "10290001", "telematicsPartnerName": "COSPA",
+                "dataSamplingConfigId": "SC5004", "telematicsDeviceId": "102900000000001",
+                "samples": [{"dateTimestamp": "2020-10-08T14:26:58.456Z",
+                             "convertedDeviceParameters": {"messageID": "message_id", "Latitude": "-39.3456789",
+                                                           "Longitude": "30.9876543"}}]}
+        mock_handle_gps_coordinates.return_value = ("-12.345", "12.345")
+        result = obfuscate_gps(body)
+        print("Result: ", result)
+
+        mock_send_file_to_s3.assert_called()
