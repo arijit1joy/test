@@ -83,10 +83,10 @@ class PCCPoster(unittest.TestCase):
     def test_send_to_pcc_given(self, mock_client, hb_params: MagicMock(), sqs_send_message: MagicMock):
         hb_params.return_value = self.hb_param_json
 
-        response = pcc_poster.send_to_pcc(self.json_body, "123456789", "HB", "None")
+        response = pcc_poster.send_to_pcc(self.json_body, "123456789", "J1939-HB", "None")
         print(response)
         assert call().put_record(StreamARN='test', Data=json.dumps(self.json_body, indent=2).encode('utf-8'),
-                                 PartitionKey='123456789-J1939-Data') in mock_client.mock_calls
+                                 PartitionKey='123456789-J1939-HB') in mock_client.mock_calls
         pcc_poster.sqs_send_message.assert_called()
 
 

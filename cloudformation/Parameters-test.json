@@ -30,8 +30,10 @@
         "DbSubnet1": "subnet-0aefb8b5c2531eef2",
         "DbSubnet2": "subnet-006ba88b3114e3283",
         "EDGERedisSecretName": "/da-EDGE-Olympus/elasticache/edge-rw",
-         "PCCAccountId": "884739393817",
-         "PCCRegion": "us-east-1",
-         "CosmosIoTRoleArn": "arn:aws:iam::071171162566:role/cosmos-to-cda-cross-account-access-role-test"
+        "PCCAccountId": "924917633645",
+        "PCCRegion": "us-east-1",
+        "CosmosJ1939RuleArn": "arn:aws:iot:us-east-2:071171162566:rule/cda_cosmos_public_datalogger_topicrule_dev",
+        "CosmosAccountID": "071171162566"
+
     }
 }
