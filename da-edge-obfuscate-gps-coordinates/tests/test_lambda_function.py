@@ -34,3 +34,12 @@ class TestLambdaFunction(unittest.TestCase):
 
         self.assertRaises(Exception)
         mock_obfuscate_gps.assert_called()
+
+    @patch('lambda_function.obfuscate_gps')
+    def test_lambdaHandler_givenValidEvent_tsp_name_cospa_thenCalledObfuscateGPS(self, mock_obfuscate_gps):
+            print('<-----test_lambdaHandler_givenValidEvent_tsp_name_cospa_thenCalledObfuscateGPS----->')
+            event = {"telematicsDeviceId": "1234567890", "telematicsPartnerName": "COSPA"}
+            result = lambda_handler(event, None)
+            print("Result: ", result)
+            mock_obfuscate_gps.assert_called()
+
