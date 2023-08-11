@@ -3,19 +3,26 @@ import json
 import time
 import uuid
 import boto3
-import requests
-import post
-import pt_poster
-import pcc_poster
-import utility as util
-import environment_params as env
-from multiprocessing import Process
-from edge_sqs_utility_layer.sqs_utility import sqs_send_message
+import traceback
 import sys
-from update_scheduler import update_scheduler_table, get_request_id_from_consumption_view
-
 sys.path.insert(1, './lib')
-from edge_db_lambda_client import EdgeDbLambdaClient
+try:
+
+    import requests
+    import post
+    import pt_poster
+    import pcc_poster
+    import utility as util
+    import environment_params as env
+    from multiprocessing import Process
+    from edge_sqs_utility_layer.sqs_utility import sqs_send_message
+
+    from update_scheduler import update_scheduler_table, get_request_id_from_consumption_view
+
+    from edge_db_lambda_client import EdgeDbLambdaClient
+except Exception as e:
+    traceback.print_exc()
+    raise e
 
 LOGGER = util.get_logger(__name__)
 
@@ -194,6 +201,8 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
             else:
                 LOGGER.error(f"Error! Could not retrieve TSP. This is mandatory field!")
                 return
+        else:
+            tsp_name = json_body["telematicsPartnerName"]
         LOGGER.info(f"Retrieved TSP name is {tsp_name}")
         if device_owner in json.loads(os.environ["cd_device_owners"]):
             LOGGER.info("Inside CD device owner case")

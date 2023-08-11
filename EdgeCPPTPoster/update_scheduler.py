@@ -1,13 +1,10 @@
 import os
-import sys
 
-import edge_core as edge
 import scheduler_query as scheduler
 from pypika import Query, Table, functions as fn
 
 import utility as util
 from utilities.redis_utility import get_set_redis_value
-sys.path.insert(1, './lib')
 from edge_db_lambda_client import EdgeDbLambdaClient
 
 LOGGER = util.get_logger(__name__)

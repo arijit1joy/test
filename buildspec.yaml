@@ -22,19 +22,14 @@ phases:
     - npm --version  
     - curr_dir=$(pwd) 
     - mkdir "$curr_dir/target" 
-    - echo "----------- SET Log Level To INFO ------------------"
-    - cat cloudformation/environment.yml
     - sed -i -E 's|LoggingLevel\s*:\s*\"[dD][eE][bB][uU][gG]\"|LoggingLevel~~~~~~ \"info\"|gi' cloudformation/environment.yml
     - sed -i -e 's|~~~~~~|:|g' cloudformation/environment.yml
-    - cat cloudformation/environment.yml
-    - echo "----------- END SET Log Level To INFO ------------------"
     - cd cloudformation 
     - versionId=$(date +"%m-%d-%Y-%H-%M-%S") 
     - echo $versionId
     - pip install -q ruamel.yaml
     - for paramsFile in ./Param*.json ;  
       do  
-        echo $paramsFile;  
         tmp=$(mktemp); 
         sed "s/"empty"/${versionId}/g" $paramsFile > "$tmp" && mv "$tmp" $paramsFile;
         sh "${curr_dir}/cloudformation/layer-helper.sh" $paramsFile;

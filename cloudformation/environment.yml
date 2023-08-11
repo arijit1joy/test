@@ -93,18 +93,6 @@ Resources:
       Value: !Ref EdgeJ1939ProcessingBucket
       Name: da-edge-j1939-processing-bucket
 
-  RequestsPythonLayer:
-    Type: "AWS::Lambda::LayerVersion"
-    Properties:
-      Content:
-        S3Bucket: !Ref ArtifactsBucket
-        S3Key: python-requests.zip
-      LayerName: !Sub "${ApplicationName}-python-requests"
-      Description: python-requests for restful API calls
-      CompatibleRuntimes:
-        - python3.6
-        - python3.7
-
   EdgeJ1939DataLogBucketPolicy:
     Type: "AWS::S3::BucketPolicy"
     Properties:
@@ -318,7 +306,7 @@ Resources:
       ReservedConcurrentExecutions: 25
       Environment:
         Variables:
-          LoggingLevel: "info"
+          LoggingLevel: "debug"
           APPLICATION_NAME: !Ref ApplicationName
           region: !Sub "${AWS::Region}"
           APPLICATION_ENVIRONMENT: !Ref ApplicationEnvironmentTag
@@ -471,7 +459,6 @@ Resources:
     Type: "AWS::Lambda::Function"
     Properties:
       Layers:
-        - !Ref PandasPythonLayer
         - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:da-edge-device-python-requests:${PythonRequestsVersion}
         - !Sub >-
           arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:EDGEDeviceMetadataSQSLayer:${EdgeSQSUtilityVersion}
@@ -488,7 +475,7 @@ Resources:
       ReservedConcurrentExecutions: 25
       Environment:
         Variables:
-          LoggingLevel: "info"
+          LoggingLevel: "debug"
           fmi_indicator: FMI
           spn_parameter_json_object_key: edge_spn_parameter_name.json
           edgeCommonAPIURL: !Ref EdgeCommonDBAPI
@@ -801,7 +788,7 @@ Resources:
       ReservedConcurrentExecutions: 25
       Environment:
         Variables:
-          LoggingLevel: "info"
+          LoggingLevel: "debug"
           APPLICATION_ENVIRONMENT: !Ref ApplicationEnvironmentTag
           CPPostBucket: !Sub "edge-j1939-${ApplicationEnvironmentTag}"
           region: !Sub "${AWS::Region}"
@@ -836,17 +823,17 @@ Resources:
       LogGroupName: !Sub '/aws/lambda/${EdgeJ1939CSVConverter}-logs'
       RetentionInDays: 120 # 3 months, matches existing log group
 
-  PandasPythonLayer:
-    Type: "AWS::Lambda::LayerVersion"
-    Properties:
-      Content:
-        S3Bucket: !Ref ArtifactsBucket
-        S3Key: python_pandas.zip
-      LayerName: pandas-requests
-      Description: python-requests for restful API calls
-      CompatibleRuntimes:
-        - python3.6
-        - python3.7
+  # PandasPythonLayer:
+  #   Type: "AWS::Lambda::LayerVersion"
+  #   Properties:
+  #     Content:
+  #       S3Bucket: !Ref ArtifactsBucket
+  #       S3Key: python_pandas.zip
+  #     LayerName: pandas-requests
+  #     Description: python-requests for restful API calls
+  #     CompatibleRuntimes:
+  #       - python3.6
+  #       - python3.7
 
   J1939StreamingBucketPolicy:
     Type: "AWS::S3::BucketPolicy"
@@ -947,7 +934,7 @@ Resources:
       ReservedConcurrentExecutions: 25
       Environment:
         Variables:
-          LoggingLevel: "info"
+          LoggingLevel: "debug"
           cd_device_owners: '{"EBU": "EBU", "TATA": "TATA", "TataMotors":"TataMotors", "COSPA":"COSPA"}'
           Environment: !Sub "${ApplicationEnvironmentTag}"
           RedisSecretName: !Ref EDGERedisSecretName
