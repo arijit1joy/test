@@ -6,23 +6,19 @@ import boto3
 import traceback
 import sys
 sys.path.insert(1, './lib')
-try:
+import requests
+import post
+import pt_poster
+import pcc_poster
+import utility as util
+import environment_params as env
+from multiprocessing import Process
+from edge_sqs_utility_layer.sqs_utility import sqs_send_message
 
-    import requests
-    import post
-    import pt_poster
-    import pcc_poster
-    import utility as util
-    import environment_params as env
-    from multiprocessing import Process
-    from edge_sqs_utility_layer.sqs_utility import sqs_send_message
+from update_scheduler import update_scheduler_table, get_request_id_from_consumption_view
 
-    from update_scheduler import update_scheduler_table, get_request_id_from_consumption_view
+from edge_db_lambda_client import EdgeDbLambdaClient
 
-    from edge_db_lambda_client import EdgeDbLambdaClient
-except Exception as e:
-    traceback.print_exc()
-    raise e
 
 LOGGER = util.get_logger(__name__)
 
