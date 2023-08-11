@@ -805,7 +805,7 @@ Resources:
           QueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/${ApplicationName}-DataLogFilesQueue-${ApplicationEnvironmentTag}"
           mapTspFromOwner: >-
             {"EBU": "Cummins", "PSBU": "Cummins" ,"TATA": "India_Edge",
-            "Navistar": "Navistar", "N2": "Navistar" ,"Paccar":"Paccar", "Siemens":"Siemens", "TataMotors":"Accolade"}
+            "Navistar": "Navistar", "N2": "Navistar" ,"Paccar":"Paccar", "Siemens":"Siemens", "TataMotors":"Accolade", "Cosmos":"COSPA"}
           delivery_stream_name: !Ref DeliveryStreamName
           Region: !Sub "${AWS::Region}"
           MaxAttempts: !Ref MaxAttempts
@@ -934,7 +934,7 @@ Resources:
       Environment:
         Variables:
           LoggingLevel: "debug"
-          cd_device_owners: '{"EBU": "EBU", "TATA": "TATA", "TataMotors":"TataMotors", "COSPA":"COSPA"}'
+          cd_device_owners: '{"EBU": "EBU", "TATA": "TATA", "TataMotors":"TataMotors", "Cosmos":"Cosmos"}'
           Environment: !Sub "${ApplicationEnvironmentTag}"
           RedisSecretName: !Ref EDGERedisSecretName
           edgeCommonAPIURL: !Ref EdgeCommonDBAPI
