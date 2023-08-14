@@ -6,16 +6,6 @@ from unittest.mock import patch, MagicMock
 from tests.cda_module_mock_context import CDAModuleMockingContext
 
 sys.path.append("../")
-sys.modules["boto3"] = MagicMock()
-sys.modules["obfuscate_gps_utility"] = MagicMock()
-sys.modules["metadata_utility"] = MagicMock()
-sys.modules["sqs_utility"] = MagicMock()
-sys.modules["edge_core_layer"] = MagicMock()
-sys.modules["edge_logger"] = MagicMock()
-sys.modules["requests"] = MagicMock()
-sys.modules["json"] = MagicMock()
-sys.modules["lambda_cache"] = MagicMock()
-
 
 with CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.environ", {
             "edgeCommonAPIURL": "testurl","spn_parameter_json_object": "test","spn_parameter_json_object_key": "test",
@@ -33,16 +23,17 @@ with CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.env
     cda_module_mock_context.mock_module('edge_core_layer.edge_errors')
     cda_module_mock_context.mock_module('edge_core_layer.edge_s3')
     cda_module_mock_context.mock_module('edge_core_layer.edge_tata')
+    cda_module_mock_context.mock_module('edge_sqs_utility_layer.sqs_utility')
+    cda_module_mock_context.mock_module('lambda_cache')
+    cda_module_mock_context.mock_module('metadata_utility')
+    cda_module_mock_context.mock_module('obfuscate_gps_utility')
+    cda_module_mock_context.mock_module('aws_utils')
     cda_module_mock_context.mock_module("boto3")
     cda_module_mock_context.mock_module('cd_sdk_conversion.cd_sdk')
+    cda_module_mock_context.mock_module('edge_db_utility_layer.metadata_utility')
 
     import conversion
 
-del sys.modules["obfuscate_gps_utility"]
-del sys.modules["metadata_utility"]
-del sys.modules["sqs_utility"]
-del sys.modules["edge_core_layer"]
-del sys.modules["edge_logger"]
 
 class TestConversion(unittest.TestCase):
 
@@ -50,6 +41,8 @@ class TestConversion(unittest.TestCase):
     @patch("conversion.json")
     @patch.dict('os.environ', {'metaWriteQueueUrl': 'metaWriteQueueUrl','AuditTrailQueueUrl':'AuditTrailQueueUrl','QueueUrl':'QueueUrl'})
     def test_retrieve_and_process_file_when_no_samples(self,json, s3_client):
+        print("<---------- test_retrieve_and_process_file_when_no_samples ---------->")
+
         body = {
             "messageFormatVersion": "1.1.1",
             "telematicsPartnerName": "Accolade",
@@ -64,7 +57,7 @@ class TestConversion(unittest.TestCase):
             "samples": []
         }
         patch("builtins.open", MagicMock())
-        fetch_cs_reg_payload = open("tests\\test.json", "r")
+        fetch_cs_reg_payload = open(os.path.join("tests", "test.json"), "r")
 
         uploaded_file_object = {"source_bucket_name": "test", "file_key": "edge_864337059675703_30311606_20230424064925_SC3078_2023-04-24T06_49_25.956Z",
                                 "file_size": "1","sqs_receipt_handle":"sqs_receipt_handle" }
@@ -82,6 +75,8 @@ class TestConversion(unittest.TestCase):
     @patch.dict('os.environ', {'metaWriteQueueUrl': 'metaWriteQueueUrl', 'AuditTrailQueueUrl': 'AuditTrailQueueUrl',
                                'QueueUrl': 'QueueUrl'})
     def test_retrieve_and_process_file_when_no_meta_data(self, json, s3_client):
+        print("<---------- test_retrieve_and_process_file_when_no_meta_data ---------->")
+
         body = {
             "messageFormatVersion": "1.1.1",
             "telematicsPartnerName": "Accolade",
@@ -97,7 +92,7 @@ class TestConversion(unittest.TestCase):
         }
         patch("builtins.open", MagicMock())
 
-        fetch_cs_reg_payload = open("tests\\test.json", "r")
+        fetch_cs_reg_payload = open(os.path.join("tests", "test.json"), "r")
 
         uploaded_file_object = {"source_bucket_name": "test",
                                 "file_key": "edge_864337059675703_30311606_20230424064925_SC3078_2023-04-24T06_49_25.956Z",
@@ -118,6 +113,7 @@ class TestConversion(unittest.TestCase):
     @patch.dict('os.environ', {'metaWriteQueueUrl': 'metaWriteQueueUrl', 'AuditTrailQueueUrl': 'AuditTrailQueueUrl',
                                'QueueUrl': 'QueueUrl'})
     def test_handle_exception_for_hb_when_cust_ref_is_tata_motors(self, json, mock_map_ngdi_sample_to_cd_payload):
+        print("<---------- test_handle_exception_for_hb_when_cust_ref_is_tata_motors ---------->")
 
         conversion.get_metadata_info.return_value = None
         converted_device_params = {}
@@ -134,6 +130,8 @@ class TestConversion(unittest.TestCase):
     @patch.dict('os.environ', {'metaWriteQueueUrl': 'metaWriteQueueUrl', 'AuditTrailQueueUrl': 'AuditTrailQueueUrl',
                                'QueueUrl': 'QueueUrl', 'class_arg_map': ''})
     def test_handle_exception_for_fc_when_cust_ref_is_tata_motors(self, LOGGER_mock):
+        print("<---------- test_handle_exception_for_fc_when_cust_ref_is_tata_motors ---------->")
+
         converted_device_params = None
         converted_equip_params = None
         converted_fc = None
@@ -147,6 +145,8 @@ class TestConversion(unittest.TestCase):
     @patch.dict('os.environ', {'metaWriteQueueUrl': 'metaWriteQueueUrl', 'AuditTrailQueueUrl': 'AuditTrailQueueUrl',
                                'QueueUrl': 'QueueUrl', 'class_arg_map': ''})
     def test_handle_exception_for_fc_when_cust_ref_is_cummins(self, LOGGER_mock):
+        print("<---------- test_handle_exception_for_fc_when_cust_ref_is_cummins ---------->")
+
         converted_device_params = None
         converted_equip_params = None
         converted_fc = None
@@ -161,6 +161,8 @@ class TestConversion(unittest.TestCase):
     @patch.dict('os.environ', {'metaWriteQueueUrl': 'metaWriteQueueUrl', 'AuditTrailQueueUrl': 'AuditTrailQueueUrl',
                                'QueueUrl': 'QueueUrl'})
     def test_retrieve_and_process_file_when_cust_ref_is_cummins(self, json, s3_client):
+        print("<---------- test_retrieve_and_process_file_when_cust_ref_is_cummins ---------->")
+
         body = {
             "messageFormatVersion": "1.1.1",
             "telematicsPartnerName": "Accolade",
@@ -175,7 +177,7 @@ class TestConversion(unittest.TestCase):
             "samples": []
         }
         patch("builtins.open", MagicMock())
-        fetch_cs_reg_payload = open("tests\\test.json", "r")
+        fetch_cs_reg_payload = open(os.path.join("tests", "test.json"), "r")
 
         uploaded_file_object = {"source_bucket_name": "test",
                                 "file_key": "edge_864337059675703_30311606_20230424064925_SC3078_2023-04-24T06_49_25.956Z",
@@ -189,3 +191,79 @@ class TestConversion(unittest.TestCase):
         json.loads.return_value = body
         conversion.retrieve_and_process_file(uploaded_file_object, "")
 
+    @patch.dict('os.environ', {'metaWriteQueueUrl': 'metaWriteQueueUrl', 'AuditTrailQueueUrl': 'AuditTrailQueueUrl',
+                               'QueueUrl': 'QueueUrl'})
+    @patch('conversion.handle_hb')
+    @patch("conversion.s3_client.get_object")
+    @patch("conversion.json.loads")
+    def test_retrieve_and_process_file_when_tsp_name_is_cospa(self, json, mock_s3_client, mock_handle_hb):
+        print("<---------- test_retrieve_and_process_file_when_tsp_name_is_cospa ---------->")
+
+        body = {
+            "messageFormatVersion": "1.1.1",
+            "telematicsPartnerName": "COSPA",
+            "customerReference": "Cummins",
+            "componentSerialNumber": "30311606",
+            "equipmentId": "",
+            "vin": "",
+            "telematicsDeviceId": "864337059675703",
+            "dataSamplingConfigId": "SC3078",
+            "dataEncryptionSchemeId": "ES1",
+            "numberOfSamples": 1,
+            "samples": [{"dateTimestamp": "2020-10-08T14:26:58.456Z",
+                             "convertedDeviceParameters": {"messageID": "message_id", "Longitude": "30.9876543"}}]
+        }
+        patch("builtins.open", MagicMock())
+        fetch_cs_reg_payload = open(os.path.join("tests", "test.json"), "r")
+
+        uploaded_file_object = {"source_bucket_name": "test",
+                                "file_key": "edge_864337059675703_30311606_20230424064925_SC3078_2023-04-24T06_49_25.956Z",
+                                "file_size": "1", "sqs_receipt_handle": "sqs_receipt_handle"}
+        s3_object = {"Metadata": {"uuid": "469448c0-e34e-11ed-b5ea-0242ac120002", "j1939type": "HB"},
+                     "LastModified": "edge_864337059675703_30311606_20230424064925_SC3078_2023-04-24T06_49_25.956Z",
+                     "Body": fetch_cs_reg_payload,
+                     "sqs_receipt_handle": "sqs_receipt_handle"
+                     }
+        mock_s3_client.return_value = s3_object
+        json.return_value = body
+        conversion.retrieve_and_process_file(uploaded_file_object, "")
+        mock_handle_hb.assert_not_called()
+
+
+    @patch.dict('os.environ', {'metaWriteQueueUrl': 'metaWriteQueueUrl', 'AuditTrailQueueUrl': 'AuditTrailQueueUrl',
+                               'QueueUrl': 'QueueUrl'})
+    @patch('conversion.handle_hb')
+    @patch("conversion.s3_client.get_object")
+    @patch("conversion.json.loads")
+    def test_retrieve_and_process_file_when_tsp_name_is_not_cospa(self, json, mock_s3_client, mock_handle_hb):
+        print("<---------- test_retrieve_and_process_file_when_tsp_name_is_not_cospa ---------->")
+
+        body = {
+            "messageFormatVersion": "1.1.1",
+            "telematicsPartnerName": "Accolade",
+            "customerReference": "Cummins",
+            "componentSerialNumber": "30311606",
+            "equipmentId": "",
+            "vin": "",
+            "telematicsDeviceId": "864337059675703",
+            "dataSamplingConfigId": "SC3078",
+            "dataEncryptionSchemeId": "ES1",
+            "numberOfSamples": 1,
+            "samples": [{"dateTimestamp": "2020-10-08T14:26:58.456Z",
+                             "convertedDeviceParameters": {"messageID": "message_id", "Longitude": "30.9876543"}}]
+        }
+        patch("builtins.open", MagicMock())
+        fetch_cs_reg_payload = open(os.path.join("tests", "test.json"), "r")
+
+        uploaded_file_object = {"source_bucket_name": "test",
+                                "file_key": "edge_864337059675703_30311606_20230424064925_SC3078_2023-04-24T06_49_25.956Z",
+                                "file_size": "1", "sqs_receipt_handle": "sqs_receipt_handle"}
+        s3_object = {"Metadata": {"uuid": "469448c0-e34e-11ed-b5ea-0242ac120002", "j1939type": "HB"},
+                     "LastModified": "edge_864337059675703_30311606_20230424064925_SC3078_2023-04-24T06_49_25.956Z",
+                     "Body": fetch_cs_reg_payload,
+                     "sqs_receipt_handle": "sqs_receipt_handle"
+                     }
+        mock_s3_client.return_value = s3_object
+        json.return_value = body
+        conversion.retrieve_and_process_file(uploaded_file_object, "")
+        mock_handle_hb.assert_called_once()

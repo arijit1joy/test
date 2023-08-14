@@ -1,5 +1,6 @@
 import os
-from edge_logger import logging_framework, send_error_to_audit_trail_queue
+
+from edge_core_layer.edge_logger import logging_framework, send_error_to_audit_trail_queue
 
 
 def get_logger(file_name):

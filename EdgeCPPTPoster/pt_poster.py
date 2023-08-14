@@ -5,10 +5,10 @@ import datetime
 import requests
 import traceback
 import utility as util
-from sqs_utility import sqs_send_message
+from edge_sqs_utility_layer.sqs_utility import sqs_send_message
 from kafka_producer import publish_message
 from kafka_producer import _create_kafka_message
-from obfuscate_gps_utility import handle_gps_coordinates
+from edge_db_utility_layer.obfuscate_gps_utility import handle_gps_coordinates
 from metadata_utility import write_health_parameter_to_database
 
 LOGGER = util.get_logger(__name__)
@@ -123,7 +123,7 @@ def send_to_pt(post_url, headers, json_body, sqs_message_template, j1939_data_ty
                         sample.pop("convertedDeviceParameters")
 
         # We are not sending payload to PT for Digital Cockpit Device
-        if not json_body["telematicsDeviceId"] == '192000000000101':
+        if json_body["telematicsDeviceId"] != '192000000000101':
             final_json_body = [json_body]
              # Send to Cluster
             if os.environ['publishKafka'] == "True":

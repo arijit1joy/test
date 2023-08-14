@@ -4,7 +4,7 @@ import boto3
 import traceback
 import pt_poster
 import utility as util
-from sqs_utility import sqs_send_message
+from edge_sqs_utility_layer.sqs_utility import sqs_send_message
 
 LOGGER = util.get_logger(__name__)
 
@@ -56,9 +56,10 @@ def send_to_cd(bucket_name, key, json_format, client, j1939_type, endpoint_bucke
     elif json_format.lower() == "ngdi":
 
         if use_endpoint_bucket.lower() == "y":
-            # TODO - This functionality is not in use now, but may be used in the future
+            # This functionality is not in use now, but may be used in the future
             endpoint_file_exists = check_endpoint_file_exists(endpoint_bucket, endpoint_file)
             LOGGER.debug(f"Endpoint File Exists: {endpoint_file_exists}")
         else:
             sqs_message = sqs_message.replace("CD_PT_POSTED", "FILE_SENT")
-            pt_poster.send_to_pt(CDPTJ1939PostURL, CDPTJ1939Header, json_body, sqs_message, j1939_data_type)
+            pt_poster.send_to_pt(CDPTJ1939PostURL, CDPTJ1939Header, json_body, sqs_message, j1939_data_type, j1939_type, uuid, json_body["telematicsDeviceId"],
+               json_body["componentSerialNumber"])

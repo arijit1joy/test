@@ -76,6 +76,10 @@ Parameters:
     Type: String
   PCCRegion:
     Type: String
+  CosmosAccountID:
+    Type: String
+  CosmosJ1939RuleArn:
+    Type: String
 
 Conditions:
   UseDevOrTestCondition: !Or
@@ -91,18 +95,6 @@ Resources:
       Description: j1939 Processing bucket name
       Value: !Ref EdgeJ1939ProcessingBucket
       Name: da-edge-j1939-processing-bucket
-
-  RequestsPythonLayer:
-    Type: "AWS::Lambda::LayerVersion"
-    Properties:
-      Content:
-        S3Bucket: !Ref ArtifactsBucket
-        S3Key: python-requests.zip
-      LayerName: !Sub "${ApplicationName}-python-requests"
-      Description: python-requests for restful API calls
-      CompatibleRuntimes:
-        - python3.6
-        - python3.9
 
   EdgeJ1939DataLogBucketPolicy:
     Type: "AWS::S3::BucketPolicy"
@@ -133,9 +125,7 @@ Resources:
             Effect: Allow
             Principal:
               AWS:
-                - !GetAtt
-                  - EdgeJ1939CSVConverterLambdaRole
-                  - Arn
+                - !GetAtt EdgeJ1939CSVConverterLambdaRole.Arn
       Bucket: !Ref EdgeJ1939DataLogBucket
 
   Spnlistbucket:
@@ -175,9 +165,7 @@ Resources:
               AWS:
                 - !Sub >-
                   arn:aws:iam::${AWS::AccountId}:role/da-edge-device-EdgeRegistrationLambdaTrustRole-${ApplicationEnvironmentTag}
-                - !GetAtt
-                  - EdgeCPPTPosterLambdaRole
-                  - Arn
+                - !GetAtt EdgeCPPTPosterLambdaRole.Arn
       Bucket: !Ref EndpointBucket
 
   EdgeJ1939Bucket:
@@ -205,9 +193,7 @@ Resources:
                   - "sqs:ReceiveMessage"
                   - "sqs:DeleteMessage"
                   - "sqs:GetQueueAttributes"
-                Resource: !GetAtt
-                  - EDGEJ1939NGDI2CDSDKConversionQueue
-                  - Arn
+                Resource: !GetAtt EDGEJ1939NGDI2CDSDKConversionQueue.Arn
                 Effect: Allow
               - Action:
                   - "sqs:SendMessage"
@@ -257,7 +243,7 @@ Resources:
                   - "dynamodb:PutItem"
                   - "dynamodb:UpdateItem"
                   - "dynamodb:DeleteItem"
-                Resource: !GetAtt [ActiveFaultCodeTable, Arn]
+                Resource: !GetAtt ActiveFaultCodeTable.Arn
               - Action:
                   - "ssm:Get*"
                 Resource:
@@ -267,9 +253,7 @@ Resources:
                   - "sqs:ReceiveMessage"
                   - "sqs:DeleteMessage"
                   - "sqs:GetQueueAttributes"
-                Resource: !GetAtt
-                  - EDGEJ1939DataLogFilesQueue
-                  - Arn
+                Resource: !GetAtt EDGEJ1939DataLogFilesQueue.Arn
                 Effect: Allow
               - Action:
                   - "sqs:SendMessage"
@@ -325,16 +309,14 @@ Resources:
       ReservedConcurrentExecutions: 25
       Environment:
         Variables:
-          LoggingLevel: "info"
+          LoggingLevel: "debug"
           APPLICATION_NAME: !Ref ApplicationName
           region: !Sub "${AWS::Region}"
           APPLICATION_ENVIRONMENT: !Ref ApplicationEnvironmentTag
           j1939_end_bucket: !Ref EdgeJ1939ProcessingBucket
           AuditTrailQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
       Handler: lambda_function.lambda_handler
-      Role: !GetAtt
-        - ObfuscateGPSCoordinatesLambdaRole
-        - Arn
+      Role: !GetAtt ObfuscateGPSCoordinatesLambdaRole.Arn
       Timeout: 300
       Runtime: python3.9
 
@@ -387,7 +369,7 @@ Resources:
               #     - "lambda:InvokeFunction"
               #     - "lambda:InvokeAsync"
               #   Resource: "*"
-              #   Effect: Allow
+                # Effect: Allow
               - Action:
                   - "sqs:SendMessage"
                 Resource: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
@@ -422,9 +404,7 @@ Resources:
             Effect: Allow
             Principal:
               AWS:
-                - !GetAtt
-                  - EdgeNGDI2CDSDKConversionLambdaRole
-                  - Arn
+                - !GetAtt EdgeNGDI2CDSDKConversionLambdaRole.Arn
       Bucket: !Ref Spnlistbucket
 
   EdgeJ1939DataLogBucket:
@@ -470,9 +450,7 @@ Resources:
     Properties:
       Action: "lambda:InvokeFunction"
       SourceAccount: !Ref "AWS::AccountId"
-      FunctionName: !GetAtt
-        - EdgeCPPTPoster
-        - Arn
+      FunctionName: !GetAtt EdgeCPPTPoster.Arn
       SourceArn: !Join
         - ""
         - - "arn:aws:s3:::"
@@ -483,12 +461,7 @@ Resources:
     Type: "AWS::Lambda::Function"
     Properties:
       Layers:
-        - !Ref PandasPythonLayer
         - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:da-edge-device-python-requests:${PythonRequestsVersion}
-        - !Sub >-
-          arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:Edge-Core:${EdgeCoreLayerVersion}
-        - !Sub >-
-          arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:edge_db_utility:${EdgeDBUtilityLayerVersion}
         - !Sub >-
           arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:EDGEDeviceMetadataSQSLayer:${EdgeSQSUtilityVersion}
       Code:
@@ -504,7 +477,7 @@ Resources:
       ReservedConcurrentExecutions: 25
       Environment:
         Variables:
-          LoggingLevel: "info"
+          LoggingLevel: "debug"
           fmi_indicator: FMI
           spn_parameter_json_object_key: edge_spn_parameter_name.json
           edgeCommonAPIURL: !Ref EdgeCommonDBAPI
@@ -551,9 +524,7 @@ Resources:
           metaWriteQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
           AuditTrailQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
       Handler: conversion.lambda_handler
-      Role: !GetAtt
-        - EdgeNGDI2CDSDKConversionLambdaRole
-        - Arn
+      Role: !GetAtt EdgeNGDI2CDSDKConversionLambdaRole.Arn
       Timeout: 900
       Runtime: python3.9
       FunctionName: !Sub "${ApplicationName}-EdgeNGDI2CDSDKConversion-${ApplicationEnvironmentTag}"
@@ -569,9 +540,7 @@ Resources:
     Properties:
       Action: "lambda:InvokeFunction"
       SourceAccount: !Ref "AWS::AccountId"
-      FunctionName: !GetAtt
-        - EdgeJ1939CSVConverter
-        - Arn
+      FunctionName: !GetAtt EdgeJ1939CSVConverter.Arn
       SourceArn: !Join
         - ""
         - - "arn:aws:s3:::"
@@ -606,9 +575,7 @@ Resources:
                   - "sqs:ReceiveMessage"
                   - "sqs:DeleteMessage"
                   - "sqs:GetQueueAttributes"
-                Resource: !GetAtt
-                  - EDGEJ1939CPPTPosterQueue
-                  - Arn
+                Resource: !GetAtt EDGEJ1939CPPTPosterQueue.Arn
                 Effect: Allow
               - Action:
                   - "sqs:SendMessage"
@@ -634,8 +601,8 @@ Resources:
                   - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/da-EDGE-Olympus/elasticache/edge-rw-??????"
                   - !If
                     - UseDevOrTestCondition
-                    - !ImportValue
-                      "Fn::Sub": "${ApplicationNameCDA}-msk-cluster-secret-${ApplicationEnvironmentTag}"
+                    - Fn::ImportValue: 
+                        'Fn::Sub': "${ApplicationNameCDA}-msk-cluster-secret-${ApplicationEnvironmentTag}"
                     - !Ref "AWS::NoValue"
                 Effect: Allow
               - Action:
@@ -653,8 +620,8 @@ Resources:
                     - "kafka:DescribeCluster"
                     - "kafka:GetBootstrapBrokers"
                   Resource:
-                    - !ImportValue
-                      "Fn::Sub": "${ApplicationNameCDA}-msk-cluster-arn-${ApplicationEnvironmentTag}"
+                    - Fn::ImportValue: 
+                        'Fn::Sub': "${ApplicationNameCDA}-msk-cluster-arn-${ApplicationEnvironmentTag}"
                   Effect: Allow
                 - !Ref "AWS::NoValue"
               - Action:
@@ -773,9 +740,16 @@ Resources:
     Properties:
       Action: "lambda:InvokeFunction"
       FunctionName: !Ref ObfuscateGPSCoordinatesLambda
-      SourceArn: !GetAtt
-        - EdgePublicDataIoTTopicRule
-        - Arn
+      SourceArn: !GetAtt EdgePublicDataIoTTopicRule.Arn
+      Principal: iot.amazonaws.com
+
+  LambdaInvokeObfuscateGPSCoordinatesPermissionFromCosmosAccount:
+    Type: "AWS::Lambda::Permission"
+    Properties:
+      Action: "lambda:InvokeFunction"
+      SourceAccount: !Ref CosmosAccountID
+      SourceArn: !Ref CosmosJ1939RuleArn
+      FunctionName: !Ref ObfuscateGPSCoordinatesLambda
       Principal: iot.amazonaws.com
 
   LambdaInvokeIotObfuscateGPSCoordinatesPermission:
@@ -800,11 +774,7 @@ Resources:
       Layers:
         - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:da-edge-device-python-requests:${PythonRequestsVersion}
         - !Sub >-
-          arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:Edge-Core:${EdgeCoreLayerVersion}
-        - !Sub >-
           arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:kinesis_utility:${KinesisLayerVersion}
-        - !Sub >-
-          arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:edge_db_utility:${EdgeDBUtilityLayerVersion}
         - !Sub >-
           arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:EDGEDeviceMetadataSQSLayer:${EdgeSQSUtilityVersion}
       Code:
@@ -820,7 +790,7 @@ Resources:
       ReservedConcurrentExecutions: 25
       Environment:
         Variables:
-          LoggingLevel: "info"
+          LoggingLevel: "debug"
           APPLICATION_ENVIRONMENT: !Ref ApplicationEnvironmentTag
           CPPostBucket: !Sub "edge-j1939-${ApplicationEnvironmentTag}"
           region: !Sub "${AWS::Region}"
@@ -838,16 +808,14 @@ Resources:
           QueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/${ApplicationName}-DataLogFilesQueue-${ApplicationEnvironmentTag}"
           mapTspFromOwner: >-
             {"EBU": "Cummins", "PSBU": "Cummins" ,"TATA": "India_Edge",
-            "Navistar": "Navistar", "N2": "Navistar" ,"Paccar":"Paccar", "Siemens":"Siemens", "TataMotors":"Accolade"}
+            "Navistar": "Navistar", "N2": "Navistar" ,"Paccar":"Paccar", "Siemens":"Siemens", "TataMotors":"Accolade", "Cosmos":"COSPA"}
           delivery_stream_name: !Ref DeliveryStreamName
           Region: !Sub "${AWS::Region}"
           MaxAttempts: !Ref MaxAttempts
           metaWriteQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
           AuditTrailQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
       Handler: ConverterLambda.lambda_handler
-      Role: !GetAtt
-        - EdgeJ1939CSVConverterLambdaRole
-        - Arn
+      Role: !GetAtt EdgeJ1939CSVConverterLambdaRole.Arn
       Timeout: 900
       Runtime: python3.9
 
@@ -857,17 +825,17 @@ Resources:
       LogGroupName: !Sub '/aws/lambda/${EdgeJ1939CSVConverter}-logs'
       RetentionInDays: 120 # 3 months, matches existing log group
 
-  PandasPythonLayer:
-    Type: "AWS::Lambda::LayerVersion"
-    Properties:
-      Content:
-        S3Bucket: !Ref ArtifactsBucket
-        S3Key: python_pandas.zip
-      LayerName: pandas-requests
-      Description: python-requests for restful API calls
-      CompatibleRuntimes:
-        - python3.6
-        - python3.9
+  # PandasPythonLayer:
+  #   Type: "AWS::Lambda::LayerVersion"
+  #   Properties:
+  #     Content:
+  #       S3Bucket: !Ref ArtifactsBucket
+  #       S3Key: python_pandas.zip
+  #     LayerName: pandas-requests
+  #     Description: python-requests for restful API calls
+  #     CompatibleRuntimes:
+  #       - python3.6
+  #       - python3.7
 
   J1939StreamingBucketPolicy:
     Type: "AWS::S3::BucketPolicy"
@@ -885,9 +853,7 @@ Resources:
               AWS:
                 - !Sub >-
                   arn:aws:iam::${AWS::AccountId}:role/${ApplicationName}-${ApplicationEnvironmentTag}-J1939StreamBucket
-                - !GetAtt
-                  - EdgeJ1939CSVConverterLambdaRole
-                  - Arn
+                - !GetAtt EdgeJ1939CSVConverterLambdaRole.Arn
                 - !Sub >-
                   arn:aws:iam::${AWS::AccountId}:role/da-edge-oem-OEMLambdaTrustRole-${ApplicationEnvironmentTag}
           - Action:
@@ -899,18 +865,10 @@ Resources:
             Effect: Allow
             Principal:
               AWS:
-                - !GetAtt
-                  - EdgeCPPTPosterLambdaRole
-                  - Arn
-                - !GetAtt
-                  - EdgeNGDI2CDSDKConversionLambdaRole
-                  - Arn
-                - !GetAtt
-                  - ObfuscateGPSCoordinatesLambdaRole
-                  - Arn
-                - !GetAtt
-                  - EdgeJ1939CSVConverterLambdaRole
-                  - Arn
+                - !GetAtt EdgeCPPTPosterLambdaRole.Arn
+                - !GetAtt EdgeNGDI2CDSDKConversionLambdaRole.Arn
+                - !GetAtt ObfuscateGPSCoordinatesLambdaRole.Arn
+                - !GetAtt EdgeJ1939CSVConverterLambdaRole.Arn
           - Action:
               - "s3:Put*"
               - "s3:Get*"
@@ -929,9 +887,7 @@ Resources:
     Properties:
       Action: "lambda:InvokeFunction"
       SourceAccount: !Ref "AWS::AccountId"
-      FunctionName: !GetAtt
-        - EdgeNGDI2CDSDKConversion
-        - Arn
+      FunctionName: !GetAtt EdgeNGDI2CDSDKConversion.Arn
       SourceArn: !Join
         - ""
         - - "arn:aws:s3:::"
@@ -965,12 +921,7 @@ Resources:
       Layers:
         - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:da-edge-device-python-requests:${PythonRequestsVersion}
         - !Sub >-
-          arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:Edge-Core:${EdgeCoreLayerVersion}
-        - !Sub >-
-          arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:edge_db_utility:${EdgeDBUtilityLayerVersion}
-        - !Sub >-
           arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:Scheduler-queries:${SchedulerQueriesLayerVersion}
-        - !Ref EDGESQSUtilityPythonLayer
       Code:
         S3Bucket: !Ref ArtifactsBucket
         S3Key: !Sub "${VersionId}/EdgeCPPTPoster.zip"
@@ -984,8 +935,8 @@ Resources:
       ReservedConcurrentExecutions: 25
       Environment:
         Variables:
-          LoggingLevel: "info"
-          cd_device_owners: '{"EBU": "EBU", "TATA": "TATA", "TataMotors":"TataMotors"}'
+          LoggingLevel: "debug"
+          cd_device_owners: '{"EBU": "EBU", "TATA": "TATA", "TataMotors":"TataMotors", "Cosmos":"Cosmos"}'
           Environment: !Sub "${ApplicationEnvironmentTag}"
           RedisSecretName: !Ref EDGERedisSecretName
           edgeCommonAPIURL: !Ref EdgeCommonDBAPI
@@ -1010,7 +961,7 @@ Resources:
           APPLICATION_NAME: !Ref ApplicationName
           mapTspFromOwner: >-
             {"EBU": "Cummins", "PSBU": "Cummins" ,"TATA": "India_Edge",
-            "Navistar": "Navistar", "N2": "Navistar" ,"Paccar":"Paccar", "Siemens":"Siemens", "TataMotors":"Accolade"}
+            "Navistar": "Navistar", "N2": "Navistar" ,"Paccar":"Paccar", "Siemens":"Siemens", "TataMotors":"Accolade", "Cosmos":"COSPA"}
           UseEndpointBucket: "Y"
           CPPostBucket: !Sub "edge-j1939-${ApplicationEnvironmentTag}"
           region: !Sub "${AWS::Region}"
@@ -1026,13 +977,13 @@ Resources:
           MaxAttempts: !Ref MaxAttempts
           mskSecretArn: !If
             - UseDevOrTestCondition
-            - !ImportValue
-              "Fn::Sub": "${ApplicationNameCDA}-msk-cluster-secret-${ApplicationEnvironmentTag}"
+            - Fn::ImportValue: 
+                'Fn::Sub': "${ApplicationNameCDA}-msk-cluster-secret-${ApplicationEnvironmentTag}"
             - !Ref "AWS::NoValue"
           mskClusterArn: !If
             - UseDevOrTestCondition
-            - !ImportValue
-              "Fn::Sub": "${ApplicationNameCDA}-msk-cluster-arn-${ApplicationEnvironmentTag}"
+            - Fn::ImportValue: 
+                'Fn::Sub': "${ApplicationNameCDA}-msk-cluster-arn-${ApplicationEnvironmentTag}"
             - !Ref "AWS::NoValue"
           topicName: "j1939-pt-topic"
           publishKafka: True
@@ -1042,19 +993,17 @@ Resources:
           pcc_region: !Ref PCCRegion
 
       Handler: PosterLambda.lambda_handler
-      Role: !GetAtt
-        - EdgeCPPTPosterLambdaRole
-        - Arn
+      Role: !GetAtt EdgeCPPTPosterLambdaRole.Arn
       Timeout: 900
       Runtime: python3.9
       VpcConfig:
         SecurityGroupIds:
-          - !ImportValue
-            "Fn::Sub": "edge-redis-lambda-security-group-${ApplicationEnvironmentTag}"
+          - Fn::ImportValue: 
+              'Fn::Sub': "edge-redis-lambda-security-group-${ApplicationEnvironmentTag}"
           - !If
             - UseDevOrTestCondition
-            - !ImportValue
-                "Fn::Sub": "${ApplicationNameCDA}-msk-cluster-security-group-${ApplicationEnvironmentTag}"
+            - Fn::ImportValue: 
+                'Fn::Sub': "${ApplicationNameCDA}-msk-cluster-security-group-${ApplicationEnvironmentTag}"
             - !Ref "AWS::NoValue"
         SubnetIds:
           - !Ref DbSubnet1

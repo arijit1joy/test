@@ -4,18 +4,10 @@ import unittest
 from unittest.mock import patch, MagicMock
 
 sys.path.append("../")
-sys.modules["edge_logger"] = MagicMock()
-sys.modules["sqs_utility"] = MagicMock()
-sys.modules["kafka"] = MagicMock()
-sys.modules["obfuscate_gps_utility"] = MagicMock()
-sys.modules["metadata_utility"] = MagicMock()
-sys.modules["edge_core"] = MagicMock()
-sys.modules["scheduler_query"] = MagicMock()
-sys.modules["boto3"] = MagicMock()
-sys.modules["edge_db_lambda_client"] = MagicMock()
-sys.modules["update_scheduler"] = MagicMock()
 
-with patch.dict("os.environ", {
+from tests.cda_module_mock_context import CDAModuleMockingContext
+
+with  CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.environ", {
     "ptTopicInfo":'{"topicName": "nimbuspt_j1939-{j1939_type}", "bu":"PSBU","file_type":"JSON"}',
     "LoggingLevel": "debug",
     "PTxAPIKey": "testKey",
@@ -50,18 +42,21 @@ with patch.dict("os.environ", {
     "pcc_region": "us-east-1"
 
 }):
+    cda_module_mock_context.mock_module("edge_core_layer"),
+    cda_module_mock_context.mock_module("edge_core_layer.edge_logger"),
+    cda_module_mock_context.mock_module("edge_db_lambda_client"),
+    cda_module_mock_context.mock_module("kafka_producer.publish_message")
+    cda_module_mock_context.mock_module("edge_sqs_utility_layer")
+    cda_module_mock_context.mock_module("edge_sqs_utility_layer.sqs_utility")
+    cda_module_mock_context.mock_module("kafka_producer")
+    cda_module_mock_context.mock_module("kafka")
+    cda_module_mock_context.mock_module("obfuscate_gps_utility")
+    cda_module_mock_context.mock_module("metadata_utility")
+    cda_module_mock_context.mock_module("scheduler_query")
+    cda_module_mock_context.mock_module("boto3")
+    cda_module_mock_context.mock_module("update_scheduler")
     import PosterLambda
 
-del sys.modules["edge_logger"]
-del sys.modules["sqs_utility"]
-del sys.modules["kafka"]
-del sys.modules["obfuscate_gps_utility"]
-del sys.modules["metadata_utility"]
-del sys.modules["edge_core"]
-del sys.modules["scheduler_query"]
-del sys.modules["boto3"]
-del sys.modules["edge_db_lambda_client"]
-del sys.modules["update_scheduler"]
 
 class TestPosterLambda(unittest.TestCase):
     sample_device_id = '12345'
