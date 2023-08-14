@@ -115,13 +115,13 @@ def handle_j1939_process(context):
     # Set up and publish payload for J1939 HB
     j1939_hb_data_set = get_j1939_hb_data_set(context)
 
-    print("Publishing HB messages to MQTT")
+    # print("Publishing HB messages to MQTT")
     for device_id, j1939_hb_payload in j1939_hb_data_set.items():
-        print(f" - {j1939_hb_payload}")
+        # print(f" - {j1939_hb_payload}")
         topic = context.j1939_public_topic.replace("{device_id}", device_id)
-        print(f" - {topic}")
+        # print(f" - {topic}")
         mqtt_publish_response = publish_to_mqtt_topic(topic, j1939_hb_payload, context.region)
-        print(f" - {mqtt_publish_response}")
+        # print(f" - {mqtt_publish_response}")
 
         # Using j1939_hb_payload in "then" steps
         context.j1939_hb_payload = j1939_hb_payload
