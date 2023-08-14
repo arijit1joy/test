@@ -3,7 +3,7 @@ import json
 import boto3
 import utility as util
 from datetime import datetime
-from obfuscate_gps_utility import handle_gps_coordinates
+from edge_db_utility_layer.obfuscate_gps_utility import handle_gps_coordinates
 
 LOGGER = util.get_logger(__name__)
 

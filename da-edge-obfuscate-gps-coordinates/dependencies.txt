@@ -1,7 +1,3 @@
 --extra-index-url https://jfrog.cummins.com/artifactory/api/pypi/da-dse-pypi-release-local/simple
-redis-py-cluster
-edge_db_lambda_client
 edge_core_layer
-edge_sqs_utility_layer
 edge_db_utility_layer
-edge_db_lambda_client

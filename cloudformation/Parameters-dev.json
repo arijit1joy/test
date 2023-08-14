@@ -33,6 +33,8 @@
         "PCCAccountId": "884739393817",
         "PCCRegion": "us-east-1",
         "CosmosJ1939RuleArn": "arn:aws:iot:us-east-1:071171162566:rule/da_cosmos_J1939HBData_TopicRule_dev",
-        "CosmosAccountID": "071171162566"
+        "CosmosAccountID": "071171162566",
+        "PypikaPythonLayer": "arn:aws:lambda:us-east-1:732927748536:layer:CDAPypikaLayer:47",
+        "RequestsPythonLayer": "arn:aws:lambda:us-east-1:732927748536:layer:python-requests:155"
     }
 }
