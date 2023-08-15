@@ -90,6 +90,7 @@ Parameters:
 
 
 Conditions:
+  UseNotStageCondition: !Not [!Equals [!Ref ApplicationEnvironmentTag, stage]]
   UseDevOrTestCondition: !Or
     - !Equals [!Ref ApplicationEnvironmentTag, dev]
     - !Equals [!Ref ApplicationEnvironmentTag, test]
@@ -173,7 +174,10 @@ Resources:
               AWS:
                 - !Sub >-
                   arn:aws:iam::${AWS::AccountId}:role/da-edge-device-EdgeRegistrationLambdaTrustRole-${ApplicationEnvironmentTag}
-                - !GetAtt EdgeCPPTPosterLambdaRole.Arn
+                - !If 
+                  - UseNotStageCondition
+                  - !GetAtt EdgeCPPTPosterLambdaRole.Arn
+                  - !Ref "AWS::NoValue"
       Bucket: !Ref EndpointBucket
 
   EdgeJ1939Bucket:
@@ -451,6 +455,7 @@ Resources:
 
   LambdaInvokePermissionJ1939ProcessingBucket:
     Type: "AWS::Lambda::Permission"
+    Condition: UseNotStageCondition
     Properties:
       Action: "lambda:InvokeFunction"
       SourceAccount: !Ref "AWS::AccountId"
@@ -551,6 +556,7 @@ Resources:
 
   EdgeCPPTPosterLambdaRole:
     Type: "AWS::IAM::Role"
+    Condition: UseNotStageCondition
     Properties:
       RoleName: !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeCPPTPosterLambdaRole"
       ManagedPolicyArns:
@@ -865,7 +871,10 @@ Resources:
             Effect: Allow
             Principal:
               AWS:
-                - !GetAtt EdgeCPPTPosterLambdaRole.Arn
+                - !If 
+                  - UseNotStageCondition
+                  - !GetAtt EdgeCPPTPosterLambdaRole.Arn
+                  - !Ref "AWS::NoValue"
                 - !GetAtt EdgeNGDI2CDSDKConversionLambdaRole.Arn
                 - !GetAtt ObfuscateGPSCoordinatesLambdaRole.Arn
                 - !GetAtt EdgeJ1939CSVConverterLambdaRole.Arn
@@ -917,6 +926,7 @@ Resources:
 
   EdgeCPPTPoster:
     Type: "AWS::Lambda::Function"
+    Condition: UseNotStageCondition
     Properties:
       Layers:
         - !Ref RequestsPythonLayer
@@ -1022,6 +1032,7 @@ Resources:
 
   EdgeCPPTPosterEventInvokeConfig:
     Type: AWS::Lambda::EventInvokeConfig
+    Condition: UseNotStageCondition
     Properties:
       FunctionName: !Ref EdgeCPPTPoster
       MaximumRetryAttempts: 1
@@ -1133,6 +1144,7 @@ Resources:
   # Lambda Event Source Mappings
   EDGEJ1939CPPTPosterQueueTrigger:
     Type: AWS::Lambda::EventSourceMapping
+    Condition: UseNotStageCondition
     Properties:
       BatchSize: 50
       MaximumBatchingWindowInSeconds: 60
