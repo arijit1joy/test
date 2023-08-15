@@ -1026,6 +1026,7 @@ Resources:
 
   EdgeCPPTPosterLogGroup:
     Type: AWS::Logs::LogGroup
+    Condition: UseNotStageCondition
     Properties:
       LogGroupName: !Sub '/aws/lambda/${EdgeCPPTPoster}-logs'
       RetentionInDays: 120 # 3 months, matches existing log group
