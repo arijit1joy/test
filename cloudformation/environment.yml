@@ -9,11 +9,7 @@ Parameters:
     Type: String
   DataQualityLambda:
     Type: String
-  SchedulerQueriesLayerVersion:
-    Type: String
   PTJ1939Header:
-    Type: String
-  EdgeCoreLayerVersion:
     Type: String
   ArtifactsBucket:
     Type: String
@@ -24,8 +20,6 @@ Parameters:
   VersionId:
     Type: String
   EdgeDBUtilityLayerVersion:
-    Type: String
-  KinesisLayerVersion:
     Type: String
   EdgeCommonDBAPI:
     Type: String
@@ -44,8 +38,6 @@ Parameters:
   BDDReportsBucket:
     Type: String
     Default: da-edge-bdd-reports
-  EdgeSQSUtilityVersion:
-    Type: String
   ProcessDataQuality:
     Type: String
   MaxAttempts:
@@ -65,16 +57,20 @@ Parameters:
     Type: String
   NimbusIoTAccount:
     Type: String
-  PythonRequestsVersion:
-    Type: String
   EDGERedisSecretName:
     Type: String
-  # RequestsPythonLayer:
-  #   Type: AWS::SSM::Parameter::Value<String>
-  #   Default: layer-RequestsPythonLayer
-  # PypikaPythonLayer:
-  #   Type: AWS::SSM::Parameter::Value<String>
-  #   Default: layer-CDAPypikaPythonLayer
+  RequestsPythonLayer:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: layer-RequestsPythonLayer
+  PypikaPythonLayer:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: layer-CDAPypikaPythonLayer
+  KinesisPythonLayer:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: layer-KinesisUtilityLayer
+  SchedulerQueriesPythonLayer:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: layer-SchedulerQueriesLayer
   PCCAccountId:
     Type: String
   PCCRegion:
@@ -83,11 +79,6 @@ Parameters:
     Type: String
   CosmosJ1939RuleArn:
     Type: String
-  RequestsPythonLayer:
-    Type: String
-  PypikaPythonLayer:
-    Type: String
-
 
 Conditions:
   UseNotStageCondition: !Not [!Equals [!Ref ApplicationEnvironmentTag, stage]]
@@ -781,8 +772,7 @@ Resources:
     Properties:
       Layers:
         - !Ref RequestsPythonLayer
-        - !Sub >-
-          arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:kinesis_utility:${KinesisLayerVersion}
+        - !Ref KinesisPythonLayer
       Code:
         S3Bucket: !Ref ArtifactsBucket
         S3Key: !Sub "${VersionId}/EdgeJ1939CSVConverter.zip"
@@ -931,8 +921,7 @@ Resources:
       Layers:
         - !Ref RequestsPythonLayer
         - !Ref PypikaPythonLayer
-        - !Sub >-
-          arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:Scheduler-queries:${SchedulerQueriesLayerVersion}
+        - !Ref SchedulerQueriesPythonLayer
       Code:
         S3Bucket: !Ref ArtifactsBucket
         S3Key: !Sub "${VersionId}/EdgeCPPTPoster.zip"
