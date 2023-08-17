@@ -71,6 +71,18 @@ Parameters:
   SchedulerQueriesPythonLayer:
     Type: AWS::SSM::Parameter::Value<String>
     Default: layer-SchedulerQueriesLayer
+  MskClusterSecret:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: cda-data-hub-msk-cluster-secret
+  MskClusterArn:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: cda-data-hub-msk-cluster-arn
+  MskClusterSecurityGroup:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: cda-data-hub-msk-cluster-security-group
+  EdgeRedisLambdaSecurityGroupID:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: EdgeRedisLambdaSecurityGroupID
   PCCAccountId:
     Type: String
   PCCRegion:
@@ -600,8 +612,7 @@ Resources:
                   - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/da-EDGE-Olympus/elasticache/edge-rw-??????"
                   - !If
                     - UseDevOrTestCondition
-                    - Fn::ImportValue: 
-                        'Fn::Sub': "${ApplicationNameCDA}-msk-cluster-secret-${ApplicationEnvironmentTag}"
+                    - !Ref MskClusterSecret
                     - !Ref "AWS::NoValue"
                 Effect: Allow
               - Action:
@@ -619,8 +630,7 @@ Resources:
                     - "kafka:DescribeCluster"
                     - "kafka:GetBootstrapBrokers"
                   Resource:
-                    - Fn::ImportValue: 
-                        'Fn::Sub': "${ApplicationNameCDA}-msk-cluster-arn-${ApplicationEnvironmentTag}"
+                    - !Ref MskClusterArn 
                   Effect: Allow
                 - !Ref "AWS::NoValue"
               - Action:
@@ -977,13 +987,11 @@ Resources:
           MaxAttempts: !Ref MaxAttempts
           mskSecretArn: !If
             - UseDevOrTestCondition
-            - Fn::ImportValue: 
-                'Fn::Sub': "${ApplicationNameCDA}-msk-cluster-secret-${ApplicationEnvironmentTag}"
+            - !Ref MskClusterSecret 
             - !Ref "AWS::NoValue"
           mskClusterArn: !If
             - UseDevOrTestCondition
-            - Fn::ImportValue: 
-                'Fn::Sub': "${ApplicationNameCDA}-msk-cluster-arn-${ApplicationEnvironmentTag}"
+            - !Ref MskClusterArn 
             - !Ref "AWS::NoValue"
           topicName: "j1939-pt-topic"
           publishKafka: True
@@ -998,12 +1006,10 @@ Resources:
       Runtime: python3.9
       VpcConfig:
         SecurityGroupIds:
-          - Fn::ImportValue: 
-              'Fn::Sub': "edge-redis-lambda-security-group-${ApplicationEnvironmentTag}"
+          - !Ref EdgeRedisLambdaSecurityGroupID
           - !If
             - UseDevOrTestCondition
-            - Fn::ImportValue: 
-                'Fn::Sub': "${ApplicationNameCDA}-msk-cluster-security-group-${ApplicationEnvironmentTag}"
+            - !Ref MskClusterSecurityGroup
             - !Ref "AWS::NoValue"
         SubnetIds:
           - !Ref DbSubnet1
