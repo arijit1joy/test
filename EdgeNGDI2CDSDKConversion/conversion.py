@@ -10,8 +10,8 @@ sys.path.insert(1, './lib')
 import boto3
 import requests
 from lambda_cache import ssm
-from edge_db_utility_layer.metadata_utility import write_health_parameter_to_database
-from obfuscate_gps_utility import handle_gps_coordinates
+from edge_db_utility_layer.metadata_utility import write_health_parameter_to_database_v2
+from edge_db_utility_layer.obfuscate_gps_utility import handle_gps_coordinates
 from edge_sqs_utility_layer.sqs_utility import sqs_send_message
 from aws_utils import spn_file_json
 
@@ -503,7 +503,7 @@ def store_health_parameters_into_redshift(converted_device_params, time_stamp, j
         esn = j1939_file_val['componentSerialNumber']
         convert_timestamp = datetime.datetime.strptime(time_stamp, '%Y-%m-%dT%H:%M:%S.%fZ')
         new_timestamp = datetime.datetime.strftime(convert_timestamp, '%Y-%m-%d %H:%M:%S')
-        return write_health_parameter_to_database(message_id, cpu_temperature, pmic_temperature, latitude, longitude,
+        return write_health_parameter_to_database_v2(message_id, cpu_temperature, pmic_temperature, latitude, longitude,
                                                   altitude, pdop, satellites_used, lte_rssi, lte_rscp, lte_rsrq,
                                                   lte_rsrp, cpu_usage_level, ram_usage_level, snr_per_satellite,
                                                   new_timestamp, device_id, esn, os.environ["edgeCommonAPIURL"])
