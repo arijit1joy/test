@@ -6,15 +6,16 @@ from moto import mock_s3
 import sys
 
 sys.path.append('../')
-sys.modules['edge_logger'] = MagicMock()
-sys.modules['obfuscate_gps_utility'] = MagicMock()
+sys.modules['boto3'] = MagicMock()
+sys.modules['edge_core_layer.edge_logger'] = MagicMock()
+sys.modules['edge_db_utility_layer.obfuscate_gps_utility'] = MagicMock()
 with patch.dict("os.environ", {
     "LoggingLevel": "debug"
 }):
     from obfuscate_gps_handler import obfuscate_gps, send_file_to_s3
-del sys.modules['edge_logger']
-del sys.modules['obfuscate_gps_utility']
-
+del sys.modules['edge_core_layer.edge_logger']
+del sys.modules['edge_db_utility_layer.obfuscate_gps_utility']
+del sys.modules['boto3']
 
 class TestObfuscateGPSHandler(unittest.TestCase):
     @patch('obfuscate_gps_handler.send_file_to_s3')

@@ -1,3 +1,6 @@
+import sys
+
+sys.path.insert(1, './lib')
 import utility as util
 from obfuscate_gps_handler import obfuscate_gps
 

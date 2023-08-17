@@ -3,14 +3,16 @@ from unittest.mock import patch, MagicMock
 import sys
 
 sys.path.append('../')
-sys.modules['edge_logger'] = MagicMock()
-sys.modules['obfuscate_gps_utility'] = MagicMock()
+sys.modules['boto3'] = MagicMock()
+sys.modules['edge_core_layer.edge_logger'] = MagicMock()
+sys.modules['edge_db_utility_layer.obfuscate_gps_utility'] = MagicMock()
 with patch.dict("os.environ", {
     "LoggingLevel": "debug"
 }):
     from lambda_function import lambda_handler
-del sys.modules['edge_logger']
-del sys.modules['obfuscate_gps_utility']
+del sys.modules['edge_core_layer.edge_logger']
+del sys.modules['edge_db_utility_layer.obfuscate_gps_utility']
+del sys.modules['boto3']
 
 
 class TestLambdaFunction(unittest.TestCase):
