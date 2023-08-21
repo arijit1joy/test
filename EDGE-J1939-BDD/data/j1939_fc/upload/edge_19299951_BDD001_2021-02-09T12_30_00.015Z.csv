@@ -1,0 +1,11 @@
+messageFormatVersion,1.1.1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+dataEncryptionSchemeId,ES1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+telematicsBoxId,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+componentSerialNumber,19299952,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+dataSamplingConfigId,BDD001,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+startingEventDateTimestamps,2021-02-09T12:30:00.015Z,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+endingEventDateTimestamps,2021-02-09T12:30:00.015Z,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+This data file is the property of Cummins Inc. Any use or sale of the data by non-Cummins employees constitutes theft which is prosecutable as a crime.  If this data has inadvertently come into your possession please destroy it and notify Cummins at 812-377-xxxx.,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+asDateTimestamp,converted~device~~~,CPU_Usage_Level,LTE_RSRP,LTE_RSRQ,messageID,Latitude,CPU_temperature,Satellites_Used,Longitude,PDOP,LTE_RSCP,PMIC_temperature,LTE_RSSI,Altitude,converted~J1939~CAN1~0~,190,174,175,110,100,101,102,168,157,105,513,899,91,92,109,activeFaultCodes
+2021-02-09T12:30:00.015Z,,2.02,-107,-6,8c5a1650-048e-4620-9950-bc14fa4b46b7,39.202938,40.3,20,-85.88672,1.159999967,255,33.25,99,165.236,,,,,,,,,,,,,,,,,spn:100~fmi:4~count:1|spn:110~fmi:3~count:1|spn:175~fmi:3~count:1|spn:108~fmi:4~count:1|spn:411~fmi:4~count:1|spn:1172~fmi:3~count:1|spn:105~fmi:3~count:1|spn:102~fmi:4~count:1|spn:1209~fmi:4~count:1|spn:412~fmi:3~count:1|spn:157~fmi:3~count:1|spn:111~fmi:3~count:1|spn:97~fmi:3~count:1|spn:1347~fmi:3~count:1|spn:2623~fmi:3~count:1|spn:101~fmi:4~count:1|
