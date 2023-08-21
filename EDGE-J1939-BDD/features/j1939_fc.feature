@@ -16,7 +16,7 @@ Feature: Regression Test Cases for J1939 Fault Code Process
   Scenario: FC file is received to EDGE cloud for an FC file with no device_id
     Given An invalid EBU FC file in CSV format containing no device_id value
     When The FC file is uploaded to the device-data-log-<env> bucket
-    Then Stored J1939 FC metadata stages in EDGE DB
+    Then Stored J1939 FC metadata stages in EDGE DB by ESN
  #Scenarios for PSBU Devices
   Scenario: FC file is received to EDGE cloud with the valid data for PSBU
     Given A valid PSBU FC message in CSV format containing a valid data

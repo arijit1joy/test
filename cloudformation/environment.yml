@@ -474,6 +474,7 @@ Resources:
     Properties:
       Layers:
         - !Ref RequestsPythonLayer
+        - !Ref PypikaPythonLayer
       Code:
         S3Bucket: !Ref ArtifactsBucket
         S3Key: !Sub "${VersionId}/EdgeNGDI2CDSDKConversion.zip"

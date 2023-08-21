@@ -26,7 +26,7 @@ with CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.env
     cda_module_mock_context.mock_module('edge_sqs_utility_layer.sqs_utility')
     cda_module_mock_context.mock_module('lambda_cache')
     cda_module_mock_context.mock_module('metadata_utility')
-    cda_module_mock_context.mock_module('obfuscate_gps_utility')
+    cda_module_mock_context.mock_module('edge_db_utility_layer.obfuscate_gps_utility')
     cda_module_mock_context.mock_module('aws_utils')
     cda_module_mock_context.mock_module("boto3")
     cda_module_mock_context.mock_module('cd_sdk_conversion.cd_sdk')

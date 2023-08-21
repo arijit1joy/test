@@ -1,18 +1,17 @@
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 import sys
-
 sys.path.append('../')
-sys.modules['boto3'] = MagicMock()
-sys.modules['edge_core_layer.edge_logger'] = MagicMock()
-sys.modules['edge_db_utility_layer.obfuscate_gps_utility'] = MagicMock()
-with patch.dict("os.environ", {
+from cda_module_mock_context import CDAModuleMockingContext
+
+
+with CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.environ", {
     "LoggingLevel": "debug"
 }):
+    cda_module_mock_context.mock_module("boto3")
+    cda_module_mock_context.mock_module("edge_core_layer.edge_logger")
+    cda_module_mock_context.mock_module("edge_db_utility_layer.obfuscate_gps_utility")
     from lambda_function import lambda_handler
-del sys.modules['edge_core_layer.edge_logger']
-del sys.modules['edge_db_utility_layer.obfuscate_gps_utility']
-del sys.modules['boto3']
 
 
 class TestLambdaFunction(unittest.TestCase):

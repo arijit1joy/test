@@ -42,8 +42,8 @@ def valid_ebu_fc_message_with_not_exist_device(context):
 def invalid_ebu_fc_message_without_device_id(context):
     context.j1939_fc_stages = ["FILE_RECEIVED", "UNCOMPRESSED", "CSV_JSON_CONVERTED"]
     context.file_name = context.file_name_for_ebu_scenario_3
-    context.device_id = context.ebu_device_id_1
-    context.esn = context.ebu_esn_1
+    context.device_id = context.ebu_device_id_2
+    context.esn = context.ebu_esn_2
 
 
 @exception_handler
@@ -87,6 +87,19 @@ def assert_j1939_fc_stages_in_edge_db(context):
     da_edge_metadata = Table(context.edge_metadata_table)
     query = Query.from_(da_edge_metadata).select(da_edge_metadata.data_pipeline_stage).where(
         da_edge_metadata.device_id == context.device_id).where(da_edge_metadata.data_protocol == "J1939_FC")  # noqa
+    edge_db_payload = get_edge_db_payload('get', query)
+    edge_db_response = rest_api.post(context.edge_common_db_url, edge_db_payload)
+    received_stages = [stage["data_pipeline_stage"] for stage in edge_db_response["body"]]
+    assert set(context.j1939_fc_stages) == set(received_stages)
+
+
+@exception_handler
+@then(u'Stored J1939 FC metadata stages in EDGE DB by ESN')
+def assert_j1939_fc_stages_in_edge_db(context):
+    time.sleep(60)
+    da_edge_metadata = Table(context.edge_metadata_table)
+    query = Query.from_(da_edge_metadata).select(da_edge_metadata.data_pipeline_stage).where(
+        da_edge_metadata.esn == context.esn).where(da_edge_metadata.data_protocol == "J1939_FC")  # noqa
     edge_db_payload = get_edge_db_payload('get', query)
     edge_db_response = rest_api.post(context.edge_common_db_url, edge_db_payload)
     received_stages = [stage["data_pipeline_stage"] for stage in edge_db_response["body"]]

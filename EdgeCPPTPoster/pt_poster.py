@@ -9,7 +9,7 @@ from edge_sqs_utility_layer.sqs_utility import sqs_send_message
 from kafka_producer import publish_message
 from kafka_producer import _create_kafka_message
 from edge_db_utility_layer.obfuscate_gps_utility import handle_gps_coordinates
-from metadata_utility import write_health_parameter_to_database
+from edge_db_utility_layer.metadata_utility import write_health_parameter_to_database_v2
 
 LOGGER = util.get_logger(__name__)
 secret_name = os.environ['PTxAPIKey']
@@ -82,7 +82,7 @@ def store_device_health_params(converted_device_params, sample_time_stamp, devic
             if 'SNR_per_Satellite' in converted_device_params else None
         convert_timestamp = datetime.datetime.strptime(sample_time_stamp, '%Y-%m-%dT%H:%M:%S.%fZ')
         new_timestamp = datetime.datetime.strftime(convert_timestamp, '%Y-%m-%d %H:%M:%S')
-        write_health_parameter_to_database(message_id, cpu_temperature, pmic_temperature, latitude, longitude,
+        write_health_parameter_to_database_v2(message_id, cpu_temperature, pmic_temperature, latitude, longitude,
                                            altitude, pdop, satellites_used, lte_rssi, lte_rscp, lte_rsrq, lte_rsrp,
                                            cpu_usage_level, ram_usage_level, snr_per_satellite, new_timestamp,
                                            device_id, esn, os.environ["edgeCommonAPIURL"])
