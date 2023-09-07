@@ -44,6 +44,7 @@ class PCCPoster(unittest.TestCase):
     json_body = {"messageFormatVersion": "1.1.1", "telematicsPartnerName": "Cummins", "customerReference": "Cummins",
                  "componentSerialNumber": "CMMNS**1929992*******************"
                                           "*******************************************",
+                 "rel_smn":"Test123",
                  "equipmentId": "EDGE_19299954", "vin": "TESTVIN19299954", "telematicsDeviceId": "192999999999954",
                  "dataSamplingConfigId": "Event1_5", "dataEncryptionSchemeId": "ES1", "numberOfSamples": 1, "samples": [
             {"convertedDeviceParameters": {"CPU_Usage_Level": "2.02", "LTE_RSRP": "-107", "LTE_RSRQ": "-6",
@@ -84,7 +85,7 @@ class PCCPoster(unittest.TestCase):
     def test_send_to_pcc_given(self, mock_client, hb_params: MagicMock(), sqs_send_message: MagicMock):
         hb_params.return_value = self.hb_param_json
 
-        response = pcc_poster.send_to_pcc(self.json_body, "123456789", "J1939-HB", "None")
+        response = pcc_poster.send_to_pcc(self.json_body, "123456789", "J1939-HB", "None","null")
         print(response)
         assert call().put_record(StreamARN='test', Data=json.dumps(self.json_body, indent=2).encode('utf-8'),
                                  PartitionKey='123456789-J1939-HB') in mock_client.mock_calls
