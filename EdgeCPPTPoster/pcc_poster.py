@@ -15,9 +15,10 @@ J19139_STREAM_ARN = os.environ["j1939_stream_arn"]
 PCC_REGION = os.environ["pcc_region"]
 
 
-def send_to_pcc(json_body, device_id, j1939_data_type, sqs_message_template):
+def send_to_pcc(json_body, device_id, j1939_data_type, sqs_message_template, service_engine_model):
     partition_key = str(device_id) + '-' + j1939_data_type
     LOGGER.info(f"Partition key for device_id {device_id} with data type {j1939_data_type} is {partition_key}")
+    json_body['rel_smn'] = service_engine_model
     try:
         if "samples" in json_body:
             for sample in json_body["samples"]:
@@ -61,7 +62,8 @@ def send_to_pcc(json_body, device_id, j1939_data_type, sqs_message_template):
         current_dt = datetime.datetime.now()
 
         file_sent_sqs_message = sqs_message_template.replace("{FILE_METADATA_FILE_STAGE}", "FILE_SENT")
-        file_sent_sqs_message = file_sent_sqs_message.replace("{FILE_METADATA_CURRENT_DATE_TIME}", current_dt.strftime('%Y-%m-%d %H:%M:%S'))
+        file_sent_sqs_message = file_sent_sqs_message.replace("{FILE_METADATA_CURRENT_DATE_TIME}",
+                                                              current_dt.strftime('%Y-%m-%d %H:%M:%S'))
 
         sqs_send_message(os.environ["metaWriteQueueUrl"], file_sent_sqs_message, edgeCommonAPIURL)
         return kinesis_response

@@ -5,6 +5,7 @@ import uuid
 import boto3
 import traceback
 import sys
+
 sys.path.insert(1, './lib')
 import requests
 import post
@@ -18,7 +19,6 @@ from edge_sqs_utility_layer.sqs_utility import sqs_send_message
 from update_scheduler import update_scheduler_table, get_request_id_from_consumption_view
 
 from edge_db_lambda_client import EdgeDbLambdaClient
-
 
 LOGGER = util.get_logger(__name__)
 
@@ -167,7 +167,6 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
         f"{'{FILE_METADATA_FILE_STAGE}'},{esn},{config_spec_and_req_id},,,"
 
     if j1939_type.lower() == 'hb':
-
         file_received_sqs_message = sqs_message_template \
             .replace("{FILE_METADATA_CURRENT_DATE_TIME}", str(file_date_time)) \
             .replace("{FILE_METADATA_FILE_STAGE}", "FILE_RECEIVED")
@@ -239,7 +238,11 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
 
             # check whether pcc_claim_status is claimed or not
             if pcc_claim_status and "claimed" == pcc_claim_status.lower():
-                pcc_poster.send_to_pcc(json_body, device_id, j1939_data_type, sqs_message_template)
+                service_engine_model = device_info[
+                    "service_engine_model"] if "service_engine_model" in device_info else None
+
+                pcc_poster.send_to_pcc(json_body, device_id, j1939_data_type, sqs_message_template,
+                                       service_engine_model)
             else:
                 pt_poster.send_to_pt(PTJ1939PostURL, PTJ1939Header, json_body, sqs_message, j1939_data_type,
                                      j1939_type.lower(), file_uuid, device_id, esn)
