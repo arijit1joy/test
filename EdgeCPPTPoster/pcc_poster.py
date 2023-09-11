@@ -18,7 +18,7 @@ PCC_REGION = os.environ["pcc_region"]
 def send_to_pcc(json_body, device_id, j1939_data_type, sqs_message_template, service_engine_model):
     partition_key = str(device_id) + '-' + j1939_data_type
     LOGGER.info(f"Partition key for device_id {device_id} with data type {j1939_data_type} is {partition_key}")
-    json_body['rel_smn'] = service_engine_model
+    set_extra_params(json_body, service_engine_model)
     try:
         if "samples" in json_body:
             for sample in json_body["samples"]:
@@ -92,3 +92,9 @@ def handle_fc_params(converted_fc_params):
                     pfc.pop("count")
     LOGGER.debug(f"Converted FC Params: {converted_fc_params}")
     return converted_fc_params
+
+
+def set_extra_params(json_body, service_engine_model):
+    json_body['rel_smn'] = service_engine_model
+    if not ('equipmentId' in json_body and json_body['equipmentId']) and 'vin' in json_body and json_body['vin']:
+        json_body['equipmentId'] = json_body['vin']
