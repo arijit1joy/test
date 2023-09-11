@@ -316,8 +316,8 @@ Resources:
           Key: "Lambda:CreatedBy"
         - Value: Edge
           Key: Name
-      MemorySize: 512
-      ReservedConcurrentExecutions: 25
+      MemorySize: 1024
+      ReservedConcurrentExecutions: 275
       Environment:
         Variables:
           LoggingLevel: "debug"
