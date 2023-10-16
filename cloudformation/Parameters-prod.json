@@ -7,7 +7,6 @@
         "ArtifactsBucket": "171670492297-da-edge-platform-catalog-us-east-2",
         "EdgeCommonDBAPI": "https://api.edge.awsprd.cummins.com/v3/EdgeDBLambda",
         "PTJ1939PostURL": "https://preventech.cummins.com/Prod/ngdi",
-        "PTJ1939ApiKey": "MgHBu3NoZa48Zz9W1jOvs8TO4Nfmo8PL9jmW1zH7",
         "PTJ1939Header": "{\"Content-Type\": \"application/json\", \"Prefer\": \"param=single-object\", \"x-api-key\": \"\"}",
         "CDPTJ1939PostURL": "https://1ymg0yxc14.execute-api.us-east-2.amazonaws.com/Prod",
         "CDPTJ1939Header": "{\"Content-Type\":\"application/json\"}",

@@ -33,8 +33,6 @@ Parameters:
     Type: String
   CDPTJ1939PostURL:
     Type: String
-  PTJ1939ApiKey:
-    Type: String
   BDDReportsBucket:
     Type: String
     Default: da-edge-bdd-reports
@@ -912,7 +910,7 @@ Resources:
           Key: Name
         - Value: !Ref ApplicationEnvironmentTag
           Key: ApplicationEnvironment
-      SecretString: !Sub '{"x-api-key": "${PTJ1939ApiKey}"}'
+      SecretString: !Sub '{"x-api-key": "~FILL~"}'
       Name: pt_xapi_key
       Description: PT x-API key
 
