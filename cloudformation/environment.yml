@@ -995,7 +995,10 @@ Resources:
             - !Ref MskClusterArn 
             - !Ref "AWS::NoValue"
           topicName: "j1939-pt-topic"
-          publishKafka: True
+          publishKafka: !If
+            - UseDevOrTestCondition
+            - True
+            - False
           ptTopicInfo: '{"topicName": "nimbuspt-j1939-{j1939_type}", "bu":"PSBU","file_type":"JSON"}'
           pcc_role_arn: !Sub "arn:aws:iam::${PCCAccountId}:role/EdgeKinesisProducerRole"
           j1939_stream_arn: !Sub "arn:aws:kinesis:${PCCRegion}:${PCCAccountId}:stream/J1939Events"

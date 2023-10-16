@@ -126,7 +126,7 @@ def send_to_pt(post_url, headers, json_body, sqs_message_template, j1939_data_ty
         if json_body["telematicsDeviceId"] != '192000000000101':
             final_json_body = [json_body]
              # Send to Cluster
-            if os.environ['publishKafka'] == "True":
+            if os.environ['publishKafka'].lower() == "true":
                 # file_sent 
 
                 file_sent_sqs_message = sqs_message_template \
