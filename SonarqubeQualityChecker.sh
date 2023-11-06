@@ -33,10 +33,14 @@ EOF
 function getQualityGateAnalysis() {
   projectKey=$(grep "${1}" "${2}/sonar-project.properties" | cut -d'=' -f2) # Get the project key from the sonar properties file
 
-  getReportCommand=$(echo curl -u "${sonarToken}": "${sonarHost}"/api/qualitygates/project_status?projectKey=$projectKey)
+  # setMainBranchCommand=$(echo curl -X POST -d "project=$projectKey&branch=${3}" -u "${sonarToken}": "${sonarHost}"/api/project_branches/set_main)
+  # echo Setting branch "${3}" as the main branch in project "$projectKey" with the command: "$setMainBranchCommand"
+  
+  getReportCommand=$(echo curl -u "${sonarToken}": "${sonarHost}"/api/qualitygates/project_status?projectKey=$projectKey"&branch=${3}")
   echo Retrieving the Sonarqube info for the project: "$projectKey" with the command: "$getReportCommand"
 
   report=$($getReportCommand)
+  # setMainBranch=$($setMainBranchCommand)
 }
 
 function checkProjectStatus() {
@@ -122,7 +126,7 @@ sonarSecretID="${2}"
 getSonarSecrets
 
 # Get the status of the Quality Gate conditions for this project
-getQualityGateAnalysis 'sonar.projectKey' $1
+getQualityGateAnalysis 'sonar.projectKey' $1 $3
 
 # Check if all the all Quality Gate conditions passed or not and respond a non-zero integer if any Quality Gate conditions failed
 checkProjectStatus $report

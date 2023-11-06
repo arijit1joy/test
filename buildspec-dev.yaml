@@ -103,13 +103,13 @@ phases:
                 fi;
                 coverage report --omit tests/*,dependencies.txt;
                 coverage xml;
-                sonar-scanner -X -Dsonar.login=$SONAR_LOGIN -Dsonar.host.url=$SONAR_HOST -Dsonar.python.coverage.reportPaths="coverage.xml";
+                sonar-scanner -X -Dsonar.login=$SONAR_LOGIN -Dsonar.host.url=$SONAR_HOST -Dsonar.python.coverage.reportPaths="coverage.xml" -Dsonar.branch.name="dev_stg";
               echo "Printing dir contents to find the coverage.xml file . . . ";
               ls -l;
                 if [ -f "../SonarqubeQualityChecker.sh" ] && [ -f "sonar-project.properties" ]; then
                   cd ..;
                   tr -d '\r' < SonarqubeQualityChecker.sh > CleanSonarqubeQualityChecker.sh;
-                  bash CleanSonarqubeQualityChecker.sh $mydir "/da-sca-sonar/sonar/sonar-common-token";
+                  bash CleanSonarqubeQualityChecker.sh $mydir "/da-sca-sonar/sonar/sonar-common-token" "dev_stg";
                   qualityCheckExitCode=$(echo $?);
                   if [ $qualityCheckExitCode -ne 0 ]; then
                     echo "\n#===================================================================#\n";
