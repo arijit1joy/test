@@ -1,7 +1,7 @@
 import sys
 import json
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import ANY, patch, MagicMock
 
 sys.path.append("../")
 
@@ -23,8 +23,8 @@ with  CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.en
     "CPPostBucket": "CPPostBucket",
     "EndpointBucket": "EndpointBucket",
     "JSONFormat": "JSONFormat",
-    "PSBUSpecifier": "PSBUSpecifier",
-    "EBUSpecifier": "EBUSpecifier",
+    "PSBUSpecifier": "psbu",
+    "EBUSpecifier": "ebu",
     "UseEndpointBucket": "UseEndpointBucket",
     "PTJ1939PostURL": "PTJ1939PostURL",
     "PTJ1939Header": "PTJ1939Header",
@@ -42,24 +42,37 @@ with  CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.en
     "pcc_region": "us-east-1"
 
 }):
-    cda_module_mock_context.mock_module("edge_core_layer"),
-    cda_module_mock_context.mock_module("edge_core_layer.edge_logger"),
-    cda_module_mock_context.mock_module("edge_db_lambda_client"),
-    cda_module_mock_context.mock_module("kafka_producer.publish_message")
-    cda_module_mock_context.mock_module("edge_sqs_utility_layer")
-    cda_module_mock_context.mock_module("edge_sqs_utility_layer.sqs_utility")
-    cda_module_mock_context.mock_module("kafka_producer")
-    cda_module_mock_context.mock_module("kafka")
-    cda_module_mock_context.mock_module("edge_db_utility_layer.obfuscate_gps_utility")
-    cda_module_mock_context.mock_module("metadata_utility")
-    cda_module_mock_context.mock_module("scheduler_query")
     cda_module_mock_context.mock_module("boto3")
+
+    cda_module_mock_context.mock_module("post")
+    cda_module_mock_context.mock_module("pt_poster")
+    cda_module_mock_context.mock_module("pcc_poster")
+    cda_module_mock_context.mock_module("utility")
+    cda_module_mock_context.mock_module("edge_db_lambda_client"),
+    cda_module_mock_context.mock_module("edge_sqs_utility_layer.sqs_utility")
     cda_module_mock_context.mock_module("update_scheduler")
+    cda_module_mock_context.mock_module("EdgeDbLambdaClient")
+
     import PosterLambda
 
 
 class TestPosterLambda(unittest.TestCase):
     sample_device_id = '12345'
+
+    
+    @patch.dict("os.environ", {"QueueUrl": "test-url"})
+    @patch("PosterLambda.boto3.client")
+    def test_delete_message_from_sqs_queue_successful(self, mock_client):
+        """
+        Test for delete_message_from_sqs_queue() running successfully.
+        """
+        mock_client.return_value.delete_message.return_value = "test-response"
+
+        response = PosterLambda.delete_message_from_sqs_queue("test-handle")
+
+        mock_client.return_value.delete_message.assert_called_with(QueueUrl="test-url", ReceiptHandle="test-handle")
+        self.assertEqual(response, "test-response")
+
 
     @patch("PosterLambda.EDGE_DB_CLIENT")
     def test_getDeviceInfo_success(self, mock_db_reader):
@@ -68,6 +81,7 @@ class TestPosterLambda(unittest.TestCase):
         self.assertEqual(result, {'test': 'value'})
         mock_db_reader.execute.assert_called_once()
 
+
     @patch("PosterLambda.EDGE_DB_CLIENT")
     def test_getDeviceInfo_uncaughtException(self, mock_db_reader):
         mock_db_reader.execute.side_effect = Exception("Mock db reader exception")
@@ -75,12 +89,38 @@ class TestPosterLambda(unittest.TestCase):
         self.assertEqual(result, False)
         mock_db_reader.execute.assert_called_once()
 
+
     @patch("PosterLambda.EDGE_DB_CLIENT")
     def test_getDeviceInfo_caughtException(self, mock_db_reader):
         mock_db_reader.execute.return_value = None
         result = PosterLambda.get_device_info(self.sample_device_id)
         self.assertEqual(result, False)
         self.assertEqual(mock_db_reader.execute.call_count, 2)
+
+
+    def test_get_business_partner_ebu(self):
+        """
+        Test for get_business_partner() returning `EBU` when EBUSpecifier is supplied.
+        """
+        response = PosterLambda.get_business_partner("EBU")
+        self.assertEqual(response, "EBU")
+
+
+    def test_get_business_partner_psbu(self):
+        """
+        Test for get_business_partner() returning `PSBU` when PSBUSpecifier is supplied.
+        """
+        response = PosterLambda.get_business_partner("PSBU")
+        self.assertEqual(response, "PSBU")
+
+
+    def test_get_business_partner_other(self):
+        """
+        Test for get_business_partner() returning False when other device types are supplied.
+        """
+        response = PosterLambda.get_business_partner("other")
+        self.assertEqual(response, False)
+
 
     @patch("PosterLambda.EDGE_DB_CLIENT")
     def test_retrieve_and_process_file(self, mock_db_reader):
