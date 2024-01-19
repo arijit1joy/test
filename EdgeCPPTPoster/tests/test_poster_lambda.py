@@ -1,3 +1,4 @@
+import io
 import sys
 import json
 import unittest
@@ -29,8 +30,8 @@ with  CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.en
     "PTJ1939PostURL": "PTJ1939PostURL",
     "PTJ1939Header": "PTJ1939Header",
     "PowerGenValue": "PowerGenValue",
-    "mapTspFromOwner": "true",
-    "ProcessDataQuality": "true",
+    "mapTspFromOwner": json.dumps({"PSBU": True}),
+    "ProcessDataQuality": "YES",
     "DataQualityLambda": "DataQualityLambda",
     "MaxAttempts": "2",
     "EngineStatOverride":"EngineStat_9",
@@ -39,11 +40,9 @@ with  CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.en
     "LoadFactorSc":"SC8093",
     "pcc_role_arn": "arn",
     "j1939_stream_arn": "arn",
-    "pcc_region": "us-east-1"
-
+    "pcc_region": "us-east-1",
 }):
     cda_module_mock_context.mock_module("boto3")
-
     cda_module_mock_context.mock_module("post")
     cda_module_mock_context.mock_module("pt_poster")
     cda_module_mock_context.mock_module("pcc_poster")
@@ -57,7 +56,109 @@ with  CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.en
 
 
 class TestPosterLambda(unittest.TestCase):
-    sample_device_id = '12345'
+    """
+    Test module for PosterLambda.py
+    """
+    
+    sample_device_id = "352953081637849"
+    bucket_name = "edge-j1939-test"
+    file_key = "ConvertedFiles/64200027/352953081637849/2024/01/17/EDGE_352953081637849_64200027_SC8153_1705470843.json"
+    file_size = 1026
+    s3_event_body = {
+        'Records': [
+            {
+                's3': {
+                    's3SchemaVersion': '1.0',
+                    'configurationId': '93d06a9d-d1a7-45f5-b0b6-5d763f24ac90',
+                    'bucket': {
+                        'name': bucket_name,
+                        'ownerIdentity': {'principalId': 'A2LE772XLDSELB'},
+                        'arn': 'arn:aws:s3:::edge-j1939-test'
+                    },
+                    'object': {
+                        'key': file_key,
+                        'size': file_size,
+                        'eTag': '2a80137307ca8181f3758b99884cbd3f',
+                        'versionId': 'YPTSqoyY544bD8sDX8D9h1WoRaSdFyek',
+                        'sequencer': '0065A76B7B36C90955'
+                    }
+                },
+                "body": json.dumps({"test": "body"}),
+                "receiptHandle": "test-receipt-handle"
+            }
+        ]
+    }
+
+    serialized_file = {
+        'componentSerialNumber': '64200027',
+        'telematicsPartnerName': None,
+        'dataSamplingConfigId': 'SC8091',
+        'messageFormatVersion': '1.1.1',
+        'customerReference': 'Cummins',
+        'telematicsDeviceId': '352953081637849',
+        'dataEncryptionSchemeId': 'ES1',
+        'numberOfSamples': 1,
+        'samples': [
+            {
+                'dateTimestamp': '2024-01-17T05:54:00.503Z',
+                'convertedDeviceParameters': {
+                    'PDOP': '0.0',
+                    'messageID': '7033dcc2-c67d-4dfd-abae-ce0a283f2646',
+                    'Latitude': '0.36386',
+                    'Satellites_Used': '0',
+                    'Longitude': '0.0',
+                    'Altitude': '0.0'
+                },
+                'convertedEquipmentParameters': [
+                    {
+                        'protocol': 'J1939',
+                        'networkId': 'CAN1',
+                        'deviceId': '00',
+                        'parameters': {
+                            '2434': '100.0',
+                            '2433': '200.0',
+                            '1152': '-273.0',
+                            '1150': '1500.0',
+                            '1208': '552.0'
+                        }
+                    },
+                    {
+                        'protocol': 'J1939',
+                        'networkId': 'CAN1',
+                        'deviceId': '01',
+                        'parameters': {
+                            '1149': '150.0',
+                            '1147': '250.0',
+                            '1145': '170.0',
+                            '1151': '110.0'
+                        }
+                    },
+                    {
+                        'protocol': 'J1939',
+                        'networkId': 'CAN1',
+                        'deviceId': '39',
+                        'parameters': {
+                            '2432': '-125.0',
+                            '513': '100.0',
+                            '190': '0.0',
+                            '899': '4.0',
+                            '91': '60.0',
+                            '92': '70.0'
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+
+    file_object = {
+        'ResponseMetadata': {},
+        'LastModified': "1981-08-03T01:17:04.000Z",
+        'ContentLength': file_size,
+        'ContentType': 'binary/octet-stream',
+        'Metadata': {},
+        'Body': io.BytesIO(json.dumps(serialized_file).encode("utf-8"))
+    }
 
     
     @patch.dict("os.environ", {"QueueUrl": "test-url"})
@@ -122,16 +223,116 @@ class TestPosterLambda(unittest.TestCase):
         self.assertEqual(response, False)
 
 
-    @patch("PosterLambda.EDGE_DB_CLIENT")
-    def test_retrieve_and_process_file(self, mock_db_reader):
-        mock_db_reader.execute.return_value = None
-        #record="{'Records': [{'eventVersion': '2.1', 'eventSource': 'aws:s3', 'awsRegion': 'us-east-1', 'eventTime': '2023-06-20T13:39:14.168Z', 'eventName': 'ObjectCreated:Put', 'userIdentity': {'principalId': 'AWS:AROA2VJPF5G4LHXPR7XXA:da-edge-j1939-ObfuscateGPSCoordinates-dev'}, 'requestParameters': {'sourceIPAddress': '3.227.253.155'}, 'responseElements': {'x-amz-request-id': 'DZ0JTJRECFJJM1JF', 'x-amz-id-2': 'cwXhQMeFC2CakRlyIHlos2yO4w66mchIgq9TTalxwkelR0P1EtM1ra8feH2UuDs7AasL5FBWPYM1yQDjZ6RZWAcZxlt1RyZC+ejRIhpELhw='}, 's3': {'s3SchemaVersion': '1.0', 'configurationId': '3930cedb-6716-4db5-af13-d93125ae976b', 'bucket': {'name': 'edge-j1939-dev', 'ownerIdentity': {'principalId': 'A2LE772XLDSELB'}, 'arn': 'arn:aws:s3:::edge-j1939-dev'}, 'object': {'key': 'ConvertedFiles/19299951/192999999999953/2023/06/20/EDGE_192999999999953_19299951_BDD002_1687268354.json', 'size': 1768, 'eTag': '63f216bb2036a645b07df7ffe1e07974', 'sequencer': '006491AC02212B7B66'}}}]}"
-        s3_event_body = '{"Records":"abc"}'
-        receipt_handle = "AQEBvlwydQHQJU4agXcgek9j3OTsyXYIym6xFUk/Kkq3Djt1vbEu4yoA43cNSPM6euyILXuZaaqjp2kApLPBYER6bnK9IFRb53ZhkGUDOONkVINRxMgGdywOHl8xvoAo1OeNpoL0efs08aO+diR+RVrKo1mGrNC6DGMv5GrtVFtquJ4+GPs9T28ioKUpAOvSlwbvLaEg7L+w4y16AGRf56axVOK84I/EdYdtZhLhAqqZDxz/GvAMWF2+B3GAEmtpJ7iPu/ddDarQbESH3MyvpfS0R6aIRo6oSmZsroxX8sfjznG6/RFbw2eLtU9+ffOan+yXKd4Nn3PUfx9m6aXjjP4o9zB4qlfa9/MXsAnGrMCvKq52ejsUrdtO4JKAtowArn0J4l+99K8WufYnS0LxoDuE5goaFoK5UNUopzsK5lDIMDM="#record["receiptHandle"]
-        #result = PosterLambda.retrieve_and_process_file(s3_event_body,receipt_handle)
+    @patch.dict(
+        "os.environ",
+        {
+            "cd_device_owners": json.dumps({"CD": True}),
+            "psbu_device_owner": json.dumps({"PSBU": True}),
+            "metaWriteQueueUrl": "queue-url"
+        }
+    )
+    @patch("PosterLambda.delete_message_from_sqs_queue")
+    @patch("PosterLambda.ssm_client")
+    @patch("PosterLambda.get_device_info")
+    @patch("PosterLambda.data_quality")
+    @patch("PosterLambda.s3_client")
+    @patch("PosterLambda.post")
+    @patch("PosterLambda.pt_poster")
+    @patch("PosterLambda.pcc_poster")
+    @patch("PosterLambda.get_request_id_from_consumption_view")
+    @patch("PosterLambda.update_scheduler_table")
+    @patch("PosterLambda.sqs_send_message")
+    def test_retrieve_and_process_file_hb_pcc_claimed(
+        self,
+        mock_sqs_send_message,
+        mock_update_scheduler,
+        mock_get_request_id,
+        mock_pcc_poster,
+        mock_pt_poster,
+        mock_post,
+        mock_s3_client,
+        mock_data_quality,
+        mock_get_device_info,
+        mock_ssm_client,
+        mock_delete_sqs_message
+    ):
+        """
+        Test for retrieve_and_process_file() when:
+        - J1939 type is HB
+        - TSP name is missing in payload
+        - device owner is present
+        - PCC claim status is `claimed`
+        """
+        s3_event_str = json.dumps(self.s3_event_body)
 
-        #self.assertEqual(result, False)
-        #self.assertEqual(mock_db_reader.execute.call_count, 2)
+        mock_s3_client.get_object.return_value = self.file_object
+        mock_post.get_cspec_req_id.return_value = ("config-spec-name", "req-id")
+        mock_get_request_id.return_value = "request-id"
+        mock_get_device_info.return_value = {
+            "device_owner": "PSBU",
+            "pcc_claim_status": "CLAIMED",
+            "cust_ref": "cust-ref",
+            "equip_id": "equip-id",
+            "vin": "vin"
+        }
+        mock_ssm_client.get_parameter.return_value = {
+            "Parameter": {
+                "Value": json.dumps({
+                    "EngineStatOverride": "EngineStat_9",
+                    "LoadFactorOverride": "LoadFactor_9",
+                    "EngineStatSc": "SC8091",
+                    "LoadFactorSc": "SC8093"
+                })
+            }
+        }
+
+        PosterLambda.retrieve_and_process_file(self.s3_event_body, "test-receipt-handle")
+
+        mock_data_quality.assert_called_with(s3_event_str)
+        mock_s3_client.get_object.assert_called_with(Bucket=self.bucket_name, Key=self.file_key)
+        mock_post.get_cspec_req_id.assert_called_with("SC8091")
+        mock_get_request_id.assert_called_with("J1939_HB", "EDGE_352953081637849_64200027_config-spec-name")
+        mock_update_scheduler.assert_called_with("request-id", "352953081637849")
+
+        mock_sqs_send_message.assert_called()
+        mock_pt_poster.send_to_pt.assert_not_called()
+        mock_post.send_to_cd.assert_not_called()
+        mock_pcc_poster.send_to_pcc.assert_called()
+        mock_delete_sqs_message.assert_called()
+
+
+    @patch("PosterLambda.boto3.client")
+    def test_data_quality_successful(self, mock_boto3_client):
+        """
+        Test for data_quality() running successfully.
+        """
+        mock_lambda_client = mock_boto3_client.return_value
+        mock_lambda_client.invoke.return_value = {"StatusCode": 200}
+        
+        with self.assertRaises(RuntimeError):
+            PosterLambda.data_quality("test-event")
+
+        mock_lambda_client.invoke.assert_called_with(
+            FunctionName="DataQualityLambda",
+            InvocationType="Event",
+            Payload="test-event"
+        )
+
+
+    @patch("PosterLambda.Process")
+    def test_lambda_handler_successful(self, mock_process):
+        """
+        Test for lambda_handler() running successfully.
+        """
+        PosterLambda.lambda_handler(self.s3_event_body, None)
+
+        mock_process.assert_called_with(
+            target=PosterLambda.retrieve_and_process_file,
+            args=({"test": "body"}, "test-receipt-handle")
+        )
+        mock_process.return_value.start.assert_called()
+        mock_process.return_value.join.assert_called()
+
 
 if __name__ == '__main__':
     unittest.main()
