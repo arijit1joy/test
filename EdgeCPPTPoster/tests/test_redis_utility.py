@@ -11,7 +11,7 @@ with  CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.en
                                "LoggingLevel": "debug",
                                'EDGEDBReader_ARN': 'arn:::12345'
                                }):
-    cda_module_mock_context.mock_module("edge_logger"),
+    cda_module_mock_context.mock_module("utility"),
     cda_module_mock_context.mock_module("edge_db_lambda_client"),
     cda_module_mock_context.mock_module("rediscluster")
 
