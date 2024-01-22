@@ -37,6 +37,37 @@ class MyTestCase(unittest.TestCase):
 
     post_url = "https://json"
     headers = '{"Content-Type": "application/json", "Prefer": "param=single-object", "x-api-key": ""}'
+
+    hb_params = {
+        "CPU_Usage_Level": "2.02",
+        "LTE_RSRP": "-107",
+        "LTE_RSRQ": "-6",
+        "messageID": "8c5a1650-048e-4620-9950-bc14fa4b46b7",
+        "Latitude": "39.202938",
+        "CPU_temperature": "40.3",
+        "Satellites_Used": "20",
+        "Longitude": "-85.88672",
+        "PDOP": "1.159999967",
+        "LTE_RSCP": "255",
+        "PMIC_temperature": "33.25",
+        "LTE_RSSI": "99",
+        "Altitude": "165.236"
+    }
+
+    fc_params = [
+        {
+            "protocol": "J1939",
+            "networkId": "CAN1",
+            "deviceId": "0",
+            "activeFaultCodes": [
+                {"spn": "100", "fmi": "4", "count": "1"},
+                {"spn": "101", "fmi": "4", "count": "1"}
+            ],
+            "inactiveFaultCodes": [],
+            "pendingFaultCodes": []
+        }
+    ]
+
     json_body = {
         "messageFormatVersion": "1.1.1",
         "telematicsPartnerName": "Cummins",
@@ -50,21 +81,7 @@ class MyTestCase(unittest.TestCase):
         "numberOfSamples": 1,
         "samples": [
             {
-                "convertedDeviceParameters": {
-                    "CPU_Usage_Level": "2.02",
-                    "LTE_RSRP": "-107",
-                    "LTE_RSRQ": "-6",
-                    "messageID": "8c5a1650-048e-4620-9950-bc14fa4b46b7",
-                    "Latitude": "39.202938",
-                    "CPU_temperature": "40.3",
-                    "Satellites_Used": "20",
-                    "Longitude": "-85.88672",
-                    "PDOP": "1.159999967",
-                    "LTE_RSCP": "255",
-                    "PMIC_temperature": "33.25",
-                    "LTE_RSSI": "99",
-                    "Altitude": "165.236"
-                }, 
+                "convertedDeviceParameters": hb_params, 
                 "rawEquipmentParameters": [],
                 "convertedEquipmentParameters": [
                     {
@@ -90,19 +107,7 @@ class MyTestCase(unittest.TestCase):
                         }
                     }
                 ],
-                "convertedEquipmentFaultCodes": [
-                    {
-                        "protocol": "J1939",
-                        "networkId": "CAN1",
-                        "deviceId": "0",
-                        "activeFaultCodes": [
-                            {"spn": "100", "fmi": "4", "count": "1"},
-                            {"spn": "101", "fmi": "4", "count": "1"}
-                        ],
-                        "inactiveFaultCodes": [],
-                        "pendingFaultCodes": []
-                    }
-                ],
+                "convertedEquipmentFaultCodes": fc_params,
                 "dateTimestamp": "2021-02-09T12:30:00.015Z"
              }
         ]
@@ -125,40 +130,11 @@ class MyTestCase(unittest.TestCase):
 
     headers_json = {"SecretString": {"x-api-key": "12345"}}
 
-    hb_params = {
-        "CPU_Usage_Level": "2.02",
-        "LTE_RSRP": "-107",
-        "LTE_RSRQ": "-6",
-        "messageID": "8c5a1650-048e-4620-9950-bc14fa4b46b7",
-        "Latitude": "39.202938",
-        "CPU_temperature": "40.3",
-        "Satellites_Used": "20",
-        "Longitude": "-85.88672",
-        "PDOP": "1.159999967",
-        "LTE_RSCP": "255",
-        "PMIC_temperature": "33.25",
-        "LTE_RSSI": "99",
-        "Altitude": "165.236"
-    }
-
 
     def test_handle_fc_params_successful(self):
         """
         Test for handle_fc_params() running successfully.
         """
-        fc_params = [
-            {
-                "protocol": "J1939",
-                "networkId": "CAN1",
-                "deviceId": "0",
-                "activeFaultCodes": [
-                    {"spn": "100", "fmi": "4", "count": "1"},
-                    {"spn": "101", "fmi": "4", "count": "1"}
-                ],
-                "inactiveFaultCodes": [],
-                "pendingFaultCodes": []
-            }
-        ]
         converted_fc_params = [
             {
                 "protocol": "J1939",
@@ -171,7 +147,7 @@ class MyTestCase(unittest.TestCase):
             }
         ]
 
-        response = pt_poster.handle_fc_params(fc_params)
+        response = pt_poster.handle_fc_params(self.fc_params)
 
         self.assertEqual(response, converted_fc_params)
 
