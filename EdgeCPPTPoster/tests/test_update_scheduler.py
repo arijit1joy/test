@@ -100,7 +100,7 @@ class TestUpdateScheduler(unittest.TestCase):
     @patch("update_scheduler.EDGE_DB_CLIENT")
     def test_update_scheduler_table_on_error(self, mock_db_client, mock_scheduler):
         """
-        Test for update_scheduler_table() running successfully.
+        Test for update_scheduler_table() when it throws an exception.
         """
         mock_scheduler.get_update_scheduler_query.return_value = "query"
         mock_db_client.execute.side_effect = Exception
