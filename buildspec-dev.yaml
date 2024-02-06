@@ -163,6 +163,7 @@ phases:
     commands: 
       - echo Build completed on `date`
       - num_repos=${#coverage_per_repo[@]}
+      - echo ${coverage_per_repo[@]}
       - if [ $num_repos -ne 0 ]; then
           echo -e "\n#===================================================================#";
           echo -e "Coverage report per project:\n"
@@ -172,7 +173,7 @@ phases:
             IFS=":"
             set -- $i
             echo -e "${1}\t\t${2}%"
-            total_coverage=$(($total_coverage + $2))
+            total_coverage=$(($total_coverage + ${2}))
           done
           echo "---------------------------"
           echo "Total coverage is $(($total_coverage / $num_repos))%"
