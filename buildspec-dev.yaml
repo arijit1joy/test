@@ -1,7 +1,8 @@
 version:      0.2 
 
 env:
-   secrets-manager:
+  shell: bash
+  secrets-manager:
     SONAR_LOGIN: /da-sca-sonar/sonar/sonar-common-token:sonar_common_token
     SONAR_HOST: /da-sca-sonar/sonar/sonar-common-token:sonar_host_https_url
     ARTIFACTORY_API_KEY: /OPS/COMMON/INFRA/JFROG/ARTIFACTORY:ARTIFACTORY_TOKEN
