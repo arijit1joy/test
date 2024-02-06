@@ -14,6 +14,8 @@ phases:
   install:  
     commands:  
     - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
+    - curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+    - apt-get update
     - pip install --upgrade pip
     - pip install pytest coverage pytest-cov moto
     - pip install --upgrade awscli
