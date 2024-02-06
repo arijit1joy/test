@@ -16,8 +16,7 @@ phases:
     - pip install --upgrade pip
     - pip install pytest coverage pytest-cov moto
     - pip install --upgrade awscli
-    - apt-get install zip 
-    - apt-get install unzip 
+    - apt-get install zip unzip xq
     - curl -sL https://deb.nodesource.com/setup_10.x | bash - 
     - apt-get install nodejs -y 
     - nodejs --version 
@@ -51,6 +50,7 @@ phases:
       - cat pip.conf
       - mkdir /root/.pip/
       - cp pip.conf /root/.pip/pip.conf
+      - coverage_per_repo=()
 
   build: 
     commands: 
@@ -101,6 +101,8 @@ phases:
                 fi;
                 coverage report --omit tests/*,dependencies.txt;
                 coverage xml;
+                raw_coverage=$((xq coverage.xml -x '/coverage/@line-rate'))
+                coverage_per_repo+=( "$mydir:`bc -l -e 'r($raw_coverage * 100, 1)'`" )
                 sonar-scanner -X -Dsonar.login=$SONAR_LOGIN -Dsonar.host.url=$SONAR_HOST -Dsonar.python.coverage.reportPaths="coverage.xml" -Dsonar.branch.name="dev_stg";
               echo "Printing dir contents to find the coverage.xml file . . . ";
               ls -l;
@@ -155,7 +157,23 @@ phases:
         --output-template-file transformed-template-us-east-2.yml
   post_build: 
     commands: 
-      - echo Build completed on `date` 
+      - echo Build completed on `date`
+      - num_repos=${#coverage_per_repo[@]}
+      - if [ $num_repos -ne 0 ]; then
+          echo -e "\n#===================================================================#";
+          echo -e "Coverage report per project:\n"
+          let total_coverage=0
+          for p in $coverage_per_repo;
+          do
+            IFS=":"
+            set -- $i
+            echo -e "${1}\t\t${2}%"
+            total_coverage=$(($total_coverage + $2))
+          done
+          echo "---------------------------"
+          echo "Total coverage is $(($total_coverage / $num_repos))%"
+          echo -e "#===================================================================#\n";
+        fi;
  
 # Below is required by CodePipeline, do not change.  
 artifacts: 
