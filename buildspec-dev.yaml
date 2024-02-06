@@ -19,7 +19,7 @@ phases:
     - pip install --upgrade pip
     - pip install pytest coverage pytest-cov moto
     - pip install --upgrade awscli
-    - apt-get install zip unzip
+    - apt-get install -y zip unzip
     - curl -sSL https://bit.ly/install-xq | bash
     - curl -sL https://deb.nodesource.com/setup_10.x | bash - 
     - apt-get install nodejs -y 
