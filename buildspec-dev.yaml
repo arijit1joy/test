@@ -167,6 +167,7 @@ phases:
         --output-template-file transformed-template-us-east-2.yml
       - test_hello+=" test_change_hello"
       - test_var+=" test_change_var"
+      - echo ${coverage_per_repo[@]}
   post_build: 
     commands: 
       - echo Build completed on `date`
