@@ -170,7 +170,7 @@ phases:
           echo -e "\n#===================================================================#";
           echo -e "Coverage report per project:\n";
           let total_coverage=0;
-          coverage_report=""
+          coverage_report="";
           for i in ${coverage_per_repo[@]}; do
             IFS=":";
             set -- $i;
