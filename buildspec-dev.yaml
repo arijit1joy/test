@@ -2,6 +2,8 @@ version:      0.2
 
 env:
   shell: bash
+  variables:
+    test_var: test_var
   secrets-manager:
     SONAR_LOGIN: /da-sca-sonar/sonar/sonar-common-token:sonar_common_token
     SONAR_HOST: /da-sca-sonar/sonar/sonar-common-token:sonar_host_https_url
@@ -55,6 +57,7 @@ phases:
       - mkdir /root/.pip/
       - cp pip.conf /root/.pip/pip.conf
       - coverage_per_repo=()
+      - test_hello="test hello"
 
   build: 
     commands: 
@@ -165,6 +168,8 @@ phases:
   post_build: 
     commands: 
       - echo Build completed on `date`
+      - echo "$test_hello"
+      - echo "$test_var"
       - num_repos=${#coverage_per_repo[@]}
       - echo ${coverage_per_repo[@]}
       - if [ $num_repos -ne 0 ]; then
