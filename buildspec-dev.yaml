@@ -105,7 +105,6 @@ phases:
                 fi;
                 coverage report --omit tests/*,dependencies.txt;
                 coverage xml;
-                cat --help
                 cat -- coverage.xml
                 raw_coverage=`cat coverage.xml | xq -x '/coverage/@line-rate'`
                 echo "raw_coverage is $raw_coverage"
