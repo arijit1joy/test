@@ -176,8 +176,6 @@ phases:
             set -- $i;
             coverage_report+="${1}\t${2}%\n";
             total_coverage=`echo "$total_coverage + ${2}" | bc`;
-            echo "number is ${2}";
-            echo "total_coverage is $total_coverage";
           done;
           echo "$coverage_report" | column -t -s '\t';
           echo "---------------------------";
