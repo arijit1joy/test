@@ -19,7 +19,7 @@ phases:
     - pip install --upgrade pip
     - pip install pytest coverage pytest-cov moto
     - pip install --upgrade awscli
-    - apt-get install -y zip unzip bc
+    - apt-get install -y zip unzip
     - curl -sSL https://bit.ly/install-xq | bash
     - curl -sL https://deb.nodesource.com/setup_10.x | bash - 
     - apt-get install nodejs -y 
@@ -107,7 +107,7 @@ phases:
                 coverage xml;
                 raw_coverage=`cat coverage.xml | xq -x '/coverage/@line-rate'`;
                 echo "raw_coverage is $raw_coverage";
-                coverage_per_repo+=("$mydir":`echo "r($raw_coverage * 100, 1)" | bc -l`)
+                coverage_per_repo+=("$mydir":`printf "%.1f" "$(($raw_coverage * 100))"`)
                 sonar-scanner -X -Dsonar.login=$SONAR_LOGIN -Dsonar.host.url=$SONAR_HOST -Dsonar.python.coverage.reportPaths="coverage.xml" -Dsonar.branch.name="dev_stg";
               echo "Printing dir contents to find the coverage.xml file . . . ";
               ls -l;
