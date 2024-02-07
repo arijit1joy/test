@@ -74,6 +74,7 @@ phases:
       # build project folder and package build file 
       - ls -lrt "$curr_dir"
       - x=$(ls "$(pwd)")
+      - echo $BASH_VERSION
       - echo "\n#=======================#\n\nEDGE Build Actions Start . . .\n\n#=======================#\n"
       - for d in $x ;
         do
@@ -107,6 +108,7 @@ phases:
                 coverage xml;
                 raw_coverage=`xq coverage.xml -x '/coverage/@line-rate'`
                 echo $raw_coverage
+                coverage_per_repo+=("$mydir":`echo "r($raw_coverage * 100, 1)" | bc -l`)
                 sonar-scanner -X -Dsonar.login=$SONAR_LOGIN -Dsonar.host.url=$SONAR_HOST -Dsonar.python.coverage.reportPaths="coverage.xml" -Dsonar.branch.name="dev_stg";
               echo "Printing dir contents to find the coverage.xml file . . . ";
               ls -l;
