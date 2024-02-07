@@ -19,7 +19,7 @@ phases:
     - pip install --upgrade pip
     - pip install pytest coverage pytest-cov moto
     - pip install --upgrade awscli
-    - apt-get install -y zip unzip
+    - apt-get install -y zip unzip bc
     - curl -sSL https://bit.ly/install-xq | bash
     - curl -sL https://deb.nodesource.com/setup_10.x | bash - 
     - apt-get install nodejs -y 
@@ -85,7 +85,7 @@ phases:
               echo "\n#--------------------------------------------------------------------------------#\n";
               if [ -f requirements.txt ]; then
                 if [ -f dependencies.txt ]; then
-                  pip install -r dependencies.txt -t ./lib ;
+                  pip install -q -r dependencies.txt -t ./lib ;
                   pipInstallCheckExitCode=$(echo $?);
                   if [ $pipInstallCheckExitCode -ne 0 ]; then
                     echo "\n#===================================================================#\n";
@@ -168,8 +168,7 @@ phases:
           echo -e "\n#===================================================================#";
           echo -e "Coverage report per project:\n"
           let total_coverage=0
-          for i in $coverage_per_repo;
-          do
+          for i in $coverage_per_repo; do
             IFS=":"
             set -- $i
             echo -e "${1}\t\t${2}%"
