@@ -169,7 +169,7 @@ phases:
   post_build: 
     commands: 
       - echo Build completed on `date`
-      - echo ${coverage_per_repo[@]
+      - echo ${coverage_per_repo[@]}
       - echo $num_repos
       - if [ $num_repos -ne 0 ]; then
           echo -e "\n#===================================================================#";
