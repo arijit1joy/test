@@ -19,8 +19,8 @@ phases:
     - arr=($line)
     - echo $line
     - echo ${arr[@]}
-    - for i in ${arr[@]}; do echo $i; done;
-    - IFS=' ' read -a arr <<< "$line"
+    - for i in ${line[@]}; do echo $i; done;
+    - read -a arr <<< "$line"
     - echo ${arr[@]}
     - for i in ${arr[@]}; do echo $i; done;
     - exit 1;
