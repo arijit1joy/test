@@ -15,6 +15,14 @@ phases:
  
   install:  
     commands:  
+    - line="1 1.50 string "
+    - arr=($line)
+    - echo $line
+    - echo ${arr[@]}
+    - for i in ${arr[@]}; do echo $i; done;
+    - read -a arr <<< "$line"
+    - echo ${arr[@]}
+    - for i in ${arr[@]}; do echo $i; done;
     - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
     - wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add -
     - apt-get update
