@@ -22,7 +22,7 @@ phases:
     - pip install --upgrade pip
     - pip install pytest coverage pytest-cov moto
     - pip install --upgrade awscli
-    - apt-get install -y zip unzip bc
+    - apt-get install -y zip unzip bc column
     - curl -sSL https://bit.ly/install-xq | bash
     - curl -sL https://deb.nodesource.com/setup_10.x | bash - 
     - apt-get install nodejs -y 
@@ -182,7 +182,7 @@ phases:
           echo "$coverage_report" | column -t -s '\t';
           echo "---------------------------";
           rounded_total_coverage=`echo "$total_coverage / $num_repos" | bc -l`;
-          echo "Total coverage is `printf "%.1f " "$rounded_total_coverage"`%";
+          echo "Total coverage is `printf "%.1f" "$rounded_total_coverage"`%";
           echo -e "#===================================================================#\n";
         fi;
  
