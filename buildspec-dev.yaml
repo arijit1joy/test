@@ -105,7 +105,7 @@ phases:
                 fi;
                 coverage report --omit tests/*,dependencies.txt;
                 coverage xml;
-                cat -- coverage.xml
+                cat coverage.xml;
                 raw_coverage=`cat coverage.xml | xq -x '/coverage/@line-rate'`
                 echo "raw_coverage is $raw_coverage"
                 sonar-scanner -X -Dsonar.login=$SONAR_LOGIN -Dsonar.host.url=$SONAR_HOST -Dsonar.python.coverage.reportPaths="coverage.xml" -Dsonar.branch.name="dev_stg";
