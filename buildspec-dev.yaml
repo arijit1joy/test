@@ -173,6 +173,7 @@ phases:
       - echo "$test_hello"
       - echo "$test_var"
       - num_repos=${#coverage_per_repo[@]}
+      - echo $num_repos
       - echo ${coverage_per_repo[@]}
       - if [ $num_repos -ne 0 ]; then
           echo -e "\n#===================================================================#";
