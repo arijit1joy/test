@@ -3,7 +3,7 @@ version:      0.2
 env:
   shell: bash
   variables:
-    test_var: test_var
+    test_var: ("test_var")
   secrets-manager:
     SONAR_LOGIN: /da-sca-sonar/sonar/sonar-common-token:sonar_common_token
     SONAR_HOST: /da-sca-sonar/sonar/sonar-common-token:sonar_host_https_url
@@ -57,7 +57,7 @@ phases:
       - mkdir /root/.pip/
       - cp pip.conf /root/.pip/pip.conf
       - coverage_per_repo=()
-      - test_hello="test hello"
+      - test_hello=("testhello")
 
   build: 
     commands: 
@@ -113,8 +113,8 @@ phases:
                 echo "rounded_coverage is $mydir":`printf "%.1f" "$rounded_coverage"`;
                 coverage_per_repo+=("$mydir":`printf "%.1f" "$rounded_coverage"`);
                 echo "coverage_per_repo is ${coverage_per_repo[@]}";
-                test_hello+=" 1";
-                test_var+=" 1";
+                test_hello+=(" 1");
+                test_var+=(" 1");
                 sonar-scanner -X -Dsonar.login=$SONAR_LOGIN -Dsonar.host.url=$SONAR_HOST -Dsonar.python.coverage.reportPaths="coverage.xml" -Dsonar.branch.name="dev_stg";
               echo "Printing dir contents to find the coverage.xml file . . . ";
               ls -l;
@@ -167,14 +167,14 @@ phases:
         --s3-prefix builds
         --kms-key-id ${KMS_KEY_ProdRegion}
         --output-template-file transformed-template-us-east-2.yml
-      - test_hello+=" test_change_hello"
-      - test_var+=" test_change_var"
+      - test_hello+=(" test_change_hello")
+      - test_var+=(" test_change_var")
       - echo ${coverage_per_repo[@]}
   post_build: 
     commands: 
       - echo Build completed on `date`
-      - echo "$test_hello"
-      - echo "$test_var"
+      - echo ${test_hello[@]}
+      - echo ${test_var[@]}
       - num_repos=${#coverage_per_repo[@]}
       - echo $num_repos
       - echo ${coverage_per_repo[@]}
