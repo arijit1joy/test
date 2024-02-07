@@ -3,7 +3,7 @@ version:      0.2
 env:
   shell: bash
   variables:
-    test_var: ("test_var")
+    coverage_per_repo: ""
   secrets-manager:
     SONAR_LOGIN: /da-sca-sonar/sonar/sonar-common-token:sonar_common_token
     SONAR_HOST: /da-sca-sonar/sonar/sonar-common-token:sonar_host_https_url
@@ -56,8 +56,6 @@ phases:
       - cat pip.conf
       - mkdir /root/.pip/
       - cp pip.conf /root/.pip/pip.conf
-      - coverage_per_repo=()
-      - test_hello=("testhello")
 
   build: 
     commands: 
@@ -110,11 +108,9 @@ phases:
                 coverage xml;
                 raw_coverage=`cat coverage.xml | xq -x '/coverage/@line-rate'`;
                 rounded_coverage=`echo "$raw_coverage * 100" | bc -l`;
-                echo "rounded_coverage is $mydir":`printf "%.1f" "$rounded_coverage"`;
-                coverage_per_repo+=("$mydir":`printf "%.1f" "$rounded_coverage"`);
+                echo "rounded_coverage is $mydir":`printf "%.1f" "$rounded_coverage "`;
+                coverage_per_repo+="$mydir":`printf "%.1f" "$rounded_coverage "`;
                 echo "coverage_per_repo is ${coverage_per_repo[@]}";
-                test_hello+=(" 1");
-                test_var+=(" 1");
                 sonar-scanner -X -Dsonar.login=$SONAR_LOGIN -Dsonar.host.url=$SONAR_HOST -Dsonar.python.coverage.reportPaths="coverage.xml" -Dsonar.branch.name="dev_stg";
               echo "Printing dir contents to find the coverage.xml file . . . ";
               ls -l;
@@ -167,31 +163,29 @@ phases:
         --s3-prefix builds
         --kms-key-id ${KMS_KEY_ProdRegion}
         --output-template-file transformed-template-us-east-2.yml
-      - test_hello+=(" test_change_hello")
-      - test_var+=(" test_change_var")
       - echo ${coverage_per_repo[@]}
   post_build: 
     commands: 
       - echo Build completed on `date`
-      - echo ${test_hello[@]}
-      - echo ${test_var[@]}
-      - num_repos=${#coverage_per_repo[@]}
+      - coverage_per_repo_arr=($coverage_per_repo)
+      - num_repos=${#coverage_per_repo_arr[@]}
       - echo $num_repos
-      - echo ${coverage_per_repo[@]}
+      - echo ${coverage_per_repo_arr[@]}
       - if [ $num_repos -ne 0 ]; then
           echo -e "\n#===================================================================#";
-          echo -e "Coverage report per project:\n"
-          let total_coverage=0
-          for i in ${coverage_per_repo[@]}; do
-            IFS=":"
-            set -- $i
-            echo -e "${1}\t\t${2}%"
-            total_coverage=$(($total_coverage + ${2}))
+          echo -e "Coverage report per project:\n";
+          let total_coverage=0;
+          for i in ${coverage_per_repo_arr[@]}; do
+            IFS=":";
+            set -- $i;
+            echo -e "${1}\t\t${2}%";
+            total_coverage=$(($total_coverage + ${2}));
           done
           echo "---------------------------"
-          echo "Total coverage is $(($total_coverage / $num_repos))%"
+          echo "Total coverage is $(($total_coverage / $num_repos))%";
           echo -e "#===================================================================#\n";
         fi;
+      - echo $IFS
  
 # Below is required by CodePipeline, do not change.  
 artifacts: 
