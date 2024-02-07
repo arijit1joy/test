@@ -168,7 +168,7 @@ phases:
     commands: 
       - echo Build completed on `date`
       - echo ${coverage_per_repo[@]}
-      - coverage_per_repo_arr=($coverage_per_repo)
+      - read -a coverage_per_repo_arr <<< "$coverage_per_repo"
       - num_repos=${#coverage_per_repo_arr[@]}
       - echo $num_repos
       - echo ${coverage_per_repo_arr[@]}
