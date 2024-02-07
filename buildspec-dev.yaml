@@ -102,7 +102,6 @@ phases:
                   echo "\n#===================================================================#\n";
                   echo "[ERROR] ---> Some of the TDD/Code Coverage test cases failed for the project '$mydir'. Exit code => '$testCaseExecutionExitCode'! Aborting Build!";
                   echo "\n#===================================================================#\n";
-
                 fi;
                 coverage report --omit tests/*,dependencies.txt;
                 coverage xml;
