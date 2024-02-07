@@ -109,9 +109,7 @@ phases:
                 coverage xml;
                 raw_coverage=`cat coverage.xml | xq -x '/coverage/@line-rate'`;
                 rounded_coverage=`echo "$raw_coverage * 100" | bc -l`;
-                echo "rounded_coverage is $mydir":`printf "%.1f " "$rounded_coverage"`;
                 coverage_per_repo+="$mydir":`printf "%.1f " "$rounded_coverage"`;
-                echo "coverage_per_repo is ${coverage_per_repo[@]}";
                 num_repos=$(($num_repos + 1));
                 sonar-scanner -X -Dsonar.login=$SONAR_LOGIN -Dsonar.host.url=$SONAR_HOST -Dsonar.python.coverage.reportPaths="coverage.xml" -Dsonar.branch.name="dev_stg";
               echo "Printing dir contents to find the coverage.xml file . . . ";
@@ -165,12 +163,9 @@ phases:
         --s3-prefix builds
         --kms-key-id ${KMS_KEY_ProdRegion}
         --output-template-file transformed-template-us-east-2.yml
-      - echo ${coverage_per_repo[@]}
   post_build: 
     commands: 
       - echo Build completed on `date`
-      - echo ${coverage_per_repo[@]}
-      - echo $num_repos
       - if [ $num_repos -ne 0 ]; then
           echo -e "\n#===================================================================#";
           echo -e "Coverage report per project:\n";
@@ -180,13 +175,14 @@ phases:
             set -- $i;
             echo -e "${1}\t\t${2}%";
             total_coverage=`echo "$total_coverage + ${2}" | bc`;
+            echo "number is ${2}"
+            echo "total_coverage is $total_coverage"
           done;
           echo "---------------------------";
-          rounded_total_coverage=`echo "$total_coverage / $num_repos" | bc`
+          rounded_total_coverage=`echo "$total_coverage / $num_repos" | bc -l`
           echo "Total coverage is `printf "%.1f " "$rounded_total_coverage"`%";
           echo -e "#===================================================================#\n";
         fi;
-      - echo $IFS
  
 # Below is required by CodePipeline, do not change.  
 artifacts: 
