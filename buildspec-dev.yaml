@@ -170,16 +170,18 @@ phases:
           echo -e "\n#===================================================================#";
           echo -e "Coverage report per project:\n";
           let total_coverage=0;
+          coverage_report=""
           for i in ${coverage_per_repo[@]}; do
             IFS=":";
             set -- $i;
-            echo -e "${1}\t\t${2}%";
+            coverage_report+="${1}\t${2}%\n";
             total_coverage=`echo "$total_coverage + ${2}" | bc`;
-            echo "number is ${2}"
-            echo "total_coverage is $total_coverage"
+            echo "number is ${2}";
+            echo "total_coverage is $total_coverage";
           done;
+          echo "$coverage_report" | column -t -s '\t';
           echo "---------------------------";
-          rounded_total_coverage=`echo "$total_coverage / $num_repos" | bc -l`
+          rounded_total_coverage=`echo "$total_coverage / $num_repos" | bc -l`;
           echo "Total coverage is `printf "%.1f " "$rounded_total_coverage"`%";
           echo -e "#===================================================================#\n";
         fi;
