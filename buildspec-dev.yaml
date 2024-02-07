@@ -4,6 +4,7 @@ env:
   shell: bash
   variables:
     coverage_per_repo: ""
+    num_repos: 0
   secrets-manager:
     SONAR_LOGIN: /da-sca-sonar/sonar/sonar-common-token:sonar_common_token
     SONAR_HOST: /da-sca-sonar/sonar/sonar-common-token:sonar_host_https_url
@@ -15,15 +16,6 @@ phases:
  
   install:  
     commands:  
-    - line="1 1.50 string "
-    - arr=($line)
-    - echo $line
-    - echo ${arr[@]}
-    - for i in ${line[@]}; do echo $i; done;
-    - read -a arr <<< "$line"
-    - echo ${arr[@]}
-    - for i in ${arr[@]}; do echo $i; done;
-    - exit 1;
     - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
     - wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add -
     - apt-get update
@@ -120,6 +112,7 @@ phases:
                 echo "rounded_coverage is $mydir":`printf "%.1f " "$rounded_coverage"`;
                 coverage_per_repo+="$mydir":`printf "%.1f " "$rounded_coverage"`;
                 echo "coverage_per_repo is ${coverage_per_repo[@]}";
+                num_repos=$(($num_repos + 1));
                 sonar-scanner -X -Dsonar.login=$SONAR_LOGIN -Dsonar.host.url=$SONAR_HOST -Dsonar.python.coverage.reportPaths="coverage.xml" -Dsonar.branch.name="dev_stg";
               echo "Printing dir contents to find the coverage.xml file . . . ";
               ls -l;
@@ -176,16 +169,13 @@ phases:
   post_build: 
     commands: 
       - echo Build completed on `date`
-      - echo ${coverage_per_repo[@]}
-      - read -a coverage_per_repo_arr <<< "$coverage_per_repo"
-      - num_repos=${#coverage_per_repo_arr[@]}
+      - echo ${coverage_per_repo[@]
       - echo $num_repos
-      - echo ${coverage_per_repo_arr[@]}
       - if [ $num_repos -ne 0 ]; then
           echo -e "\n#===================================================================#";
           echo -e "Coverage report per project:\n";
           let total_coverage=0;
-          for i in ${coverage_per_repo_arr[@]}; do
+          for i in ${coverage_per_repo[@]}; do
             IFS=":";
             set -- $i;
             echo -e "${1}\t\t${2}%";
