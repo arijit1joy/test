@@ -108,7 +108,7 @@ phases:
                 raw_coverage=`cat coverage.xml | xq -x '/coverage/@line-rate'`;
                 rounded_coverage=`echo "$raw_coverage * 100" | bc -l`;
                 echo "rounded_coverage is $rounded_coverage";
-                coverage_per_repo+=("$mydir":`printf "%.1f" "$rounded_coverage"`)
+                coverage_per_repo+=("$mydir":`printf "%.1f" "$rounded_coverage"`);
                 echo "coverage_per_repo is ${coverage_per_repo[@]}";
                 sonar-scanner -X -Dsonar.login=$SONAR_LOGIN -Dsonar.host.url=$SONAR_HOST -Dsonar.python.coverage.reportPaths="coverage.xml" -Dsonar.branch.name="dev_stg";
               echo "Printing dir contents to find the coverage.xml file . . . ";
