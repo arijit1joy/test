@@ -106,9 +106,11 @@ phases:
                 fi;
                 coverage report --omit tests/*;
                 coverage xml;
+                lines_covered=`cat coverage.xml | xq -x '/coverage/@lines-covered'`;
+                total_lines=`cat coverage.xml | xq -x '/coverage/@lines-valid'`;
                 raw_coverage=`cat coverage.xml | xq -x '/coverage/@line-rate'`;
                 rounded_coverage=`echo "$raw_coverage * 100" | bc -l`;
-                coverage_per_repo+="$mydir":`printf "%.1f " "$rounded_coverage"`;
+                coverage_per_repo+="$mydir":`printf "%.1f" "$rounded_coverage"`:"$lines_covered":"$total_lines ";
                 num_repos=$(($num_repos + 1));
                 sonar-scanner -Dsonar.login=$SONAR_LOGIN -Dsonar.host.url=$SONAR_HOST -Dsonar.python.coverage.reportPaths="coverage.xml" -Dsonar.branch.name="master";
                 echo "Printing dir contents to find the coverage.xml file . . . ";
@@ -162,19 +164,21 @@ phases:
     commands: 
       - echo Build completed on `date` 
       - if [ $num_repos -ne 0 ]; then
-          echo -e "\n#=========================================================#";
+          echo -e "\n#===================================================================#";
           echo -e "Coverage report per project:\n";
-          let total_coverage=0;
+          let total_lines_covered=0;
+          let total_lines_valid=0;
           for i in ${coverage_per_repo[@]}; do
             IFS=":";
             set -- $i;
-            printf "%-50s\t%.1f%%\n" "${1}" "${2}";
-            total_coverage=`echo "$total_coverage + ${2}" | bc`;
+            printf "%-40s\t%.1f%% (%d/%d lines)\n" "${1}" "${2}" "${3}" "${4}";
+            total_lines_covered=$(($total_lines_covered + ${3}));
+            total_lines_valid=$(($total_lines_valid + ${4}));
           done;
-          echo "------------------------";
-          rounded_total_coverage=`echo "$total_coverage / $num_repos" | bc -l`;
-          echo "Total coverage is `printf "%.1f" "$rounded_total_coverage"`%";
-          echo -e "#=========================================================#\n";
+          echo "--------------------------------------------------------------------";
+          weighted_coverage=`echo "($total_lines_covered / $total_lines_valid) * 100" | bc -l`;
+          echo "Total coverage is `printf "%.1f" "$weighted_coverage"`% (${total_lines_covered} covered / ${total_lines_valid} total)";
+          echo -e "#===================================================================#\n";
         fi;
  
 # Below is required by CodePipeline, do not change.  
