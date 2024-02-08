@@ -177,7 +177,7 @@ phases:
             coverage_report+="${1}\t\t${2}%\n";
             total_coverage=`echo "$total_coverage + ${2}" | bc`;
           done;
-          echo "$coverage_report";
+          echo -e "$coverage_report";
           echo "---------------------------";
           rounded_total_coverage=`echo "$total_coverage / $num_repos" | bc -l`;
           echo "Total coverage is `printf "%.1f" "$rounded_total_coverage"`%";
