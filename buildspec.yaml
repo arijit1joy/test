@@ -1,6 +1,10 @@
 version:      0.2 
 
 env:
+  shell: bash
+  variables:
+    coverage_per_repo: ""
+    num_repos: 0
   secrets-manager:
     SONAR_LOGIN: /da-sca-sonar/sonar/sonar-common-token:sonar_common_token
     SONAR_HOST: /da-sca-sonar/sonar/sonar-common-token:sonar_host_https_url
@@ -13,9 +17,12 @@ phases:
   install:  
     commands:
     - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
+    - wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add -
+    - apt-get update
+    - pip install pytest coverage pytest-cov moto
     - pip install -q awscli==1.16.209 
-    - apt-get install zip 
-    - apt-get install unzip
+    - apt-get install -y zip unzip bc
+    - curl -sSL https://bit.ly/install-xq | bash
     - curl -sL https://deb.nodesource.com/setup_10.x | bash - 
     - apt-get install nodejs -y 
     - nodejs --version 
@@ -51,7 +58,6 @@ phases:
     commands: 
       - echo Starting build in $(pwd) 
       - echo Build started on $(date) 
-      - pip install -q coverage
       - echo ${S3Bucket} 
       - echo ${KMSKey} 
       - echo HOME ${HOME} 
@@ -99,6 +105,10 @@ phases:
                 fi;
                 coverage report --omit tests/*;
                 coverage xml;
+                raw_coverage=`cat coverage.xml | xq -x '/coverage/@line-rate'`;
+                rounded_coverage=`echo "$raw_coverage * 100" | bc -l`;
+                coverage_per_repo+="$mydir":`printf "%.1f " "$rounded_coverage"`;
+                num_repos=$(($num_repos + 1));
                 sonar-scanner -Dsonar.login=$SONAR_LOGIN -Dsonar.host.url=$SONAR_HOST -Dsonar.python.coverage.reportPaths="coverage.xml" -Dsonar.branch.name="master";
                 echo "Printing dir contents to find the coverage.xml file . . . ";
                 ls -l;
@@ -150,6 +160,21 @@ phases:
   post_build: 
     commands: 
       - echo Build completed on `date` 
+      - if [ $num_repos -ne 0 ]; then
+          echo -e "\n#===================================================================#";
+          echo -e "Coverage report per project:\n";
+          let total_coverage=0;
+          for i in ${coverage_per_repo[@]}; do
+            IFS=":";
+            set -- $i;
+            printf "%-50s\t%.1f%%\n" "${1}" "${2}";
+            total_coverage=`echo "$total_coverage + ${2}" | bc`;
+          done;
+          echo "------------------------";
+          rounded_total_coverage=`echo "$total_coverage / $num_repos" | bc -l`;
+          echo "Total coverage is `printf "%.1f" "$rounded_total_coverage"`%";
+          echo -e "#===================================================================#\n";
+        fi;
  
 # Below is required by CodePipeline, do not change.  
 artifacts: 
