@@ -104,6 +104,7 @@ phases:
                   echo "\n#===================================================================#\n";
                   echo "[ERROR] ---> Some of the TDD/Code Coverage test cases failed for the project '$mydir'. Exit code => '$testCaseExecutionExitCode'! Aborting Build!";
                   echo "\n#===================================================================#\n";
+                  exit 1;
                 fi;
                 coverage report --omit tests/*,dependencies.txt;
                 coverage xml;
@@ -123,6 +124,7 @@ phases:
                     echo "\n#===================================================================#\n";
                     echo "[ERROR] ---> The Sonarqube Quality Gate condition verification failed for the project '$mydir'! Aborting Build!";
                     echo "\n#===================================================================#\n";
+                    exit 1;
                  fi;
                   cd "$mydir";
                 else
@@ -131,8 +133,8 @@ phases:
                   echo "AND/OR ('sonar-project.properties') is missing from this project => $mydir\n";
                   echo "Please, add the 'SonarQubeQualityChecker.sh' file in the root repo (same folder as this build spec file)";
                   echo "AND/OR the appropriate 'sonar-project.properties' in the project => $mydir";
-                  echo "The Build will proceed, but note that there was no Sonaqube Quality Gate verification done for the project => $mydir\n";
                   echo "\n#--------------------------------------------------------------------------------#\n";
+                  exit 1;
                 fi;
                 cp "$mydir.zip" "$curr_dir/target";
               else           
