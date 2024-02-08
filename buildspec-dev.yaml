@@ -181,7 +181,7 @@ phases:
             total_lines_valid=$(($total_lines_valid + ${4}));
           done;
           echo "--------------------------------------------------";
-          weighted_coverage=`echo "$(total_lines_covered / $total_lines_valid) * 100" | bc -l`;
+          weighted_coverage=`echo "($total_lines_covered / $total_lines_valid) * 100" | bc -l`;
           echo "Total coverage is `printf "%.1f" "$weighted_coverage"`% (${total_lines_covered} covered / ${total_lines_valid} total)";
           echo -e "#===================================================================#\n";
         fi;
