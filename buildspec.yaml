@@ -15,29 +15,25 @@ env:
 phases: 
  
   install:  
-    commands:  
+    commands:
     - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
     - wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add -
     - apt-get update
-    - pip install --upgrade pip
     - pip install pytest coverage pytest-cov moto
-    - pip install --upgrade awscli
+    - pip install -q awscli==1.16.209 
     - apt-get install -y zip unzip bc
     - curl -sSL https://bit.ly/install-xq | bash
     - curl -sL https://deb.nodesource.com/setup_10.x | bash - 
     - apt-get install nodejs -y 
     - nodejs --version 
-    - npm --version 
+    - npm --version  
     - curr_dir=$(pwd) 
     - mkdir "$curr_dir/target" 
-    - cd cloudformation
-    - |
-        for file in $(find . -type f -name "*.yml" -o -name "*.yaml"); do
-          echo "CloudFormation Template File Name: $file"
-          aws cloudformation validate-template --template-body "file://$file" --region $AWS_REGION || exit 1
-        done
-    - versionId=$(date +"%m-%d-%Y-%H-%M-%S")
-    - echo "Current date for artifact file storage => $versionId"
+    - sed -i -E 's|LoggingLevel\s*:\s*\"[dD][eE][bB][uU][gG]\"|LoggingLevel~~~~~~ \"info\"|gi' cloudformation/environment.yml
+    - sed -i -e 's|~~~~~~|:|g' cloudformation/environment.yml
+    - cd cloudformation 
+    - versionId=$(date +"%m-%d-%Y-%H-%M-%S") 
+    - echo $versionId
     - pip install -q ruamel.yaml
     - for paramsFile in ./Param*.json ;  
       do  
@@ -57,7 +53,7 @@ phases:
       - cat pip.conf
       - mkdir /root/.pip/
       - cp pip.conf /root/.pip/pip.conf
-
+ 
   build: 
     commands: 
       - echo Starting build in $(pwd) 
@@ -65,88 +61,86 @@ phases:
       - echo ${S3Bucket} 
       - echo ${KMSKey} 
       - echo HOME ${HOME} 
-      - mkdir /opt/sonarscanner 
-      - cd /opt/sonarscanner 
-      - wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472-linux.zip 
-      - unzip sonar-scanner-cli-4.6.2.2472-linux.zip 
-      - rm sonar-scanner-cli-4.6.2.2472-linux.zip 
-      - ln -s /opt/sonarscanner/sonar-scanner-4.6.2.2472-linux/bin/sonar-scanner /usr/local/bin/sonar-scanner 
+      # install sonar-scanner
+      - mkdir /opt/sonarscanner
+      - cd /opt/sonarscanner
+      - wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472-linux.zip -q
+      - unzip -q sonar-scanner-cli-4.6.2.2472-linux.zip
+      - rm sonar-scanner-cli-4.6.2.2472-linux.zip
+      - ln -s /opt/sonarscanner/sonar-scanner-4.6.2.2472-linux/bin/sonar-scanner /usr/local/bin/sonar-scanner
       - pip install -q pypika
       - cd $curr_dir
       # build project folder and package build file 
       - ls -lrt "$curr_dir"
       - x=$(ls "$(pwd)")
-      - echo `xq --help`
-      - echo "\n#=======================#\n\nEDGE Build Actions Start . . .\n\n#=======================#\n"
       - for d in $x ;
         do
           mydir=${d};   
-          if [ $mydir != "EDGE-J1939-BDD" ] && [ $mydir != "target" ] && [ $mydir != "cloudformation" ] && [ -d "$mydir" ]; then
+          if [ $mydir != "cloudformation" ] && [ $mydir != "EDGE-J1939-BDD" ] && [ -d "$mydir" ]; then 
               cd "$mydir"; 
               echo "Processing - $mydir"; 
-              echo "Current dir - $(pwd)";
-              echo "\n#--------------------------------------------------------------------------------#\n";
+              echo "Current dir - $(pwd)"; 
               if [ -f requirements.txt ]; then
+                python -m venv "${mydir}-venv";
+                . ${mydir}-venv/bin/activate ;
                 if [ -f dependencies.txt ]; then
                   pip install -q -r dependencies.txt -t ./lib ;
-                  pipInstallCheckExitCode=$(echo $?);
-                  if [ $pipInstallCheckExitCode -ne 0 ]; then
-                    echo "\n#===================================================================#\n";
-                    echo "[ERROR] ---> pip install of dependencies failed for the project '$mydir'. Exit code => '$pipInstallCheckExitCode'! Aborting Build!";
-                    echo "\n#===================================================================#\n";
-                    exit 1;
-                  fi;
                 fi;
-                zip -r "$mydir.zip" .;
+                pipInstallCheckExitCode=$(echo $?);
+                if [ $pipInstallCheckExitCode -ne 0 ]; then
+                  echo "\n#===================================================================#\n";
+                  echo "[ERROR] ---> pip install of dependencies failed for the project '$mydir'. Exit code => '$pipInstallCheckExitCode'! Aborting Build!";
+                  echo "\n#===================================================================#\n";
+                  deactivate;
+                  exit 1;
+                fi;
+                zip -q -r "$mydir.zip" . -x "./${mydir}-venv/*";
                 coverage run -m unittest discover -s tests;
                 testCaseExecutionExitCode=$?;
+                deactivate;
                 if [ $testCaseExecutionExitCode -ne 0 ]; then
                   echo "\n#===================================================================#\n";
                   echo "[ERROR] ---> Some of the TDD/Code Coverage test cases failed for the project '$mydir'. Exit code => '$testCaseExecutionExitCode'! Aborting Build!";
                   echo "\n#===================================================================#\n";
                 fi;
-                coverage report --omit tests/*,dependencies.txt;
+                coverage report --omit tests/*;
                 coverage xml;
                 raw_coverage=`cat coverage.xml | xq -x '/coverage/@line-rate'`;
                 rounded_coverage=`echo "$raw_coverage * 100" | bc -l`;
                 coverage_per_repo+="$mydir":`printf "%.1f " "$rounded_coverage"`;
                 num_repos=$(($num_repos + 1));
-                sonar-scanner -X -Dsonar.login=$SONAR_LOGIN -Dsonar.host.url=$SONAR_HOST -Dsonar.python.coverage.reportPaths="coverage.xml" -Dsonar.branch.name="dev_stg";
-              echo "Printing dir contents to find the coverage.xml file . . . ";
-              ls -l;
+                sonar-scanner -Dsonar.login=$SONAR_LOGIN -Dsonar.host.url=$SONAR_HOST -Dsonar.python.coverage.reportPaths="coverage.xml" -Dsonar.branch.name="master";
+                echo "Printing dir contents to find the coverage.xml file . . . ";
+                ls -l;
                 if [ -f "../SonarqubeQualityChecker.sh" ] && [ -f "sonar-project.properties" ]; then
                   cd ..;
                   tr -d '\r' < SonarqubeQualityChecker.sh > CleanSonarqubeQualityChecker.sh;
-                  bash CleanSonarqubeQualityChecker.sh $mydir "/da-sca-sonar/sonar/sonar-common-token" "dev_stg";
+                  bash CleanSonarqubeQualityChecker.sh $mydir "/da-sca-sonar/sonar/sonar-common-token" "master";
                   qualityCheckExitCode=$(echo $?);
                   if [ $qualityCheckExitCode -ne 0 ]; then
                     echo "\n#===================================================================#\n";
                     echo "[ERROR] ---> The Sonarqube Quality Gate condition verification failed for the project '$mydir'! Aborting Build!";
                     echo "\n#===================================================================#\n";
-                 fi;
+                    exit 1;
+                  fi;
                   cd "$mydir";
                 else
                   echo "\n#--------------------------------------------------------------------------------#\n";
-                  echo "The Sonarqube Quality Gate condition verification script ('SonarQubeQualityChecker.sh') is missing from this repo";
-                  echo "AND/OR ('sonar-project.properties') is missing from this project => $mydir\n";
-                  echo "Please, add the 'SonarQubeQualityChecker.sh' file in the root repo (same folder as this build spec file)";
-                  echo "AND/OR the appropriate 'sonar-project.properties' in the project => $mydir";
-                  echo "The Build will proceed, but note that there was no Sonaqube Quality Gate verification done for the project => $mydir\n";
+                  echo "The Sonarqube Quality Gate condition verification script ('SonarQubeQualityChecker.sh') is missing from this repo AND/OR ('sonar-project.properties') is missing from this project => $mydir\n";
+                  echo "Please, add the 'SonarQubeQualityChecker.sh' file in the root repo (same folder as this build spec file) AND/OR the appropriate 'sonar-project.properties' in the project => $mydir\n";
+                  echo "Build will proceed, but note that there was no Sonaqube Quality Gate verification done for the project => $mydir\n";
                   echo "\n#--------------------------------------------------------------------------------#\n";
-                fi;
-                cp "$mydir.zip" "$curr_dir/target";
+                fi;              
+                cp "$mydir.zip" "$curr_dir/target"; 
               else           
-                echo "\n#===================================================================#\n";
-                echo "The programming platform for the project => $mydir could not be identified! Aborting build!";
-                echo "\n#===================================================================#\n";
-                exit 1;
+                echo "unknown platform"; 
                 break;        
               fi;        
-              cd ..;
+              cd ..;     
           fi;  
         done || exit 1 
       - ls -lrt "$curr_dir/target" 
-      - aws s3 cp "$curr_dir/target" s3://${S3Bucket}/$versionId --recursive
+      - aws s3 cp "$curr_dir/target" s3://${S3Bucket}/$versionId --recursive 
       - aws s3 cp "$curr_dir/target" s3://${CrossRegionBucket}/$versionId --recursive
       - pwd 
       - ls -lrt 
@@ -165,7 +159,7 @@ phases:
         --output-template-file transformed-template-us-east-2.yml
   post_build: 
     commands: 
-      - echo Build completed on `date`
+      - echo Build completed on `date` 
       - if [ $num_repos -ne 0 ]; then
           echo -e "\n#===================================================================#";
           echo -e "Coverage report per project:\n";
