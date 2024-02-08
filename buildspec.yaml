@@ -162,7 +162,7 @@ phases:
     commands: 
       - echo Build completed on `date` 
       - if [ $num_repos -ne 0 ]; then
-          echo -e "\n#===================================================================#";
+          echo -e "\n#=========================================================#";
           echo -e "Coverage report per project:\n";
           let total_coverage=0;
           for i in ${coverage_per_repo[@]}; do
@@ -174,7 +174,7 @@ phases:
           echo "------------------------";
           rounded_total_coverage=`echo "$total_coverage / $num_repos" | bc -l`;
           echo "Total coverage is `printf "%.1f" "$rounded_total_coverage"`%";
-          echo -e "#===================================================================#\n";
+          echo -e "#=========================================================#\n";
         fi;
  
 # Below is required by CodePipeline, do not change.  
