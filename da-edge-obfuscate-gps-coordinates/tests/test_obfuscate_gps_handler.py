@@ -4,7 +4,6 @@ import unittest
 from unittest.mock import patch
 from moto import mock_aws
 import sys
-sys.path.append('../')
 from cda_module_mock_context import CDAModuleMockingContext
 
 
