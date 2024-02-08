@@ -3,7 +3,7 @@ import sys
 import unittest
 
 from botocore.exceptions import ClientError
-from tests.cda_module_mock_context import CDAModuleMockingContext
+from cda_module_mock_context import CDAModuleMockingContext
 from unittest.mock import ANY, patch
 
 with CDAModuleMockingContext(sys) as cda_module_mock_context:
