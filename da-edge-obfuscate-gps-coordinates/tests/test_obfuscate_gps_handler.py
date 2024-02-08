@@ -2,7 +2,7 @@ import os
 import boto3
 import unittest
 from unittest.mock import patch
-from moto import mock_s3
+from moto import mock_aws
 import sys
 sys.path.append('../')
 from cda_module_mock_context import CDAModuleMockingContext
@@ -103,7 +103,7 @@ class TestObfuscateGPSHandler(unittest.TestCase):
         mock_obfuscate_gps_coordinates.assert_called()
         mock_send_file_to_s3.assert_called()
 
-    @mock_s3
+    @mock_aws
     @patch.dict('os.environ', {'j1939_end_bucket': 'test_bucket'})
     def test_sendFileToS3_givenValidBody_thenPutFileIntoBucket(self):
         print("<-----test_sendFileToS3_givenValidBody_thenPutFileIntoBucket----->")
@@ -120,7 +120,7 @@ class TestObfuscateGPSHandler(unittest.TestCase):
         bucket.objects.all().delete()
         bucket.delete()
 
-    @mock_s3
+    @mock_aws
     @patch.dict('os.environ', {'j1939_end_bucket': 'test_bucket'})
     def test_sendFileToS3_givenValidBodyAndEsnWithAsterisk_thenPutFileIntoBucket(self):
         print("<-----test_sendFileToS3_givenValidBody_thenPutFileIntoBucket----->")
@@ -149,7 +149,7 @@ class TestObfuscateGPSHandler(unittest.TestCase):
         print("Result: ", result)
 
 
-    @mock_s3
+    @mock_aws
     @patch.dict('os.environ', {'j1939_end_bucket': 'test_bucket'})
     @patch('obfuscate_gps_handler.send_file_to_s3')
     @patch('obfuscate_gps_handler.handle_gps_coordinates')

@@ -5,7 +5,7 @@ import json
 import sys
 import unittest
 from unittest.mock import ANY, MagicMock, patch, call
-from moto import mock_dynamodb
+from moto import mock_aws
 import boto3
 
 from resources.cda_module_mocking_context import CDAModuleMockingContext
@@ -30,7 +30,7 @@ with CDAModuleMockingContext(sys) as cda_module_mocking_context, patch.dict("os.
     import ConverterLambda
 
 
-@mock_dynamodb
+@mock_aws
 class TestConverterLambda(unittest.TestCase):
     def setUp(self):
         """
