@@ -76,7 +76,6 @@ phases:
       # build project folder and package build file 
       - ls -lrt "$curr_dir"
       - x=$(ls "$(pwd)")
-      - echo `xq --help`
       - echo "\n#=======================#\n\nEDGE Build Actions Start . . .\n\n#=======================#\n"
       - for d in $x ;
         do
