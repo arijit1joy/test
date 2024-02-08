@@ -4,6 +4,8 @@ env:
   shell: bash
   variables:
     coverage_per_repo: ""
+    lines_covered: 0
+    total_lines: 0
     num_repos: 0
   secrets-manager:
     SONAR_LOGIN: /da-sca-sonar/sonar/sonar-common-token:sonar_common_token
@@ -107,6 +109,8 @@ phases:
                 coverage report --omit tests/*,dependencies.txt;
                 coverage xml;
                 raw_coverage=`cat coverage.xml | xq -x '/coverage/@line-rate'`;
+                lines_covered=`cat coverage.xml | xq -x '/coverage/@lines-covered'`;
+                total_lines=`cat coverage.xml | xq -x '/coverage/@lines-valid'`;
                 rounded_coverage=`echo "$raw_coverage * 100" | bc -l`;
                 coverage_per_repo+="$mydir":`printf "%.1f " "$rounded_coverage"`;
                 num_repos=$(($num_repos + 1));
@@ -169,16 +173,14 @@ phases:
       - if [ $num_repos -ne 0 ]; then
           echo -e "\n#=========================================================#";
           echo -e "Coverage report per project:\n";
-          let total_coverage=0;
           for i in ${coverage_per_repo[@]}; do
             IFS=":";
             set -- $i;
             printf "%-50s\t%.1f%%\n" "${1}" "${2}";
-            total_coverage=`echo "$total_coverage + ${2}" | bc`;
           done;
-          echo "------------------------";
-          rounded_total_coverage=`echo "$total_coverage / $num_repos" | bc -l`;
-          echo "Total coverage is `printf "%.1f" "$rounded_total_coverage"`%";
+          echo "--------------------------------------------------";
+          weighted_coverage=`echo "$lines_covered / $total_lines" | bc -l`;
+          echo "Total (weighted) coverage is `printf "%.1f" "$weighted_coverage"`% (${lines_covered} covered / ${total_lines} total)";
           echo -e "#=========================================================#\n";
         fi;
  
