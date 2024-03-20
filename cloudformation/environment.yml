@@ -1118,13 +1118,6 @@ Resources:
       TimeToLiveSpecification:
         AttributeName: "ttl"
         Enabled: true
-      Tags:
-        - Key: "app_id"
-          Value: "20089"
-        - Key: "env_code"
-          Value: !Ref CdoEnvironmentTag
-        - Key: "bu_code"
-          Value: "CDA_Shared"
   TTLParameter:
     Type: AWS::SSM::Parameter
     Properties:
