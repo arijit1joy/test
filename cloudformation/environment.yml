@@ -1070,13 +1070,6 @@ Resources:
             Condition:
               ArnEquals:
                 aws:SourceArn: !Sub "arn:aws:s3:::da-edge-j1939-datalog-files-${ApplicationEnvironmentTag}"
-      Tags:
-        - Key: "app_id"
-          Value: "20089"
-        - Key: "env_code"
-          Value: !Ref CdoEnvironmentTag
-        - Key: "bu_code"
-          Value: "CDA_Shared"
     DependsOn:
       - EDGEJ1939DataLogFilesQueue
 
@@ -1142,13 +1135,6 @@ Resources:
             Condition:
               ArnEquals:
                 aws:SourceArn: !Sub "arn:aws:s3:::edge-j1939-${ApplicationEnvironmentTag}"
-      Tags:
-        - Key: "app_id"
-          Value: "20089"
-        - Key: "env_code"
-          Value: !Ref CdoEnvironmentTag
-        - Key: "bu_code"
-          Value: "CDA_Shared"
     DependsOn:
       - EDGEJ1939CPPTPosterQueue
 
@@ -1215,13 +1201,6 @@ Resources:
             Condition:
               ArnEquals:
                 aws:SourceArn: !Sub "arn:aws:s3:::edge-j1939-${ApplicationEnvironmentTag}"
-      Tags:
-        - Key: "app_id"
-          Value: "20089"
-        - Key: "env_code"
-          Value: !Ref CdoEnvironmentTag
-        - Key: "bu_code"
-          Value: "CDA_Shared"
     DependsOn:
       - EDGEJ1939NGDI2CDSDKConversionQueue
 
