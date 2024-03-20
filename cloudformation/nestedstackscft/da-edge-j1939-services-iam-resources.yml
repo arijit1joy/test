@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: CDA AWS Resources related to the IAM
+Description: J1939 Services Resources related to the IAM
 
 Parameters:
   ApplicationEnvironmentTag:
