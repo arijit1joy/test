@@ -105,6 +105,13 @@ Resources:
       Description: j1939 Processing bucket name
       Value: !Ref EdgeJ1939ProcessingBucket
       Name: da-edge-j1939-processing-bucket
+    Tags:
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
 
   EdgeJ1939DataLogBucketPolicy:
     Type: "AWS::S3::BucketPolicy"
@@ -137,6 +144,13 @@ Resources:
               AWS:
                 - !GetAtt EdgeJ1939CSVConverterLambdaRole.Arn
       Bucket: !Ref EdgeJ1939DataLogBucket
+      Tags:
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
 
   Spnlistbucket:
     Type: "AWS::S3::Bucket"
@@ -155,6 +169,12 @@ Resources:
       Tags:
         - Value: Edge
           Key: Name
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
 
   EndpointBucketPolicy:
     Type: "AWS::S3::BucketPolicy"
@@ -180,6 +200,13 @@ Resources:
                   - !GetAtt EdgeCPPTPosterLambdaRole.Arn
                   - !Ref "AWS::NoValue"
       Bucket: !Ref EndpointBucket
+      Tags:
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
 
   EdgeJ1939Bucket:
     Type: "AWS::SSM::Parameter"
@@ -189,6 +216,13 @@ Resources:
       Description: Storing the j1939 bucket name
       Value: !Ref EdgeJ1939DataLogBucket
       Name: da-edge-j1939-datalog-bucket
+      Tags:
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
 
   EdgeNGDI2CDSDKConversionLambdaRole:
     Type: "AWS::IAM::Role"
@@ -230,6 +264,13 @@ Resources:
                 Resource:
                   - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/EDGECommonAPI"
                 Effect: Allow
+      Tags:
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
       AssumeRolePolicyDocument:
         Statement:
           - Action: "sts:AssumeRole"
@@ -292,6 +333,13 @@ Resources:
                   - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:EdgeCommonAPI-${ApplicationEnvironmentTag}"
                   - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-edge-common-lib-EDGEDBReader-${ApplicationEnvironmentTag}"
                 Effect: Allow
+      Tags:
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
       AssumeRolePolicyDocument:
         Statement:
           - Action: "sts:AssumeRole"
@@ -314,6 +362,12 @@ Resources:
           Key: "Lambda:CreatedBy"
         - Value: Edge
           Key: Name
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
       MemorySize: 1536
       ReservedConcurrentExecutions: 275
       Environment:
@@ -334,6 +388,13 @@ Resources:
     Properties:
       LogGroupName: !Sub '/aws/lambda/${ObfuscateGPSCoordinatesLambda}-logs'
       RetentionInDays: 120 # 3 months, matches existing log group
+      Tags:
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
 
   EdgePublicDataIoTTopicRule:
     Type: "AWS::IoT::TopicRule"
@@ -350,6 +411,13 @@ Resources:
           from '$aws/things/+/public'
       RuleName: !Sub >-
         da_edge_j1939_EdgeIotRulePublicDataDataLogger_${ApplicationEnvironmentTag}
+      Tags:
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
 
   ObfuscateGPSCoordinatesLambdaRole:
     Type: "AWS::IAM::Role"
@@ -388,6 +456,13 @@ Resources:
                   - !Ref CrossIOTRoleArn
                   - !Ref NimbusIoTRoleArn
                 Effect: Allow
+      Tags:
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
       AssumeRolePolicyDocument:
         Statement:
           - Action: "sts:AssumeRole"
@@ -415,6 +490,13 @@ Resources:
               AWS:
                 - !GetAtt EdgeNGDI2CDSDKConversionLambdaRole.Arn
       Bucket: !Ref Spnlistbucket
+      Tags:
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
 
   EdgeJ1939DataLogBucket:
     Type: "AWS::S3::Bucket"
@@ -437,6 +519,12 @@ Resources:
       Tags:
         - Value: Edge
           Key: Name
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
     DependsOn:
       - EDGEJ1939DataLogFilesQueuePolicy
 
@@ -453,6 +541,14 @@ Resources:
             Principal:
               Service:
                 - iot.amazonaws.com
+      Tags:
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
+      
 
   LambdaInvokePermissionJ1939ProcessingBucket:
     Type: "AWS::Lambda::Permission"
@@ -466,6 +562,13 @@ Resources:
         - - "arn:aws:s3:::"
           - !Sub "edge-j1939-${ApplicationEnvironmentTag}"
       Principal: s3.amazonaws.com
+      Tags:
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
 
   EdgeNGDI2CDSDKConversion:
     Type: "AWS::Lambda::Function"
@@ -482,6 +585,12 @@ Resources:
           Key: "Lambda:CreatedBy"
         - Value: Edge
           Key: Name
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
       MemorySize: 1536
       ReservedConcurrentExecutions: 25
       Environment:
@@ -555,6 +664,13 @@ Resources:
         - - "arn:aws:s3:::"
           - !Sub "da-edge-${AWS::AccountId}-decrypt-files-${ApplicationEnvironmentTag}"
       Principal: s3.amazonaws.com
+      Tags:
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
 
   EdgeCPPTPosterLambdaRole:
     Type: "AWS::IAM::Role"
@@ -643,6 +759,13 @@ Resources:
                 Resource:
                   - !Sub "arn:aws:iam::${PCCAccountId}:role/EdgeKinesisProducerRole"
                 Effect: Allow
+      Tags:
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
       AssumeRolePolicyDocument:
         Statement:
           - Action: "sts:AssumeRole"
@@ -672,6 +795,12 @@ Resources:
       Tags:
         - Value: Edge
           Key: Name
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
       BucketEncryption:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
@@ -715,6 +844,13 @@ Resources:
       #Value: '{"FC" : "Event1_5", "Periodic" : "Periodic1_9","PT_TSP": "Cummins"}'
       Value: '{"FC" : "Event1_5", "Periodic" : "Periodic1_9","PT_TSP": "Cummins","EngineStatOverride":"EngineStat_9","LoadFactorOverride":"LoadFactor_9","EngineStatSc":"SC8091","LoadFactorSc":"SC8093"}'
       Name: da-edge-j1939-content-spec-value
+      Tags:
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
 
   EdgeJ1939CSVConverterBDDEsnSSM:
     Type: "AWS::SSM::Parameter"
@@ -724,6 +860,13 @@ Resources:
       Description: j1939 csv converter lambda bdd esn list
       Value: '{"esn":["19299951","19299955","19299956","19299952","19299954","CMMNS**19299954**************************************************************"]}'
       Name: da-edge-j1939-bdd-esn-list
+      Tags:
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
 
   EndpointBucket:
     Type: "AWS::S3::Bucket"
@@ -742,6 +885,12 @@ Resources:
       Tags:
         - Value: Edge
           Key: Name
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
 
   LambdaInvokeObfuscateGPSCoordinatesPermission:
     Type: "AWS::Lambda::Permission"
@@ -750,6 +899,13 @@ Resources:
       FunctionName: !Ref ObfuscateGPSCoordinatesLambda
       SourceArn: !GetAtt EdgePublicDataIoTTopicRule.Arn
       Principal: iot.amazonaws.com
+      Tags:
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
 
   LambdaInvokeObfuscateGPSCoordinatesPermissionFromCosmosAccount:
     Type: "AWS::Lambda::Permission"
@@ -759,6 +915,13 @@ Resources:
       SourceArn: !Ref CosmosJ1939RuleArn
       FunctionName: !Ref ObfuscateGPSCoordinatesLambda
       Principal: iot.amazonaws.com
+      Tags:
+        - Key: "app_id"
+          Value: "33439"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "EBU"
 
   LambdaInvokeIotObfuscateGPSCoordinatesPermission:
     Type: "AWS::Lambda::Permission"
@@ -767,6 +930,13 @@ Resources:
       FunctionName: !Ref ObfuscateGPSCoordinatesLambda
       SourceArn: !Sub "arn:aws:iot:${AWS::Region}:${IotClientAccount}:rule/da_edge_j1939_EdgeIotRule_PublicDataDataLogger_${ApplicationEnvironmentTag}"
       Principal: iot.amazonaws.com
+      Tags:
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
   
   LambdaInvokePSBUObfuscateGPSCoordinatesPermission:
     Type: "AWS::Lambda::Permission"
@@ -775,6 +945,13 @@ Resources:
       FunctionName: !Ref ObfuscateGPSCoordinatesLambda
       SourceArn: !Sub "arn:aws:iot:${AWS::Region}:${NimbusIoTAccount}:rule/cda_nimbus_public_datalogger_topicrule_${ApplicationEnvironmentTag}"
       Principal: iot.amazonaws.com
+      Tags:
+        - Key: "app_id"
+          Value: "20175"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CMP"
 
   EdgeJ1939CSVConverter:
     Type: "AWS::Lambda::Function"
@@ -791,6 +968,12 @@ Resources:
           Key: "Lambda:CreatedBy"
         - Value: Edge
           Key: Name
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
       MemorySize: 1536
       ReservedConcurrentExecutions: 25
       Environment:
@@ -829,6 +1012,13 @@ Resources:
     Properties:
       LogGroupName: !Sub '/aws/lambda/${EdgeJ1939CSVConverter}-logs'
       RetentionInDays: 120 # 3 months, matches existing log group
+      Tags:
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
 
   # PandasPythonLayer:
   #   Type: "AWS::Lambda::LayerVersion"
@@ -889,6 +1079,13 @@ Resources:
             Principal:
               AWS: !Sub "arn:aws:iam::${AWS::AccountId}:role/da-edge-common-lib-NGCA-BDDTrustRole-${ApplicationEnvironmentTag}"
       Bucket: !Ref EdgeJ1939ProcessingBucket
+      Tags:
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
 
   LambdaInvokeNGDI2CDSDKPermission:
     Type: "AWS::Lambda::Permission"
@@ -901,6 +1098,13 @@ Resources:
         - - "arn:aws:s3:::"
           - !Sub "edge-j1939-${ApplicationEnvironmentTag}"
       Principal: s3.amazonaws.com
+      Tags:
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
 
   EDGECPPTAPISecret:
     Type: "AWS::SecretsManager::Secret"
@@ -913,6 +1117,13 @@ Resources:
       SecretString: !Sub '{"x-api-key": "~FILL~"}'
       Name: pt_xapi_key
       Description: PT x-API key
+      Tags:
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
 
   EdgeEndpointJ1939Bucket:
     Type: "AWS::SSM::Parameter"
@@ -922,6 +1133,13 @@ Resources:
       Description: Endpoint j1939 bucket name
       Value: !Ref EndpointBucket
       Name: da-edge-j1939-endpoint-bucket
+      Tags:
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
 
   EdgeCPPTPoster:
     Type: "AWS::Lambda::Function"
@@ -940,6 +1158,12 @@ Resources:
           Key: "Lambda:CreatedBy"
         - Value: Edge
           Key: Name
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
       MemorySize: 1536
       ReservedConcurrentExecutions: 275
       Environment:
@@ -1027,6 +1251,13 @@ Resources:
     Properties:
       LogGroupName: !Sub '/aws/lambda/${EdgeCPPTPoster}-logs'
       RetentionInDays: 120 # 3 months, matches existing log group
+      Tags:
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
 
   EdgeCPPTPosterEventInvokeConfig:
     Type: AWS::Lambda::EventInvokeConfig
@@ -1035,6 +1266,13 @@ Resources:
       FunctionName: !Ref EdgeCPPTPoster
       MaximumRetryAttempts: 1
       Qualifier: "$LATEST"
+      Tags:
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
 
   CodeBuildReportGroup:
     Type: AWS::CodeBuild::ReportGroup
@@ -1046,6 +1284,13 @@ Resources:
         S3Destination:
           Bucket: !Sub "${BDDReportsBucket}-${ApplicationEnvironmentTag}"
           Path: reports/
+      Tags:
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
 
   # Queues
   EDGEJ1939DataLogFilesQueue:
@@ -1059,11 +1304,25 @@ Resources:
             - "EDGEJ1939DataLogFilesDLQueue"
             - "Arn"
         maxReceiveCount: 2
+      Tags:
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
 
   EDGEJ1939DataLogFilesDLQueue:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: !Sub "${ApplicationName}-DataLogFilesDLQueue-${ApplicationEnvironmentTag}"
+      Tags:
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
 
   # Queue Policies
   EDGEJ1939DataLogFilesQueuePolicy:
@@ -1085,6 +1344,13 @@ Resources:
             Condition:
               ArnEquals:
                 aws:SourceArn: !Sub "arn:aws:s3:::da-edge-j1939-datalog-files-${ApplicationEnvironmentTag}"
+      Tags:
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
     DependsOn:
       - EDGEJ1939DataLogFilesQueue
 
@@ -1110,11 +1376,25 @@ Resources:
             - "EDGEJ1939CPPTPosterDLQueue"
             - "Arn"
         maxReceiveCount: 2
+      Tags:
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
 
   EDGEJ1939CPPTPosterDLQueue:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: !Sub "${ApplicationName}-CPPTPosterDLQueue-${ApplicationEnvironmentTag}"
+      Tags:
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
 
   # Queue Policies
   EDGEJ1939CPPTPosterQueuePolicy:
@@ -1136,6 +1416,13 @@ Resources:
             Condition:
               ArnEquals:
                 aws:SourceArn: !Sub "arn:aws:s3:::edge-j1939-${ApplicationEnvironmentTag}"
+      Tags:
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
     DependsOn:
       - EDGEJ1939CPPTPosterQueue
 
@@ -1162,11 +1449,25 @@ Resources:
             - "EDGEJ1939NGDI2CDSDKConversionDLQueue"
             - "Arn"
         maxReceiveCount: 2
+      Tags:
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
 
   EDGEJ1939NGDI2CDSDKConversionDLQueue:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: !Sub "${ApplicationName}-NGDI2CDSDKConversionDLQueue-${ApplicationEnvironmentTag}"
+      Tags:
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
 
   # Queue Policies
   EDGEJ1939NGDI2CDSDKConversionQueuePolicy:
@@ -1188,6 +1489,13 @@ Resources:
             Condition:
               ArnEquals:
                 aws:SourceArn: !Sub "arn:aws:s3:::edge-j1939-${ApplicationEnvironmentTag}"
+      Tags:
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
     DependsOn:
       - EDGEJ1939NGDI2CDSDKConversionQueue
 
@@ -1200,6 +1508,13 @@ Resources:
       Enabled: true
       EventSourceArn: !GetAtt EDGEJ1939NGDI2CDSDKConversionQueue.Arn
       FunctionName: !GetAtt EdgeNGDI2CDSDKConversion.Arn
+      Tags:
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
 
   ActiveFaultCodeTable:
     Type: AWS::DynamoDB::Table
@@ -1215,9 +1530,23 @@ Resources:
       TimeToLiveSpecification:
         AttributeName: "ttl"
         Enabled: true
+      Tags:
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
   TTLParameter:
     Type: AWS::SSM::Parameter
     Properties:
       Name: !Sub "/J1939ActiveFaultCodeTable-${ApplicationEnvironmentTag}/ttl-in-seconds"
       Type: String
       Value: "86400"
+      Tags:
+        - Key: "app_id"
+          Value: "20089"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CDA_Shared"
