@@ -32,6 +32,8 @@ phases:
     - sed -i -E 's|LoggingLevel\s*:\s*\"[dD][eE][bB][uU][gG]\"|LoggingLevel~~~~~~ \"info\"|gi' cloudformation/environment.yml
     - sed -i -e 's|~~~~~~|:|g' cloudformation/environment.yml
     - cd cloudformation 
+    - aws s3 cp ./nestedstackscft/ s3://${S3Bucket}/${BRANCH_NAME}/ --recursive
+    - aws s3 cp ./nestedstackscft/ s3://${CrossRegionBucket}/${BRANCH_NAME}/ --recursive
     - versionId=$(date +"%m-%d-%Y-%H-%M-%S") 
     - echo $versionId
     - pip install -q ruamel.yaml
