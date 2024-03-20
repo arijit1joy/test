@@ -110,6 +110,15 @@ Resources:
         ApplicationEnvironmentTag: !Ref ApplicationEnvironmentTag
         ApplicationName: !Ref ApplicationName
         ArtifactsBucket: !Ref ArtifactsBucket
+        ActiveFaultCodeTableArn: !GetAtt ActiveFaultCodeTable.Arn
+        EDGEJ1939DataLogFilesQueueArn: !GetAtt EDGEJ1939DataLogFilesQueue.Arn
+        EdgeJ1939ProcessingBucketArn: !GetAtt EdgeJ1939ProcessingBucket.Arn
+        DataQualityLambda: !Sub "${DataQualityLambda}-${ApplicationEnvironmentTag}"
+        EDGEJ1939NGDI2CDSDKConversionQueueArn: !GetAtt EDGEJ1939NGDI2CDSDKConversionQueue.Arn
+        NimbusIoTRoleArn: !Ref NimbusIoTRoleArn
+        PCCAccountId: !Ref PCCAccountId
+        CrossIOTRoleArn: !Ref CrossIOTRoleArn
+        EDGEJ1939CPPTPosterQueueArn: !GetAtt EDGEJ1939CPPTPosterQueue.Arn
       Tags:
         - Value: !Ref CdoEnvironmentTag
           Key: "env_code"
