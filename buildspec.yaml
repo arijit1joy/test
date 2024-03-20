@@ -18,13 +18,13 @@ phases:
     commands:
     - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
     - wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add -
-    - apt-get update
-    - pip install pytest coverage pytest-cov moto
+    - apt-get -qq update
+    - pip install -q pytest coverage pytest-cov moto
     - pip install -q awscli==1.16.209 
-    - apt-get install -y zip unzip bc
+    - apt-get -qq install -y zip unzip bc
     - curl -sSL https://bit.ly/install-xq | bash
-    - curl -sL https://deb.nodesource.com/setup_10.x | bash - 
-    - apt-get install nodejs -y 
+    - curl -sSL https://deb.nodesource.com/setup_10.x | bash - 
+    - apt-get -qq install nodejs -y 
     - nodejs --version 
     - npm --version  
     - curr_dir=$(pwd) 
@@ -112,7 +112,7 @@ phases:
                 rounded_coverage=`echo "$raw_coverage * 100" | bc -l`;
                 coverage_per_repo+="$mydir":`printf "%.1f" "$rounded_coverage"`:"$lines_covered":"$total_lines ";
                 num_repos=$(($num_repos + 1));
-                sonar-scanner -Dsonar.login=$SONAR_LOGIN -Dsonar.host.url=$SONAR_HOST -Dsonar.python.coverage.reportPaths="coverage.xml" -Dsonar.branch.name="master";
+                sonar-scanner -Dsonar.login=$SONAR_LOGIN -Dsonar.host.url=$SONAR_HOST -Dsonar.python.coverage.reportPaths="coverage.xml" -Dsonar.branch.name="master" > /dev/null;
                 echo "Printing dir contents to find the coverage.xml file . . . ";
                 ls -l;
                 if [ -f "../SonarqubeQualityChecker.sh" ] && [ -f "sonar-project.properties" ]; then
@@ -143,8 +143,8 @@ phases:
           fi;  
         done || exit 1 
       - ls -lrt "$curr_dir/target" 
-      - aws s3 cp "$curr_dir/target" s3://${S3Bucket}/$versionId --recursive 
-      - aws s3 cp "$curr_dir/target" s3://${CrossRegionBucket}/$versionId --recursive
+      - aws s3 cp "$curr_dir/target" s3://${S3Bucket}/$versionId --recursive --quiet
+      - aws s3 cp "$curr_dir/target" s3://${CrossRegionBucket}/$versionId --recursive --quiet
       - pwd 
       - ls -lrt 
       - cd $curr_dir 
