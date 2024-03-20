@@ -1,0 +1,320 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: CDA AWS Resources related to the IAM
+
+Parameters:
+  ApplicationEnvironmentTag:
+    Type: String
+  ApplicationName:
+    Type: String
+  ArtifactsBucket:
+    Type: String
+  EDGEJ1939NGDI2CDSDKConversionQueueArn:
+    Type: String
+  EdgeJ1939ProcessingBucketArn:
+    Type: String
+  CrossIOTRoleArn:
+    Type: String
+  NimbusIoTRoleArn:
+    Type: String
+  ActiveFaultCodeTableArn:
+    Type: String
+  EDGEJ1939DataLogFilesQueueArn:
+    Type: String
+  EDGEJ1939CPPTPosterQueueArn:
+    Type: String
+  MskClusterArn:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: cda-data-hub-msk-cluster-arn
+  PCCAccountId:
+    Type: String
+  DataQualityLambda:
+    Type: String
+  MskClusterSecret:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: cda-data-hub-msk-cluster-secret
+
+  
+
+Conditions:
+  UseNotStageCondition: !Not [!Equals [!Ref ApplicationEnvironmentTag, stage]]
+  UseDevOrTestCondition: !Or
+    - !Equals [!Ref ApplicationEnvironmentTag, dev]
+    - !Equals [!Ref ApplicationEnvironmentTag, test]
+
+Resources:
+  EdgeNGDI2CDSDKConversionLambdaRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Sub >-
+        ${ApplicationName}-${ApplicationEnvironmentTag}-EdgeNGDI2CDSDKConversionLambdaRole
+      Path: /
+      Policies:
+        - PolicyName: !Sub >-
+            ${ApplicationName}-${ApplicationEnvironmentTag}-EdgeNGDI2CDSDKConversionLambdaWorkerPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Action:
+                  - "sqs:ReceiveMessage"
+                  - "sqs:DeleteMessage"
+                  - "sqs:GetQueueAttributes"
+                Resource: !Ref EDGEJ1939NGDI2CDSDKConversionQueueArn
+                Effect: Allow
+              - Action:
+                  - "sqs:SendMessage"
+                Resource:
+                  - !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
+                  - !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
+                Effect: Allow
+              - Action:
+                  - "logs:*"
+                Resource: "arn:aws:logs:*:*:*"
+                Effect: Allow
+              - Action:
+                  - "secretsmanager:GetSecretValue"
+                Resource:
+                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/cda/commonlib/authtokensecrets-??????"
+                Effect: Allow
+              - Action:
+                  - "ssm:Describe*"
+                  - "ssm:Get*"
+                  - "ssm:List*"
+                Resource:
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/EDGECommonAPI"
+                Effect: Allow
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: "sts:AssumeRole"
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+  
+  EdgeJ1939CSVConverterLambdaRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Sub >-
+        ${ApplicationName}-${ApplicationEnvironmentTag}-EdgeJ1939CSVConverterLambdaRole
+      Path: /
+      Policies:
+        - PolicyName: !Sub >-
+            ${ApplicationName}-${ApplicationEnvironmentTag}-EdgeJ1939CSVConverterLambdaWorkerPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "dynamodb:GetItem"
+                  - "dynamodb:PutItem"
+                  - "dynamodb:UpdateItem"
+                  - "dynamodb:DeleteItem"
+                Resource: !Ref ActiveFaultCodeTableArn
+              - Action:
+                  - "ssm:Get*"
+                Resource:
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/da-edge-j1939-bdd-esn-list"
+                Effect: Allow
+              - Action:
+                  - "sqs:ReceiveMessage"
+                  - "sqs:DeleteMessage"
+                  - "sqs:GetQueueAttributes"
+                Resource: !Ref EDGEJ1939DataLogFilesQueueArn
+                Effect: Allow
+              - Action:
+                  - "sqs:SendMessage"
+                Resource:
+                  - !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
+                  - !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
+                Effect: Allow
+              - Action:
+                  - "logs:*"
+                Resource: "arn:aws:logs:*:*:*"
+                Effect: Allow
+              ## --- I could not find any ssm queries for this resource
+              # - Action:
+              #     - "ssm:Describe*"
+              #     - "ssm:Get*"
+              #     - "ssm:List*"
+              #   Resource: "*"
+              #   Effect: Allow
+              - Action:
+                  - "lambda:InvokeFunction"
+                  - "lambda:InvokeAsync"
+                Resource:
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:EdgeCommonAPI-${ApplicationEnvironmentTag}"
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-edge-common-lib-EDGEDBReader-${ApplicationEnvironmentTag}"
+                Effect: Allow
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: "sts:AssumeRole"
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+  
+  ObfuscateGPSCoordinatesLambdaRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Sub >-
+        ${ApplicationName}-ObfuscateGPSCoordinatesLambdaRole-${ApplicationEnvironmentTag}
+      Path: /
+      Policies:
+        - PolicyName: !Sub >-
+            ${ApplicationName}-ObfuscateGPSCoordinatesLambdaPolicy-${ApplicationEnvironmentTag}
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Action:
+                  - "logs:*"
+                Resource: "arn:aws:logs:*:*:*"
+                Effect: Allow
+              - Action:
+                  - "s3:Put*"
+                  - "s3:Get*"
+                  - "s3:List*"
+                Resource: !Ref EdgeJ1939ProcessingBucketArn
+                Effect: Allow
+              ## --- I could not find any resources which this function currently calls
+              # - Action:
+              #     - "lambda:InvokeFunction"
+              #     - "lambda:InvokeAsync"
+              #   Resource: "*"
+                # Effect: Allow
+              - Action:
+                  - "sqs:SendMessage"
+                Resource: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
+                Effect: Allow
+              - Action: "sts:AssumeRole"
+                Resource:
+                  - !Ref CrossIOTRoleArn
+                  - !Ref NimbusIoTRoleArn
+                Effect: Allow
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: "sts:AssumeRole"
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+  
+  RoleForJ1939StreamBucket:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-J1939StreamBucket"
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - "sts:AssumeRole"
+            Effect: Allow
+            Principal:
+              Service:
+                - iot.amazonaws.com
+  
+  EdgeCPPTPosterLambdaRole:
+    Type: "AWS::IAM::Role"
+    Condition: UseNotStageCondition
+    Properties:
+      RoleName: !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeCPPTPosterLambdaRole"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/SecretsManagerReadWrite"
+      Path: /
+      Policies:
+        - PolicyName: !Sub >-
+            ${ApplicationName}-${ApplicationEnvironmentTag}-EdgeCPPTPosterLambdaWorkerPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Action:
+                  - "kafka:*" # TODO, tighten
+                Resource: "*" # TODO, tighten
+                Effect: Allow
+              - Action:
+                  - kms:DescribeKey
+                  - kms:ListAliases
+                  - kms:ListKeys
+                  - "kms:*"
+                Resource: "*" # TODO, tighten
+                Effect: Allow
+              - Action:
+                  - "sqs:ReceiveMessage"
+                  - "sqs:DeleteMessage"
+                  - "sqs:GetQueueAttributes"
+                Resource: !Ref EDGEJ1939CPPTPosterQueueArn
+                Effect: Allow
+              - Action:
+                  - "sqs:SendMessage"
+                Resource:
+                  - !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
+                  - !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
+                Effect: Allow
+              - Action:
+                  - "logs:*"
+                Resource: "arn:aws:logs:*:*:*"
+                Effect: Allow
+              - Action:
+                  - "ssm:Describe*"
+                  - "ssm:Get*"
+                  - "ssm:List*"
+                Resource:
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/da-edge-j1939-content-spec-value"
+                Effect: Allow
+              - Action:
+                  - "secretsmanager:GetSecretValue"
+                Resource:
+                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pt_xapi_key-??????"
+                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/da-EDGE-Olympus/elasticache/edge-rw-??????"
+                  - !If
+                    - UseDevOrTestCondition
+                    - !Ref MskClusterSecret
+                    - !Ref "AWS::NoValue"
+                Effect: Allow
+              - Action:
+                  - "lambda:InvokeFunction"
+                  - "lambda:InvokeAsync"
+                Resource:
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:EdgeCommonAPI-${ApplicationEnvironmentTag}"
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-edge-common-lib-EDGEDBReader-${ApplicationEnvironmentTag}"
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${DataQualityLambda}-${ApplicationEnvironmentTag}"
+                Effect: Allow
+              - !If
+                - UseDevOrTestCondition
+                - Action:
+                    - "kafka:ListClusters"
+                    - "kafka:DescribeCluster"
+                    - "kafka:GetBootstrapBrokers"
+                  Resource:
+                    - !Ref MskClusterArn 
+                  Effect: Allow
+                - !Ref "AWS::NoValue"
+              - Action:
+                  - "ec2:CreateNetworkInterface"
+                  - "ec2:DescribeNetworkInterfaces"
+                  - "ec2:DeleteNetworkInterface"
+                Resource: 'arn:aws:ec2:*:*:*'
+                Effect: Allow
+              - Action:
+                  - "sts:AssumeRole"
+                Resource:
+                  - !Sub "arn:aws:iam::${PCCAccountId}:role/EdgeKinesisProducerRole"
+                Effect: Allow
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: "sts:AssumeRole"
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+
+
+Outputs:
+    EdgeNGDI2CDSDKConversionLambdaRoleArn:
+      Value: !GetAtt EdgeNGDI2CDSDKConversionLambdaRole.Arn
+    EdgeJ1939CSVConverterLambdaRoleArn:
+      Value: !GetAtt EdgeJ1939CSVConverterLambdaRole.Arn
+    ObfuscateGPSCoordinatesLambdaRoleArn:
+      Value: !GetAtt ObfuscateGPSCoordinatesLambdaRole.Arn
+    RoleForJ1939StreamBucketArn:
+      Value: !GetAtt RoleForJ1939StreamBucket.Arn
+    EdgeCPPTPosterLambdaRoleArn:
+      Value: !GetAtt EdgeCPPTPosterLambdaRole.Arn

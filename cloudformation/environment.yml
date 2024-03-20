@@ -89,6 +89,10 @@ Parameters:
     Type: String
   CosmosJ1939RuleArn:
     Type: String
+  CdoEnvironmentTag:
+    Type: String
+  BranchName:
+    Type: String
 
 Conditions:
   UseNotStageCondition: !Not [!Equals [!Ref ApplicationEnvironmentTag, stage]]
@@ -97,6 +101,23 @@ Conditions:
     - !Equals [!Ref ApplicationEnvironmentTag, test]
 
 Resources:
+
+  IAMResourcesStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://s3.amazonaws.com/${ArtifactsBucket}/${BranchName}/da-edge-j1939-services-iam-resources.yml
+      Parameters:
+        ApplicationEnvironmentTag: !Ref ApplicationEnvironmentTag
+        ApplicationName: !Ref ApplicationName
+        ArtifactsBucket: !Ref ArtifactsBucket
+      Tags:
+        - Value: !Ref CdoEnvironmentTag
+          Key: "env_code"
+        - Value: "CDA_Shared"
+          Key: "bu_code"
+        - Value: "20089"
+          Key: "app_id"
+  
   EdgeJ1939ProcessingBucketSSM:
     Type: "AWS::SSM::Parameter"
     Properties:
@@ -105,13 +126,13 @@ Resources:
       Description: j1939 Processing bucket name
       Value: !Ref EdgeJ1939ProcessingBucket
       Name: da-edge-j1939-processing-bucket
-    Tags:
-        - Key: "app_id"
-          Value: "20089"
-        - Key: "env_code"
-          Value: !Ref CdoEnvironmentTag
-        - Key: "bu_code"
-          Value: "CDA_Shared"
+      Tags:
+          - Key: "app_id"
+            Value: "20089"
+          - Key: "env_code"
+            Value: !Ref CdoEnvironmentTag
+          - Key: "bu_code"
+            Value: "CDA_Shared"
 
   EdgeJ1939DataLogBucketPolicy:
     Type: "AWS::S3::BucketPolicy"
@@ -142,7 +163,7 @@ Resources:
             Effect: Allow
             Principal:
               AWS:
-                - !GetAtt EdgeJ1939CSVConverterLambdaRole.Arn
+                - Fn::GetAtt: IAMResourcesStack.Outputs.EdgeJ1939CSVConverterLambdaRoleArn
       Bucket: !Ref EdgeJ1939DataLogBucket
       Tags:
         - Key: "app_id"
@@ -197,7 +218,7 @@ Resources:
                   arn:aws:iam::${AWS::AccountId}:role/da-edge-device-EdgeRegistrationLambdaTrustRole-${ApplicationEnvironmentTag}
                 - !If 
                   - UseNotStageCondition
-                  - !GetAtt EdgeCPPTPosterLambdaRole.Arn
+                  - Fn::GetAtt: IAMResourcesStack.Outputs.EdgeCPPTPosterLambdaRoleArn
                   - !Ref "AWS::NoValue"
       Bucket: !Ref EndpointBucket
       Tags:
@@ -223,130 +244,6 @@ Resources:
           Value: !Ref CdoEnvironmentTag
         - Key: "bu_code"
           Value: "CDA_Shared"
-
-  EdgeNGDI2CDSDKConversionLambdaRole:
-    Type: "AWS::IAM::Role"
-    Properties:
-      RoleName: !Sub >-
-        ${ApplicationName}-${ApplicationEnvironmentTag}-EdgeNGDI2CDSDKConversionLambdaRole
-      Path: /
-      Policies:
-        - PolicyName: !Sub >-
-            ${ApplicationName}-${ApplicationEnvironmentTag}-EdgeNGDI2CDSDKConversionLambdaWorkerPolicy
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Action:
-                  - "sqs:ReceiveMessage"
-                  - "sqs:DeleteMessage"
-                  - "sqs:GetQueueAttributes"
-                Resource: !GetAtt EDGEJ1939NGDI2CDSDKConversionQueue.Arn
-                Effect: Allow
-              - Action:
-                  - "sqs:SendMessage"
-                Resource:
-                  - !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
-                  - !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
-                Effect: Allow
-              - Action:
-                  - "logs:*"
-                Resource: "arn:aws:logs:*:*:*"
-                Effect: Allow
-              - Action:
-                  - "secretsmanager:GetSecretValue"
-                Resource:
-                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/cda/commonlib/authtokensecrets-??????"
-                Effect: Allow
-              - Action:
-                  - "ssm:Describe*"
-                  - "ssm:Get*"
-                  - "ssm:List*"
-                Resource:
-                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/EDGECommonAPI"
-                Effect: Allow
-      Tags:
-        - Key: "app_id"
-          Value: "20089"
-        - Key: "env_code"
-          Value: !Ref CdoEnvironmentTag
-        - Key: "bu_code"
-          Value: "CDA_Shared"
-      AssumeRolePolicyDocument:
-        Statement:
-          - Action: "sts:AssumeRole"
-            Effect: Allow
-            Principal:
-              Service:
-                - lambda.amazonaws.com
-
-  EdgeJ1939CSVConverterLambdaRole:
-    Type: "AWS::IAM::Role"
-    Properties:
-      RoleName: !Sub >-
-        ${ApplicationName}-${ApplicationEnvironmentTag}-EdgeJ1939CSVConverterLambdaRole
-      Path: /
-      Policies:
-        - PolicyName: !Sub >-
-            ${ApplicationName}-${ApplicationEnvironmentTag}-EdgeJ1939CSVConverterLambdaWorkerPolicy
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - "dynamodb:GetItem"
-                  - "dynamodb:PutItem"
-                  - "dynamodb:UpdateItem"
-                  - "dynamodb:DeleteItem"
-                Resource: !GetAtt ActiveFaultCodeTable.Arn
-              - Action:
-                  - "ssm:Get*"
-                Resource:
-                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/da-edge-j1939-bdd-esn-list"
-                Effect: Allow
-              - Action:
-                  - "sqs:ReceiveMessage"
-                  - "sqs:DeleteMessage"
-                  - "sqs:GetQueueAttributes"
-                Resource: !GetAtt EDGEJ1939DataLogFilesQueue.Arn
-                Effect: Allow
-              - Action:
-                  - "sqs:SendMessage"
-                Resource:
-                  - !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
-                  - !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
-                Effect: Allow
-              - Action:
-                  - "logs:*"
-                Resource: "arn:aws:logs:*:*:*"
-                Effect: Allow
-              ## --- I could not find any ssm queries for this resource
-              # - Action:
-              #     - "ssm:Describe*"
-              #     - "ssm:Get*"
-              #     - "ssm:List*"
-              #   Resource: "*"
-              #   Effect: Allow
-              - Action:
-                  - "lambda:InvokeFunction"
-                  - "lambda:InvokeAsync"
-                Resource:
-                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:EdgeCommonAPI-${ApplicationEnvironmentTag}"
-                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-edge-common-lib-EDGEDBReader-${ApplicationEnvironmentTag}"
-                Effect: Allow
-      Tags:
-        - Key: "app_id"
-          Value: "20089"
-        - Key: "env_code"
-          Value: !Ref CdoEnvironmentTag
-        - Key: "bu_code"
-          Value: "CDA_Shared"
-      AssumeRolePolicyDocument:
-        Statement:
-          - Action: "sts:AssumeRole"
-            Effect: Allow
-            Principal:
-              Service:
-                - lambda.amazonaws.com
 
   ObfuscateGPSCoordinatesLambda:
     Type: "AWS::Lambda::Function"
@@ -379,7 +276,8 @@ Resources:
           j1939_end_bucket: !Ref EdgeJ1939ProcessingBucket
           AuditTrailQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
       Handler: lambda_function.lambda_handler
-      Role: !GetAtt ObfuscateGPSCoordinatesLambdaRole.Arn
+      Role: 
+        Fn::GetAtt: IAMResourcesStack.Outputs.ObfuscateGPSCoordinatesLambdaRoleArn
       Timeout: 300
       Runtime: python3.9
 
@@ -419,58 +317,6 @@ Resources:
         - Key: "bu_code"
           Value: "CDA_Shared"
 
-  ObfuscateGPSCoordinatesLambdaRole:
-    Type: "AWS::IAM::Role"
-    Properties:
-      RoleName: !Sub >-
-        ${ApplicationName}-ObfuscateGPSCoordinatesLambdaRole-${ApplicationEnvironmentTag}
-      Path: /
-      Policies:
-        - PolicyName: !Sub >-
-            ${ApplicationName}-ObfuscateGPSCoordinatesLambdaPolicy-${ApplicationEnvironmentTag}
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Action:
-                  - "logs:*"
-                Resource: "arn:aws:logs:*:*:*"
-                Effect: Allow
-              - Action:
-                  - "s3:Put*"
-                  - "s3:Get*"
-                  - "s3:List*"
-                Resource: !Sub "${EdgeJ1939ProcessingBucket.Arn}"
-                Effect: Allow
-              ## --- I could not find any resources which this function currently calls
-              # - Action:
-              #     - "lambda:InvokeFunction"
-              #     - "lambda:InvokeAsync"
-              #   Resource: "*"
-                # Effect: Allow
-              - Action:
-                  - "sqs:SendMessage"
-                Resource: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
-                Effect: Allow
-              - Action: "sts:AssumeRole"
-                Resource:
-                  - !Ref CrossIOTRoleArn
-                  - !Ref NimbusIoTRoleArn
-                Effect: Allow
-      Tags:
-        - Key: "app_id"
-          Value: "20089"
-        - Key: "env_code"
-          Value: !Ref CdoEnvironmentTag
-        - Key: "bu_code"
-          Value: "CDA_Shared"
-      AssumeRolePolicyDocument:
-        Statement:
-          - Action: "sts:AssumeRole"
-            Effect: Allow
-            Principal:
-              Service:
-                - lambda.amazonaws.com
-
   SpnlistbucketPolicy:
     Type: "AWS::S3::BucketPolicy"
     Properties:
@@ -488,7 +334,7 @@ Resources:
             Effect: Allow
             Principal:
               AWS:
-                - !GetAtt EdgeNGDI2CDSDKConversionLambdaRole.Arn
+                - Fn::GetAtt: IAMResourcesStack.Outputs.EdgeNGDI2CDSDKConversionLambdaRoleArn 
       Bucket: !Ref Spnlistbucket
       Tags:
         - Key: "app_id"
@@ -527,27 +373,6 @@ Resources:
           Value: "CDA_Shared"
     DependsOn:
       - EDGEJ1939DataLogFilesQueuePolicy
-
-  RoleForJ1939StreamBucket:
-    Type: "AWS::IAM::Role"
-    Properties:
-      RoleName: !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-J1939StreamBucket"
-      AssumeRolePolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Action:
-              - "sts:AssumeRole"
-            Effect: Allow
-            Principal:
-              Service:
-                - iot.amazonaws.com
-      Tags:
-        - Key: "app_id"
-          Value: "20089"
-        - Key: "env_code"
-          Value: !Ref CdoEnvironmentTag
-        - Key: "bu_code"
-          Value: "CDA_Shared"
       
 
   LambdaInvokePermissionJ1939ProcessingBucket:
@@ -642,7 +467,8 @@ Resources:
           metaWriteQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
           AuditTrailQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
       Handler: conversion.lambda_handler
-      Role: !GetAtt EdgeNGDI2CDSDKConversionLambdaRole.Arn
+      Role:
+        Fn::GetAtt: IAMResourcesStack.Outputs.EdgeNGDI2CDSDKConversionLambdaRoleArn
       Timeout: 900
       Runtime: python3.9
       FunctionName: !Sub "${ApplicationName}-EdgeNGDI2CDSDKConversion-${ApplicationEnvironmentTag}"
@@ -671,108 +497,6 @@ Resources:
           Value: !Ref CdoEnvironmentTag
         - Key: "bu_code"
           Value: "CDA_Shared"
-
-  EdgeCPPTPosterLambdaRole:
-    Type: "AWS::IAM::Role"
-    Condition: UseNotStageCondition
-    Properties:
-      RoleName: !Sub "${ApplicationName}-${ApplicationEnvironmentTag}-EdgeCPPTPosterLambdaRole"
-      ManagedPolicyArns:
-        - "arn:aws:iam::aws:policy/SecretsManagerReadWrite"
-      Path: /
-      Policies:
-        - PolicyName: !Sub >-
-            ${ApplicationName}-${ApplicationEnvironmentTag}-EdgeCPPTPosterLambdaWorkerPolicy
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Action:
-                  - "kafka:*" # TODO, tighten
-                Resource: "*" # TODO, tighten
-                Effect: Allow
-              - Action:
-                  - kms:DescribeKey
-                  - kms:ListAliases
-                  - kms:ListKeys
-                  - "kms:*"
-                Resource: "*" # TODO, tighten
-                Effect: Allow
-              - Action:
-                  - "sqs:ReceiveMessage"
-                  - "sqs:DeleteMessage"
-                  - "sqs:GetQueueAttributes"
-                Resource: !GetAtt EDGEJ1939CPPTPosterQueue.Arn
-                Effect: Allow
-              - Action:
-                  - "sqs:SendMessage"
-                Resource:
-                  - !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
-                  - !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
-                Effect: Allow
-              - Action:
-                  - "logs:*"
-                Resource: "arn:aws:logs:*:*:*"
-                Effect: Allow
-              - Action:
-                  - "ssm:Describe*"
-                  - "ssm:Get*"
-                  - "ssm:List*"
-                Resource:
-                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/da-edge-j1939-content-spec-value"
-                Effect: Allow
-              - Action:
-                  - "secretsmanager:GetSecretValue"
-                Resource:
-                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pt_xapi_key-??????"
-                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/da-EDGE-Olympus/elasticache/edge-rw-??????"
-                  - !If
-                    - UseDevOrTestCondition
-                    - !Ref MskClusterSecret
-                    - !Ref "AWS::NoValue"
-                Effect: Allow
-              - Action:
-                  - "lambda:InvokeFunction"
-                  - "lambda:InvokeAsync"
-                Resource:
-                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:EdgeCommonAPI-${ApplicationEnvironmentTag}"
-                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-edge-common-lib-EDGEDBReader-${ApplicationEnvironmentTag}"
-                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${DataQualityLambda}-${ApplicationEnvironmentTag}"
-                Effect: Allow
-              - !If
-                - UseDevOrTestCondition
-                - Action:
-                    - "kafka:ListClusters"
-                    - "kafka:DescribeCluster"
-                    - "kafka:GetBootstrapBrokers"
-                  Resource:
-                    - !Ref MskClusterArn 
-                  Effect: Allow
-                - !Ref "AWS::NoValue"
-              - Action:
-                  - "ec2:CreateNetworkInterface"
-                  - "ec2:DescribeNetworkInterfaces"
-                  - "ec2:DeleteNetworkInterface"
-                Resource: 'arn:aws:ec2:*:*:*'
-                Effect: Allow
-              - Action:
-                  - "sts:AssumeRole"
-                Resource:
-                  - !Sub "arn:aws:iam::${PCCAccountId}:role/EdgeKinesisProducerRole"
-                Effect: Allow
-      Tags:
-        - Key: "app_id"
-          Value: "20089"
-        - Key: "env_code"
-          Value: !Ref CdoEnvironmentTag
-        - Key: "bu_code"
-          Value: "CDA_Shared"
-      AssumeRolePolicyDocument:
-        Statement:
-          - Action: "sts:AssumeRole"
-            Effect: Allow
-            Principal:
-              Service:
-                - lambda.amazonaws.com
 
   EdgeJ1939ProcessingBucket:
     Type: "AWS::S3::Bucket"
@@ -1003,7 +727,8 @@ Resources:
           metaWriteQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
           AuditTrailQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
       Handler: ConverterLambda.lambda_handler
-      Role: !GetAtt EdgeJ1939CSVConverterLambdaRole.Arn
+      Role: 
+        Fn::GetAtt: IAMResourcesStack.Outputs.EdgeJ1939CSVConverterLambdaRoleArn
       Timeout: 900
       Runtime: python3.9
 
@@ -1048,7 +773,7 @@ Resources:
               AWS:
                 - !Sub >-
                   arn:aws:iam::${AWS::AccountId}:role/${ApplicationName}-${ApplicationEnvironmentTag}-J1939StreamBucket
-                - !GetAtt EdgeJ1939CSVConverterLambdaRole.Arn
+                - Fn::GetAtt: IAMResourcesStack.Outputs.EdgeJ1939CSVConverterLambdaRoleArn
                 - !Sub >-
                   arn:aws:iam::${AWS::AccountId}:role/da-edge-oem-OEMLambdaTrustRole-${ApplicationEnvironmentTag}
           - Action:
@@ -1062,11 +787,11 @@ Resources:
               AWS:
                 - !If 
                   - UseNotStageCondition
-                  - !GetAtt EdgeCPPTPosterLambdaRole.Arn
+                  - Fn::GetAtt: IAMResourcesStack.Outputs.EdgeCPPTPosterLambdaRoleArn
                   - !Ref "AWS::NoValue"
-                - !GetAtt EdgeNGDI2CDSDKConversionLambdaRole.Arn
-                - !GetAtt ObfuscateGPSCoordinatesLambdaRole.Arn
-                - !GetAtt EdgeJ1939CSVConverterLambdaRole.Arn
+                - Fn::GetAtt: IAMResourcesStack.Outputs.EdgeNGDI2CDSDKConversionLambdaRoleArn
+                - Fn::GetAtt: IAMResourcesStack.Outputs.ObfuscateGPSCoordinatesLambdaRoleArn
+                - Fn::GetAtt: IAMResourcesStack.Outputs.EdgeJ1939CSVConverterLambdaRoleArn
           - Action:
               - "s3:Put*"
               - "s3:Get*"
@@ -1227,7 +952,8 @@ Resources:
           pcc_region: !Ref PCCRegion
 
       Handler: PosterLambda.lambda_handler
-      Role: !GetAtt EdgeCPPTPosterLambdaRole.Arn
+      Role: 
+        Fn::GetAtt: IAMResourcesStack.Outputs.EdgeCPPTPosterLambdaRoleArn
       Timeout: 900
       Runtime: python3.9
       VpcConfig:
@@ -1550,3 +1276,15 @@ Resources:
           Value: !Ref CdoEnvironmentTag
         - Key: "bu_code"
           Value: "CDA_Shared"
+
+Outputs:
+  EDGEJ1939NGDI2CDSDKConversionQueueArn:
+    Value: !GetAtt EDGEJ1939NGDI2CDSDKConversionQueue.Arn
+  EdgeJ1939ProcessingBucketArn:
+    Value: !GetAtt EdgeJ1939ProcessingBucket.Arn
+  ActiveFaultCodeTableArn:
+    Value: !GetAtt ActiveFaultCodeTable.Arn
+  EDGEJ1939DataLogFilesQueueArn:
+    Value: !GetAtt EDGEJ1939DataLogFilesQueue.Arn
+  EDGEJ1939CPPTPosterQueueArn:
+    Value: !GetAtt EDGEJ1939CPPTPosterQueue.Arn

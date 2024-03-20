@@ -28,7 +28,8 @@
         "PCCRegion": "us-east-1",
         "CosmosJ1939RuleArn": "arn:aws:iot:us-east-2:459837242287:rule/da_cosmos_J1939HBData_TopicRule_prod",
         "CosmosAccountID": "459837242287",
-        "CdoEnvironmentTag": "prod"
+        "CdoEnvironmentTag": "prod",
+        "BranchName": "master"
 
     }
 }
