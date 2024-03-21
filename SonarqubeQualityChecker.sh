@@ -36,7 +36,7 @@ function getQualityGateAnalysis() {
   # setMainBranchCommand=$(echo curl -X POST -d "project=$projectKey&branch=${3}" -u "${sonarToken}": "${sonarHost}"/api/project_branches/set_main)
   # echo Setting branch "${3}" as the main branch in project "$projectKey" with the command: "$setMainBranchCommand"
   
-  getReportCommand=$(echo curl -u "${sonarToken}": "${sonarHost}"/api/qualitygates/project_status?projectKey=$projectKey"&branch=${3}")
+  getReportCommand=$(echo curl -sS -u "${sonarToken}": "${sonarHost}"/api/qualitygates/project_status?projectKey=$projectKey"&branch=${3}")
   echo Retrieving the Sonarqube info for the project: "$projectKey" with the command: "$getReportCommand"
 
   report=$($getReportCommand)

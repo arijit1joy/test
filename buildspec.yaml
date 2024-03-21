@@ -71,7 +71,6 @@ phases:
       - pip install -q pypika
       - cd $curr_dir
       # build project folder and package build file 
-      - ls -lrt "$curr_dir"
       - x=$(ls "$(pwd)")
       - for d in $x ;
         do
@@ -104,7 +103,7 @@ phases:
                   echo "\n#===================================================================#\n";
                   exit 1;
                 fi;
-                coverage report --omit tests/*;
+                coverage report --skip-empty --sort cover --omit "tests/**,tests/*,tests/__pycache__/*,dependencies.txt";
                 coverage xml;
                 lines_covered=`cat coverage.xml | xq -x '/coverage/@lines-covered'`;
                 total_lines=`cat coverage.xml | xq -x '/coverage/@lines-valid'`;
@@ -113,8 +112,6 @@ phases:
                 coverage_per_repo+="$mydir":`printf "%.1f" "$rounded_coverage"`:"$lines_covered":"$total_lines ";
                 num_repos=$(($num_repos + 1));
                 sonar-scanner -Dsonar.login=$SONAR_LOGIN -Dsonar.host.url=$SONAR_HOST -Dsonar.python.coverage.reportPaths="coverage.xml" -Dsonar.branch.name="master" > /dev/null;
-                echo "Printing dir contents to find the coverage.xml file . . . ";
-                ls -l;
                 if [ -f "../SonarqubeQualityChecker.sh" ] && [ -f "sonar-project.properties" ]; then
                   cd ..;
                   tr -d '\r' < SonarqubeQualityChecker.sh > CleanSonarqubeQualityChecker.sh;
@@ -142,11 +139,9 @@ phases:
               cd ..;     
           fi;  
         done || exit 1 
-      - ls -lrt "$curr_dir/target" 
       - aws s3 cp "$curr_dir/target" s3://${S3Bucket}/$versionId --recursive --quiet
       - aws s3 cp "$curr_dir/target" s3://${CrossRegionBucket}/$versionId --recursive --quiet
       - pwd 
-      - ls -lrt 
       - cd $curr_dir 
       - aws cloudformation package 
         --template-file cloudformation/environment.yml 
