@@ -91,6 +91,8 @@ Parameters:
     Type: String
   CdoEnvironmentTag:
     Type: String
+  KafkaVersionTuple:
+    Type: String
 
 Conditions:
   UseNotStageCondition: !Not [!Equals [!Ref ApplicationEnvironmentTag, stage]]
@@ -1056,6 +1058,7 @@ Resources:
           pcc_role_arn: !Sub "arn:aws:iam::${PCCAccountId}:role/EdgeKinesisProducerRole"
           j1939_stream_arn: !Sub "arn:aws:kinesis:${PCCRegion}:${PCCAccountId}:stream/J1939Events"
           pcc_region: !Ref PCCRegion
+          KafkaApiVersionTuple: !Ref KafkaVersionTuple
 
       Handler: PosterLambda.lambda_handler
       Role: !GetAtt EdgeCPPTPosterLambdaRole.Arn
