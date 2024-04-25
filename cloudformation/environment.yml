@@ -92,7 +92,8 @@ Parameters:
   CdoEnvironmentTag:
     Type: String
   KafkaVersionTuple:
-    Type: String
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: cda-data-hub-msk-cluster-kafka-version
 
 Conditions:
   UseNotStageCondition: !Not [!Equals [!Ref ApplicationEnvironmentTag, stage]]
