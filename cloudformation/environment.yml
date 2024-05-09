@@ -81,6 +81,7 @@ Parameters:
   EdgeRedisLambdaSecurityGroupID:
     Type: AWS::SSM::Parameter::Value<String>
     Default: EdgeRedisLambdaSecurityGroupID
+  # To be Done, add a necessary parameter related RDS
   PCCAccountId:
     Type: String
   PCCRegion:
@@ -160,6 +161,29 @@ Resources:
           Value: !Ref CdoEnvironmentTag
         - Key: "bu_code"
           Value: "CRP"
+
+  # Emission Data Bucket Policy
+  EdgeJ1939EmissionDataLogBucketPolicy:
+    Type: "AWS::S3::BucketPolicy"
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - "s3:Put*"
+              - "s3:Get*"
+              - "s3:List*"
+            Resource: !Join
+              - ""
+              - - "arn:aws:s3:::"
+                - !Ref EdgeJ1939EmissionDataLogBucket
+                - /*
+            Effect: Allow
+            Principal:
+              AWS:
+                - !GetAtt ObfuscateGPSCoordinatesLambdaRole.Arn
+                - !GetAtt EmissionDataProcessorLambdaRole.Arn
+      Bucket: !Ref EdgeJ1939EmissionDataLogBucket
+
 
   EndpointBucketPolicy:
     Type: "AWS::S3::BucketPolicy"
@@ -312,6 +336,48 @@ Resources:
               Service:
                 - lambda.amazonaws.com
 
+  # Emission Data Processor Lambda Function
+  EmissionDataProcessorLambda:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      Layers:
+        - !Ref RequestsPythonLayer
+      Code:
+        S3Bucket: !Ref ArtifactsBucket
+        S3Key: !Sub "${VersionId}/da-edge-emission-data-processor.zip"
+      FunctionName: !Sub "${ApplicationName}-EmissionDataProcessor-${ApplicationEnvironmentTag}"
+      Tags:
+        - Value: SAM
+          Key: "Lambda:CreatedBy"
+        - Value: Edge
+          Key: Name
+        - Key: "app_id"
+          Value: "20172"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CRP"
+      MemorySize: 1536
+      ReservedConcurrentExecutions: 275
+      Environment:
+        Variables:
+          LoggingLevel: "debug"
+          APPLICATION_NAME: !Ref ApplicationName
+          region: !Sub "${AWS::Region}"
+          APPLICATION_ENVIRONMENT: !Ref ApplicationEnvironmentTag
+          j1939_emission_end_bucket: !Ref EdgeJ1939EmissionDataLogBucket
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt EmissionDataProcessorLambdaRole.Arn
+      Timeout: 300
+      Runtime: python3.9
+
+  # Emission Data Processor Lambda Log Group
+  EmissionDataProcessorLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${EmissionDataProcessorLambda}-logs'
+      RetentionInDays: 120 # 3 months, matches existing log group
+
   ObfuscateGPSCoordinatesLambda:
     Type: "AWS::Lambda::Function"
     Properties:
@@ -341,6 +407,7 @@ Resources:
           region: !Sub "${AWS::Region}"
           APPLICATION_ENVIRONMENT: !Ref ApplicationEnvironmentTag
           j1939_end_bucket: !Ref EdgeJ1939ProcessingBucket
+          j1939_emission_end_bucket: !Ref EdgeJ1939EmissionDataLogBucket
           AuditTrailQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
       Handler: lambda_function.lambda_handler
       Role: !GetAtt ObfuscateGPSCoordinatesLambdaRole.Arn
@@ -400,6 +467,10 @@ Resources:
                 Resource: !Sub "${EdgeJ1939ProcessingBucket.Arn}"
                 Effect: Allow
               - Action:
+                  - "s3:Put*"
+                Resource: !Sub "${EdgeJ1939EmissionDataLogBucket.Arn}"
+                Effect: Allow
+              - Action:
                   - "sqs:SendMessage"
                 Resource: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
                 Effect: Allow
@@ -407,6 +478,42 @@ Resources:
                 Resource:
                   - !Ref CrossIOTRoleArn
                   - !Ref NimbusIoTRoleArn
+                Effect: Allow
+      Tags:
+        - Key: "app_id"
+          Value: "20172"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CRP"
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: "sts:AssumeRole"
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+
+  #Emission Data Processor Lambda Role
+  EmissionDataProcessorLambdaRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Sub >-
+        ${ApplicationName}-EmissionDataProcessorLambdaRole-${ApplicationEnvironmentTag}
+      Path: /
+      Policies:
+        - PolicyName: !Sub >-
+            ${ApplicationName}-EmissionDataProcessorLambdaPolicy-${ApplicationEnvironmentTag}
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Action:
+                  - "logs:*"
+                Resource: "arn:aws:logs:*:*:*"
+                Effect: Allow
+              - Action:
+                  - "s3:Get*"
+                Resource: !Sub "${EdgeJ1939EmissionDataLogBucket.Arn}"
                 Effect: Allow
       Tags:
         - Key: "app_id"
@@ -468,6 +575,32 @@ Resources:
     DependsOn:
       - EDGEJ1939DataLogFilesQueuePolicy
 
+  #Emission Data Bucket
+  EdgeJ1939EmissionDataLogBucket:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      AccessControl: BucketOwnerFullControl
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      NotificationConfiguration:
+        QueueConfigurations:
+          - Queue: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${ApplicationName}-Emission-DataLogFilesQueue-${ApplicationEnvironmentTag}"
+            Event: "s3:ObjectCreated:*"
+      BucketName: !Sub "da-edge-j1939-emission-datalog-files-${ApplicationEnvironmentTag}"
+      Tags:
+        - Value: Edge
+          Key: Name
+        - Key: "app_id"
+          Value: "20172"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CRP"
+    DependsOn:
+      - EDGEJ1939EmissionDataLogFilesQueuePolicy
+
   RoleForJ1939StreamBucket:
     Type: "AWS::IAM::Role"
     Properties:
@@ -501,6 +634,15 @@ Resources:
         - - "arn:aws:s3:::"
           - !Sub "edge-j1939-${ApplicationEnvironmentTag}"
       Principal: s3.amazonaws.com
+
+  #Emission Lambda Invoke Permission
+  EmissionLambdaInvokeQueuePermission:
+    Type: "AWS::Lambda::Permission"
+    Properties:
+      Action: "lambda:InvokeFunction"
+      FunctionName: !Ref EmissionDataProcessorLambda
+      SourceArn: !GetAtt EDGEJ1939EmissionDataLogFilesQueue.Arn
+      Principal: sqs.amazonaws.com
 
   EdgeNGDI2CDSDKConversion:
     Type: "AWS::Lambda::Function"
@@ -1141,6 +1283,39 @@ Resources:
         - Key: "bu_code"
           Value: "CRP"
 
+  # Emission Data Queue
+  EDGEJ1939EmissionDataLogFilesQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${ApplicationName}-Emission-DataLogFilesQueue-${ApplicationEnvironmentTag}"
+      VisibilityTimeout: 900
+      RedrivePolicy:
+        deadLetterTargetArn:
+          Fn::GetAtt:
+            - "EDGEJ1939EmissionDataLogFilesDLQueue"
+            - "Arn"
+        maxReceiveCount: 2
+      Tags:
+        - Key: "app_id"
+          Value: "20172"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CRP"
+
+  # Emission Data DL Queue
+  EDGEJ1939EmissionDataLogFilesDLQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${ApplicationName}-Emission-DataLogFilesDLQueue-${ApplicationEnvironmentTag}"
+      Tags:
+        - Key: "app_id"
+          Value: "20172"
+        - Key: "env_code"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu_code"
+          Value: "CRP"
+
   # Queue Policies
   EDGEJ1939DataLogFilesQueuePolicy:
     Type: AWS::SQS::QueuePolicy
@@ -1163,6 +1338,29 @@ Resources:
                 aws:SourceArn: !Sub "arn:aws:s3:::da-edge-j1939-datalog-files-${ApplicationEnvironmentTag}"
     DependsOn:
       - EDGEJ1939DataLogFilesQueue
+
+  # EMission Data Queue Policy
+  EDGEJ1939EmissionDataLogFilesQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Sub "${ApplicationName}-Emission-DataLogFilesQueue-${ApplicationEnvironmentTag}"
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - "sqs:SendMessage"
+            Resource:
+              - !Sub >-
+                arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${ApplicationName}-Emission-DataLogFilesQueue-${ApplicationEnvironmentTag}
+            Effect: Allow
+            Principal:
+              Service: "s3.amazonaws.com"
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !Sub "arn:aws:s3:::da-edge-j1939-emission-datalog-files-${ApplicationEnvironmentTag}"
+    DependsOn:
+      - EDGEJ1939EmissionDataLogFilesQueue
 
   # Lambda Event Source Mappings
   EDGEJ1939DataLogFilesQueueTrigger:
