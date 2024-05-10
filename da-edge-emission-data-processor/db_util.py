@@ -1,6 +1,5 @@
 import utility as util
 from pypika import Query, Table
-import time
 import os
 import json
 import boto3
@@ -20,50 +19,18 @@ secret_string = get_secret_value_response['SecretString']
 secret_params = json.loads(secret_string)
 
 
-def get_certification_family(device_id, esn):
-    query = get_certification_family_query(device_id, esn)
-    try:
-        response = db_request("get", query)
-        if len(response) == 0:
-            return ""
-        return response[0]
-    except Exception as e:
-        logger.info("Unable to get certification family information from device_information table")
-        return server_error(str(e))
-
-
-def get_certification_family_query(device_id, esn):
-    device_information = Table('device_information', schema='da_edge_olympus')
-    query = Query.from_(device_information)\
-                 .select(device_information.certification_family)\
-                 .where(device_information.engine_serial_number == esn)\
-                 .where(device_information.device_id == device_id)
-
-    logger.debug(query.get_sql(quote_char=None))
-    return query.get_sql(quote_char=None)
-
-
-def insert_into_metadata_Table(device_id, message_id, esn, config_id):
-    query = insert_to_metadata_table_query(device_id, message_id, esn, config_id)
+def update_metadata_Table(device_id, esn, config_id):
+    query = update_metadata_table_query(device_id, esn, config_id)
     try:
         db_request("post", query)
     except Exception as e:
-        logger.info("Unable to insert into metadata table")
+        logger.info("Unable to update status in metadata table")
         return server_error(str(e))
 
 
-def insert_to_metadata_table_query(device_id, message_id, esn, config_id):
-    time_default_format = time.localtime()
-    current_date_time = time.strftime(time_format, time_default_format)
+def update_metadata_table_query(device_id, esn, config_id):
     da_edge_metadata = Table('da_edge_olympus.da_edge_metadata')
-    query = Query.into(da_edge_metadata).columns(da_edge_metadata.device_id,
-                                                 da_edge_metadata.uuid,
-                                                 da_edge_metadata.data_protocol,
-                                                 da_edge_metadata.data_pipeline_stage,
-                                                 da_edge_metadata.esn,
-                                                 da_edge_metadata.config_spec_name,
-                                                 da_edge_metadata.created_datetime)
-    query = query.insert(device_id, message_id, 'J1939_FC', 'FILE_RECEIVED', esn, config_id, current_date_time)
+    query = Query.update(da_edge_metadata).set(da_edge_metadata.data_pipeline_stage, 'FILE_SENT').where(da_edge_metadata.device_id == device_id).where(da_edge_metadata.esn == esn).where(da_edge_metadata.config_spec_name == config_id)
     logger.info(query.get_sql(quote_char=None))
     return query.get_sql(quote_char=None)
 
