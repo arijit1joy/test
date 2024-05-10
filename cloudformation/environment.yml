@@ -82,6 +82,9 @@ Parameters:
     Type: AWS::SSM::Parameter::Value<String>
     Default: EdgeRedisLambdaSecurityGroupID
   # To be Done, add a necessary parameter related RDS
+  EdgeRDSSecretName:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: edge-db-edge-rw-secret-name
   PCCAccountId:
     Type: String
   PCCRegion:
@@ -408,6 +411,7 @@ Resources:
           APPLICATION_ENVIRONMENT: !Ref ApplicationEnvironmentTag
           j1939_end_bucket: !Ref EdgeJ1939ProcessingBucket
           j1939_emission_end_bucket: !Ref EdgeJ1939EmissionDataLogBucket
+          EdgeRDSSecretName: !Ref EdgeRDSSecretName
           AuditTrailQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
       Handler: lambda_function.lambda_handler
       Role: !GetAtt ObfuscateGPSCoordinatesLambdaRole.Arn
