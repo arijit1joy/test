@@ -12,11 +12,6 @@ logger = util.get_logger(__name__)
 
 region = os.getenv('region')
 secret_name = os.environ['EdgeRDSSecretName']
-session = boto3.session.Session()
-client = session.client(service_name='secretsmanager', region_name=region)
-get_secret_value_response = client.get_secret_value(SecretId=secret_name)
-secret_string = get_secret_value_response['SecretString']
-secret_params = json.loads(secret_string)
 
 
 def update_metadata_Table(device_id, esn, config_id):
@@ -55,9 +50,17 @@ def db_request(method, query):
 
 
 def get_db_connection_string():
+    secret_params = get_secret_params()
     db_conn_string = "host=" + secret_params['host'] + " port=" + str(secret_params['port']) + " dbname=" + secret_params['dbname'] + " user=" + \
                      secret_params['username'] + " password=" + secret_params['password']
     return db_conn_string
+
+
+def get_secret_params():
+    client = boto3.client(service_name='secretsmanager', region_name=region)
+    get_secret_value_response = client.get_secret_value(SecretId=secret_name)
+    secret_string = get_secret_value_response['SecretString']
+    return json.loads(secret_string)
 
 
 def server_error(message):
