@@ -20,7 +20,7 @@ phases:
     - wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add -
     - apt-get -qq update
     - pip install -q --upgrade pip
-    - pip install -q pytest coverage pytest-cov moto pypika
+    - pip install -q pytest coverage pytest-cov moto pypika psycopg2-binary boto3
     - pip install -q --upgrade awscli
     - apt-get -qq install -y zip unzip bc
     - curl -sSL https://bit.ly/install-xq | bash
