@@ -24,7 +24,7 @@ class TestObfuscateGPSHandler(unittest.TestCase):
     def test_obfuscateGPS_givenBodyWithoutSamples_thenNotCalledObfuscateGPSCoordinates(
             self, mock_obfuscate_gps_coordinates, mock_send_file_to_s3):
         print("<-----test_obfuscate_gps_givenBodyWithoutSamples_thenNotCalledObfuscateGPSCoordinates----->")
-        body = {"telematicsDeviceId": "1234567890"}
+        body = {"telematicsDeviceId": "1234567890", "dataSamplingConfigId": "SC803"}
         result = obfuscate_gps(body)
         print("Result: ", result)
         mock_obfuscate_gps_coordinates.assert_not_called()
@@ -36,7 +36,7 @@ class TestObfuscateGPSHandler(unittest.TestCase):
             self, mock_obfuscate_gps_coordinates, mock_send_file_to_s3):
         print("<-----test_obfuscate_gps_givenSamplesWithoutConvertedDeviceParameters_"
               "thenNotCalledObfuscateGPSCoordinates----->")
-        body = {"telematicsDeviceId": "1234567890", "samples": [{"dateTimestamp": "2020-10-08T14:26:58.456Z"}]}
+        body = {"telematicsDeviceId": "1234567890", "dataSamplingConfigId": "SC803", "samples": [{"dateTimestamp": "2020-10-08T14:26:58.456Z"}]}
         result = obfuscate_gps(body)
         print("Result: ", result)
         mock_obfuscate_gps_coordinates.assert_not_called()
@@ -48,7 +48,7 @@ class TestObfuscateGPSHandler(unittest.TestCase):
             self, mock_obfuscate_gps_coordinates, mock_send_file_to_s3):
         print("<-----test_obfuscate_gps_givenConvertedDeviceParametersWithoutLatitude_"
               "thenNotCalledObfuscateGPSCoordinates----->")
-        body = {"telematicsDeviceId": "1234567890",
+        body = {"telematicsDeviceId": "1234567890", "dataSamplingConfigId": "SC803",
                 "samples": [{"dateTimestamp": "2020-10-08T14:26:58.456Z",
                              "convertedDeviceParameters": {"messageID": "message_id", "Longitude": "30.9876543"}}]}
         result = obfuscate_gps(body)
@@ -62,7 +62,7 @@ class TestObfuscateGPSHandler(unittest.TestCase):
             self, mock_obfuscate_gps_coordinates, mock_send_file_to_s3):
         print("<-----test_obfuscate_gps_givenConvertedDeviceParametersWithoutLongitude_"
               "thenNotCalledObfuscateGPSCoordinates----->")
-        body = {"telematicsDeviceId": "1234567890",
+        body = {"telematicsDeviceId": "1234567890", "dataSamplingConfigId": "SC803",
                 "samples": [{"dateTimestamp": "2020-10-08T14:26:58.456Z",
                              "convertedDeviceParameters": {"messageID": "message_id", "Latitude": "-39.3456789"}}]}
         result = obfuscate_gps(body)
@@ -76,7 +76,7 @@ class TestObfuscateGPSHandler(unittest.TestCase):
             self, mock_obfuscate_gps_coordinates, mock_send_file_to_s3):
         print("<-----test_obfuscate_gps_givenConvertedDeviceParametersWithLatLong_"
               "thenCalledObfuscateGPSCoordinates----->")
-        body = {"telematicsDeviceId": "1234567890",
+        body = {"telematicsDeviceId": "1234567890", "dataSamplingConfigId": "SC803",
                 "samples": [{"dateTimestamp": "2020-10-08T14:26:58.456Z",
                              "convertedDeviceParameters": {"messageID": "message_id", "Latitude": "-39.3456789",
                                                            "Longitude": "30.9876543"}}]}
@@ -91,7 +91,7 @@ class TestObfuscateGPSHandler(unittest.TestCase):
     def test_obfuscateGPS_givenMultipleSamplesWithLatLong_thenCalledObfuscateGPSCoordinates(
             self, mock_obfuscate_gps_coordinates, mock_send_file_to_s3):
         print("<-----test_obfuscate_gps_givenMultipleSamplesWithLatLong_thenCalledObfuscateGPSCoordinates----->")
-        body = {"telematicsDeviceId": "1234567890",
+        body = {"telematicsDeviceId": "1234567890", "dataSamplingConfigId": "SC803",
                 "samples": [{"dateTimestamp": "2020-10-08T14:26:58.456Z",
                              "convertedDeviceParameters": {"messageID": "message_id", "Latitude": "-39.3456789",
                                                            "Longitude": "30.9876543"}},
@@ -142,7 +142,7 @@ class TestObfuscateGPSHandler(unittest.TestCase):
     def test_sendFileToS3_givenErrorOccurredWhileStoringFile_thenRaiseException(self):
         print("<-----test_sendFileToS3_givenErrorOccurredWhileStoringFile_thenRaiseException----->")
         body = {"componentSerialNumber": "10290001", "telematicsPartnerName": "Cummins",
-                "telematicsDeviceId": "102900000000001",
+                "telematicsDeviceId": "102900000000001", "dataSamplingConfigId": "SC803",
                 "samples": [{"dateTimestamp": "2020-10-08T14:26:58.456Z",
                              "convertedDeviceParameters": {"messageID": "message_id", "Latitude": "-39.3456789",
                                                            "Longitude": "30.9876543"}}]}
