@@ -37,14 +37,18 @@ Resources:
             Event: "s3:ObjectCreated:*"
       BucketName: !Sub "da-edge-j1939-emission-datalog-files-${ApplicationEnvironmentTag}"
       Tags:
-        - Value: Edge
-          Key: Name
-        - Key: "app_id"
-          Value: "20172"
-        - Key: "env_code"
+        - Key: Name
+          Value: Edge
+        - Key: "appid"
+          Value: "33439"
+        - Key: "environment"
           Value: !Ref CdoEnvironmentTag
-        - Key: "bu_code"
-          Value: "CRP"
+        - Key: "bu"
+          Value: "CBS"
+        - Key: "bc"
+          Value: "007"
+        - Key: "rc"
+          Value: "A6Q"
     DependsOn:
       - EDGEJ1939EmissionDataLogFilesQueuePolicy
 
@@ -61,14 +65,16 @@ Resources:
       Tags:
         - Value: SAM
           Key: "Lambda:CreatedBy"
-        - Value: Edge
-          Key: Name
-        - Key: "app_id"
-          Value: "20172"
-        - Key: "env_code"
+        - Key: "appid"
+          Value: "33439"
+        - Key: "environment"
           Value: !Ref CdoEnvironmentTag
-        - Key: "bu_code"
-          Value: "CRP"
+        - Key: "bu"
+          Value: "CBS"
+        - Key: "bc"
+          Value: "007"
+        - Key: "rc"
+          Value: "A6Q"
       MemorySize: 1536
       ReservedConcurrentExecutions: 275
       Environment:
@@ -113,12 +119,16 @@ Resources:
                 Resource: !Sub "${EdgeJ1939EmissionDataLogBucket.Arn}"
                 Effect: Allow
       Tags:
-        - Key: "app_id"
-          Value: "20172"
-        - Key: "env_code"
+        - Key: "appid"
+          Value: "33439"
+        - Key: "environment"
           Value: !Ref CdoEnvironmentTag
-        - Key: "bu_code"
-          Value: "CRP"
+        - Key: "bu"
+          Value: "CBS"
+        - Key: "bc"
+          Value: "007"
+        - Key: "rc"
+          Value: "A6Q"
       AssumeRolePolicyDocument:
         Statement:
           - Action: "sts:AssumeRole"
@@ -149,12 +159,16 @@ Resources:
             - "Arn"
         maxReceiveCount: 2
       Tags:
-        - Key: "app_id"
-          Value: "20172"
-        - Key: "env_code"
+        - Key: "appid"
+          Value: "33439"
+        - Key: "environment"
           Value: !Ref CdoEnvironmentTag
-        - Key: "bu_code"
-          Value: "CRP"
+        - Key: "bu"
+          Value: "CBS"
+        - Key: "bc"
+          Value: "007"
+        - Key: "rc"
+          Value: "A6Q"
 
   # Emission Data DL Queue
   EDGEJ1939EmissionDataLogFilesDLQueue:
@@ -162,12 +176,16 @@ Resources:
     Properties:
       QueueName: !Sub "${ApplicationName}-Emission-DataLogFilesDLQueue-${ApplicationEnvironmentTag}"
       Tags:
-        - Key: "app_id"
-          Value: "20172"
-        - Key: "env_code"
+        - Key: "appid"
+          Value: "33439"
+        - Key: "environment"
           Value: !Ref CdoEnvironmentTag
-        - Key: "bu_code"
-          Value: "CRP"
+        - Key: "bu"
+          Value: "CBS"
+        - Key: "bc"
+          Value: "007"
+        - Key: "rc"
+          Value: "A6Q"
 
   # EMission Data Queue Policy
   EDGEJ1939EmissionDataLogFilesQueuePolicy:

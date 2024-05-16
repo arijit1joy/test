@@ -117,14 +117,16 @@ Resources:
         VersionId: !Ref VersionId
         CdoEnvironmentTag: !Ref CdoEnvironmentTag
       Tags:
-        - Key: "app_id"
-          Value: "20172"
-        - Key: "env_code"
-          Value: !Ref CdoEnvironmentTag
-        - Key: "bu_code"
-          Value: "CRP"
-        - Key: "hello"
-          Value: "world"
+        - Key: "appid"
+          Value: "33439"
+        - Key: "environment"
+          Value: !Ref EnvTag
+        - Key: "bu"
+          Value: "CBS"
+        - Key: "bc"
+          Value: "007"
+        - Key: "rc"
+          Value: "A6Q"
 
   EdgeJ1939ProcessingBucketSSM:
     Type: "AWS::SSM::Parameter"
