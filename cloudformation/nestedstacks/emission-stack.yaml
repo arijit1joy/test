@@ -138,13 +138,13 @@ Resources:
                 - lambda.amazonaws.com
 
   #Emission Lambda Invoke Permission
-  EmissionLambdaInvokeQueuePermission:
-    Type: "AWS::Lambda::Permission"
+  EmissionLambdaInvokeQueueEventSourceMapping:
+    Type: "AWS::Lambda::EventSourceMapping"
     Properties:
-      Action: "lambda:InvokeFunction"
-      FunctionName: !Ref EmissionDataProcessorLambda
-      SourceArn: !GetAtt EDGEJ1939EmissionDataLogFilesQueue.Arn
-      Principal: sqs.amazonaws.com
+      BatchSize: 10
+      Enabled: true
+      EventSourceArn: !GetAtt EDGEJ1939EmissionDataLogFilesQueue.Arn
+      FunctionName: !GetAtt EmissionDataProcessorLambda.Arn
 
   # Emission Data Queue
   EDGEJ1939EmissionDataLogFilesQueue:
