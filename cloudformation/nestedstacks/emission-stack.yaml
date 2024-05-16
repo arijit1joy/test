@@ -118,6 +118,17 @@ Resources:
                   - "s3:Get*"
                 Resource: !Sub "${EdgeJ1939EmissionDataLogBucket.Arn}"
                 Effect: Allow
+              - Action:
+                  - sqs:ReceiveMessage
+                  - sqs:DeleteMessage
+                  - sqs:DeleteMessageBatch
+                Resource: !Sub "${EDGEJ1939EmissionDataLogFilesQueue.Arn}"
+                Effect: Allow
+              - Action:
+                  - secretsmanager:GetSecretValue
+                  - secretsmanager:DescribeSecret
+                Resource: "*"
+                Effect: Allow
       Tags:
         - Key: "appid"
           Value: "33439"

@@ -440,6 +440,11 @@ Resources:
                   - "sqs:SendMessage"
                 Resource: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
                 Effect: Allow
+              - Action:
+                  - secretsmanager:GetSecretValue
+                  - secretsmanager:DescribeSecret
+                Resource: "*"
+                Effect: Allow
               - Action: "sts:AssumeRole"
                 Resource:
                   - !Ref CrossIOTRoleArn
