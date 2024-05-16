@@ -122,6 +122,7 @@ Resources:
                   - sqs:ReceiveMessage
                   - sqs:DeleteMessage
                   - sqs:DeleteMessageBatch
+                  - sqs:GetQueueAttributes
                 Resource: !Sub "${EDGEJ1939EmissionDataLogFilesQueue.Arn}"
                 Effect: Allow
               - Action:
