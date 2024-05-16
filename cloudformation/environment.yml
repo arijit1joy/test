@@ -13,6 +13,8 @@ Parameters:
     Type: String
   ArtifactsBucket:
     Type: String
+  BranchName:
+    Type: String
   DeviceHealthDeliveryStream:
     Type: String
   PTJ1939PostURL:
@@ -109,7 +111,7 @@ Resources:
   EmissionResourcesStack:
     Type: "AWS::CloudFormation::Stack"
     Properties:
-      TemplateURL: !Sub https://s3.amazonaws.com/${ArtifactsBucket}/nestedstacks/retry-lambda-stack.yaml
+      TemplateURL: !Sub https://s3.amazonaws.com/${ArtifactsBucket}/${BranchName}/emission-stack.yaml
       Parameters:
         ApplicationName: !Ref ApplicationName
         ApplicationEnvironmentTag: !Ref ApplicationEnvironmentTag

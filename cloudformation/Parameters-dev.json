@@ -5,6 +5,7 @@
 		"ApplicationNameCDA": "cda-data-hub",
         "VersionId": "empty",
         "ArtifactsBucket": "edge-platform-artifactbucket-1i9xeidoibcuu",
+        "BranchName": "dev_stg",
         "EdgeCommonDBAPI": "https://api.edge-dev.aws.cummins.com/v3/EdgeDBLambda",
         "PTJ1939PostURL": "intentionally-disabling-https://preventech-test.aws.cummins.com/Test/ngdi",
         "PTJ1939Header": "{\"Content-Type\": \"application/json\", \"Prefer\": \"param=single-object\", \"x-api-key\": \"\"}",
