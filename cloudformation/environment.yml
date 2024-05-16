@@ -120,7 +120,7 @@ Resources:
         - Key: "appid"
           Value: "33439"
         - Key: "environment"
-          Value: !Ref EnvTag
+          Value: !Ref CdoEnvironmentTag
         - Key: "bu"
           Value: "CBS"
         - Key: "bc"
