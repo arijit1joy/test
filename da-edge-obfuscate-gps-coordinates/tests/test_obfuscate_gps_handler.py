@@ -105,7 +105,7 @@ class TestObfuscateGPSHandler(unittest.TestCase):
         mock_send_file_to_s3.assert_called()
 
     @mock_aws
-    @patch.dict('os.environ', {'j1939_end_bucket': 'test_bucket'})
+    @patch.dict('os.environ', {'j1939_end_bucket': 'test_bucket', 'AuditTrailQueueUrl': 'auditUrl'})
     def test_sendFileToS3_givenValidBody_thenPutFileIntoBucket(self):
         print("<-----test_sendFileToS3_givenValidBody_thenPutFileIntoBucket----->")
         s3_client = boto3.client("s3")
@@ -122,7 +122,7 @@ class TestObfuscateGPSHandler(unittest.TestCase):
         bucket.delete()
 
     @mock_aws
-    @patch.dict('os.environ', {'j1939_end_bucket': 'test_bucket'})
+    @patch.dict('os.environ', {'j1939_end_bucket': 'test_bucket', 'AuditTrailQueueUrl': 'auditUrl'})
     def test_sendFileToS3_givenValidBodyAndEsnWithAsterisk_thenPutFileIntoBucket(self):
         print("<-----test_sendFileToS3_givenValidBody_thenPutFileIntoBucket----->")
         s3_client = boto3.client("s3")
