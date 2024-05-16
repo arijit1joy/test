@@ -8,7 +8,15 @@ devPipeline="edge-platform-apps-daedgej1939-1FKWUVITUI1AM-DevelopmentPipeline-LZ
 
 devBranchParameterName="DevelopmentBranch"  # This is the parameter that sets the source branch for the development pipeline
 
-echo -e "\nDeploymnent information: \n\n-> Branch: '$branch' \n-> Stack Name: '$stackName' \n-> Dev Pipeline: '$devPipeline'"
+echo -e "\nDeployment information: \n\n-> Branch: '$branch' \n-> Stack Name: '$stackName' \n-> Dev Pipeline: '$devPipeline'"
+
+if [[ $branch!="dev_stg" ]]; then
+    echo -e "\nPulling the latest changes in the 'dev_stg' branch . . ."
+    git pull origin dev_stg || exit 1  # Pull dev_stg and exit if it fails
+
+    echo -e "\nPushing the latest local changes (as well as the dev_stg changes) to the '$branch' branch . . ."
+    git push
+fi
 
 if [[ $branch!="master" || $branch!="test" || $branch!="stage" || $branch!="stage_test" ]]; then
     

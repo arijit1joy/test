@@ -9,6 +9,8 @@ LOGGER = util.get_logger(__name__)
 cluster_response = {}
 secret_response = {}
 
+KAFKA_API_VERSION_TUPLE = os.environ["KafkaApiVersionTuple"]
+
 
 def get_secret_value():
     """Gets the value of a secret.
@@ -85,7 +87,8 @@ def publish_message(message_object, j1939_data_type, topic_name):
             sasl_mechanism='SCRAM-SHA-512',
             bootstrap_servers=list_brokers,
             sasl_plain_username=sec['username'],
-            sasl_plain_password=sec['password']
+            sasl_plain_password=sec['password'],
+            api_version=eval(KAFKA_API_VERSION_TUPLE)  # Convert the Kafka Version String to a Tuple
         )
 
         string_kafka_message = json.dumps(message_object)

@@ -1,12 +1,15 @@
 import json
 import sys
 import unittest
-
-from botocore.exceptions import ClientError
-from tests.cda_module_mock_context import CDAModuleMockingContext
 from unittest.mock import ANY, patch
 
-with CDAModuleMockingContext(sys) as cda_module_mock_context:
+from botocore.exceptions import ClientError
+
+from tests.cda_module_mock_context import CDAModuleMockingContext
+
+with CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.environ", {
+    "KafkaApiVersionTuple": "(2, 8, 1)"
+}):
     cda_module_mock_context.mock_module("utility")
     cda_module_mock_context.mock_module("edge_sqs_utility_layer.kafka")
     cda_module_mock_context.mock_module("boto3")
@@ -33,7 +36,6 @@ class TestKafkaProducer(unittest.TestCase):
         mock_secrets_client.get_secret_value.assert_called_with(SecretId="secret-arn")
         self.assertEqual(response, "secret-response")
 
-
     @patch.dict("os.environ", {"mskSecretArn": "secret-arn"})
     @patch("kafka_producer.boto3.client")
     @patch("kafka_producer.LOGGER")
@@ -51,7 +53,7 @@ class TestKafkaProducer(unittest.TestCase):
 
         mock_secrets_client.get_secret_value.side_effect = ClientError(*error_args("InvalidRequestException"))
         kafka_producer.get_secret_value()
-        
+
         mock_secrets_client.get_secret_value.side_effect = ClientError(*error_args("InvalidParameterException"))
         kafka_producer.get_secret_value()
 
@@ -59,7 +61,6 @@ class TestKafkaProducer(unittest.TestCase):
         kafka_producer.get_secret_value()
 
         mock_logger.error.assert_called()
-
 
     @patch("kafka_producer.boto3.client")
     @patch("kafka_producer.cluster_response", None)
@@ -76,7 +77,6 @@ class TestKafkaProducer(unittest.TestCase):
 
         mock_cluster_client.get_bootstrap_brokers.assert_called_with(ClusterArn="test-arn")
         self.assertEqual(response, ["broker1", "broker2", "broker3"])
-
 
     def test_create_kafka_message_successful(self):
         """
@@ -109,7 +109,6 @@ class TestKafkaProducer(unittest.TestCase):
             }
         )
 
-
     @patch.dict("os.environ", {"mskClusterArn": "cluster-arn"})
     @patch("kafka_producer.get_secret_value")
     @patch("kafka_producer.get_brokers")
@@ -137,12 +136,13 @@ class TestKafkaProducer(unittest.TestCase):
             sasl_mechanism="SCRAM-SHA-512",
             bootstrap_servers=["broker1"],
             sasl_plain_username="username",
-            sasl_plain_password="password"
+            sasl_plain_password="password",
+            api_version=(2, 8, 1),
         )
-        mock_producer.return_value.send.assert_called_with("topic", json.dumps({"telematicsDeviceId": "test"}).encode("utf-8"))
+        mock_producer.return_value.send.assert_called_with("topic",
+                                                           json.dumps({"telematicsDeviceId": "test"}).encode("utf-8"))
         mock_producer.return_value.flush.assert_called()
         self.assertEqual(response, {"response": "200"})
-
 
     @patch.dict("os.environ", {"mskClusterArn": "cluster-arn"})
     @patch("kafka_producer.get_secret_value")
