@@ -76,7 +76,7 @@ Resources:
         - Key: "rc"
           Value: "A6Q"
       MemorySize: 1536
-      ReservedConcurrentExecutions: 275
+      # ReservedConcurrentExecutions: 275
       Environment:
         Variables:
           LoggingLevel: "debug"
