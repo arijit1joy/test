@@ -61,7 +61,7 @@ def send_file_to_s3(body):
         LOGGER.info(f"File Name: {file_name}, File Key:  {file_key}")
 
         # Depending on config_id insert to emission bucket else insert to j1939 bucket
-        if config_id.startswith('SC9XXX') or config_id.startswith('DC9XXX') or config_id.startswith('DS9XXX'):
+        if config_id.startswith('SC9') or config_id.startswith('DC9') or config_id.startswith('DS9'):
             send_to_s3_response = s3_client.put_object(Bucket=emission_bucket_name, Key=file_key, Body=json.dumps(body).encode())
         else:
             send_to_s3_response = s3_client.put_object(Bucket=bucket_name, Key=file_key, Body=json.dumps(body).encode())

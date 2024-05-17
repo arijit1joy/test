@@ -54,7 +54,7 @@ def insert_to_metadata_table_query(device_id, message_id, esn, config_id):
                                                  da_edge_metadata.esn,
                                                  da_edge_metadata.config_spec_name,
                                                  da_edge_metadata.created_datetime)
-    query = query.insert(device_id, message_id, 'J1939_FC', 'FILE_RECEIVED', esn, config_id, current_date_time)
+    query = query.insert(device_id, message_id, 'J1939_Emissions', 'FILE_RECEIVED', esn, config_id, current_date_time)
     logger.info(query.get_sql(quote_char=None))
     return query.get_sql(quote_char=None)
 
