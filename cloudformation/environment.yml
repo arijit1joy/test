@@ -59,6 +59,9 @@ Parameters:
     Type: String
   EDGERedisSecretName:
     Type: String
+  EdgeCoreLayer:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: layer-EdgeCoreLayer
   RequestsPythonLayer:
     Type: AWS::SSM::Parameter::Value<String>
     Default: layer-RequestsPythonLayer
