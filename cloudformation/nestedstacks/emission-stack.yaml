@@ -100,7 +100,7 @@ Resources:
   EmissionDataProcessorLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub '/aws/lambda/${EmissionDataProcessorLambda}-logs'
+      LogGroupName: !Sub '/aws/lambda/${EmissionDataProcessorLambda}'
       RetentionInDays: 120 # 3 months, matches existing log group
 
   #Emission Data Processor Lambda Role
