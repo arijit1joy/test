@@ -438,7 +438,7 @@ Resources:
                 Effect: Allow
               - Action:
                   - "s3:Put*"
-                Resource: !Sub ${EmissionResourcesStack.Outputs.EdgeJ1939EmissionDataLogBucketResource.Arn}/*
+                Resource: !Sub ${EmissionResourcesStack.Outputs.EdgeJ1939EmissionDataLogBucketResourceArn}/*
                 Effect: Allow
               - Action:
                   - "sqs:SendMessage"
