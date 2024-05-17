@@ -1,14 +1,18 @@
 from unittest import TestCase
 from unittest.mock import patch
 
+import sys
 import boto3
-from botocore.stub import Stubber
 
-with patch.dict('os.environ',
+from botocore.stub import Stubber
+from cda_module_mock_context import CDAModuleMockingContext
+
+with CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict('os.environ',
                 {'LoggingLevel': 'info',
                  'EdgeRDSSecretName': 'rdssecret',
                  'j1939_emission_end_bucket': 'emission_bucket'
                  }):
+    cda_module_mock_context.mock_module("edge_core")
     from lambda_function import lambda_handler
 
 
