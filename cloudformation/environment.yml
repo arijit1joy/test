@@ -118,6 +118,7 @@ Resources:
         ArtifactsBucket: !Ref ArtifactsBucket
         VersionId: !Ref VersionId
         CdoEnvironmentTag: !Ref CdoEnvironmentTag
+        EdgeCommonDBAPI: !Ref EdgeCommonDBAPI
       Tags:
         - Key: "appid"
           Value: "33439"

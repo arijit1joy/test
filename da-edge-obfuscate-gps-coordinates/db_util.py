@@ -10,6 +10,7 @@ region = os.getenv('region')
 time_format = os.getenv('TimeFormat')
 edgeCommonAPIURL = os.getenv("edgeCommonAPIURL")
 
+
 def get_certification_family(device_id, esn):
     query = get_certification_family_query(device_id, esn)
     try:
