@@ -348,6 +348,7 @@ Resources:
     Properties:
       Layers:
         - !Ref RequestsPythonLayer
+        - !Ref PypikaPythonLayer
       Code:
         S3Bucket: !Ref ArtifactsBucket
         S3Key: !Sub "${VersionId}/da-edge-obfuscate-gps-coordinates.zip"

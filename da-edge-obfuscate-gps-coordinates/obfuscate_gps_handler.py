@@ -23,12 +23,13 @@ def obfuscate_gps(body):
                         handle_gps_coordinates(latitude, longitude)
                     LOGGER.info(f"Latitude: {converted_device_params['Latitude']}, "
                                 f"Longitude: {converted_device_params['Longitude']}, after obfuscated gps coordinates")
-            # Depending on config_id insert to metadata table & get Certification Family information
-            config_id = body["dataSamplingConfigId"]
-            if config_id.startswith('SC9XXX') or config_id.startswith('DC9XXX') or config_id.startswith('DS9XXX'):
-                insert_into_metadata_Table(body["telematicsDeviceId"], sample["messageID"], body["componentSerialNumber"], config_id)
-                certificationFamily = get_certification_family(body["telematicsDeviceId"], body["componentSerialNumber"])
-                body["certificationFamily"] = certificationFamily
+                    message_id = converted_device_params["messageId"]
+        # Depending on config_id insert to metadata table & get Certification Family information
+        config_id = body["dataSamplingConfigId"]
+        if config_id.startswith('SC9') or config_id.startswith('DC9') or config_id.startswith('DS9'):
+            insert_into_metadata_Table(body["telematicsDeviceId"], message_id, body["componentSerialNumber"], config_id)
+            certificationFamily = get_certification_family(body["telematicsDeviceId"], body["componentSerialNumber"])
+            body["certificationFamily"] = certificationFamily
     send_file_to_s3(body)
 
 
