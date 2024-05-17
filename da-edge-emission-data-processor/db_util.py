@@ -13,6 +13,7 @@ edgeCommonAPIURL = os.getenv("edgeCommonAPIURL")
 
 def update_metadata_Table(device_id, esn, config_id):
     query = update_metadata_table_query(device_id, esn, config_id)
+    logger.info(f"update metadata table query: {query}")
     try:
         response = edge.api_request(edgeCommonAPIURL, "post", query)
         logger.info(f"Record updated into Metadata table successfully")
