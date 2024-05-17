@@ -387,7 +387,7 @@ Resources:
   ObfuscateGPSCoordinatesLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub '/aws/lambda/${ObfuscateGPSCoordinatesLambda}-logs'
+      LogGroupName: !Sub '/aws/lambda/${ObfuscateGPSCoordinatesLambda}'
       RetentionInDays: 120 # 3 months, matches existing log group
 
 
