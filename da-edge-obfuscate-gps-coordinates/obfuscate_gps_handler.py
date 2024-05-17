@@ -23,10 +23,11 @@ def obfuscate_gps(body):
                         handle_gps_coordinates(latitude, longitude)
                     LOGGER.info(f"Latitude: {converted_device_params['Latitude']}, "
                                 f"Longitude: {converted_device_params['Longitude']}, after obfuscated gps coordinates")
-                    message_id = converted_device_params["messageId"]
         # Depending on config_id insert to metadata table & get Certification Family information
         config_id = body["dataSamplingConfigId"]
+        message_id = body["messageID"]
         if config_id.startswith('SC9') or config_id.startswith('DC9') or config_id.startswith('DS9'):
+            LOGGER.info(f"Starting additional processing as this is Emission data")
             insert_into_metadata_Table(body["telematicsDeviceId"], message_id, body["componentSerialNumber"], config_id)
             certificationFamily = get_certification_family(body["telematicsDeviceId"], body["componentSerialNumber"])
             body["certificationFamily"] = certificationFamily
