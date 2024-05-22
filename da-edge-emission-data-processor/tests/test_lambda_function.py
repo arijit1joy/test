@@ -10,7 +10,9 @@ with CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict('os.env
                 {'LoggingLevel': 'info',
                  'EdgeRDSSecretName': 'rdssecret',
                  'j1939_emission_end_bucket': 'emission_bucket',
-                 'tsb_url': 'https://tsbUrl'
+                 'tsb_url': 'https://tsbUrl',
+                 'region': 'us-east-1',
+                 'secret_name': 'secret-name'
                  }):
     cda_module_mock_context.mock_module("edge_core")
     from lambda_function import lambda_handler
