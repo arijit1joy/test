@@ -94,6 +94,7 @@ Resources:
           j1939_emission_end_bucket: !Ref EdgeJ1939EmissionFilesBucket
           edgeCommonAPIURL: !Ref EdgeCommonDBAPI
           tsb_url: !Ref TsbUrl
+          secret_name: !Sub "cda-data-hub-TSBERSXApiKeySecret-${ApplicationEnvironmentTag}"
       Handler: lambda_function.lambda_handler
       Role: !GetAtt EmissionDataProcessorLambdaRole.Arn
       Timeout: 300
@@ -133,6 +134,10 @@ Resources:
                   - sqs:DeleteMessageBatch
                   - sqs:GetQueueAttributes
                 Resource: !Sub "${EDGEJ1939EmissionFilesQueue.Arn}"
+                Effect: Allow
+              - Action:
+                  - secretsmanager:GetSecretValue
+                Resource: !Sub "cda-data-hub-TSBERSXApiKeySecret-${ApplicationEnvironmentTag}"
                 Effect: Allow
       Tags:
         - Key: "appid"
