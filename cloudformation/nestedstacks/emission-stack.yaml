@@ -131,4 +131,4 @@ Outputs:
     Value: "da-edge-j1939-emission-datalog-files-dev"
   EdgeJ1939EmissionDataLogBucketResourceArn:
     Description: The Emission data log bucket arn
-    Value: "aws::s3:::da-edge-j1939-emission-datalog-files-dev"
+    Value: "arn:aws:s3:::da-edge-j1939-emission-datalog-files-dev"
