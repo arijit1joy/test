@@ -55,8 +55,6 @@ Resources:
           Value: "007"
         - Key: "rc"
           Value: "A6Q"
-    DependsOn:
-      - EDGEJ1939EmissionDataLogFilesQueuePolicy
 
   # Emission Data Processor Lambda Function
   EmissionDataProcessorLambda:
@@ -158,78 +156,6 @@ Resources:
               Service:
                 - lambda.amazonaws.com
 
-  #Emission Lambda Invoke Permission
-  EmissionLambdaInvokeQueueEventSourceMapping:
-    Type: "AWS::Lambda::EventSourceMapping"
-    Properties:
-      BatchSize: 10
-      Enabled: true
-      EventSourceArn: !GetAtt EDGEJ1939EmissionDataLogFilesQueue.Arn
-      FunctionName: !GetAtt EmissionDataProcessorLambda.Arn
-
-  # Emission Data Queue
-  EDGEJ1939EmissionDataLogFilesQueue:
-    Type: AWS::SQS::Queue
-    Properties:
-      QueueName: !Sub "${ApplicationName}-Emission-DataLogFilesQueue-${ApplicationEnvironmentTag}"
-      VisibilityTimeout: 900
-      RedrivePolicy:
-        deadLetterTargetArn:
-          Fn::GetAtt:
-            - "EDGEJ1939EmissionDataLogFilesDLQueue"
-            - "Arn"
-        maxReceiveCount: 2
-      Tags:
-        - Key: "appid"
-          Value: "33439"
-        - Key: "environment"
-          Value: !Ref CdoEnvironmentTag
-        - Key: "bu"
-          Value: "CBS"
-        - Key: "bc"
-          Value: "007"
-        - Key: "rc"
-          Value: "A6Q"
-
-  # Emission Data DL Queue
-  EDGEJ1939EmissionDataLogFilesDLQueue:
-    Type: AWS::SQS::Queue
-    Properties:
-      QueueName: !Sub "${ApplicationName}-Emission-DataLogFilesDLQueue-${ApplicationEnvironmentTag}"
-      Tags:
-        - Key: "appid"
-          Value: "33439"
-        - Key: "environment"
-          Value: !Ref CdoEnvironmentTag
-        - Key: "bu"
-          Value: "CBS"
-        - Key: "bc"
-          Value: "007"
-        - Key: "rc"
-          Value: "A6Q"
-
-  # EMission Data Queue Policy
-  EDGEJ1939EmissionDataLogFilesQueuePolicy:
-    Type: AWS::SQS::QueuePolicy
-    Properties:
-      Queues:
-        - !Sub "${ApplicationName}-Emission-DataLogFilesQueue-${ApplicationEnvironmentTag}"
-      PolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Action:
-              - "sqs:SendMessage"
-            Resource:
-              - !Sub >-
-                arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${ApplicationName}-Emission-DataLogFilesQueue-${ApplicationEnvironmentTag}
-            Effect: Allow
-            Principal:
-              Service: "s3.amazonaws.com"
-            Condition:
-              ArnEquals:
-                aws:SourceArn: !Sub "arn:aws:s3:::da-edge-j1939-emission-datalog-files-${ApplicationEnvironmentTag}"
-    DependsOn:
-      - EDGEJ1939EmissionDataLogFilesQueue
 
 Outputs:
   EdgeJ1939EmissionDataLogBucketResource:
