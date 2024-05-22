@@ -6,6 +6,7 @@
         "VersionId": "empty",
         "ArtifactsBucket": "171670492297-da-edge-platform-catalog-us-east-2",
         "BranchName": "master",
+        "TsbUrl": "https://api.edge-test.aws.cummins.com/v2/datahub/topics/aai_emissions",
         "EdgeCommonDBAPI": "https://api.edge-test.aws.cummins.com/v3/EdgeDBLambda",
         "PTJ1939PostURL": "intentionally-disabling-https://preventech-stage.aws.cummins.com/stage/ngdi",
         "PTJ1939Header": "{\"Content-Type\": \"application/json\", \"Prefer\": \"param=single-object\", \"x-api-key\": \"\"}",

@@ -18,7 +18,7 @@ def update_metadata_Table(device_id, esn, config_id):
         response = edge.api_request(edgeCommonAPIURL, "post", query)
         logger.info(f"Record updated into Metadata table successfully")
     except Exception as e:
-        logger.info("Error updating into metadata table")
+        logger.error(f"Error updating into metadata table: {e}")
         return edge.server_error(str(e))
 
 
