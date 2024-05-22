@@ -130,11 +130,6 @@ Resources:
                   - sqs:DeleteMessage
                   - sqs:DeleteMessageBatch
                   - sqs:GetQueueAttributes
-                Resource: !Sub "${EDGEJ1939EmissionDataLogFilesQueue.Arn}"
-                Effect: Allow
-              - Action:
-                  - secretsmanager:GetSecretValue
-                  - secretsmanager:DescribeSecret
                 Resource: "*"
                 Effect: Allow
       Tags:
