@@ -137,7 +137,7 @@ Resources:
                 Effect: Allow
               - Action:
                   - secretsmanager:GetSecretValue
-                Resource: !Sub "cda-data-hub-TSBERSXApiKeySecret-${ApplicationEnvironmentTag}"
+                Resource: '*'
                 Effect: Allow
       Tags:
         - Key: "appid"
