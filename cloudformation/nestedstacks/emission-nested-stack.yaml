@@ -29,7 +29,7 @@ Parameters:
 
 Resources:
   #Emission Data Bucket
-  EdgeJ1939EmissionDataLogBucket:
+  EdgeJ1939EmissionFilesBucket:
     Type: "AWS::S3::Bucket"
     Properties:
       AccessControl: BucketOwnerFullControl
@@ -39,9 +39,9 @@ Resources:
               SSEAlgorithm: AES256
       NotificationConfiguration:
         QueueConfigurations:
-          - Queue: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${ApplicationName}-Emission-DataLogFilesQueue-${ApplicationEnvironmentTag}"
+          - Queue: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${ApplicationName}-Emission-FilesQueue-${ApplicationEnvironmentTag}"
             Event: "s3:ObjectCreated:*"
-      BucketName: !Sub "da-edge-j1939-emission-datalog-files-${ApplicationEnvironmentTag}"
+      BucketName: !Sub "da-edge-j1939-emission-files-${ApplicationEnvironmentTag}"
       Tags:
         - Key: Name
           Value: Edge
@@ -56,7 +56,7 @@ Resources:
         - Key: "rc"
           Value: "A6Q"
     DependsOn:
-      - EDGEJ1939EmissionDataLogFilesQueuePolicy
+      - EDGEJ1939EmissionFilesQueuePolicy
 
   # Emission Data Processor Lambda Function
   EmissionDataProcessorLambda:
@@ -91,7 +91,7 @@ Resources:
           APPLICATION_NAME: !Ref ApplicationName
           region: !Sub "${AWS::Region}"
           APPLICATION_ENVIRONMENT: !Ref ApplicationEnvironmentTag
-          j1939_emission_end_bucket: !Ref EdgeJ1939EmissionDataLogBucket
+          j1939_emission_end_bucket: !Ref EdgeJ1939EmissionFilesBucket
           edgeCommonAPIURL: !Ref EdgeCommonDBAPI
           tsb_url: !Ref TsbUrl
       Handler: lambda_function.lambda_handler
@@ -125,19 +125,14 @@ Resources:
                 Effect: Allow
               - Action:
                   - "s3:Get*"
-                Resource: !Sub "${EdgeJ1939EmissionDataLogBucket.Arn}/*"
+                Resource: !Sub "${EdgeJ1939EmissionFilesBucket.Arn}/*"
                 Effect: Allow
               - Action:
                   - sqs:ReceiveMessage
                   - sqs:DeleteMessage
                   - sqs:DeleteMessageBatch
                   - sqs:GetQueueAttributes
-                Resource: !Sub "${EDGEJ1939EmissionDataLogFilesQueue.Arn}"
-                Effect: Allow
-              - Action:
-                  - secretsmanager:GetSecretValue
-                  - secretsmanager:DescribeSecret
-                Resource: "*"
+                Resource: !Sub "${EDGEJ1939EmissionFilesQueue.Arn}"
                 Effect: Allow
       Tags:
         - Key: "appid"
@@ -164,19 +159,19 @@ Resources:
     Properties:
       BatchSize: 10
       Enabled: true
-      EventSourceArn: !GetAtt EDGEJ1939EmissionDataLogFilesQueue.Arn
+      EventSourceArn: !GetAtt EDGEJ1939EmissionFilesQueue.Arn
       FunctionName: !GetAtt EmissionDataProcessorLambda.Arn
 
   # Emission Data Queue
-  EDGEJ1939EmissionDataLogFilesQueue:
+  EDGEJ1939EmissionFilesQueue:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: !Sub "${ApplicationName}-Emission-DataLogFilesQueue-${ApplicationEnvironmentTag}"
+      QueueName: !Sub "${ApplicationName}-Emission-FilesQueue-${ApplicationEnvironmentTag}"
       VisibilityTimeout: 900
       RedrivePolicy:
         deadLetterTargetArn:
           Fn::GetAtt:
-            - "EDGEJ1939EmissionDataLogFilesDLQueue"
+            - "EDGEJ1939EmissionFilesDLQueue"
             - "Arn"
         maxReceiveCount: 2
       Tags:
@@ -192,10 +187,10 @@ Resources:
           Value: "A6Q"
 
   # Emission Data DL Queue
-  EDGEJ1939EmissionDataLogFilesDLQueue:
+  EDGEJ1939EmissionFilesDLQueue:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: !Sub "${ApplicationName}-Emission-DataLogFilesDLQueue-${ApplicationEnvironmentTag}"
+      QueueName: !Sub "${ApplicationName}-Emission-FilesDLQueue-${ApplicationEnvironmentTag}"
       Tags:
         - Key: "appid"
           Value: "33439"
@@ -209,11 +204,11 @@ Resources:
           Value: "A6Q"
 
   # EMission Data Queue Policy
-  EDGEJ1939EmissionDataLogFilesQueuePolicy:
+  EDGEJ1939EmissionFilesQueuePolicy:
     Type: AWS::SQS::QueuePolicy
     Properties:
       Queues:
-        - !Sub "${ApplicationName}-Emission-DataLogFilesQueue-${ApplicationEnvironmentTag}"
+        - !Sub "${ApplicationName}-Emission-FilesQueue-${ApplicationEnvironmentTag}"
       PolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -221,20 +216,20 @@ Resources:
               - "sqs:SendMessage"
             Resource:
               - !Sub >-
-                arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${ApplicationName}-Emission-DataLogFilesQueue-${ApplicationEnvironmentTag}
+                arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${ApplicationName}-Emission-FilesQueue-${ApplicationEnvironmentTag}
             Effect: Allow
             Principal:
               Service: "s3.amazonaws.com"
             Condition:
               ArnEquals:
-                aws:SourceArn: !Sub "arn:aws:s3:::da-edge-j1939-emission-datalog-files-${ApplicationEnvironmentTag}"
+                aws:SourceArn: !Sub "arn:aws:s3:::da-edge-j1939-emission-files-${ApplicationEnvironmentTag}"
     DependsOn:
-      - EDGEJ1939EmissionDataLogFilesQueue
+      - EDGEJ1939EmissionFilesQueue
 
 Outputs:
-  EdgeJ1939EmissionDataLogBucketResource:
+  EdgeJ1939EmissionBucketResource:
     Description: The Emission data log bucket name
-    Value: !Ref EdgeJ1939EmissionDataLogBucket
-  EdgeJ1939EmissionDataLogBucketResourceArn:
+    Value: !Ref EdgeJ1939EmissionFilesBucket
+  EdgeJ1939EmissionBucketResourceArn:
     Description: The Emission data log bucket arn
-    Value: !Sub "${EdgeJ1939EmissionDataLogBucket.Arn}"
+    Value: !Sub "${EdgeJ1939EmissionFilesBucket.Arn}"
