@@ -2,15 +2,15 @@ from unittest import TestCase
 from unittest.mock import patch
 
 import sys
-import boto3
+import json
 
-from botocore.stub import Stubber
 from cda_module_mock_context import CDAModuleMockingContext
 
 with CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict('os.environ',
                 {'LoggingLevel': 'info',
                  'EdgeRDSSecretName': 'rdssecret',
-                 'j1939_emission_end_bucket': 'emission_bucket'
+                 'j1939_emission_end_bucket': 'emission_bucket',
+                 'tsb_url': 'https://tsbUrl'
                  }):
     cda_module_mock_context.mock_module("edge_core")
     from lambda_function import lambda_handler
@@ -18,13 +18,14 @@ with CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict('os.env
 
 class TestLambdaFunction(TestCase):
 
+    @patch('lambda_function.get_content')
+    @patch('lambda_function.push_to_tsb')
     @patch('lambda_function.update_metadata_Table')
-    def test_lambda_handler(self, mock_update_metadata_table):
-        event = {"Records": [{"telematicsDeviceId": "1234567890"}]}
+    def test_lambda_handler(self, mock_get_content, mock_push_to_tsb, mock_update_metadata_table):
+        event = {"Records": [{"body": {"Records": [{"s3": {"object": {"key": "/fileKey"}}}]}}]}
+        mock_get_content.return_value = bytearray("{'fileContent': 'fileContent'}", 'utf-8')
+        mock_push_to_tsb.return_value = None
         mock_update_metadata_table.return_value = None
-        client = boto3.client('s3')
-        stub = Stubber(client)
-        stub.add_response('get_object', {"Body": bytearray("{'Content': 'content'}", 'utf-8')})
-        stub.activate()
-        result = lambda_handler(event, None)
+        lambda_handler(str(event), None)
+
 
