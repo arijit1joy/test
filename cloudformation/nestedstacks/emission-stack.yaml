@@ -28,33 +28,6 @@ Parameters:
     Default: layer-CDAPypikaPythonLayer
 
 Resources:
-  #Emission Data Bucket
-  EdgeJ1939EmissionDataLogBucket:
-    Type: "AWS::S3::Bucket"
-    Properties:
-      AccessControl: BucketOwnerFullControl
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              SSEAlgorithm: AES256
-      NotificationConfiguration:
-        QueueConfigurations:
-          - Queue: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${ApplicationName}-Emission-DataLogFilesQueue-${ApplicationEnvironmentTag}"
-            Event: "s3:ObjectCreated:*"
-      BucketName: !Sub "da-edge-j1939-emission-datalog-files-${ApplicationEnvironmentTag}"
-      Tags:
-        - Key: Name
-          Value: Edge
-        - Key: "appid"
-          Value: "33439"
-        - Key: "environment"
-          Value: !Ref CdoEnvironmentTag
-        - Key: "bu"
-          Value: "CBS"
-        - Key: "bc"
-          Value: "007"
-        - Key: "rc"
-          Value: "A6Q"
 
   # Emission Data Processor Lambda Function
   EmissionDataProcessorLambda:
@@ -89,7 +62,7 @@ Resources:
           APPLICATION_NAME: !Ref ApplicationName
           region: !Sub "${AWS::Region}"
           APPLICATION_ENVIRONMENT: !Ref ApplicationEnvironmentTag
-          j1939_emission_end_bucket: !Ref EdgeJ1939EmissionDataLogBucket
+          j1939_emission_end_bucket: "da-edge-j1939-emission-datalog-files-dev"
           edgeCommonAPIURL: !Ref EdgeCommonDBAPI
           tsb_url: !Ref TsbUrl
       Handler: lambda_function.lambda_handler
@@ -123,7 +96,7 @@ Resources:
                 Effect: Allow
               - Action:
                   - "s3:Get*"
-                Resource: !Sub "${EdgeJ1939EmissionDataLogBucket.Arn}/*"
+                Resource: "*"
                 Effect: Allow
               - Action:
                   - sqs:ReceiveMessage
@@ -155,7 +128,7 @@ Resources:
 Outputs:
   EdgeJ1939EmissionDataLogBucketResource:
     Description: The Emission data log bucket name
-    Value: !Ref EdgeJ1939EmissionDataLogBucket
+    Value: "da-edge-j1939-emission-datalog-files-dev"
   EdgeJ1939EmissionDataLogBucketResourceArn:
     Description: The Emission data log bucket arn
-    Value: !Sub "${EdgeJ1939EmissionDataLogBucket.Arn}"
+    Value: "aws::s3:::da-edge-j1939-emission-datalog-files-dev"
