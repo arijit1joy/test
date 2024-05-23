@@ -1,7 +1,10 @@
+from uuid import uuid4
+
 import boto3
 import os
 import sys
 import requests
+import json
 
 sys.path.insert(1, './lib')
 import utility as util
@@ -12,11 +15,33 @@ region = os.environ["region"]
 secret_name = os.environ["secret_name"]
 
 
-def push_to_tsb(payload):
+def push_to_tsb(message):
     secret_client = boto3.session.Session().client(service_name='secretsmanager', region_name=region)
     secret_value = secret_client.get_secret_value(SecretId=secret_name)
     api_key = secret_value['SecretString']
     headers = {'Content-Type': 'application/vnd.kafka.json.v2+json', 'x-api-key': api_key}
+    uuid = str(uuid4())
+    device_id = message["telematicsDeviceId"]
+    esn = message["componentSerialNumber"]
+    file_name = 'NULL'
+    file_size = 'NULL'
+    SQS_TEMPLATE = "[message_id],[device_id],[file_name],[file_size],[file_datetime],DTNA_REGISTRATION,[file_status],[esn],,,,,"
+    metadata_message_template = formatter(SQS_TEMPLATE,
+                                          message_id=uuid,
+                                          device_id=device_id,
+                                          esn=esn,
+                                          filename=file_name,
+                                          file_size=file_size)
+    file_sent_sqs_message = formatter(metadata_message_template,
+                                      file_status="Posted",
+                                      file_datetime='{FILE_METADATA_CURRENT_DATE_TIME}'
+                                      )
+    payload = {"records": [{"value": {
+        "metadata": {"messageID": uuid, "deviceID": device_id, "esn": esn,
+                     "bu": "EBU",
+                     "topic": "aai-emission", "fileType": 'JSON',
+                     "fileSentSQSMessage": file_sent_sqs_message},
+        "data": json.loads(message)}}]}
     LOGGER.info(f"Payload: {payload}")
     LOGGER.info(f"Headers: {headers}")
     # Send request to AAI Cloud
@@ -25,4 +50,10 @@ def push_to_tsb(payload):
         LOGGER.info("Message successfully send to TSB")
     else:
         LOGGER.error(f"Error while posting replay message to TSB: {response_datahub_topic.status_code}")
+        
 
+
+def formatter(base_str, **kwargs):
+    for k, v in kwargs.items():
+        base_str = base_str.replace(f"[{k}]", str(v))
+    return base_str
