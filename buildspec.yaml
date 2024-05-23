@@ -19,7 +19,7 @@ phases:
     - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
     - wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add -
     - apt-get -qq update
-    - pip install -q pytest coverage pytest-cov moto
+    - pip install -q pytest coverage pytest-cov moto psycopg2-binary boto3
     - pip install -q awscli==1.16.209 
     - apt-get -qq install -y zip unzip bc
     - curl -sSL https://bit.ly/install-xq | bash
@@ -32,6 +32,8 @@ phases:
     - sed -i -E 's|LoggingLevel\s*:\s*\"[dD][eE][bB][uU][gG]\"|LoggingLevel~~~~~~ \"info\"|gi' cloudformation/environment.yml
     - sed -i -e 's|~~~~~~|:|g' cloudformation/environment.yml
     - cd cloudformation 
+    - aws s3 cp ./nestedstacks/ s3://${S3Bucket}/${BRANCH_NAME} --recursive
+    - aws s3 cp ./nestedstacks/ s3://${CrossRegionBucket}/${BRANCH_NAME} --recursive
     - versionId=$(date +"%m-%d-%Y-%H-%M-%S") 
     - echo $versionId
     - pip install -q ruamel.yaml

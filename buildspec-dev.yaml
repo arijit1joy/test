@@ -37,6 +37,7 @@ phases:
           aws cloudformation validate-template --template-body "file://$file" --region $AWS_REGION || exit 1
         done
     - aws s3 cp ./nestedstacks/ s3://${S3Bucket}/${BRANCH_NAME} --recursive
+    - aws s3 cp ./nestedstacks/ s3://${CrossRegionBucket}/${BRANCH_NAME} --recursive
     - versionId=$(date +"%m-%d-%Y-%H-%M-%S")
     - echo "Current date for artifact file storage => $versionId"
     - pip install -q ruamel.yaml
