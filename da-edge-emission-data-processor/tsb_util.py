@@ -4,7 +4,6 @@ import boto3
 import os
 import sys
 import requests
-import json
 
 sys.path.insert(1, './lib')
 import utility as util
@@ -25,23 +24,22 @@ def push_to_tsb(message):
     esn = message["componentSerialNumber"]
     file_name = 'NULL'
     file_size = 'NULL'
-    SQS_TEMPLATE = "[message_id],[device_id],[file_name],[file_size],[file_datetime],DTNA_REGISTRATION,[file_status],[esn],,,,,"
+    SQS_TEMPLATE = "[message_id],[device_id],[file_name],[file_size],[file_datetime],AAI-EMISSION,[file_status],[esn],,,,,"
     metadata_message_template = formatter(SQS_TEMPLATE,
                                           message_id=uuid,
                                           device_id=device_id,
                                           esn=esn,
-                                          filename=file_name,
-                                          file_size=file_size)
-    file_sent_sqs_message = formatter(metadata_message_template,
-                                      file_status="Posted",
-                                      file_datetime='{FILE_METADATA_CURRENT_DATE_TIME}'
-                                      )
+                                          file_name=file_name,
+                                          file_size=file_size,
+                                          file_status="Posted",
+                                          file_datetime='{FILE_METADATA_CURRENT_DATE_TIME}'
+                                        )
     payload = {"records": [{"value": {
         "metadata": {"messageID": uuid, "deviceID": device_id, "esn": esn,
                      "bu": "EBU",
                      "topic": "aai-emission", "fileType": 'JSON',
                      "fileSentSQSMessage": file_sent_sqs_message},
-        "data": json.loads(message)}}]}
+        "data": message}}]}
     LOGGER.info(f"Payload: {payload}")
     LOGGER.info(f"Headers: {headers}")
     # Send request to AAI Cloud
@@ -49,8 +47,9 @@ def push_to_tsb(message):
     if response_datahub_topic.status_code == 200:
         LOGGER.info("Message successfully send to TSB")
     else:
-        LOGGER.error(f"Error while posting replay message to TSB: {response_datahub_topic.status_code}")
-        
+        LOGGER.error(
+            f"Error while posting message to TSB : {response_datahub_topic.status_code} & {response_datahub_topic.text}")
+        raise Exception("Error while posting message to TSB")
 
 
 def formatter(base_str, **kwargs):
