@@ -2,7 +2,8 @@ import utility as util
 from pypika import Query, Table
 import time
 import os
-import edge_core as edge
+
+from edge_core_layer import edge_core as edge
 
 logger = util.get_logger(__name__)
 
