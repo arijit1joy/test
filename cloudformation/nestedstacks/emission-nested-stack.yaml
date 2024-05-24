@@ -28,35 +28,6 @@ Parameters:
     Default: layer-CDAPypikaPythonLayer
 
 Resources:
-  #Emission Data Bucket
-  EdgeJ1939EmissionFilesBucket:
-    Type: "AWS::S3::Bucket"
-    Properties:
-      AccessControl: BucketOwnerFullControl
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              SSEAlgorithm: AES256
-      NotificationConfiguration:
-        QueueConfigurations:
-          - Queue: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${ApplicationName}-Emission-FilesQueue-${ApplicationEnvironmentTag}"
-            Event: "s3:ObjectCreated:*"
-      BucketName: !Sub "da-edge-j1939-emission-files-${ApplicationEnvironmentTag}"
-      Tags:
-        - Key: Name
-          Value: Edge
-        - Key: "appid"
-          Value: "33439"
-        - Key: "environment"
-          Value: !Ref CdoEnvironmentTag
-        - Key: "bu"
-          Value: "CBS"
-        - Key: "bc"
-          Value: "007"
-        - Key: "rc"
-          Value: "A6Q"
-    DependsOn:
-      - EDGEJ1939EmissionFilesQueuePolicy
 
   # Emission Data Processor Lambda Function
   EmissionDataProcessorLambda:
@@ -91,7 +62,7 @@ Resources:
           APPLICATION_NAME: !Ref ApplicationName
           region: !Sub "${AWS::Region}"
           APPLICATION_ENVIRONMENT: !Ref ApplicationEnvironmentTag
-          j1939_emission_end_bucket: !Ref EdgeJ1939EmissionFilesBucket
+          j1939_emission_end_bucket: !Ref EdgeJ1939EmissionDataFilesBucket
           edgeCommonAPIURL: !Ref EdgeCommonDBAPI
           tsb_url: !Ref TsbUrl
           secret_name: !Sub "cda-data-hub-TSBERSXApiKeySecret-${ApplicationEnvironmentTag}"
@@ -126,14 +97,14 @@ Resources:
                 Effect: Allow
               - Action:
                   - "s3:Get*"
-                Resource: !Sub "${EdgeJ1939EmissionFilesBucket.Arn}/*"
+                Resource: !Sub "${EdgeJ1939EmissionDataFilesBucket.Arn}/*"
                 Effect: Allow
               - Action:
                   - sqs:ReceiveMessage
                   - sqs:DeleteMessage
                   - sqs:DeleteMessageBatch
                   - sqs:GetQueueAttributes
-                Resource: !Sub "${EDGEJ1939EmissionFilesQueue.Arn}"
+                Resource: !Sub "${EDGEJ1939EmissionDataFilesQueue.Arn}"
                 Effect: Allow
               - Action:
                   - secretsmanager:GetSecretValue
@@ -164,19 +135,49 @@ Resources:
     Properties:
       BatchSize: 10
       Enabled: true
-      EventSourceArn: !GetAtt EDGEJ1939EmissionFilesQueue.Arn
+      EventSourceArn: !GetAtt EDGEJ1939EmissionDataFilesQueue.Arn
       FunctionName: !GetAtt EmissionDataProcessorLambda.Arn
 
+  #Emission Data Bucket
+  EdgeJ1939EmissionDataFilesBucket:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      AccessControl: BucketOwnerFullControl
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      NotificationConfiguration:
+        QueueConfigurations:
+          - Queue: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${ApplicationName}-Emission-Data-FilesQueue-${ApplicationEnvironmentTag}"
+            Event: "s3:ObjectCreated:*"
+      BucketName: !Sub "da-edge-j1939-emission-data-files-${ApplicationEnvironmentTag}"
+      Tags:
+        - Key: Name
+          Value: Edge
+        - Key: "appid"
+          Value: "33439"
+        - Key: "environment"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu"
+          Value: "CBS"
+        - Key: "bc"
+          Value: "007"
+        - Key: "rc"
+          Value: "A6Q"
+    DependsOn:
+      - EDGEJ1939EmissionDataFilesQueuePolicy
+
   # Emission Data Queue
-  EDGEJ1939EmissionFilesQueue:
+  EDGEJ1939EmissionDataFilesQueue:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: !Sub "${ApplicationName}-Emission-FilesQueue-${ApplicationEnvironmentTag}"
+      QueueName: !Sub "${ApplicationName}-Emission-Data-FilesQueue-${ApplicationEnvironmentTag}"
       VisibilityTimeout: 900
       RedrivePolicy:
         deadLetterTargetArn:
           Fn::GetAtt:
-            - "EDGEJ1939EmissionFilesDLQueue"
+            - "EDGEJ1939EmissionDataFilesDLQueue"
             - "Arn"
         maxReceiveCount: 2
       Tags:
@@ -192,10 +193,10 @@ Resources:
           Value: "A6Q"
 
   # Emission Data DL Queue
-  EDGEJ1939EmissionFilesDLQueue:
+  EDGEJ1939EmissionDataFilesDLQueue:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: !Sub "${ApplicationName}-Emission-FilesDLQueue-${ApplicationEnvironmentTag}"
+      QueueName: !Sub "${ApplicationName}-Emission-Data-FilesDLQueue-${ApplicationEnvironmentTag}"
       Tags:
         - Key: "appid"
           Value: "33439"
@@ -209,11 +210,11 @@ Resources:
           Value: "A6Q"
 
   # EMission Data Queue Policy
-  EDGEJ1939EmissionFilesQueuePolicy:
+  EDGEJ1939EmissionFilesDataQueuePolicy:
     Type: AWS::SQS::QueuePolicy
     Properties:
       Queues:
-        - !Sub "${ApplicationName}-Emission-FilesQueue-${ApplicationEnvironmentTag}"
+        - !Sub "${ApplicationName}-Emission-Data-FilesQueue-${ApplicationEnvironmentTag}"
       PolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -221,20 +222,20 @@ Resources:
               - "sqs:SendMessage"
             Resource:
               - !Sub >-
-                arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${ApplicationName}-Emission-FilesQueue-${ApplicationEnvironmentTag}
+                arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${ApplicationName}-Emission-Data-FilesQueue-${ApplicationEnvironmentTag}
             Effect: Allow
             Principal:
               Service: "s3.amazonaws.com"
             Condition:
               ArnEquals:
-                aws:SourceArn: !Sub "arn:aws:s3:::da-edge-j1939-emission-files-${ApplicationEnvironmentTag}"
+                aws:SourceArn: !Sub "arn:aws:s3:::da-edge-j1939-emission-data-files-${ApplicationEnvironmentTag}"
     DependsOn:
-      - EDGEJ1939EmissionFilesQueue
+      - EDGEJ1939EmissionDataFilesQueue
 
 Outputs:
   EdgeJ1939EmissionBucketResource:
     Description: The Emission data log bucket name
-    Value: !Ref EdgeJ1939EmissionFilesBucket
+    Value: !Ref EdgeJ1939EmissionDataFilesBucket
   EdgeJ1939EmissionBucketResourceArn:
     Description: The Emission data log bucket arn
-    Value: !Sub "${EdgeJ1939EmissionFilesBucket.Arn}"
+    Value: !Sub "${EdgeJ1939EmissionDataFilesBucket.Arn}"
