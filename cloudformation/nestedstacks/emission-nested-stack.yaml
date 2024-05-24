@@ -210,7 +210,7 @@ Resources:
           Value: "A6Q"
 
   # EMission Data Queue Policy
-  EDGEJ1939EmissionFilesDataQueuePolicy:
+  EDGEJ1939EmissionDataFilesQueuePolicy:
     Type: AWS::SQS::QueuePolicy
     Properties:
       Queues:
