@@ -1,5 +1,6 @@
 from unittest.mock import patch
 from unittest import TestCase, mock
+import requests
 import sys
 
 from cda_module_mock_context import CDAModuleMockingContext
@@ -34,3 +35,15 @@ class TestDbUtil(TestCase):
         mock_api_request.return_value = '{}'
         update_metadata_Table(device_id, esn, config_id)
         mock_api_request.assert_called()
+
+    @patch('db_util.api_request')
+    @patch('db_util.server_error')
+    def test_update_metadata_table02(self, mock_server_error, mock_api_request):
+        device_id = '357649072115903'
+        esn = '64505184'
+        config_id = 'SC9004'
+        mock_api_request.side_effect = requests.exceptions.ConnectionError()
+        mock_server_error.return_value = '{}'
+        update_metadata_Table(device_id, esn, config_id)
+        mock_api_request.assert_called()
+        mock_server_error.assert_called()
