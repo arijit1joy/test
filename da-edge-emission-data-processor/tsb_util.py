@@ -25,7 +25,7 @@ def push_to_tsb(message):
     file_name = 'NULL'
     file_size = 'NULL'
     SQS_TEMPLATE = "[message_id],[device_id],[file_name],[file_size],[file_datetime],AAI-EMISSION,[file_status],[esn],,,,,"
-    metadata_message_template = formatter(SQS_TEMPLATE,
+    file_sent_sqs_message = formatter(SQS_TEMPLATE,
                                           message_id=uuid,
                                           device_id=device_id,
                                           esn=esn,
