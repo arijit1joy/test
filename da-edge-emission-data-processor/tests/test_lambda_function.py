@@ -25,7 +25,7 @@ class TestLambdaFunction(TestCase):
     @patch('lambda_function.update_metadata_Table')
     def test_lambda_handler(self, mock_get_content, mock_push_to_tsb, mock_update_metadata_table):
         event = {"Records": [{"body": {"Records": [{"s3": {"object": {"key": "/fileKey"}}}]}}]}
-        mock_get_content.return_value = bytearray("{'fileContent': 'fileContent'}", 'utf-8')
+        mock_get_content.return_value = bytearray("{'telematicsDeviceId': '357649072115903', 'componentSerialNumber': '64505184', }", 'utf-8')
         mock_push_to_tsb.return_value = None
         mock_update_metadata_table.return_value = None
         lambda_handler(str(event), None)
