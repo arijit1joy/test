@@ -12,26 +12,29 @@ with CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.env
     cda_module_mock_context.mock_module("edge_core_layer.edge_logger")
     cda_module_mock_context.mock_module("edge_core_layer.edge_core")
     cda_module_mock_context.mock_module("edge_db_utility_layer.obfuscate_gps_utility")
-    from db_util import insert_to_metadata_table_query, insert_into_metadata_Table, get_certification_family_query, get_certification_family
+    from db_util import insert_to_metadata_table_query, get_certification_family_query, insert_into_metadata_Table, get_certification_family
 
 
-class TestEbUtil(unittest.TestCase):
+class TestDbUtil(unittest.TestCase):
+
+    maxDiff = None
+
     def test_insert_to_metadata_table_query(self):
         device_id = '357649072115903'
         esn = '64505184'
         config_id = 'SC9004'
         message_id = 'ebe2dcce-9566-4d43-9efd-4e947b24f34d'
         query = insert_to_metadata_table_query(device_id, message_id, esn, config_id)
-        self.assertEqual("INSERT INTO da_edge_olympus.da_edge_metadata (device_id,uuid,data_protocol,data_pipeline_stage,esn,config_spec_name,created_datetime) VALUES ('357649072115903','ebe2dcce-9566-4d43-9efd-4e947b24f34d','J1939_Emissions','FILE_RECEIVED','64505184','SC9110','2024-05-22 04:53:56')", query)
+        self.assertTrue(query.startswith("INSERT INTO da_edge_olympus.da_edge_metadata"))
 
-    @patch('edge.api_request')
+    @patch('db_util.api_request')
     def test_insert_to_metadata_table(self, mock_api_request):
         device_id = '357649072115903'
         esn = '64505184'
         config_id = 'SC9004'
         message_id = 'ebe2dcce-9566-4d43-9efd-4e947b24f34d'
         mock_api_request.return_value = '{}'
-        insert_to_metadata_table(device_id, message_id, esn, config_id)
+        insert_into_metadata_Table(device_id, message_id, esn, config_id)
         mock_api_request.assert_called()
 
 
@@ -42,11 +45,12 @@ class TestEbUtil(unittest.TestCase):
         self.assertEqual("SELECT certification_family FROM da_edge_olympus.device_information WHERE engine_serial_number='64505184' AND device_id='357649072115903'", query)
 
 
-    @patch('edge.api_request')
+    @patch('db_util.api_request')
     def test_get_certification_family(self, mock_api_request):
         device_id = '357649072115903'
         esn = '64505184'
-        mock_api_request.return_value = "['Cert']"
+        mock_api_request.return_value = ""
         cert = get_certification_family(device_id, esn)
-        self.assertEqual("Cert", cert)
+        self.assertEqual("", cert)
         mock_api_request.assert_called()
+

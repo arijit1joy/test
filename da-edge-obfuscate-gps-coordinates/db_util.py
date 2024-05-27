@@ -3,7 +3,8 @@ from pypika import Query, Table
 import time
 import os
 
-from edge_core_layer import edge_core as edge
+from edge_core_layer.edge_core import api_request
+from edge_core_layer.edge_core import server_error
 
 logger = util.get_logger(__name__)
 
@@ -15,13 +16,13 @@ edgeCommonAPIURL = os.getenv("edgeCommonAPIURL")
 def get_certification_family(device_id, esn):
     query = get_certification_family_query(device_id, esn)
     try:
-        response = edge.api_request(edgeCommonAPIURL, "get", query)
+        response = api_request(edgeCommonAPIURL, "get", query)
         if len(response) == 0:
             return ""
         return response[0]
     except Exception as e:
         logger.info("Error getting certificate family information from device_information table")
-        return edge.server_error(str(e))
+        return server_error(str(e))
 
 
 def get_certification_family_query(device_id, esn):
@@ -38,11 +39,11 @@ def get_certification_family_query(device_id, esn):
 def insert_into_metadata_Table(device_id, message_id, esn, config_id):
     query = insert_to_metadata_table_query(device_id, message_id, esn, config_id)
     try:
-        response = edge.api_request(edgeCommonAPIURL, "post", query)
+        response = api_request(edgeCommonAPIURL, "post", query)
         logger.info(f"Record inserted into Metadata table successfully")
     except Exception as e:
         logger.info("Error inserting into metadata table")
-        return edge.server_error(str(e))
+        return server_error(str(e))
 
 
 def insert_to_metadata_table_query(device_id, message_id, esn, config_id):

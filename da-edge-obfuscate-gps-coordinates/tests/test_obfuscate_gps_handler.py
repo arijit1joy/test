@@ -175,9 +175,10 @@ class TestObfuscateGPSHandler(unittest.TestCase):
     @mock_aws
     @patch.dict('os.environ', {'j1939_end_bucket': 'test_bucket'})
     @patch('obfuscate_gps_handler.send_file_to_s3')
+    @patch('obfuscate_gps_handler.handle_gps_coordinates')
     @patch('obfuscate_gps_handler.insert_into_metadata_Table')
     @patch('obfuscate_gps_handler.get_certification_family')
-    def test_emission_given_configid(self, mock_get_certification_family, mock_insert_into_metadata_Table, mock_send_file_to_s3):
+    def test_emission_given_configid(self, mock_get_certification_family, mock_insert_into_metadata_Table, mock_handle_gps_coordinates, mock_send_file_to_s3):
         print("<-----test_emission_given_configid----->")
         s3_client = boto3.client("s3")
         s3_client.create_bucket(Bucket=os.environ['j1939_end_bucket'])
@@ -186,6 +187,7 @@ class TestObfuscateGPSHandler(unittest.TestCase):
                 "samples": [{"dateTimestamp": "2020-10-08T14:26:58.456Z",
                              "convertedDeviceParameters": {"messageID": "message_id", "Latitude": "-39.3456789",
                                                            "Longitude": "30.9876543"}}]}
+        mock_handle_gps_coordinates.return_value = ("-12.345", "12.345")
         mock_insert_into_metadata_Table.return_value = None
         mock_get_certification_family.return_value = "Cert"
         result = obfuscate_gps(body)

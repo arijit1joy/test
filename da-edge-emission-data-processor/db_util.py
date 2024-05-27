@@ -1,7 +1,9 @@
 import utility as util
 from pypika import Query, Table
 import os
-import edge_core as edge
+
+from edge_core_layer.edge_core import api_request
+from edge_core_layer.edge_core import server_error
 
 time_format = os.getenv('TimeFormat')
 
@@ -15,11 +17,11 @@ def update_metadata_Table(device_id, esn, config_id):
     query = update_metadata_table_query(device_id, esn, config_id)
     logger.info(f"update metadata table query: {query}")
     try:
-        response = edge.api_request(edgeCommonAPIURL, "post", query)
+        response = api_request(edgeCommonAPIURL, "post", query)
         logger.info(f"Record updated into Metadata table successfully")
     except Exception as e:
         logger.error(f"Error updating into metadata table: {e}")
-        return edge.server_error(str(e))
+        return server_error(str(e))
 
 
 def update_metadata_table_query(device_id, esn, config_id):
