@@ -171,7 +171,7 @@ class TestObfuscateGPSHandler(unittest.TestCase):
 
         mock_send_file_to_s3.assert_called()
 
-    @patch.dict('os.environ', {'j1939_end_bucket': 'test_bucket', 'AuditTrailQueueUrl': 'https://testurl.com'})
+    @patch.dict('os.environ', {'j1939_end_bucket': 'test_bucket', 'j1939_emission_bucket': 'test_emission_bucket', 'AuditTrailQueueUrl': 'https://testurl.com'})
     @patch('obfuscate_gps_handler.insert_into_metadata_Table')
     @patch('obfuscate_gps_handler.get_certification_family')
     def test_sendFileToS3_Emission(self, mock_get_certification_family, mock_insert_into_metadata_Table):
