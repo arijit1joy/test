@@ -25,13 +25,6 @@ def obfuscate_gps(body):
                         handle_gps_coordinates(latitude, longitude)
                     LOGGER.info(f"Latitude: {converted_device_params['Latitude']}, "
                                 f"Longitude: {converted_device_params['Longitude']}, after obfuscated gps coordinates")
-        # Depending on config_id insert to metadata table & get Certification Family information
-        config_id = body["dataSamplingConfigId"]
-        if config_id.startswith('SC9') or config_id.startswith('DC9') or config_id.startswith('DS9'):
-            LOGGER.info(f"Starting additional processing as this is Emission data")
-            insert_into_metadata_Table(body["telematicsDeviceId"], uuid, body["componentSerialNumber"], config_id)
-            certificationFamily = get_certification_family(body["telematicsDeviceId"], body["componentSerialNumber"])
-            body["certificationFamily"] = certificationFamily
     send_file_to_s3(body)
 
 
@@ -60,9 +53,13 @@ def send_file_to_s3(body):
         file_key = "ConvertedFiles/{0}/{1}/{2}/{3}/{4}/{5}".format(
             esn, device_id, current_dt.strftime("%Y"), current_dt.strftime("%m"), current_dt.strftime("%d"), file_name)
         LOGGER.info(f"File Name: {file_name}, File Key:  {file_key}")
-
+        LOGGER.info(f"config_id: {config_id}")
         # Depending on config_id insert to emission bucket else insert to j1939 bucket
         if config_id.startswith('SC9') or config_id.startswith('DC9') or config_id.startswith('DS9'):
+            LOGGER.info(f"Starting additional processing as this is Emission data")
+            certificationFamily = get_certification_family(body["telematicsDeviceId"], body["componentSerialNumber"])
+            body["certificationFamily"] = certificationFamily
+            insert_into_metadata_Table(body["telematicsDeviceId"], uuid, body["componentSerialNumber"], config_id, file_name, len(body))
             send_to_s3_response = s3_client.put_object(Bucket=emission_bucket_name, Key=file_key, Body=json.dumps(body).encode(),
                                                        Metadata={'message_id': uuid})
         else:

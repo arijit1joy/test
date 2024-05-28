@@ -36,8 +36,8 @@ def get_certification_family_query(device_id, esn):
     return query.get_sql(quote_char=None)
 
 
-def insert_into_metadata_Table(device_id, message_id, esn, config_id):
-    query = insert_to_metadata_table_query(device_id, message_id, esn, config_id)
+def insert_into_metadata_Table(device_id, message_id, esn, config_id, file_name, file_size):
+    query = insert_to_metadata_table_query(device_id, message_id, esn, config_id, file_name, file_size)
     try:
         response = api_request(edgeCommonAPIURL, "post", query)
         logger.info(f"Record inserted into Metadata table successfully")
@@ -46,7 +46,7 @@ def insert_into_metadata_Table(device_id, message_id, esn, config_id):
         return server_error(str(e))
 
 
-def insert_to_metadata_table_query(device_id, message_id, esn, config_id):
+def insert_to_metadata_table_query(device_id, message_id, esn, config_id, file_name, file_size):
     time_default_format = time.localtime()
     current_date_time = time.strftime(time_format, time_default_format)
     da_edge_metadata = Table('da_edge_olympus.da_edge_metadata')
@@ -56,8 +56,11 @@ def insert_to_metadata_table_query(device_id, message_id, esn, config_id):
                                                  da_edge_metadata.data_pipeline_stage,
                                                  da_edge_metadata.esn,
                                                  da_edge_metadata.config_spec_name,
+                                                 da_edge_metadata.file_name,
+                                                 da_edge_metadata.file_size,
+                                                 da_edge_metadata.file_received_date,
                                                  da_edge_metadata.created_datetime)
-    query = query.insert(device_id, message_id, 'J1939_Emissions', 'FILE_RECEIVED', esn, config_id, current_date_time)
+    query = query.insert(device_id, message_id, 'J1939_Emissions', 'FILE_RECEIVED', esn, config_id, file_name, file_size, current_date_time, current_date_time)
     logger.info(query.get_sql(quote_char=None))
     return query.get_sql(quote_char=None)
 
