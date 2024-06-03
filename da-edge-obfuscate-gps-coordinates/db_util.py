@@ -19,7 +19,7 @@ def get_certification_family(device_id, esn):
         response = api_request(edgeCommonAPIURL, "get", query)
         if len(response) == 0:
             return ""
-        return response[0]
+        return response[0]["certification_family"]
     except Exception as e:
         logger.info("Error getting certificate family information from device_information table")
         return server_error(str(e))
@@ -31,8 +31,7 @@ def get_certification_family_query(device_id, esn):
                  .select(device_information.certification_family)\
                  .where(device_information.engine_serial_number == esn)\
                  .where(device_information.device_id == device_id)
-
-    logger.debug(query.get_sql(quote_char=None))
+    logger.info(query.get_sql(quote_char=None))
     return query.get_sql(quote_char=None)
 
 
