@@ -21,25 +21,25 @@ class TestLambdaFunction(TestCase):
 
     @patch('lambda_function.get_content')
     @patch('lambda_function.push_to_tsb')
-    @patch('lambda_function.update_metadata_Table')
-    def test_lambda_handler(self, mock_update_metadata_table, mock_push_to_tsb, mock_get_content):
+    @patch('lambda_function.insert_into_metadata_Table')
+    def test_lambda_handler(self, mock_insert_into_metadata_Table, mock_push_to_tsb, mock_get_content):
         event = {"Records": [{"body": str("{\"Records\": [{\"s3\": {\"object\": {\"key\": \"/fileKey\"}}}]}")}]}
         mock_get_content.return_value = "{\"telematicsDeviceId\": \"357649072115903\", \"componentSerialNumber\": \"64505184\", \"dataSamplingConfigId\": \"SC9110\" }"
         mock_push_to_tsb.return_value = None
-        mock_update_metadata_table.return_value = None
+        mock_insert_into_metadata_Table.return_value = None
         lambda_handler(event, None)
         mock_get_content.assert_called()
         mock_push_to_tsb.assert_called()
-        mock_update_metadata_table.assert_called()
+        mock_insert_into_metadata_Table.assert_called()
 
     @patch('lambda_function.get_content')
     @patch('lambda_function.push_to_tsb')
-    @patch('lambda_function.update_metadata_Table')
-    def test_lambda_handler02(self, mock_update_metadata_table, mock_push_to_tsb, mock_get_content):
+    @patch('lambda_function.insert_into_metadata_Table')
+    def test_lambda_handler02(self, mock_insert_into_metadata_Table, mock_push_to_tsb, mock_get_content):
         event = {"Records": [{"body": str("{\"Records\": [{\"s3\": {\"object\": {\"key\": \"/fileKey\"}}}]}")}]}
         mock_get_content.return_value = "{\"componentSerialNumber\": \"64505184\", \"dataSamplingConfigId\": \"SC9110\" }"
         mock_push_to_tsb.return_value = None
         lambda_handler(event, None)
         mock_get_content.assert_called()
         mock_push_to_tsb.assert_called()
-        mock_update_metadata_table.assert_not_called()
+        mock_insert_into_metadata_Table.assert_not_called()
