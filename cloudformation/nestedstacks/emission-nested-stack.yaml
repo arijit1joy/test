@@ -66,6 +66,7 @@ Resources:
           edgeCommonAPIURL: !Ref EdgeCommonDBAPI
           tsb_url: !Ref TsbUrl
           secret_name: !Sub "cda-data-hub-TSBERSXApiKeySecret-${ApplicationEnvironmentTag}"
+          TimeFormat: '%Y-%m-%d %H:%M:%S'
       Handler: lambda_function.lambda_handler
       Role: !GetAtt EmissionDataProcessorLambdaRole.Arn
       Timeout: 300

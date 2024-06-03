@@ -59,7 +59,7 @@ def send_file_to_s3(body):
             LOGGER.info(f"Starting additional processing as this is Emission data")
             certificationFamily = get_certification_family(body["telematicsDeviceId"], body["componentSerialNumber"])
             body["certificationFamily"] = certificationFamily
-            insert_into_metadata_Table(body["telematicsDeviceId"], uuid, body["componentSerialNumber"], config_id, file_name, len(body))
+            insert_into_metadata_Table(body["telematicsDeviceId"], uuid, body["componentSerialNumber"], config_id, file_name, len(str(body)))
             send_to_s3_response = s3_client.put_object(Bucket=emission_bucket_name, Key=file_key, Body=json.dumps(body).encode(),
                                                        Metadata={'message_id': uuid})
         else:

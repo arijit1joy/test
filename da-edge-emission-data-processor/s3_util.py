@@ -14,8 +14,10 @@ def get_content(fileId):
         s3 = boto3.client('s3')
         # Read the CSV file from S3
         response = s3.get_object(Bucket=emission_bucket_name, Key=fileId)
+        LOGGER.info(f"s3 response: {response}")
         content = response['Body'].read().decode('utf-8')
+        uuid = response['Metadata']['message_id']
         LOGGER.info("file content retrieved from S3 bucket")
-        return content
+        return content, uuid
     except Exception as e:
         LOGGER.error(f"An error occurred while getting content from S3 bucket: {e}")
