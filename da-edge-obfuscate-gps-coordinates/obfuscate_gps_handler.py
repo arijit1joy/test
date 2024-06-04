@@ -10,8 +10,6 @@ from db_util import insert_into_metadata_Table
 
 LOGGER = util.get_logger(__name__)
 
-uuid = str(uuid4())
-
 def obfuscate_gps(body):
     if "samples" in body:
         for sample in body["samples"]:
@@ -57,6 +55,7 @@ def send_file_to_s3(body):
         # Depending on config_id insert to emission bucket else insert to j1939 bucket
         if config_id.startswith('SC9') or config_id.startswith('DC9') or config_id.startswith('DS9'):
             LOGGER.info(f"Starting additional processing as this is Emission data")
+            uuid = str(uuid4())
             certificationFamily = get_certification_family(body["telematicsDeviceId"], body["componentSerialNumber"])
             body["certificationFamily"] = certificationFamily
             insert_into_metadata_Table(body["telematicsDeviceId"], uuid, body["componentSerialNumber"], config_id, file_name, len(str(body)))
