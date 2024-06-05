@@ -46,7 +46,7 @@ def insert_into_metadata_Table(device_id, message_id, esn, config_id, file_name,
 
 
 def insert_to_metadata_table_query(device_id, message_id, esn, config_id, file_name, file_size):
-    time_default_format = time.localtime()
+    time_default_format = time.gmtime()
     current_date_time = time.strftime(time_format, time_default_format)
     da_edge_metadata = Table('da_edge_olympus.da_edge_metadata')
     query = Query.into(da_edge_metadata).columns(da_edge_metadata.device_id,
