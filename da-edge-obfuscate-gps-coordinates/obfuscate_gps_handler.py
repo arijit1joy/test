@@ -53,7 +53,7 @@ def send_file_to_s3(body):
         LOGGER.info(f"File Name: {file_name}, File Key:  {file_key}")
         LOGGER.info(f"config_id: {config_id}")
         # Depending on config_id insert to emission bucket else insert to j1939 bucket
-        if config_id.startswith('SC9') or config_id.startswith('DC9') or config_id.startswith('DS9'):
+        if config_id.startswith('SC9'):
             LOGGER.info(f"Starting additional processing as this is Emission data")
             uuid = str(uuid4())
             certificationFamily = get_certification_family(body["telematicsDeviceId"], body["componentSerialNumber"])
