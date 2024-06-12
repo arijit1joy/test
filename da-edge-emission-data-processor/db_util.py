@@ -136,8 +136,7 @@ def insert_into_audit_data_request_status_table(request_id, device_id, old_statu
         audit_dnr_table.request_id,
         audit_dnr_table.device_id,
         audit_dnr_table.old_status,
-        audit_dnr_table.new_status,
-        audit_dnr_table.status_from_oem
+        audit_dnr_table.new_status
     ).insert(request_id, device_id, old_status, new_status).get_sql(quote_char=None)
     logger.info(f"Insert audit_data_request_status Table Query: {query}")
     try:
