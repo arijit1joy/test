@@ -237,15 +237,16 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
             sqs_message = sqs_message.replace("FILE_RECEIVED", "FILE_SENT")
 
             # check whether pcc_claim_status is claimed or not
-            if pcc_claim_status and "claimed" == pcc_claim_status.lower():
-                service_engine_model = device_info[
-                    "service_engine_model"] if "service_engine_model" in device_info else None
-
-                pcc_poster.send_to_pcc(json_body, device_id, j1939_data_type, sqs_message_template,
-                                       service_engine_model)
-            else:
-                pt_poster.send_to_pt(PTJ1939PostURL, PTJ1939Header, json_body, sqs_message, j1939_data_type,
-                                     j1939_type.lower(), file_uuid, device_id, esn)
+            if pcc_claim_status:
+                LOGGER.info(f"Json_body pcc_claim_status value: {pcc_claim_status}")
+                if "claimed" == pcc_claim_status.lower() or "claimed@pcc2.0" == pcc_claim_status.lower():
+                    service_engine_model = device_info[
+                        "service_engine_model"] if "service_engine_model" in device_info else None
+                    pcc_poster.send_to_pcc(json_body, device_id, j1939_data_type, sqs_message_template,
+                                        service_engine_model,pcc_claim_status)
+                else:
+                    pt_poster.send_to_pt(PTJ1939PostURL, PTJ1939Header, json_body, sqs_message, j1939_data_type,
+                                        j1939_type.lower(), file_uuid, device_id, esn)
         else:
             error_message = f"The boxApplication value is not recorded in the EDGE DB for the device: {device_id}"
             LOGGER.error(error_message)

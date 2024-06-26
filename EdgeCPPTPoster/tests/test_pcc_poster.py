@@ -20,7 +20,11 @@ with  CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.en
     "Longitude": "-85.88672",
     "pcc_role_arn": "test",
     "j1939_stream_arn": "test",
-    "pcc_region": "us-east-1"
+    "pcc_region": "us-east-1",
+    "pcc2_role_arn": "test",
+    "pcc2_j1939_stream_arn": "test",
+    "pcc2_region": "us-east-1"
+
 
 }):
     cda_module_mock_context.mock_module("boto3")
@@ -120,7 +124,7 @@ class PCCPoster(unittest.TestCase):
     def test_send_to_pcc_given(self, mock_client, hb_params: MagicMock(), sqs_send_message: MagicMock):
         hb_params.return_value = self.hb_params
 
-        response = pcc_poster.send_to_pcc(self.json_body, "123456789", "J1939-HB", "None","null")
+        response = pcc_poster.send_to_pcc(self.json_body, "123456789", "J1939-HB", "None","null","claimed@pcc2.0")
         print(response)
         assert call().put_record(StreamARN='test', Data=json.dumps(self.json_body, indent=2).encode('utf-8'),
                                  PartitionKey='123456789-J1939-HB') in mock_client.mock_calls

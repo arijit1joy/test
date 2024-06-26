@@ -41,6 +41,10 @@ with  CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.en
     "pcc_role_arn": "arn",
     "j1939_stream_arn": "arn",
     "pcc_region": "us-east-1",
+    "pcc2_role_arn": "test",
+    "pcc2_j1939_stream_arn": "test",
+    "pcc2_region": "us-east-1"
+
 }):
     cda_module_mock_context.mock_module("boto3")
     cda_module_mock_context.mock_module("post")
