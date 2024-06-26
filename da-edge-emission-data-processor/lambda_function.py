@@ -31,7 +31,13 @@ def lambda_handler(event, context):
                 request_id, schedular_status = get_request_id_from_consumption_view('J1939_Emissions',
                                                                                     data_config_filename)
                 # Updating the scheduler table to data rx in progress
-                update_scheduler_table(request_id, content_json["telematicsDeviceId"], schedular_status)
+
+                if request_id:
+                    LOGGER.info(f"request ID found {request_id}")
+                    update_scheduler_table(request_id, content_json["telematicsDeviceId"], schedular_status)
+                else:
+                    LOGGER.info("Request ID not found or Request ID for this ESN/DeviceID is not in Config accepted or Data Rx in progress satus")
+
                 # Send to AAI Cloud
                 push_to_tsb(content_json)
                 # insert a row in metadata table to FILE_SENT
