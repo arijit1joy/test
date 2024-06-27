@@ -1,11 +1,11 @@
 import os
 
-import scheduler_query as scheduler
 from pypika import Query, Table, functions as fn
 
 import utility as util
 from utilities.redis_utility import get_set_redis_value
 from edge_db_lambda_client import EdgeDbLambdaClient
+import time
 
 LOGGER = util.get_logger(__name__)
 REDIS_EXPIRY = 5 * 24 * 60 * 60  # expire after 5 days
@@ -27,7 +27,7 @@ def _get_request_id_from_consumption_view_query(data_protocol, data_config_filen
         .where(scheduler.device_id == split_config_filename[1]) \
         .where(scheduler.engine_serial_number == split_config_filename[2]) \
         .where(fn.Substring(scheduler.config_spec_file_name, 1, 6) == split_config_filename[3]) \
-        .where(scheduler.status.isin(['Config Accepted', 'Data Rx In Progress']))
+        .where(scheduler.status.isin(['Config Accepted', 'Data Rx In Progress', 'Config Sent']))
     return query.get_sql(quote_char=None)
 
 
@@ -55,9 +55,21 @@ def get_request_id_from_consumption_view(data_protocol, data_config_filename):
     return None
 
 
+def get_update_scheduler_query(req_id, device_id):
+    time_format = '%Y-%m-%d %H:%M:%S'
+    time_default_format = time.localtime()
+    current_date_time = time.strftime(time_format, time_default_format)
+
+    scheduler = Table('da_edge_olympus.scheduler')
+    query = Query.update(scheduler).set(scheduler.status, 'Data Rx In Progress').set(scheduler.updated_date_time, current_date_time).where(scheduler.request_id == req_id
+                                                                                       ).where(scheduler.device_id == device_id
+                                                                                       ).where(scheduler.status.isin(['Config Accepted', 'Config Sent']))
+    return query.get_sql(quote_char=None)
+
+
 def update_scheduler_table(req_id, device_id):
     LOGGER.debug(f'updating scheduler table')
-    query = scheduler.get_update_scheduler_query(req_id, device_id)
+    query = get_update_scheduler_query(req_id, device_id)
 
     try:
         EDGE_DB_CLIENT.execute(query, method='WRITE')
