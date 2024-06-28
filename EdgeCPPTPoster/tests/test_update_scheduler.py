@@ -1,6 +1,7 @@
 import sys
 import unittest
 from unittest.mock import patch
+import time
 
 from tests.cda_module_mock_context import CDAModuleMockingContext
 
@@ -103,3 +104,19 @@ class TestUpdateScheduler(unittest.TestCase):
 
         with self.assertRaises(Exception):
             update_scheduler.update_scheduler_table("REQ1233", "102900000000003")
+
+    def test_get_update_scheduler_query_givenRequestIdAndDeviceIdThenReturnQuery(self):
+        time_format = '%Y-%m-%d %H:%M:%S'
+        time_default_format = time.localtime()
+        current_date_time = time.strftime(time_format, time_default_format)
+        response = update_scheduler.get_update_scheduler_query(
+            "REQ12345",
+            "357649070803120"
+        )
+
+        expected_response = "UPDATE da_edge_olympus.scheduler " + \
+                            "SET status='Data Rx In Progress',updated_date_time='"+current_date_time+"',updated_by='lambda' " + \
+                            "WHERE request_id='REQ12345' " + \
+                            "AND device_id='357649070803120' " + \
+                            "AND status IN ('Config Accepted','Config Sent')"
+        self.assertEqual(response, expected_response)
