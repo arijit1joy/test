@@ -11,6 +11,8 @@ LOGGER = util.get_logger(__name__)
 REDIS_EXPIRY = 5 * 24 * 60 * 60  # expire after 5 days
 DB_API_URL = os.environ["edgeCommonAPIURL"]
 EDGE_DB_CLIENT = EdgeDbLambdaClient()
+LAMBDA_FUNCTION_NAME = os.environ["AWS_LAMBDA_FUNCTION_NAME"]
+
 
 
 # noinspection PyTypeChecker
@@ -61,9 +63,10 @@ def get_update_scheduler_query(req_id, device_id):
     current_date_time = time.strftime(time_format, time_default_format)
 
     scheduler = Table('da_edge_olympus.scheduler')
-    query = Query.update(scheduler).set(scheduler.status, 'Data Rx In Progress').set(scheduler.updated_date_time, current_date_time).where(scheduler.request_id == req_id
+    query = (Query.update(scheduler).set(scheduler.status, 'Data Rx In Progress').set(scheduler.updated_date_time, current_date_time
+                                                                                      ).set(scheduler.updated_by, LAMBDA_FUNCTION_NAME).where(scheduler.request_id == req_id
                                                                                        ).where(scheduler.device_id == device_id
-                                                                                       ).where(scheduler.status.isin(['Config Accepted', 'Config Sent']))
+                                                                                       ).where(scheduler.status.isin(['Config Accepted', 'Config Sent'])))
     return query.get_sql(quote_char=None)
 
 
