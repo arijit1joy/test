@@ -73,9 +73,6 @@ Parameters:
   KinesisPythonLayer:
     Type: AWS::SSM::Parameter::Value<String>
     Default: layer-KinesisUtilityLayer
-  SchedulerQueriesPythonLayer:
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: layer-SchedulerQueriesLayer
   MskClusterSecret:
     Type: AWS::SSM::Parameter::Value<String>
     Default: cda-data-hub-msk-cluster-secret
@@ -1033,7 +1030,6 @@ Resources:
       Layers:
         - !Ref RequestsPythonLayer
         - !Ref PypikaPythonLayer
-        - !Ref SchedulerQueriesPythonLayer
       Code:
         S3Bucket: !Ref ArtifactsBucket
         S3Key: !Sub "${VersionId}/EdgeCPPTPoster.zip"
