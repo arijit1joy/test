@@ -49,7 +49,10 @@ def get_request_id_from_consumption_view(data_protocol, data_config_filename):
     try:
         response = api_request(edgeCommonAPIURL, "GET", query)
         logger.info(f" getting requestID - {response[0]['request_id']}")
-        return response[0]['request_id'], response[0]['status']
+        if response and response[0]:
+            return response[0]['request_id'], response[0]['status']
+        else:
+            return None
     except Exception as e:
         logger.info("Error in getting request ID")
         logger.info(str(e))
