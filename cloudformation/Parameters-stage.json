@@ -28,6 +28,8 @@
         "EDGERedisSecretName": "/da-EDGE-Olympus/elasticache/edge-rw",
         "PCCAccountId": "924917633645",
         "PCCRegion": "us-east-1",
+        "PCC2AccountId": "590183752454",
+        "PCC2Region": "us-east-1",
         "CosmosJ1939RuleArn": "arn:aws:iot:us-east-1:024114236237:rule/da_cosmos_J1939HBData_TopicRule_stage",
         "CosmosAccountID": "024114236237",
         "CdoEnvironmentTag": "stg"
