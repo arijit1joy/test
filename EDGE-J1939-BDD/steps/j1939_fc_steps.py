@@ -99,7 +99,7 @@ def assert_j1939_fc_stages_in_edge_db(context):
     time.sleep(60)
     da_edge_metadata = Table(context.edge_metadata_table)
     query = Query.from_(da_edge_metadata).select(da_edge_metadata.data_pipeline_stage).where(
-        da_edge_metadata.esn == context.esn).where(da_edge_metadata.data_protocol == "J1939_FC")  # noqa
+        da_edge_metadata.esn == context.esn).where(da_edge_metadata.device_id == context.esn).where(da_edge_metadata.data_protocol == "J1939_FC")  # noqa
     edge_db_payload = get_edge_db_payload('get', query)
     edge_db_response = rest_api.post(context.edge_common_db_url, edge_db_payload)
     received_stages = [stage["data_pipeline_stage"] for stage in edge_db_response["body"]]
