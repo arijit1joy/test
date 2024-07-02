@@ -54,11 +54,11 @@ def get_request_id_from_consumption_view(data_protocol, data_config_filename):
             return response[0]['request_id'], response[0]['status']
         else:
             logger.info("query response is blank")
-            return
+            return None, None
     except Exception as e:
         logger.info("Error in getting request ID")
         logger.info(str(e))
-        return
+        return None, None
 
 
 def _get_request_id_query(data_type, data_config_filename):
