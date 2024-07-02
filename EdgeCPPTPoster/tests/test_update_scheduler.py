@@ -105,7 +105,7 @@ class TestUpdateScheduler(unittest.TestCase):
         with self.assertRaises(Exception):
             update_scheduler.update_scheduler_table("REQ1233", "102900000000003")
 
-    def test_get_update_scheduler_query_givenRequestIdAndDeviceIdThenReturnQuery(self):
+    def test_get_update_scheduler_query_given_request_id_deviceid_then_return_query(self):
         time_format = '%Y-%m-%d %H:%M:%S'
         time_default_format = time.localtime()
         current_date_time = time.strftime(time_format, time_default_format)
