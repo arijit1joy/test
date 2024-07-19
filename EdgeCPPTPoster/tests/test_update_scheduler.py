@@ -40,7 +40,7 @@ class TestUpdateScheduler(unittest.TestCase):
             "AND da_edge_olympus.scheduler.device_id='357649070803120' " + \
             "AND da_edge_olympus.scheduler.engine_serial_number='64100016' " + \
             "AND SUBSTRING(da_edge_olympus.scheduler.config_spec_file_name,1,6)='SC5079' " + \
-            "AND da_edge_olympus.scheduler.status IN ('Config Accepted','Data Rx In Progress','Config Sent')"
+            "AND da_edge_olympus.scheduler.status IN ('Config Accepted','Data Rx In Progress','Config Sent','Config Association Failed','Config Rejected')"
         
         self.assertEqual(response, expected_response)
 
@@ -118,5 +118,5 @@ class TestUpdateScheduler(unittest.TestCase):
                             "SET status='Data Rx In Progress',updated_date_time='"+current_date_time+"',updated_by='lambda' " + \
                             "WHERE request_id='REQ12345' " + \
                             "AND device_id='357649070803120' " + \
-                            "AND status IN ('Config Accepted','Config Sent')"
+                            "AND status IN ('Config Accepted','Config Sent','Config Rejected','Config Association Failed')"
         self.assertEqual(response, expected_response)

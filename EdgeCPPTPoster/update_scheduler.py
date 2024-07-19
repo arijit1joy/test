@@ -29,7 +29,7 @@ def _get_request_id_from_consumption_view_query(data_protocol, data_config_filen
         .where(scheduler.device_id == split_config_filename[1]) \
         .where(scheduler.engine_serial_number == split_config_filename[2]) \
         .where(fn.Substring(scheduler.config_spec_file_name, 1, 6) == split_config_filename[3]) \
-        .where(scheduler.status.isin(['Config Accepted', 'Data Rx In Progress', 'Config Sent']))
+        .where(scheduler.status.isin(['Config Accepted', 'Data Rx In Progress', 'Config Sent', 'Config Association Failed', 'Config Rejected']))
     return query.get_sql(quote_char=None)
 
 
@@ -66,7 +66,7 @@ def get_update_scheduler_query(req_id, device_id):
     query = (Query.update(scheduler).set(scheduler.status, 'Data Rx In Progress').set(scheduler.updated_date_time, current_date_time
                                                                                       ).set(scheduler.updated_by, LAMBDA_FUNCTION_NAME).where(scheduler.request_id == req_id
                                                                                        ).where(scheduler.device_id == device_id
-                                                                                       ).where(scheduler.status.isin(['Config Accepted', 'Config Sent'])))
+                                                                                       ).where(scheduler.status.isin(['Config Accepted', 'Config Sent', 'Config Rejected', 'Config Association Failed'])))
     return query.get_sql(quote_char=None)
 
 
