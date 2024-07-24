@@ -1108,7 +1108,7 @@ Resources:
           pcc_region: !Ref PCCRegion
           KafkaApiVersionTuple: !Ref KafkaVersionTuple
           pcc2_role_arn: !Sub "arn:aws:iam::${PCC2AccountId}:role/KinesisPccJ1939Role"
-          pcc2_j1939_stream_arn: !Sub "arn:aws:kinesis:${PCC2Region}:${PCC2AccountId}:stream/psbu-poc-acumen-j1939-telemetry-inputstream"
+          pcc2_j1939_stream_arn: !Sub "arn:aws:kinesis:${PCC2Region}:${PCC2AccountId}:stream/Pcc2.0J1939Events-poc"
           pcc2_region: !Ref PCC2Region
 
       Handler: PosterLambda.lambda_handler
