@@ -295,8 +295,10 @@ class TestPosterLambda(unittest.TestCase):
         mock_data_quality.assert_called_with(s3_event_str)
         mock_s3_client.get_object.assert_called_with(Bucket=self.bucket_name, Key=self.file_key)
         mock_post.get_cspec_req_id.assert_called_with("SC8091")
-        mock_get_request_id.assert_called_with("J1939_HB", "EDGE_352953081637849_64200027_config-spec-name")
-        mock_update_scheduler.assert_called_with("request-id", "352953081637849")
+        device_info = {'device_owner': 'PSBU', 'pcc_claim_status': 'CLAIMED', 'cust_ref': 'cust-ref', 'equip_id': 'equip-id',
+                'vin': 'vin'}
+        mock_get_request_id.assert_called_with("J1939_HB", "EDGE_352953081637849_64200027_config-spec-name", device_info)
+        mock_update_scheduler.assert_called_with("request-id", "352953081637849", device_info)
 
         mock_sqs_send_message.assert_called()
         mock_pt_poster.send_to_pt.assert_not_called()

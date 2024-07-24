@@ -16,11 +16,18 @@ LAMBDA_FUNCTION_NAME = os.environ["AWS_LAMBDA_FUNCTION_NAME"]
 
 
 # noinspection PyTypeChecker
-def _get_request_id_from_consumption_view_query(data_protocol, data_config_filename):
+def _get_request_id_from_consumption_view_query(data_protocol, data_config_filename, device_info):
     data_requester_information = Table('da_edge_olympus.data_requester_information')
     scheduler = Table('da_edge_olympus.scheduler')
     split_config_filename = data_config_filename.split("_")
     data_type = data_protocol.split("_")[0] + "_CD_" + data_protocol.split("_")[1]
+    if device_info:
+        device_owner = device_info["device_owner"] if "device_owner" in device_info else None
+    # Define status arrays based on device_owner
+    if device_owner.lower() == 'ebu':
+        status_values = ['Config Accepted', 'Data Rx In Progress', 'Config Sent', 'Config Rejected', 'Config Association Failed']
+    else:
+        status_values = ['Config Accepted', 'Data Rx In Progress', 'Config Sent']
     query = Query.from_(data_requester_information) \
         .join(scheduler) \
         .on(data_requester_information.request_id == scheduler.request_id) \
@@ -29,12 +36,12 @@ def _get_request_id_from_consumption_view_query(data_protocol, data_config_filen
         .where(scheduler.device_id == split_config_filename[1]) \
         .where(scheduler.engine_serial_number == split_config_filename[2]) \
         .where(fn.Substring(scheduler.config_spec_file_name, 1, 6) == split_config_filename[3]) \
-        .where(scheduler.status.isin(['Config Accepted', 'Data Rx In Progress', 'Config Sent', 'Config Association Failed', 'Config Rejected']))
+        .where(scheduler.status.isin(status_values))
     return query.get_sql(quote_char=None)
 
 
-def get_request_id_from_consumption_view(data_protocol, data_config_filename):
-    query = _get_request_id_from_consumption_view_query(data_protocol, data_config_filename)
+def get_request_id_from_consumption_view(data_protocol, data_config_filename, device_info):
+    query = _get_request_id_from_consumption_view_query(data_protocol, data_config_filename, device_info)
 
     redis_key = "req_id@@" + data_protocol.lower() + "@@" + data_config_filename.lower()
     LOGGER.debug(f"Redis Key for request_id and consumption_view: '{redis_key}'")
@@ -57,22 +64,29 @@ def get_request_id_from_consumption_view(data_protocol, data_config_filename):
     return None
 
 
-def get_update_scheduler_query(req_id, device_id):
+def get_update_scheduler_query(req_id, device_id, device_info):
     time_format = '%Y-%m-%d %H:%M:%S'
     time_default_format = time.localtime()
     current_date_time = time.strftime(time_format, time_default_format)
+    if device_info:
+        device_owner = device_info["device_owner"] if "device_owner" in device_info else None
+    # Define status arrays based on device_owner
+    if device_owner.lower() == 'ebu':
+        status_values = ['Config Accepted', 'Config Sent', 'Config Rejected', 'Config Association Failed']
+    else:
+        status_values = ['Config Accepted', 'Config Sent']
 
     scheduler = Table('da_edge_olympus.scheduler')
     query = (Query.update(scheduler).set(scheduler.status, 'Data Rx In Progress').set(scheduler.updated_date_time, current_date_time
                                                                                       ).set(scheduler.updated_by, LAMBDA_FUNCTION_NAME).where(scheduler.request_id == req_id
                                                                                        ).where(scheduler.device_id == device_id
-                                                                                       ).where(scheduler.status.isin(['Config Accepted', 'Config Sent', 'Config Rejected', 'Config Association Failed'])))
+                                                                                       ).where(scheduler.status.isin(status_values)))
     return query.get_sql(quote_char=None)
 
 
-def update_scheduler_table(req_id, device_id):
+def update_scheduler_table(req_id, device_id, device_info):
     LOGGER.debug(f'updating scheduler table')
-    query = get_update_scheduler_query(req_id, device_id)
+    query = get_update_scheduler_query(req_id, device_id, device_info)
 
     try:
         EDGE_DB_CLIENT.execute(query, method='WRITE')

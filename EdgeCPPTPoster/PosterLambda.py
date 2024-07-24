@@ -131,6 +131,7 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
 
     device_id = json_body["telematicsDeviceId"] if "telematicsDeviceId" in json_body else None
     esn = json_body['componentSerialNumber'] if 'componentSerialNumber' in json_body else None
+    device_info = get_device_info(device_id)  # type: dict
     # Please note that the order is expected to be <Make>*<Model>***<ESN>**** for Improper PSBU ESN
     if esn and "*" in esn:
         esn = [esn_component for esn_component in esn.split("*") if esn_component][-1]
@@ -146,13 +147,13 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
         j1939_data_type = 'J1939_HB'
         config_spec_name, req_id = post.get_cspec_req_id(json_body['dataSamplingConfigId'])
         data_config_filename = '_'.join(['EDGE', device_id, esn, config_spec_name])
-        request_id = get_request_id_from_consumption_view('J1939_HB', data_config_filename)
+        request_id = get_request_id_from_consumption_view('J1939_HB', data_config_filename, device_info)
         config_spec_and_req_id = str(config_spec_name) + "," + str(request_id)
         file_uuid = hb_uuid
 
         # Updating scheduler lambda based on the request_id
         if request_id:
-            update_scheduler_table(request_id, device_id)
+            update_scheduler_table(request_id, device_id, device_info)
     else:
         raise RuntimeError(f"Invalid 'j1939type': '{j1939_type}' received! "
                            "The 'j1939type' S3 object metadata for FC files should be 'FC'!")
@@ -173,8 +174,6 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
         # fielsent and fildatetime
         LOGGER.debug(f"Sending Metadata message for HB with: {file_received_sqs_message}")
         sqs_send_message(os.environ["metaWriteQueueUrl"], file_received_sqs_message, edgeCommonAPIURL)
-
-    device_info = get_device_info(device_id)  # type: dict
 
     if device_info:
         device_owner = device_info["device_owner"] if "device_owner" in device_info else None

@@ -29,7 +29,7 @@ class TestUpdateScheduler(unittest.TestCase):
         """
         response = update_scheduler._get_request_id_from_consumption_view_query(
             "J1939_HB",
-            "EDGE_357649070803120_64100016_SC5079"
+            "EDGE_357649070803120_64100016_SC5079", {'device_owner': 'PSBU', 'pcc_claim_status': 'CLAIMED', 'cust_ref': 'cust-ref', 'equip_id': 'equip-id', 'vin': 'vin'}
         )
 
         expected_response = "SELECT da_edge_olympus.scheduler.request_id " + \
@@ -40,8 +40,29 @@ class TestUpdateScheduler(unittest.TestCase):
             "AND da_edge_olympus.scheduler.device_id='357649070803120' " + \
             "AND da_edge_olympus.scheduler.engine_serial_number='64100016' " + \
             "AND SUBSTRING(da_edge_olympus.scheduler.config_spec_file_name,1,6)='SC5079' " + \
-            "AND da_edge_olympus.scheduler.status IN ('Config Accepted','Data Rx In Progress','Config Sent','Config Association Failed','Config Rejected')"
+            "AND da_edge_olympus.scheduler.status IN ('Config Accepted','Data Rx In Progress','Config Sent')"
         
+        self.assertEqual(response, expected_response)
+
+    def test_get_request_id_from_consumption_view_query_successful_ebu(self):
+        """
+        Test for _get_request_id_from_consumption_view_query() running successfully.
+        """
+        response = update_scheduler._get_request_id_from_consumption_view_query(
+            "J1939_HB",
+            "EDGE_357649070803120_64100016_SC5079", {'device_owner': 'EBU', 'pcc_claim_status': 'CLAIMED', 'cust_ref': 'cust-ref', 'equip_id': 'equip-id', 'vin': 'vin'}
+        )
+
+        expected_response = "SELECT da_edge_olympus.scheduler.request_id " + \
+                            "FROM da_edge_olympus.data_requester_information " + \
+                            "JOIN da_edge_olympus.scheduler " + \
+                            "ON da_edge_olympus.data_requester_information.request_id=da_edge_olympus.scheduler.request_id " + \
+                            "WHERE da_edge_olympus.data_requester_information.data_type='J1939_CD_HB' " + \
+                            "AND da_edge_olympus.scheduler.device_id='357649070803120' " + \
+                            "AND da_edge_olympus.scheduler.engine_serial_number='64100016' " + \
+                            "AND SUBSTRING(da_edge_olympus.scheduler.config_spec_file_name,1,6)='SC5079' " + \
+                            "AND da_edge_olympus.scheduler.status IN ('Config Accepted','Data Rx In Progress','Config Sent','Config Rejected','Config Association Failed')"
+
         self.assertEqual(response, expected_response)
 
 
@@ -53,10 +74,12 @@ class TestUpdateScheduler(unittest.TestCase):
         """
         mock_query_fn.return_value = "query"
         mock_get_set_redis_value.return_value = [{"request_id": "req-id"}]
+        device_info = {'device_owner': 'PSBU', 'pcc_claim_status': 'CLAIMED', 'cust_ref': 'cust-ref', 'equip_id': 'equip-id',
+                       'vin': 'vin'}
 
         response = update_scheduler.get_request_id_from_consumption_view(
             "J1939_HB",
-            "EDGE_357649070803120_64100016_SC5079"
+            "EDGE_357649070803120_64100016_SC5079", device_info
         )
 
         mock_get_set_redis_value.assert_called_with(
@@ -89,7 +112,7 @@ class TestUpdateScheduler(unittest.TestCase):
         """
         mock_scheduler.return_value = "query"
 
-        update_scheduler.update_scheduler_table("REQ1233", "102900000000003")
+        update_scheduler.update_scheduler_table("REQ1233", "102900000000003", {'device_owner': 'PSBU', 'pcc_claim_status': 'CLAIMED', 'cust_ref': 'cust-ref', 'equip_id': 'equip-id', 'vin': 'vin'})
 
         mock_db_client.execute.assert_called_with("query", method="WRITE")
 
@@ -111,7 +134,26 @@ class TestUpdateScheduler(unittest.TestCase):
         current_date_time = time.strftime(time_format, time_default_format)
         response = update_scheduler.get_update_scheduler_query(
             "REQ12345",
-            "357649070803120"
+            "357649070803120",
+            {'device_owner': 'PSBU', 'pcc_claim_status': 'CLAIMED', 'cust_ref': 'cust-ref', 'equip_id': 'equip-id', 'vin': 'vin'}
+        )
+
+        expected_response = "UPDATE da_edge_olympus.scheduler " + \
+                            "SET status='Data Rx In Progress',updated_date_time='"+current_date_time+"',updated_by='lambda' " + \
+                            "WHERE request_id='REQ12345' " + \
+                            "AND device_id='357649070803120' " + \
+                            "AND status IN ('Config Accepted','Config Sent')"
+        self.assertEqual(response, expected_response)
+
+
+    def test_get_update_scheduler_query_given_request_id_deviceid_ebu_device_owner_then_return_query(self):
+        time_format = '%Y-%m-%d %H:%M:%S'
+        time_default_format = time.localtime()
+        current_date_time = time.strftime(time_format, time_default_format)
+        response = update_scheduler.get_update_scheduler_query(
+            "REQ12345",
+            "357649070803120",
+            {'device_owner': 'EBU', 'pcc_claim_status': 'CLAIMED', 'cust_ref': 'cust-ref', 'equip_id': 'equip-id', 'vin': 'vin'}
         )
 
         expected_response = "UPDATE da_edge_olympus.scheduler " + \
