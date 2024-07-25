@@ -66,6 +66,28 @@ class TestUpdateScheduler(unittest.TestCase):
         self.assertEqual(response, expected_response)
 
 
+    def test_get_request_id_from_consumption_view_query_successful_device_owner_none(self):
+        """
+        Test for _get_request_id_from_consumption_view_query() running successfully.
+        """
+        response = update_scheduler._get_request_id_from_consumption_view_query(
+            "J1939_HB",
+            "EDGE_357649070803120_64100016_SC5079", {'device_owner': 'None', 'pcc_claim_status': 'CLAIMED', 'cust_ref': 'cust-ref', 'equip_id': 'equip-id', 'vin': 'vin'}
+        )
+
+        expected_response = "SELECT da_edge_olympus.scheduler.request_id " + \
+                            "FROM da_edge_olympus.data_requester_information " + \
+                            "JOIN da_edge_olympus.scheduler " + \
+                            "ON da_edge_olympus.data_requester_information.request_id=da_edge_olympus.scheduler.request_id " + \
+                            "WHERE da_edge_olympus.data_requester_information.data_type='J1939_CD_HB' " + \
+                            "AND da_edge_olympus.scheduler.device_id='357649070803120' " + \
+                            "AND da_edge_olympus.scheduler.engine_serial_number='64100016' " + \
+                            "AND SUBSTRING(da_edge_olympus.scheduler.config_spec_file_name,1,6)='SC5079' " + \
+                            "AND da_edge_olympus.scheduler.status IN ('Config Accepted','Data Rx In Progress','Config Sent')"
+
+        self.assertEqual(response, expected_response)
+
+
     @patch("update_scheduler._get_request_id_from_consumption_view_query")
     @patch("update_scheduler.get_set_redis_value")
     def test_get_request_id_from_consumption_view_successful(self, mock_get_set_redis_value, mock_query_fn):
