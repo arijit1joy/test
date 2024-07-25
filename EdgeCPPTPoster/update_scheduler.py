@@ -21,10 +21,12 @@ def _get_request_id_from_consumption_view_query(data_protocol, data_config_filen
     scheduler = Table('da_edge_olympus.scheduler')
     split_config_filename = data_config_filename.split("_")
     data_type = data_protocol.split("_")[0] + "_CD_" + data_protocol.split("_")[1]
+
+    device_owner = None
     if device_info:
         device_owner = device_info["device_owner"] if "device_owner" in device_info else None
     # Define status arrays based on device_owner
-    if device_owner.lower() == 'ebu':
+    if device_owner and device_owner.lower() == 'ebu':
         status_values = ['Config Accepted', 'Data Rx In Progress', 'Config Sent', 'Config Rejected', 'Config Association Failed']
     else:
         status_values = ['Config Accepted', 'Data Rx In Progress', 'Config Sent']
@@ -68,10 +70,12 @@ def get_update_scheduler_query(req_id, device_id, device_info):
     time_format = '%Y-%m-%d %H:%M:%S'
     time_default_format = time.localtime()
     current_date_time = time.strftime(time_format, time_default_format)
+    device_owner = None
+
     if device_info:
         device_owner = device_info["device_owner"] if "device_owner" in device_info else None
     # Define status arrays based on device_owner
-    if device_owner.lower() == 'ebu':
+    if device_owner and device_owner.lower() == 'ebu':
         status_values = ['Config Accepted', 'Config Sent', 'Config Rejected', 'Config Association Failed']
     else:
         status_values = ['Config Accepted', 'Config Sent']

@@ -162,3 +162,21 @@ class TestUpdateScheduler(unittest.TestCase):
                             "AND device_id='357649070803120' " + \
                             "AND status IN ('Config Accepted','Config Sent','Config Rejected','Config Association Failed')"
         self.assertEqual(response, expected_response)
+
+
+    def test_get_update_scheduler_query_given_request_id_deviceid_null_device_owner_then_return_query(self):
+        time_format = '%Y-%m-%d %H:%M:%S'
+        time_default_format = time.localtime()
+        current_date_time = time.strftime(time_format, time_default_format)
+        response = update_scheduler.get_update_scheduler_query(
+            "REQ12345",
+            "357649070803120",
+            {'device_owner': None, 'pcc_claim_status': 'CLAIMED', 'cust_ref': 'cust-ref', 'equip_id': 'equip-id', 'vin': 'vin'}
+        )
+
+        expected_response = "UPDATE da_edge_olympus.scheduler " + \
+                            "SET status='Data Rx In Progress',updated_date_time='"+current_date_time+"',updated_by='lambda' " + \
+                            "WHERE request_id='REQ12345' " + \
+                            "AND device_id='357649070803120' " + \
+                            "AND status IN ('Config Accepted','Config Sent')"
+        self.assertEqual(response, expected_response)
