@@ -29,7 +29,7 @@ def valid_ebu_hb_message(context):
 @exception_handler
 @given(u'A valid EBU HB message in JSON format containing a device ID that does not exist in the EDGE ecosystem')
 def valid_ebu_hb_message_with_not_exist_device(context):
-    context.j1939_hb_stages = []
+    context.j1939_hb_stages = ["FILE_RECEIVED"]
     context.download_converted_file_name = \
         "data/j1939_hb/download/received_j1939_hb_ebu_converted_file_device_does_not_exist.json"
     context.compare_converted_file_name = \
