@@ -11,11 +11,16 @@ env:
     ARTIFACTORY_API_KEY: /OPS/COMMON/INFRA/JFROG/ARTIFACTORY:ARTIFACTORY_TOKEN
     ARTIFACTORY_USER: /OPS/COMMON/INFRA/JFROG/ARTIFACTORY:ARTIFACTORY_USER
     ARTIFACTORY_URL: /OPS/COMMON/INFRA/JFROG/ARTIFACTORY:ARTIFACTORY_URL
-
+    user_email: /da-ops-utils/ops-jira-user:jira_user
+    auth_token: /da-ops-utils/ops-jira-user:jira_access_token
+    url: /da-ops-utils/ops-jira-user:jira_url
 phases: 
  
   install:  
     commands:
+    - aws s3 cp s3://jira-fix-version-check/fix-version-check.sh .
+    - chmod 755 fix-version-check.sh
+    - ./fix-version-check.sh ${CODEBUILD_INITIATOR#codepipeline/} $CODEBUILD_RESOLVED_SOURCE_VERSION $url $user_email $auth_token $CODEBUILD_SRC_DIR
     - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
     - wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add -
     - apt-get -qq update
