@@ -39,7 +39,6 @@ def set_parameters():
 params = set_parameters()
 name = params['Names']
 
-edgeCommonAPIURL = os.environ['edgeCommonAPIURL']
 cd_url = os.getenv('cd_url')
 converted_equip_params_var = os.getenv('converted_equip_params')
 converted_device_params_var = os.getenv('converted_device_params')
@@ -421,7 +420,7 @@ def retrieve_and_process_file(uploaded_file_object, api_url):
     sqs_message = uuid + "," + str(device_id) + "," + str(file_name) + "," + str(file_size) + "," + str(
         file_date_time) + "," + str(data_protocol) + "," + 'FILE_SENT' + "," + str(esn) + "," + str(
         config_spec_name) + "," + str(request_id) + "," + str(consumption_per_request) + "," + " " + "," + " "
-    sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message, edgeCommonAPIURL)
+    sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message)
     samples = j1939_file["samples"] if "samples" in j1939_file else None
     metadata = get_metadata_info(j1939_file)
     _handle_metadata(metadata, samples, fc_or_hb, device_id, data_protocol, uploaded_file_object, j1939_file, tsp_name)
@@ -506,7 +505,7 @@ def store_health_parameters_into_redshift(converted_device_params, time_stamp, j
         return write_health_parameter_to_database_v2(message_id, cpu_temperature, pmic_temperature, latitude, longitude,
                                                   altitude, pdop, satellites_used, lte_rssi, lte_rscp, lte_rsrq,
                                                   lte_rsrp, cpu_usage_level, ram_usage_level, snr_per_satellite,
-                                                  new_timestamp, device_id, esn, os.environ["edgeCommonAPIURL"])
+                                                  new_timestamp, device_id, esn)
     else:
         LOGGER.info(f"There is no Converted Device Parameter")
 

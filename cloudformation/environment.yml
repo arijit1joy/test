@@ -580,7 +580,6 @@ Resources:
           LoggingLevel: "debug"
           fmi_indicator: FMI
           spn_parameter_json_object_key: edge_spn_parameter_name.json
-          edgeCommonAPIURL: !Ref EdgeCommonDBAPI
           device_health_delivery_stream: !Ref DeviceHealthDeliveryStream
           notification_version: 2.5.2
           APPLICATION_ENVIRONMENT: !Ref ApplicationEnvironmentTag
