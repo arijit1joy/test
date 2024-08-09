@@ -1,6 +1,6 @@
-Product=CDA
-Year=2022
-Quarter=Q2
-Major=3
+Product=Momentum
+Year=2024
+Quarter=Q3
+Major=1
 Minor=0
 Fixed=0
