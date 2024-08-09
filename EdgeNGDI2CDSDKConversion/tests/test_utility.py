@@ -6,7 +6,8 @@ from tests.cda_module_mock_context import CDAModuleMockingContext
 from unittest.mock import ANY, patch
 
 with CDAModuleMockingContext(sys) as cda_module_mock_context:
-    cda_module_mock_context.mock_module("edge_core_layer.edge_logger")
+    cda_module_mock_context.mock_module("edge_sqs_utility_layer.edge_logger")
+    cda_module_mock_context.mock_module("edge_sqs_utility_layer.sqs_utility")
 
     import utility
 
