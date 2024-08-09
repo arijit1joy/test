@@ -87,9 +87,11 @@ phases:
               echo "Processing - $mydir"; 
               echo "Current dir - $(pwd)"; 
               if [ -f requirements.txt ]; then
+                sed -i -e "s|da-dse-pypi-release-local|da-dse-pypi-release-dev-local|g" requirements.txt ;
                 python -m venv "${mydir}-venv";
                 . ${mydir}-venv/bin/activate ;
                 if [ -f dependencies.txt ]; then
+                  sed -i -e "s|da-dse-pypi-release-local|da-dse-pypi-release-dev-local|g" dependencies.txt ;
                   pip install -q -r dependencies.txt -t ./lib ;
                 fi;
                 pipInstallCheckExitCode=$(echo $?);
@@ -163,7 +165,13 @@ phases:
         --kms-key-id ${KMS_KEY_ProdRegion}
         --output-template-file transformed-template-us-east-2.yml
   post_build: 
-    commands: 
+    commands:
+      - if [ $CODEBUILD_BUILD_SUCCEEDING -eq 0 ]; then
+          echo "\n#===================================================================#\n";
+          echo "[ERROR] ---> Build failed, aborting post_build stage";
+          echo "\n#===================================================================#\n";
+          exit 1;
+        fi; 
       - echo Build completed on `date` 
       - if [ $num_repos -ne 0 ]; then
           echo -e "\n#===================================================================#";

@@ -86,19 +86,25 @@ phases:
               echo "Current dir - $(pwd)";
               echo "\n#--------------------------------------------------------------------------------#\n";
               if [ -f requirements.txt ]; then
+                sed -i -e "s|da-dse-pypi-release-local|da-dse-pypi-release-dev-local|g" requirements.txt ;
+                python -m venv "${mydir}-venv";
+                . ${mydir}-venv/bin/activate ;
                 if [ -f dependencies.txt ]; then
+                  sed -i -e "s|da-dse-pypi-release-local|da-dse-pypi-release-dev-local|g" dependencies.txt ;
                   pip install -q -r dependencies.txt -t ./lib ;
                   pipInstallCheckExitCode=$(echo $?);
                   if [ $pipInstallCheckExitCode -ne 0 ]; then
                     echo "\n#===================================================================#\n";
                     echo "[ERROR] ---> pip install of dependencies failed for the project '$mydir'. Exit code => '$pipInstallCheckExitCode'! Aborting Build!";
                     echo "\n#===================================================================#\n";
+                    deactivate;
                     exit 1;
                   fi;
                 fi;
                 zip -q -r "$mydir.zip" .;
                 coverage run -m unittest discover -s tests;
                 testCaseExecutionExitCode=$?;
+                deactivate;
                 if [ $testCaseExecutionExitCode -ne 0 ]; then
                   echo "\n#===================================================================#\n";
                   echo "[ERROR] ---> Some of the TDD/Code Coverage test cases failed for the project '$mydir'. Exit code => '$testCaseExecutionExitCode'! Aborting Build!";
@@ -164,6 +170,12 @@ phases:
         --output-template-file transformed-template-us-east-2.yml
   post_build: 
     commands: 
+      - if [ $CODEBUILD_BUILD_SUCCEEDING -eq 0 ]; then
+          echo "\n#===================================================================#\n";
+          echo "[ERROR] ---> Build failed, aborting post_build stage";
+          echo "\n#===================================================================#\n";
+          exit 1;
+        fi;
       - echo Build completed on `date`
       - if [ $num_repos -ne 0 ]; then
           echo -e "\n#===================================================================#";
