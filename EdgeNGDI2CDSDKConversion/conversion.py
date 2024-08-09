@@ -7,37 +7,26 @@ import traceback
 from multiprocessing import Process
 sys.path.insert(1, './lib')
 
-import boto3
-import requests
-from lambda_cache import ssm
-from edge_db_utility_layer.metadata_utility import write_health_parameter_to_database_v2
-from edge_db_utility_layer.obfuscate_gps_utility import handle_gps_coordinates
-from edge_sqs_utility_layer.sqs_utility import sqs_send_message
-from aws_utils import spn_file_json
+try:
+    import boto3
+    import requests
+    from utility import write_to_audit_table, get_logger
+    from edge_db_utility_layer.metadata_utility import write_health_parameter_to_database_v2
+    from edge_db_utility_layer.obfuscate_gps_utility import handle_gps_coordinates
+    from edge_sqs_utility_layer.sqs_utility import sqs_send_message
+    from aws_utils import spn_file_json
 
-import utility as util
-from cd_sdk_conversion.cd_sdk import map_ngdi_sample_to_cd_payload
-from cd_sdk_conversion.cd_snapshot_sdk import get_snapshot_data
+    from cd_sdk_conversion.cd_sdk import map_ngdi_sample_to_cd_payload
+    from cd_sdk_conversion.cd_snapshot_sdk import get_snapshot_data
 
-from commonlib_jfrog_artifacts import auth_utility
-import audit_utility as audit_utility
+    from commonlib_jfrog_artifacts import auth_utility
+    import audit_utility as audit_utility
+except Exception as e:
+    traceback.print_exc()
+    raise e
 
 LOGGER = util.get_logger(__name__)
 
-'''Getting the Values from SSM Parameter Store
-'''
-
-
-def set_parameters():
-    ssm_params = {
-        "Names": ["EDGECommonAPI"],
-        "WithDecryption": False
-    }
-    return ssm_params
-
-
-params = set_parameters()
-name = params['Names']
 
 cd_url = os.getenv('cd_url')
 converted_equip_params_var = os.getenv('converted_equip_params')
@@ -379,7 +368,7 @@ def _handle_metadata(metadata, samples, fc_or_hb, device_id, data_protocol, uplo
                             meta_data=j1939_file, device_id=device_id)
 
 
-def retrieve_and_process_file(uploaded_file_object, api_url):
+def retrieve_and_process_file(uploaded_file_object):
     bucket = uploaded_file_object["source_bucket_name"]
     key = uploaded_file_object["file_key"]
     file_size = uploaded_file_object["file_size"]
@@ -426,16 +415,7 @@ def retrieve_and_process_file(uploaded_file_object, api_url):
     _handle_metadata(metadata, samples, fc_or_hb, device_id, data_protocol, uploaded_file_object, j1939_file, tsp_name)
 
 
-@ssm.cache(parameter=name, entry_name='parameters')  # noqa-cache accepts list as a parameter but expects a str
 def lambda_handler(event, context):
-    try:
-        vals = getattr(context, 'parameters')
-        api_url = vals[params['Names'][0]]
-    except AttributeError as ae:
-        LOGGER.error(f"Error, could not find ssm in the cache\n Proceeding as usual: {ae}")
-        ssm_uncached = boto3.client('ssm')
-        response = ssm_uncached.get_parameters(Names=name, WithDecryption=False)
-        api_url = response['Parameters'][0]['Value']
     records = event.get("Records", [])
     processes = []
     LOGGER.debug(f"Received SQS Records: {records}.")
@@ -452,7 +432,7 @@ def lambda_handler(event, context):
         LOGGER.info(f"Uploaded File Object: {uploaded_file_object}.")
 
         # Retrieve the uploaded file from the s3 bucket and process the uploaded file
-        process = Process(target=retrieve_and_process_file, args=(uploaded_file_object, api_url,))
+        process = Process(target=retrieve_and_process_file, args=(uploaded_file_object,))
 
         # Make a list of all process to wait and terminate at the end
         processes.append(process)

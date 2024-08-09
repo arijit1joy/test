@@ -2,7 +2,7 @@
 # pypika
 # commonlib_jfrog_artifacts
 authtoken_jfrog_artifacts==1.57.1
-edge_core_layer==1.5.0
+# edge_core_layer==1.5.0
 edge_db_utility_layer==1.56.1
 edge_sqs_utility_layer==1.56.1
 edge_db_lambda_client==0.3.0

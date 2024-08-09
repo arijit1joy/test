@@ -33,6 +33,7 @@ with CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.env
     cda_module_mock_context.mock_module('edge_db_utility_layer.obfuscate_gps_utility')
     cda_module_mock_context.mock_module('aws_utils')
     cda_module_mock_context.mock_module("boto3")
+    cda_module_mock_context.mock_module("requests")
     cda_module_mock_context.mock_module('cd_sdk_conversion.cd_sdk')
     cda_module_mock_context.mock_module('edge_db_utility_layer.metadata_utility')
 
@@ -74,7 +75,7 @@ class TestConversion(unittest.TestCase):
                      }
         s3_client.get_object.return_value = s3_object
         json.loads.return_value = body
-        conversion.retrieve_and_process_file(uploaded_file_object, "")
+        conversion.retrieve_and_process_file(uploaded_file_object)
 
     @patch("conversion.s3_client")
     @patch("conversion.json")
@@ -112,7 +113,7 @@ class TestConversion(unittest.TestCase):
         json.loads.return_value = body
         conversion.get_metadata_info.return_value = None
 
-        conversion.retrieve_and_process_file(uploaded_file_object, "")
+        conversion.retrieve_and_process_file(uploaded_file_object)
 
     @patch("cd_sdk_conversion.cd_sdk.map_ngdi_sample_to_cd_payload")
     @patch("conversion.json")
@@ -196,7 +197,7 @@ class TestConversion(unittest.TestCase):
                      }
         s3_client.get_object.return_value = s3_object
         json.loads.return_value = body
-        conversion.retrieve_and_process_file(uploaded_file_object, "")
+        conversion.retrieve_and_process_file(uploaded_file_object)
 
     @patch.dict('os.environ', {'metaWriteQueueUrl': 'metaWriteQueueUrl', 'AuditTrailQueueUrl': 'AuditTrailQueueUrl',
                                'QueueUrl': 'QueueUrl'})
@@ -233,7 +234,7 @@ class TestConversion(unittest.TestCase):
                      }
         mock_s3_client.return_value = s3_object
         json.return_value = body
-        conversion.retrieve_and_process_file(uploaded_file_object, "")
+        conversion.retrieve_and_process_file(uploaded_file_object)
         mock_handle_hb.assert_not_called()
 
     @patch.dict('os.environ', {'metaWriteQueueUrl': 'metaWriteQueueUrl', 'AuditTrailQueueUrl': 'AuditTrailQueueUrl',
@@ -271,7 +272,7 @@ class TestConversion(unittest.TestCase):
                      }
         mock_s3_client.return_value = s3_object
         json.return_value = body
-        conversion.retrieve_and_process_file(uploaded_file_object, "")
+        conversion.retrieve_and_process_file(uploaded_file_object)
         mock_handle_hb.assert_called_once()
 
     @patch.dict("os.environ", {"QueueUrl": "url"})
