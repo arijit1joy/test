@@ -6,7 +6,10 @@ import unittest
 from tests.cda_module_mock_context import CDAModuleMockingContext
 from unittest.mock import patch
 
-with CDAModuleMockingContext(sys) as cda_module_mock_context:
+with CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict(
+        "os.environ",
+        {"AWS_DEFAULT_REGION": "region"}
+    ):
     cda_module_mock_context.mock_module("edge_core_layer.edge_logger")
 
     import audit_utility

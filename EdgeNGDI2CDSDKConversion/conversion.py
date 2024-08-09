@@ -25,7 +25,7 @@ except Exception as e:
     traceback.print_exc()
     raise e
 
-LOGGER = util.get_logger(__name__)
+LOGGER = get_logger(__name__)
 
 
 cd_url = os.getenv('cd_url')
@@ -501,8 +501,8 @@ def process_audit_error(error_message, module_name=None, data_protocol=None, met
         audit_utility.ERROR_PARAMS["device_owner"] = cust_ref.lower()
         audit_utility.write_to_audit_table('400', error_message)
     elif module_name in ["J1939_HB", "J1939_FC"]:
-        util.write_to_audit_table(module_name, error_message, meta_data[
+        write_to_audit_table(module_name, error_message, meta_data[
             "telematicsDeviceId"] if meta_data and "telematicsDeviceId" in meta_data else None)
     else:
-        util.write_to_audit_table(data_protocol, error_message, device_id)
+        write_to_audit_table(data_protocol, error_message, device_id)
     # ITTFCD87 ends

@@ -958,8 +958,8 @@ class TestConversion(unittest.TestCase):
         )
 
     @patch("conversion.audit_utility.write_to_audit_table")
-    @patch("conversion.util")
-    def test_process_audit_error_successful(self, mock_util, mock_write_fn):
+    @patch("conversion.write_to_audit_table")
+    def test_process_audit_error_successful(self, mock_write_to_audit_table, mock_write_fn):
         """
         Test for process_audit_error() running successfully.
         """
@@ -974,11 +974,11 @@ class TestConversion(unittest.TestCase):
         )
 
         mock_write_fn.assert_called_with("400", ANY)
-        mock_util.write_to_audit_table.assert_not_called()
+        mock_write_to_audit_table.assert_not_called()
 
     @patch("conversion.audit_utility.write_to_audit_table")
-    @patch("conversion.util")
-    def test_process_audit_error_on_error(self, mock_util, mock_write_fn):
+    @patch("conversion.write_to_audit_table")
+    def test_process_audit_error_on_error(self, mock_write_to_audit_table, mock_write_fn):
         """
         Test for process_audit_error() when it throws an error.
         """
@@ -990,5 +990,5 @@ class TestConversion(unittest.TestCase):
             device_id="device-id"
         )
 
-        mock_util.write_to_audit_table.assert_called()
+        mock_write_to_audit_table.assert_called()
         mock_write_fn.assert_not_called()
