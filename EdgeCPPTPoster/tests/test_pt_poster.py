@@ -21,6 +21,7 @@ with  CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.en
 }):
     cda_module_mock_context.mock_module("boto3")
     cda_module_mock_context.mock_module("post")
+    cda_module_mock_context.mock_module("requests")
     cda_module_mock_context.mock_module("utility")
     cda_module_mock_context.mock_module("update_scheduler")
     cda_module_mock_context.mock_module("edge_sqs_utility_layer.sqs_utility")
