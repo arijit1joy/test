@@ -2,4 +2,8 @@
 redis-py-cluster
 edge_db_utility_layer==1.56.1
 edge_sqs_utility_layer==1.56.1
+#
+# edge_sqs_utility_layer==1.54.0
+# edge_db_utility_layer==1.54.0
+# edge_core_layer==1.54.0
 edge_db_lambda_client==0.3.0
