@@ -2,19 +2,24 @@ import os
 import sys
 
 sys.path.insert(1, './lib')
+import traceback
 
-import csv
-import json
-import time
-import boto3
-import datetime
-import utility as util
-from multiprocessing import Process
-from edge_sqs_utility_layer import sqs_send_message
-from edge_db_lambda_client import EdgeDbLambdaClient
-import re
-from botocore.exceptions import ClientError
-from aws_utils import BDD_ESN
+try:
+    import csv
+    import json
+    import time
+    import boto3
+    import datetime
+    import utility as util
+    from multiprocessing import Process
+    from edge_sqs_utility_layer import sqs_send_message
+    from edge_db_lambda_client import EdgeDbLambdaClient
+    import re
+    from botocore.exceptions import ClientError
+    from aws_utils import BDD_ESN
+except Exception as e:
+    traceback.print_exc()
+    raise e
 
 LOGGER = util.get_logger(__name__)
 

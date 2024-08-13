@@ -15,7 +15,6 @@ with  CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.en
     "Region": "us-east-1",
     "region": "us-east-1",
     'EDGEDBReader_ARN': 'arn:::12345',
-    "edgeCommonAPIURL": "testurl",
     "publishKafka": "true",
     "CDPTJ1939PostURL": "testurl",
     "CDPTJ1939Header": "testheader",
@@ -52,7 +51,7 @@ with  CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.en
     cda_module_mock_context.mock_module("pcc_poster")
     cda_module_mock_context.mock_module("utility")
     cda_module_mock_context.mock_module("edge_db_lambda_client"),
-    cda_module_mock_context.mock_module("edge_sqs_utility_layer.sqs_utility")
+    cda_module_mock_context.mock_module("edge_sqs_utility_layer")
     cda_module_mock_context.mock_module("update_scheduler")
     cda_module_mock_context.mock_module("EdgeDbLambdaClient")
 

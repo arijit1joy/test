@@ -14,7 +14,6 @@ from edge_db_simple_layer import write_health_parameter_to_database_v2
 LOGGER = get_logger(__name__)
 secret_name = os.environ['PTxAPIKey']
 region_name = os.environ['Region']
-edgeCommonAPIURL = os.environ['edgeCommonAPIURL']
 
 PT_TOPIC_INFO = os.environ["ptTopicInfo"]
 
@@ -85,7 +84,7 @@ def store_device_health_params(converted_device_params, sample_time_stamp, devic
         write_health_parameter_to_database_v2(message_id, cpu_temperature, pmic_temperature, latitude, longitude,
                                            altitude, pdop, satellites_used, lte_rssi, lte_rscp, lte_rsrq, lte_rsrp,
                                            cpu_usage_level, ram_usage_level, snr_per_satellite, new_timestamp,
-                                           device_id, esn, os.environ["edgeCommonAPIURL"])
+                                           device_id, esn)
     else:
         LOGGER.info(f"There is no messageId in Converted Device Parameter.")
 
@@ -158,7 +157,7 @@ def send_to_pt(post_url, headers, json_body, sqs_message_template, j1939_data_ty
                 LOGGER.debug(f"Post to PT response code: {pt_response_code}, body: {pt_response_body}")
 
                 if "statusCode" in pt_response_body and pt_response_body["statusCode"] == 200:
-                    sqs_send_message(os.environ["metaWriteQueueUrl"], file_sent_sqs_message, edgeCommonAPIURL)
+                    sqs_send_message(os.environ["metaWriteQueueUrl"], file_sent_sqs_message)
                 else:
                     LOGGER.error(f"ERROR! Posting PT : {pt_response_body}")
                     write_to_audit_table(j1939_data_type, pt_response_body, json_body["telematicsDeviceId"])

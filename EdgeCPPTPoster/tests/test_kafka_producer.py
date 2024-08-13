@@ -11,7 +11,7 @@ with CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.env
     "KafkaApiVersionTuple": "(2, 8, 1)"
 }):
     cda_module_mock_context.mock_module("utility")
-    cda_module_mock_context.mock_module("edge_sqs_utility_layer.kafka")
+    cda_module_mock_context.mock_module("edge_sqs_utility_layer")
     cda_module_mock_context.mock_module("boto3")
 
     import kafka_producer

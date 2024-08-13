@@ -20,7 +20,6 @@ with CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.env
     "metaWriteQueueUrl": "metaWriteQueueUrl"
 }):
     cda_module_mock_context.mock_module("authtoken_jfrog_artifacts")
-    cda_module_mock_context.mock_module("commonlib_jfrog_artifacts")
     cda_module_mock_context.mock_module("edge_db_lambda_client")
     cda_module_mock_context.mock_module('edge_sqs_utility_layer')
     cda_module_mock_context.mock_module("edge_simple_logging_layer")
@@ -312,13 +311,13 @@ class TestConversion(unittest.TestCase):
         with self.assertRaises(Exception):
             conversion._post_cd_message("url", "data")
 
-    @patch("conversion.auth_utility")
+    @patch("conversion.generate_auth_token")
     @patch("conversion._post_cd_message")
     def test_post_cd_message_successful(self, mock_post_helper, mock_auth_utility):
         """
         Test for post_cd_message() running successfully.
         """
-        mock_auth_utility.generate_auth_token.return_value = "auth"
+        mock_auth_utility.return_value = "auth"
 
         conversion.post_cd_message({
             "Telematics_Partner_Name": "Cummins",
@@ -328,7 +327,7 @@ class TestConversion(unittest.TestCase):
             "Equipment_ID": ""
         })
 
-        mock_auth_utility.generate_auth_token.assert_called_with("Cummins")
+        mock_auth_utility.assert_called_with("Cummins")
         mock_post_helper.assert_called_with(
             "test_urlauth",
             {

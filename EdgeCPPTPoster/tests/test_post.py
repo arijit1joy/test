@@ -8,7 +8,6 @@ from unittest.mock import ANY, MagicMock, patch
 with CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.environ", {
     "CDPTJ1939PostURL": "post-url",
     "CDPTJ1939Header": "header",
-    "edgeCommonAPIURL": "api-url"
 }):
     cda_module_mock_context.mock_module("utility")
     cda_module_mock_context.mock_module("edge_sqs_utility_layer")
@@ -80,7 +79,7 @@ class TestPost(unittest.TestCase):
             Body=json.dumps({"telematicsDeviceId": "device-id", "componentSerialNumber": "esn"}).encode(),
             Metadata={"j1939type": "HB", "uuid": "uuid"}
         )
-        mock_sqs_send_message.assert_called_with("queue-url", "CD_PT_POSTED", "api-url")
+        mock_sqs_send_message.assert_called_with("queue-url", "CD_PT_POSTED")
         mock_write_to_audit_table.assert_not_called()
         mock_check_endpoint_file_exists.assert_not_called()
         mock_pt_poster.send_to_pt.assert_not_called()

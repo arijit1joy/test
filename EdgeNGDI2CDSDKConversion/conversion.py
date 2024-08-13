@@ -19,7 +19,7 @@ try:
     from cd_sdk_conversion.cd_sdk import map_ngdi_sample_to_cd_payload
     from cd_sdk_conversion.cd_snapshot_sdk import get_snapshot_data
 
-    from commonlib_jfrog_artifacts import auth_utility
+    from authtoken_jfrog_artifacts import generate_auth_token
     import audit_utility as audit_utility
 except Exception as e:
     traceback.print_exc()
@@ -94,7 +94,7 @@ def post_cd_message(data):
     tsp_name = data["Telematics_Partner_Name"]
     LOGGER.debug(f"TSP From File: {tsp_name}")
     try:
-        auth_token_info = auth_utility.generate_auth_token(tsp_name)
+        auth_token_info = generate_auth_token(tsp_name)
     except Exception as e:
         LOGGER.error(f"Exception occurred while trying to get Authentication Token.")
         raise e

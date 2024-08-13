@@ -13,7 +13,6 @@ with  CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.en
     "Region": "us-east-1",
     "PTxAPIKey": "123123",
     "PTJ1939Header": '{"Content-Type": "application/json", "Prefer": "param=single-object", "x-api-key": ""}',
-    "edgeCommonAPIURL": "url",
     "ptTopicInfo": '{"topicName": "nimbuspt_j1939-j1939-pt-topic", "bu":"PSBU","file_type":"JSON"}',
     "Latitude": "39.202938",
     "Longitude": "-85.88672"
@@ -172,7 +171,6 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(response, converted_hb_params)
 
 
-    @patch.dict("os.environ", {"edgeCommonAPIURL": "url"})
     @patch("pt_poster.write_health_parameter_to_database_v2")
     def test_store_device_health_params_successful(self, mock_write_health_params):
         """
@@ -203,8 +201,7 @@ class MyTestCase(unittest.TestCase):
             None,
             "2024-01-17 05:54:00",
             self.device_id,
-            self.esn,
-            "url"
+            self.esn
         )
 
 

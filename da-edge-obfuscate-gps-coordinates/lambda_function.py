@@ -1,9 +1,14 @@
 import sys
 
 sys.path.insert(1, './lib')
-import utility as util
-from obfuscate_gps_handler import obfuscate_gps
 
+import traceback
+try:
+    import utility as util
+    from obfuscate_gps_handler import obfuscate_gps
+except Exception as e:
+    traceback.print_exc()
+    raise e
 
 LOGGER = util.get_logger(__name__)
 

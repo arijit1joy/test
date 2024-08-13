@@ -14,7 +14,7 @@ try:
     import pcc_poster
     import environment_params as env
     from multiprocessing import Process
-    from edge_sqs_utility_layer.sqs_utility import sqs_send_message
+    from edge_sqs_utility_layer import sqs_send_message
 
     from update_scheduler import update_scheduler_table, get_request_id_from_consumption_view
 
@@ -26,7 +26,6 @@ except Exception as e:
 LOGGER = get_logger(__name__)
 
 # Retrieve the environment variables
-edgeCommonAPIURL = os.environ['edgeCommonAPIURL']
 endpointFile = os.environ["EndpointFile"]
 CPPostBucket = os.environ["CPPostBucket"]
 EndpointBucket = os.environ["EndpointBucket"]
@@ -176,7 +175,7 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
             .replace("{FILE_METADATA_FILE_STAGE}", "FILE_RECEIVED")
         # fielsent and fildatetime
         LOGGER.debug(f"Sending Metadata message for HB with: {file_received_sqs_message}")
-        sqs_send_message(os.environ["metaWriteQueueUrl"], file_received_sqs_message, edgeCommonAPIURL)
+        sqs_send_message(os.environ["metaWriteQueueUrl"], file_received_sqs_message)
 
     if device_info:
         device_owner = device_info["device_owner"] if "device_owner" in device_info else None

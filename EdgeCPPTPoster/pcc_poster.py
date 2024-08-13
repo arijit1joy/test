@@ -3,12 +3,10 @@ import boto3
 import json
 import utility as util
 from pt_poster import handle_hb_params, store_device_health_params
-from edge_sqs_utility_layer.sqs_utility import sqs_send_message
+from edge_sqs_utility_layer import sqs_send_message
 import datetime
 
 LOGGER = util.get_logger(__name__)
-
-edgeCommonAPIURL = os.environ['edgeCommonAPIURL']
 
 PCC_ROLE_ARN = os.environ["pcc_role_arn"]
 J19139_STREAM_ARN = os.environ["j1939_stream_arn"]
@@ -86,7 +84,7 @@ def send_to_pcc(json_body, device_id, j1939_data_type, sqs_message_template, ser
         file_sent_sqs_message = file_sent_sqs_message.replace("{FILE_METADATA_CURRENT_DATE_TIME}",
                                                               current_dt.strftime('%Y-%m-%d %H:%M:%S'))
 
-        sqs_send_message(os.environ["metaWriteQueueUrl"], file_sent_sqs_message, edgeCommonAPIURL)
+        sqs_send_message(os.environ["metaWriteQueueUrl"], file_sent_sqs_message)
         return kinesis_response
     except Exception as kinesis_streaming_exception:
         error_message = f"An Error Occurred while Streaming Data to Kinesis: {kinesis_streaming_exception}"
