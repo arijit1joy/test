@@ -538,8 +538,7 @@ class TestConverterLambda(unittest.TestCase):
 
         mock_sqs_send_message.assert_called_with(
             "url",
-            f"uuid,device-id,0_device-id_esn_{datetime_str}.csv,file-size,{last_modified_date_str[:19]},J1939_FC,CSV_JSON_CONVERTED,esn,config-spec-name,req-id,None, , ",
-            "jdbc:postgresql://<database-endpoint-url>:<port>/<database>"
+            f"uuid,device-id,0_device-id_esn_{datetime_str}.csv,file-size,{last_modified_date_str[:19]},J1939_FC,CSV_JSON_CONVERTED,esn,config-spec-name,req-id,None, , "
         )
 
         mock_process_ss.assert_called_with(
