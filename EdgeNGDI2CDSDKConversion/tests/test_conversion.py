@@ -22,15 +22,14 @@ with CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.env
     cda_module_mock_context.mock_module("authtoken_jfrog_artifacts")
     cda_module_mock_context.mock_module("commonlib_jfrog_artifacts")
     cda_module_mock_context.mock_module("edge_db_lambda_client")
-    cda_module_mock_context.mock_module('edge_sqs_utility_layer.sqs_utility')
-    cda_module_mock_context.mock_module("edge_sqs_utility_layer.edge_logger")
-    cda_module_mock_context.mock_module('metadata_utility')
-    cda_module_mock_context.mock_module('edge_db_utility_layer.obfuscate_gps_utility')
+    cda_module_mock_context.mock_module('edge_sqs_utility_layer')
+    cda_module_mock_context.mock_module("edge_simple_logging_layer")
+    cda_module_mock_context.mock_module("edge_gps_utility_layer")
     cda_module_mock_context.mock_module('aws_utils')
     cda_module_mock_context.mock_module("boto3")
     cda_module_mock_context.mock_module("requests")
     cda_module_mock_context.mock_module('cd_sdk_conversion.cd_sdk')
-    cda_module_mock_context.mock_module('edge_db_utility_layer.metadata_utility')
+    cda_module_mock_context.mock_module('edge_db_simple_layer')
 
     import conversion
 

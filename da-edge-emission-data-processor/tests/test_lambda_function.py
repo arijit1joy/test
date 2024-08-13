@@ -13,7 +13,8 @@ with CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict('os.env
                  'region': 'us-east-1',
                  'secret_name': 'secret-name'
                  }):
-    cda_module_mock_context.mock_module("edge_core")
+    cda_module_mock_context.mock_module("edge_simple_logging_layer")
+    cda_module_mock_context.mock_module("edge_db_simple_layer")
     from lambda_function import lambda_handler
 
 

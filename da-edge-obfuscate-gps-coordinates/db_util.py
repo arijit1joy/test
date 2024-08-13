@@ -3,20 +3,18 @@ from pypika import Query, Table
 import time
 import os
 
-from edge_core_layer.edge_core import api_request
-from edge_core_layer.edge_core import server_error
+from edge_db_simple_layer import send_payload_to_edge, server_error, form_query_to_db_payload
 
 logger = util.get_logger(__name__)
 
 region = os.getenv('region')
 time_format = os.getenv('TimeFormat')
-edgeCommonAPIURL = os.getenv("edgeCommonAPIURL")
 
 
 def get_certification_family(device_id, esn):
     query = get_certification_family_query(device_id, esn)
     try:
-        response = api_request(edgeCommonAPIURL, "get", query)
+        response = send_payload_to_edge(form_query_to_db_payload(query, method='get'))
         if len(response) == 0:
             return ""
         return response[0]["certification_family"]
@@ -38,7 +36,7 @@ def get_certification_family_query(device_id, esn):
 def insert_into_metadata_Table(device_id, message_id, esn, config_id, file_name, file_size):
     query = insert_to_metadata_table_query(device_id, message_id, esn, config_id, file_name, file_size)
     try:
-        response = api_request(edgeCommonAPIURL, "post", query)
+        response = send_payload_to_edge(form_query_to_db_payload(query, method='post'))
         logger.info(f"Record inserted into Metadata table successfully")
     except Exception as e:
         logger.info("Error inserting into metadata table")

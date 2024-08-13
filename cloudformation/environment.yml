@@ -121,7 +121,7 @@ Resources:
         ArtifactsBucket: !Ref ArtifactsBucket
         VersionId: !Ref VersionId
         CdoEnvironmentTag: !Ref CdoEnvironmentTag
-        EdgeCommonDBAPI: !Ref EdgeCommonDBAPI
+        # EdgeCommonDBAPI: !Ref EdgeCommonDBAPI
         TsbUrl: !Ref TsbUrl
       Tags:
         - Key: "appid"
@@ -351,10 +351,10 @@ Resources:
   ObfuscateGPSCoordinatesLambda:
     Type: "AWS::Lambda::Function"
     Properties:
-      Layers:
-        - !Ref RequestsPythonLayer
-        - !Ref PypikaPythonLayer
-        - !Ref EdgeCoreLayer
+      # Layers:
+        # - !Ref RequestsPythonLayer
+        # - !Ref PypikaPythonLayer
+        # - !Ref EdgeCoreLayer
       Code:
         S3Bucket: !Ref ArtifactsBucket
         S3Key: !Sub "${VersionId}/da-edge-obfuscate-gps-coordinates.zip"
@@ -381,8 +381,10 @@ Resources:
           j1939_end_bucket: !Ref EdgeJ1939ProcessingBucket
           j1939_emission_end_bucket: !GetAtt EmissionResourcesNestedStack.Outputs.EdgeJ1939EmissionBucketResource
           TimeFormat: '%Y-%m-%d %H:%M:%S'
-          edgeCommonAPIURL: !Ref EdgeCommonDBAPI
+          # edgeCommonAPIURL: !Ref EdgeCommonDBAPI
           AuditTrailQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
+          EDGEDBReader_ARN: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-edge-common-lib-EDGEDBReader-${ApplicationEnvironmentTag}"
+          EDGEDBCommonAPI_ARN: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:EdgeCommonAPI-${ApplicationEnvironmentTag}"
       Handler: lambda_function.lambda_handler
       Role: !GetAtt ObfuscateGPSCoordinatesLambdaRole.Arn
       Timeout: 300
@@ -557,7 +559,7 @@ Resources:
     Properties:
       Layers:
         - !Ref RequestsPythonLayer
-        - !Ref PypikaPythonLayer
+        # - !Ref PypikaPythonLayer
       Code:
         S3Bucket: !Ref ArtifactsBucket
         S3Key: !Sub "${VersionId}/EdgeNGDI2CDSDKConversion.zip"
@@ -622,6 +624,8 @@ Resources:
           QueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/${ApplicationName}-NGDI2CDSDKConversionQueue-${ApplicationEnvironmentTag}"
           metaWriteQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-DatalogMetadata-${ApplicationEnvironmentTag}"
           AuditTrailQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
+          EDGEDBReader_ARN: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-edge-common-lib-EDGEDBReader-${ApplicationEnvironmentTag}"
+          EDGEDBCommonAPI_ARN: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:EdgeCommonAPI-${ApplicationEnvironmentTag}"
       Handler: conversion.lambda_handler
       Role: !GetAtt EdgeNGDI2CDSDKConversionLambdaRole.Arn
       Timeout: 900
@@ -878,9 +882,9 @@ Resources:
   EdgeJ1939CSVConverter:
     Type: "AWS::Lambda::Function"
     Properties:
-      Layers:
-        - !Ref RequestsPythonLayer
-        - !Ref KinesisPythonLayer
+      # Layers:
+      #   - !Ref RequestsPythonLayer
+      #   - !Ref KinesisPythonLayer
       Code:
         S3Bucket: !Ref ArtifactsBucket
         S3Key: !Sub "${VersionId}/EdgeJ1939CSVConverter.zip"
@@ -910,7 +914,7 @@ Resources:
             "", "vin": "", "telematicsDeviceId": "", "dataSamplingConfigId": "",
             "dataEncryptionSchemeId": "", "numberOfSamples": "", "samples": []}
           environment: !Ref ApplicationEnvironmentTag
-          edgeCommonAPIURL: !Ref EdgeCommonDBAPI
+          # edgeCommonAPIURL: !Ref EdgeCommonDBAPI
           EDGEDBReader_ARN: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-edge-common-lib-EDGEDBReader-${ApplicationEnvironmentTag}"
           EDGEDBCommonAPI_ARN: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:EdgeCommonAPI-${ApplicationEnvironmentTag}"
           APPLICATION_NAME: !Ref ApplicationName
@@ -1052,7 +1056,7 @@ Resources:
           cd_device_owners: '{"EBU": "EBU", "TATA": "TATA", "TataMotors":"TataMotors", "Cosmos":"Cosmos"}'
           Environment: !Sub "${ApplicationEnvironmentTag}"
           RedisSecretName: !Ref EDGERedisSecretName
-          edgeCommonAPIURL: !Ref EdgeCommonDBAPI
+          # edgeCommonAPIURL: !Ref EdgeCommonDBAPI
           EDGEDBReader_ARN: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-edge-common-lib-EDGEDBReader-${ApplicationEnvironmentTag}"
           EDGEDBCommonAPI_ARN: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:EdgeCommonAPI-${ApplicationEnvironmentTag}"
           APPLICATION_ENVIRONMENT: !Ref ApplicationEnvironmentTag

@@ -1,7 +1,8 @@
 import os
-from utility import send_error_to_audit_trail_queue, logging_framework
+from utility import get_logger
+from edge_sqs_utility_layer import send_error_to_audit_trail_queue
 
-logger = logging_framework("EdgeJ1939NGDI2CDSKConversion.audit_utility")
+logger = get_logger("audit_utility")
 ERROR_PARAMS = {"module_name": "NGDI2CDSKConversion", "component_name": "NGDI2CDSDK"}
 
 

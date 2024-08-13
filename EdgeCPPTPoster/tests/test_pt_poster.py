@@ -24,10 +24,10 @@ with  CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.en
     cda_module_mock_context.mock_module("requests")
     cda_module_mock_context.mock_module("utility")
     cda_module_mock_context.mock_module("update_scheduler")
-    cda_module_mock_context.mock_module("edge_sqs_utility_layer.sqs_utility")
+    cda_module_mock_context.mock_module("edge_sqs_utility_layer")
     cda_module_mock_context.mock_module("kafka_producer")
-    cda_module_mock_context.mock_module("edge_db_utility_layer.obfuscate_gps_utility")
-    cda_module_mock_context.mock_module("edge_db_utility_layer.metadata_utility")
+    cda_module_mock_context.mock_module("edge_gps_utility_layer")
+    cda_module_mock_context.mock_module("edge_db_simple_layer")
 
     import pt_poster
 
@@ -209,7 +209,6 @@ class MyTestCase(unittest.TestCase):
 
 
     @patch.dict('os.environ', {'publishKafka': 'False'})
-    @patch("pt_poster.util")
     @patch("pt_poster.requests")
     @patch("pt_poster.LOGGER")
     @patch("pt_poster.publish_message")
@@ -220,7 +219,7 @@ class MyTestCase(unittest.TestCase):
     def test_send_to_pt_given(self, mocK_sec_client: MagicMock,
                               hb_params: MagicMock(), health_params: MagicMock,
                               create_kafka: MagicMock, publish_message: MagicMock,
-                              mock_logger: MagicMock, mock_requests: MagicMock, mock_util: MagicMock):
+                              mock_logger: MagicMock, mock_requests: MagicMock):
         mocK_sec_client.return_value = self.headers_json
         hb_params.return_value = self.hb_params
 

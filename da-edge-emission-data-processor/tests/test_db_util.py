@@ -11,8 +11,9 @@ with CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.env
     'TimeFormat': '%Y-%m-%d %H:%M:%S',
     'edgeCommonAPIURL': 'https://api.edge-dev.aws.cummins.com/v3/EdgeDBLambda'
 }):
-    cda_module_mock_context.mock_module("edge_core_layer.edge_logger")
-    cda_module_mock_context.mock_module("edge_core_layer.edge_core")
+    cda_module_mock_context.mock_module("edge_simple_logging_layer")
+    cda_module_mock_context.mock_module("edge_db_simple_layer")
+
     from db_util import insert_into_metadata_Table, insert_to_metadata_table_query
 
 
@@ -30,7 +31,7 @@ class TestDbUtil(TestCase):
         query = insert_to_metadata_table_query(device_id, message_id, esn, config_id, file_name, file_size)
         self.assertTrue(query.startswith("INSERT INTO da_edge_olympus.da_edge_metadata"))
 
-    @patch('db_util.api_request')
+    @patch('db_util.send_payload_to_edge')
     def test_insert_to_metadata_table(self, mock_api_request):
         device_id = '357649072115903'
         esn = '64505184'

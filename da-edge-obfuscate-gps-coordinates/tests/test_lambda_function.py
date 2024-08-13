@@ -11,9 +11,11 @@ with CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.env
     'j1939_emission_end_bucket': 'emission_bucket'
 }):
     cda_module_mock_context.mock_module("boto3")
-    cda_module_mock_context.mock_module("edge_core")
-    cda_module_mock_context.mock_module("edge_core_layer.edge_logger")
-    cda_module_mock_context.mock_module("edge_db_utility_layer.obfuscate_gps_utility")
+    cda_module_mock_context.mock_module("edge_simple_logging_layer")
+    cda_module_mock_context.mock_module("edge_sqs_utility_layer")
+    cda_module_mock_context.mock_module("edge_gps_utility_layer")
+    cda_module_mock_context.mock_module("edge_db_simple_layer")
+    cda_module_mock_context.mock_module("pypika")
     from lambda_function import lambda_handler
 
 

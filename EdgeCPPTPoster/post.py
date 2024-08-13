@@ -2,11 +2,11 @@ import os
 import json
 import boto3
 import traceback
+from utility import get_logger, write_to_audit_table
 import pt_poster
-import utility as util
-from edge_sqs_utility_layer.sqs_utility import sqs_send_message
+from edge_sqs_utility_layer import sqs_send_message
 
-LOGGER = util.get_logger(__name__)
+LOGGER = get_logger(__name__)
 
 s3_resource = boto3.resource('s3')
 CDPTJ1939PostURL = os.environ["CDPTJ1939PostURL"]
@@ -51,7 +51,7 @@ def send_to_cd(bucket_name, key, json_format, client, j1939_type, endpoint_bucke
             error_message = f"An Exception occurred while posting the file to the NGDI folder: {e}"
             LOGGER.error(error_message)
             traceback.print_exc()  # Printing the Stack Trace
-            util.write_to_audit_table(j1939_data_type, error_message, json_body["telematicsDeviceId"])
+            write_to_audit_table(j1939_data_type, error_message, json_body["telematicsDeviceId"])
 
     elif json_format.lower() == "ngdi":
 

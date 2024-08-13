@@ -11,9 +11,9 @@ try:
     import boto3
     import requests
     from utility import write_to_audit_table, get_logger
-    from edge_db_utility_layer.metadata_utility import write_health_parameter_to_database_v2
-    from edge_db_utility_layer.obfuscate_gps_utility import handle_gps_coordinates
-    from edge_sqs_utility_layer.sqs_utility import sqs_send_message
+    from edge_db_simple_layer import write_health_parameter_to_database_v2
+    from edge_gps_utility_layer import handle_gps_coordinates
+    from edge_sqs_utility_layer import sqs_send_message
     from aws_utils import spn_file_json
 
     from cd_sdk_conversion.cd_sdk import map_ngdi_sample_to_cd_payload

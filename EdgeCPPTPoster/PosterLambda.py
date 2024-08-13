@@ -8,10 +8,10 @@ import sys
 
 try:
     sys.path.insert(1, './lib')
+    from utility import get_logger, write_to_audit_table
     import post
     import pt_poster
     import pcc_poster
-    from utility import get_logger, write_to_audit_table
     import environment_params as env
     from multiprocessing import Process
     from edge_sqs_utility_layer.sqs_utility import sqs_send_message

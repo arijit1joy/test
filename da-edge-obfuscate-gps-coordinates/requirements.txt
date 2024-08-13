@@ -1,4 +1,8 @@
-requests
+# requests
 pypika
 boto3
 psycopg2-binary
+edge_db_simple_layer
+edge_gps_utility_layer
+edge_sqs_utility_layer
+edge_simple_logging_layer

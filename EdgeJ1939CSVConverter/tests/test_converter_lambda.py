@@ -21,7 +21,7 @@ with CDAModuleMockingContext(sys) as cda_module_mocking_context, patch.dict("os.
     "J1939ActiveFaultCodeTable": "CSVCONVERTER"
 
 }):
-    cda_module_mocking_context.mock_module("edge_sqs_utility_layer.sqs_utility")
+    cda_module_mocking_context.mock_module("edge_sqs_utility_layer")
     cda_module_mocking_context.mock_module("edge_db_lambda_client")
     cda_module_mocking_context.mock_module("utility")
     cda_module_mocking_context.mock_module("boto3")
