@@ -271,6 +271,13 @@ Resources:
                 Resource:
                   - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/EDGECommonAPI"
                 Effect: Allow
+              - Action:
+                  - "lambda:InvokeFunction"
+                  - "lambda:InvokeAsync"
+                Resource:
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:EdgeCommonAPI-${ApplicationEnvironmentTag}"
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-edge-common-lib-EDGEDBReader-${ApplicationEnvironmentTag}"
+                Effect: Allow
       Tags:
         - Key: "app_id"
           Value: "20172"
@@ -459,6 +466,13 @@ Resources:
                 Resource:
                   - !Ref CrossIOTRoleArn
                   - !Ref NimbusIoTRoleArn
+                Effect: Allow
+              - Action:
+                  - "lambda:InvokeFunction"
+                  - "lambda:InvokeAsync"
+                Resource:
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:EdgeCommonAPI-${ApplicationEnvironmentTag}"
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-edge-common-lib-EDGEDBReader-${ApplicationEnvironmentTag}"
                 Effect: Allow
       Tags:
         - Key: "app_id"

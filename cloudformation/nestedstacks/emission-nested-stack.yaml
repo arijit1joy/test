@@ -113,6 +113,13 @@ Resources:
                   - secretsmanager:GetSecretValue
                 Resource: '*'
                 Effect: Allow
+              - Action:
+                  - "lambda:InvokeFunction"
+                  - "lambda:InvokeAsync"
+                Resource:
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:EdgeCommonAPI-${ApplicationEnvironmentTag}"
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-edge-common-lib-EDGEDBReader-${ApplicationEnvironmentTag}"
+                Effect: Allow
       Tags:
         - Key: "appid"
           Value: "33439"
