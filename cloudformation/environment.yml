@@ -5,8 +5,6 @@ Description: >-
 Parameters:
   ApplicationName:
     Type: String
-  ApplicationNameCDA:
-    Type: String
   DataQualityLambda:
     Type: String
   PTJ1939Header:
@@ -20,10 +18,6 @@ Parameters:
   PTJ1939PostURL:
     Type: String
   VersionId:
-    Type: String
-  EdgeDBUtilityLayerVersion:
-    Type: String
-  EdgeCommonDBAPI:
     Type: String
   TsbUrl:
     Type: String
@@ -61,18 +55,12 @@ Parameters:
     Type: String
   EDGERedisSecretName:
     Type: String
-  EdgeCoreLayer:
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: layer-EdgeCoreLayer
   RequestsPythonLayer:
     Type: AWS::SSM::Parameter::Value<String>
     Default: layer-RequestsPythonLayer
   PypikaPythonLayer:
     Type: AWS::SSM::Parameter::Value<String>
     Default: layer-CDAPypikaPythonLayer
-  KinesisPythonLayer:
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: layer-KinesisUtilityLayer
   MskClusterSecret:
     Type: AWS::SSM::Parameter::Value<String>
     Default: cda-data-hub-msk-cluster-secret
@@ -121,7 +109,6 @@ Resources:
         ArtifactsBucket: !Ref ArtifactsBucket
         VersionId: !Ref VersionId
         CdoEnvironmentTag: !Ref CdoEnvironmentTag
-        # EdgeCommonDBAPI: !Ref EdgeCommonDBAPI
         TsbUrl: !Ref TsbUrl
       Tags:
         - Key: "appid"
@@ -358,10 +345,6 @@ Resources:
   ObfuscateGPSCoordinatesLambda:
     Type: "AWS::Lambda::Function"
     Properties:
-      # Layers:
-        # - !Ref RequestsPythonLayer
-        # - !Ref PypikaPythonLayer
-        # - !Ref EdgeCoreLayer
       Code:
         S3Bucket: !Ref ArtifactsBucket
         S3Key: !Sub "${VersionId}/da-edge-obfuscate-gps-coordinates.zip"
@@ -388,7 +371,6 @@ Resources:
           j1939_end_bucket: !Ref EdgeJ1939ProcessingBucket
           j1939_emission_end_bucket: !GetAtt EmissionResourcesNestedStack.Outputs.EdgeJ1939EmissionBucketResource
           TimeFormat: '%Y-%m-%d %H:%M:%S'
-          # edgeCommonAPIURL: !Ref EdgeCommonDBAPI
           AuditTrailQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
           EDGEDBReader_ARN: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-edge-common-lib-EDGEDBReader-${ApplicationEnvironmentTag}"
           EDGEDBCommonAPI_ARN: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:EdgeCommonAPI-${ApplicationEnvironmentTag}"
@@ -396,13 +378,6 @@ Resources:
       Role: !GetAtt ObfuscateGPSCoordinatesLambdaRole.Arn
       Timeout: 300
       Runtime: python3.9
-
-  ObfuscateGPSCoordinatesLambdaLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub '/aws/lambda/${ObfuscateGPSCoordinatesLambda}-logs'
-      RetentionInDays: 120 # 3 months, matches existing log group
-
 
   EdgePublicDataIoTTopicRule:
     Type: "AWS::IoT::TopicRule"
@@ -573,7 +548,6 @@ Resources:
     Properties:
       Layers:
         - !Ref RequestsPythonLayer
-        # - !Ref PypikaPythonLayer
       Code:
         S3Bucket: !Ref ArtifactsBucket
         S3Key: !Sub "${VersionId}/EdgeNGDI2CDSDKConversion.zip"
@@ -647,12 +621,6 @@ Resources:
       Runtime: python3.9
       FunctionName: !Sub "${ApplicationName}-EdgeNGDI2CDSDKConversion-${ApplicationEnvironmentTag}"
   
-  EdgeNGDI2CDSDKConversionLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub '/aws/lambda/${EdgeNGDI2CDSDKConversion}-logs'
-      RetentionInDays: 120 # 3 months, matches existing log group
-
   LambdaInvokePermissionJ1939Bucket:
     Type: "AWS::Lambda::Permission"
     Properties:
@@ -897,9 +865,6 @@ Resources:
   EdgeJ1939CSVConverter:
     Type: "AWS::Lambda::Function"
     Properties:
-      # Layers:
-      #   - !Ref RequestsPythonLayer
-      #   - !Ref KinesisPythonLayer
       Code:
         S3Bucket: !Ref ArtifactsBucket
         S3Key: !Sub "${VersionId}/EdgeJ1939CSVConverter.zip"
@@ -929,7 +894,6 @@ Resources:
             "", "vin": "", "telematicsDeviceId": "", "dataSamplingConfigId": "",
             "dataEncryptionSchemeId": "", "numberOfSamples": "", "samples": []}
           environment: !Ref ApplicationEnvironmentTag
-          # edgeCommonAPIURL: !Ref EdgeCommonDBAPI
           EDGEDBReader_ARN: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-edge-common-lib-EDGEDBReader-${ApplicationEnvironmentTag}"
           EDGEDBCommonAPI_ARN: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:EdgeCommonAPI-${ApplicationEnvironmentTag}"
           APPLICATION_NAME: !Ref ApplicationName
@@ -948,12 +912,6 @@ Resources:
       Timeout: 900
       Runtime: python3.9
   
-  EdgeJ1939CSVConverterLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub '/aws/lambda/${EdgeJ1939CSVConverter}-logs'
-      RetentionInDays: 120 # 3 months, matches existing log group
-
   J1939StreamingBucketPolicy:
     Type: "AWS::S3::BucketPolicy"
     Properties:
@@ -1071,7 +1029,6 @@ Resources:
           cd_device_owners: '{"EBU": "EBU", "TATA": "TATA", "TataMotors":"TataMotors", "Cosmos":"Cosmos"}'
           Environment: !Sub "${ApplicationEnvironmentTag}"
           RedisSecretName: !Ref EDGERedisSecretName
-          # edgeCommonAPIURL: !Ref EdgeCommonDBAPI
           EDGEDBReader_ARN: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-edge-common-lib-EDGEDBReader-${ApplicationEnvironmentTag}"
           EDGEDBCommonAPI_ARN: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:EdgeCommonAPI-${ApplicationEnvironmentTag}"
           APPLICATION_ENVIRONMENT: !Ref ApplicationEnvironmentTag
@@ -1148,13 +1105,6 @@ Resources:
             - !Ref PrivateSubnetID
             - !Ref "AWS::NoValue"
   
-  EdgeCPPTPosterLogGroup:
-    Type: AWS::Logs::LogGroup
-    Condition: UseNotStageCondition
-    Properties:
-      LogGroupName: !Sub '/aws/lambda/${EdgeCPPTPoster}-logs'
-      RetentionInDays: 120 # 3 months, matches existing log group
-
   EdgeCPPTPosterEventInvokeConfig:
     Type: AWS::Lambda::EventInvokeConfig
     Condition: UseNotStageCondition
