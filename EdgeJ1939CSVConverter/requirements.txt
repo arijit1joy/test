@@ -1,5 +1,4 @@
 --extra-index-url https://jfrog.cummins.com/ui/native/da-dse-pypi-release-local/edge/
 edge_db_lambda_client
-edge_simple_logging_layer
-edge_sqs_utility_layer
-edge_simple_logging_layer
+edge_simple_logging_layer==0.1.0
+edge_sqs_utility_layer==1.57.0
