@@ -2,26 +2,30 @@ import os
 import sys
 
 sys.path.insert(1, './lib')
+import traceback
 
-import csv
-import json
-import time
-import boto3
-import datetime
-import utility as util
-from multiprocessing import Process
-from edge_sqs_utility_layer.sqs_utility import sqs_send_message
-from edge_db_lambda_client import EdgeDbLambdaClient
-import re
-from botocore.exceptions import ClientError
-from aws_utils import BDD_ESN
+try:
+    import csv
+    import json
+    import time
+    import boto3
+    import datetime
+    import utility as util
+    from multiprocessing import Process
+    from edge_sqs_utility_layer import sqs_send_message
+    from edge_db_lambda_client import EdgeDbLambdaClient
+    import re
+    from botocore.exceptions import ClientError
+    from aws_utils import BDD_ESN
+except Exception as e:
+    traceback.print_exc()
+    raise e
 
 LOGGER = util.get_logger(__name__)
 
 s3 = boto3.client('s3')
 s3_client = boto3.client('s3')
 cp_post_bucket = os.environ["CPPostBucket"]
-edgeCommonAPIURL = os.environ["edgeCommonAPIURL"]
 NGDIBody = json.loads(os.environ["NGDIBody"])
 mapTspFromOwner = os.environ["mapTspFromOwner"]
 MAX_ATTEMPTS = int(os.environ["MaxAttempts"])
@@ -247,7 +251,7 @@ def retrieve_and_process_file(uploaded_file_object):
     sqs_message = str(fc_uuid) + "," + str(device_id) + "," + str(file_name) + "," + str(file_size) + "," + str(
         file_date_time) + "," + str('J1939_FC') + "," + str('CSV_JSON_CONVERTED') + "," + str(esn) + "," + str(
         config_spec_name) + "," + str(req_id) + "," + str(None) + "," + " " + "," + " "
-    sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message, edgeCommonAPIURL)
+    sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message)
 
     ngdi_json_template = json.loads(os.environ["NGDIBody"])
 

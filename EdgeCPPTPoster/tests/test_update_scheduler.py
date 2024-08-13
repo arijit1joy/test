@@ -6,7 +6,6 @@ import time
 from tests.cda_module_mock_context import CDAModuleMockingContext
 
 with CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict('os.environ', {
-    'edgeCommonAPIURL': 'https://test.edgedb.url',
     'AWS_LAMBDA_FUNCTION_NAME': 'lambda'
 }):
     cda_module_mock_context.mock_module("utility")

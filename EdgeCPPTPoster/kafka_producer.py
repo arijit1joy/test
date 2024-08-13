@@ -2,7 +2,7 @@ import os
 import json
 import boto3
 import utility as util
-from edge_sqs_utility_layer.kafka import KafkaProducer
+from edge_sqs_utility_layer import KafkaProducer
 from botocore.exceptions import ClientError
 
 LOGGER = util.get_logger(__name__)

@@ -1,4 +1,9 @@
---extra-index-url https://jfrog.cummins.com/ui/native/da-dse-pypi-release-local/edge/
-pypika
-commonlib_jfrog_artifacts
-edge_core_layer
+--extra-index-url https://jfrog.cummins.com/artifactory/api/pypi/da-dse-pypi-release-local/simple
+boto3
+requests
+authtoken_jfrog_artifacts==1.58.0
+edge_db_simple_layer==0.1.0
+edge_sqs_utility_layer==1.57.0
+edge_db_lambda_client==0.3.0
+edge_gps_utility_layer==0.1.0
+edge_simple_logging_layer==0.1.0

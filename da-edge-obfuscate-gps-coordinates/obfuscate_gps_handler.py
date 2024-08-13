@@ -4,11 +4,12 @@ import boto3
 import utility as util
 from datetime import datetime
 from uuid import uuid4
-from edge_db_utility_layer.obfuscate_gps_utility import handle_gps_coordinates
+from edge_gps_utility_layer import handle_gps_coordinates
 from db_util import get_certification_family
 from db_util import insert_into_metadata_Table
 
 LOGGER = util.get_logger(__name__)
+
 
 def obfuscate_gps(body):
     if "samples" in body:
@@ -36,7 +37,6 @@ def send_file_to_s3(body):
         esn = body["componentSerialNumber"]
         tsp_name = body["telematicsPartnerName"]
 
-
         # Please note that the order is expected to be <Make>*<Model>***<ESN>**** for Improper PSBU ESN
         if esn and "*" in esn:
             esn = [esn_component for esn_component in esn.split("*") if esn_component][-1]
@@ -58,8 +58,10 @@ def send_file_to_s3(body):
             uuid = str(uuid4())
             certificationFamily = get_certification_family(body["telematicsDeviceId"], body["componentSerialNumber"])
             body["certificationFamily"] = certificationFamily
-            insert_into_metadata_Table(body["telematicsDeviceId"], uuid, body["componentSerialNumber"], config_id, file_name, len(str(body)))
-            send_to_s3_response = s3_client.put_object(Bucket=emission_bucket_name, Key=file_key, Body=json.dumps(body).encode(),
+            insert_into_metadata_Table(body["telematicsDeviceId"], uuid, body["componentSerialNumber"], config_id,
+                                       file_name, len(str(body)))
+            send_to_s3_response = s3_client.put_object(Bucket=emission_bucket_name, Key=file_key,
+                                                       Body=json.dumps(body).encode(),
                                                        Metadata={'message_id': uuid})
         else:
             send_to_s3_response = s3_client.put_object(Bucket=bucket_name, Key=file_key, Body=json.dumps(body).encode())

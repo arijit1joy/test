@@ -7,39 +7,27 @@ import traceback
 from multiprocessing import Process
 sys.path.insert(1, './lib')
 
-import boto3
-import requests
-from lambda_cache import ssm
-from edge_db_utility_layer.metadata_utility import write_health_parameter_to_database_v2
-from edge_db_utility_layer.obfuscate_gps_utility import handle_gps_coordinates
-from edge_sqs_utility_layer.sqs_utility import sqs_send_message
-from aws_utils import spn_file_json
+try:
+    import boto3
+    import requests
+    from utility import write_to_audit_table, get_logger
+    from edge_db_simple_layer import write_health_parameter_to_database_v2
+    from edge_gps_utility_layer import handle_gps_coordinates
+    from edge_sqs_utility_layer import sqs_send_message
+    from aws_utils import spn_file_json
 
-import utility as util
-from cd_sdk_conversion.cd_sdk import map_ngdi_sample_to_cd_payload
-from cd_sdk_conversion.cd_snapshot_sdk import get_snapshot_data
+    from cd_sdk_conversion.cd_sdk import map_ngdi_sample_to_cd_payload
+    from cd_sdk_conversion.cd_snapshot_sdk import get_snapshot_data
 
-from commonlib_jfrog_artifacts import auth_utility
-import audit_utility as audit_utility
+    from authtoken_jfrog_artifacts import generate_auth_token
+    import audit_utility as audit_utility
+except Exception as e:
+    traceback.print_exc()
+    raise e
 
-LOGGER = util.get_logger(__name__)
-
-'''Getting the Values from SSM Parameter Store
-'''
-
-
-def set_parameters():
-    ssm_params = {
-        "Names": ["EDGECommonAPI"],
-        "WithDecryption": False
-    }
-    return ssm_params
+LOGGER = get_logger(__name__)
 
 
-params = set_parameters()
-name = params['Names']
-
-edgeCommonAPIURL = os.environ['edgeCommonAPIURL']
 cd_url = os.getenv('cd_url')
 converted_equip_params_var = os.getenv('converted_equip_params')
 converted_device_params_var = os.getenv('converted_device_params')
@@ -106,7 +94,7 @@ def post_cd_message(data):
     tsp_name = data["Telematics_Partner_Name"]
     LOGGER.debug(f"TSP From File: {tsp_name}")
     try:
-        auth_token_info = auth_utility.generate_auth_token(tsp_name)
+        auth_token_info = generate_auth_token(tsp_name)
     except Exception as e:
         LOGGER.error(f"Exception occurred while trying to get Authentication Token.")
         raise e
@@ -380,7 +368,7 @@ def _handle_metadata(metadata, samples, fc_or_hb, device_id, data_protocol, uplo
                             meta_data=j1939_file, device_id=device_id)
 
 
-def retrieve_and_process_file(uploaded_file_object, api_url):
+def retrieve_and_process_file(uploaded_file_object):
     bucket = uploaded_file_object["source_bucket_name"]
     key = uploaded_file_object["file_key"]
     file_size = uploaded_file_object["file_size"]
@@ -421,22 +409,13 @@ def retrieve_and_process_file(uploaded_file_object, api_url):
     sqs_message = uuid + "," + str(device_id) + "," + str(file_name) + "," + str(file_size) + "," + str(
         file_date_time) + "," + str(data_protocol) + "," + 'FILE_SENT' + "," + str(esn) + "," + str(
         config_spec_name) + "," + str(request_id) + "," + str(consumption_per_request) + "," + " " + "," + " "
-    sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message, edgeCommonAPIURL)
+    sqs_send_message(os.environ["metaWriteQueueUrl"], sqs_message)
     samples = j1939_file["samples"] if "samples" in j1939_file else None
     metadata = get_metadata_info(j1939_file)
     _handle_metadata(metadata, samples, fc_or_hb, device_id, data_protocol, uploaded_file_object, j1939_file, tsp_name)
 
 
-@ssm.cache(parameter=name, entry_name='parameters')  # noqa-cache accepts list as a parameter but expects a str
 def lambda_handler(event, context):
-    try:
-        vals = getattr(context, 'parameters')
-        api_url = vals[params['Names'][0]]
-    except AttributeError as ae:
-        LOGGER.error(f"Error, could not find ssm in the cache\n Proceeding as usual: {ae}")
-        ssm_uncached = boto3.client('ssm')
-        response = ssm_uncached.get_parameters(Names=name, WithDecryption=False)
-        api_url = response['Parameters'][0]['Value']
     records = event.get("Records", [])
     processes = []
     LOGGER.debug(f"Received SQS Records: {records}.")
@@ -453,7 +432,7 @@ def lambda_handler(event, context):
         LOGGER.info(f"Uploaded File Object: {uploaded_file_object}.")
 
         # Retrieve the uploaded file from the s3 bucket and process the uploaded file
-        process = Process(target=retrieve_and_process_file, args=(uploaded_file_object, api_url,))
+        process = Process(target=retrieve_and_process_file, args=(uploaded_file_object,))
 
         # Make a list of all process to wait and terminate at the end
         processes.append(process)
@@ -506,7 +485,7 @@ def store_health_parameters_into_redshift(converted_device_params, time_stamp, j
         return write_health_parameter_to_database_v2(message_id, cpu_temperature, pmic_temperature, latitude, longitude,
                                                   altitude, pdop, satellites_used, lte_rssi, lte_rscp, lte_rsrq,
                                                   lte_rsrp, cpu_usage_level, ram_usage_level, snr_per_satellite,
-                                                  new_timestamp, device_id, esn, os.environ["edgeCommonAPIURL"])
+                                                  new_timestamp, device_id, esn)
     else:
         LOGGER.info(f"There is no Converted Device Parameter")
 
@@ -522,8 +501,8 @@ def process_audit_error(error_message, module_name=None, data_protocol=None, met
         audit_utility.ERROR_PARAMS["device_owner"] = cust_ref.lower()
         audit_utility.write_to_audit_table('400', error_message)
     elif module_name in ["J1939_HB", "J1939_FC"]:
-        util.write_to_audit_table(module_name, error_message, meta_data[
+        write_to_audit_table(module_name, error_message, meta_data[
             "telematicsDeviceId"] if meta_data and "telematicsDeviceId" in meta_data else None)
     else:
-        util.write_to_audit_table(data_protocol, error_message, device_id)
+        write_to_audit_table(data_protocol, error_message, device_id)
     # ITTFCD87 ends

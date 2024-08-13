@@ -2,12 +2,12 @@ import json
 import sys
 import unittest
 
-from botocore.exceptions import ClientError
 from tests.cda_module_mock_context import CDAModuleMockingContext
 from unittest.mock import ANY, patch
 
 with CDAModuleMockingContext(sys) as cda_module_mock_context:
-    cda_module_mock_context.mock_module("edge_core_layer.edge_logger")
+    cda_module_mock_context.mock_module("edge_simple_logging_layer")
+    cda_module_mock_context.mock_module("edge_sqs_utility_layer")
 
     import utility
 
@@ -18,14 +18,14 @@ class TestUtility(unittest.TestCase):
     """
 
     @patch.dict("os.environ", {"LoggingLevel": "info"})
-    @patch("utility.logging_framework")
+    @patch("utility.get_log")
     def test_get_logger_successful(self, mock_logging_framework):
         """
         Test for get_logger() running successfully.
         """
         response = utility.get_logger("file_naMe")
 
-        mock_logging_framework.assert_called_with("EdgeNGDI2CDSDKConversion.FileName", "info")
+        mock_logging_framework.assert_called_with("file_naMe")
         self.assertEqual(response, mock_logging_framework.return_value)
 
 

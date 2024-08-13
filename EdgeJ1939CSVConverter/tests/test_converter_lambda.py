@@ -21,7 +21,7 @@ with CDAModuleMockingContext(sys) as cda_module_mocking_context, patch.dict("os.
     "J1939ActiveFaultCodeTable": "CSVCONVERTER"
 
 }):
-    cda_module_mocking_context.mock_module("edge_sqs_utility_layer.sqs_utility")
+    cda_module_mocking_context.mock_module("edge_sqs_utility_layer")
     cda_module_mocking_context.mock_module("edge_db_lambda_client")
     cda_module_mocking_context.mock_module("utility")
     cda_module_mocking_context.mock_module("boto3")
@@ -538,8 +538,7 @@ class TestConverterLambda(unittest.TestCase):
 
         mock_sqs_send_message.assert_called_with(
             "url",
-            f"uuid,device-id,0_device-id_esn_{datetime_str}.csv,file-size,{last_modified_date_str[:19]},J1939_FC,CSV_JSON_CONVERTED,esn,config-spec-name,req-id,None, , ",
-            "jdbc:postgresql://<database-endpoint-url>:<port>/<database>"
+            f"uuid,device-id,0_device-id_esn_{datetime_str}.csv,file-size,{last_modified_date_str[:19]},J1939_FC,CSV_JSON_CONVERTED,esn,config-spec-name,req-id,None, , "
         )
 
         mock_process_ss.assert_called_with(

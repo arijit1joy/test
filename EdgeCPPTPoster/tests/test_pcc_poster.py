@@ -14,7 +14,6 @@ with  CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.en
     "Region": "us-east-1",
     "PTxAPIKey": "123123",
     "PTJ1939Header": '{"Content-Type": "application/json", "Prefer": "param=single-object", "x-api-key": ""}',
-    "edgeCommonAPIURL": "",
     "ptTopicInfo": '{"topicName": "nimbuspt_j1939-j1939-pt-topic", "bu":"PSBU","file_type":"JSON"}',
     "Latitude": "39.202938",
     "Longitude": "-85.88672",
@@ -29,7 +28,7 @@ with  CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.en
 }):
     cda_module_mock_context.mock_module("boto3")
     cda_module_mock_context.mock_module("utility")
-    cda_module_mock_context.mock_module("edge_sqs_utility_layer.sqs_utility")
+    cda_module_mock_context.mock_module("edge_sqs_utility_layer")
     cda_module_mock_context.mock_module("pt_poster")
 
     import pcc_poster
@@ -117,7 +116,7 @@ class PCCPoster(unittest.TestCase):
     }
 
     @patch.dict('os.environ',
-                {'edgeCommonAPIURL': 'test', 'metaWriteQueueUrl': 'test'})
+                {'metaWriteQueueUrl': 'test'})
     @patch("pcc_poster.sqs_send_message")
     @patch("pcc_poster.handle_hb_params")
     @patch("pcc_poster.boto3.client")

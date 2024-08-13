@@ -6,24 +6,26 @@ import boto3
 import traceback
 import sys
 
-sys.path.insert(1, './lib')
-import requests
-import post
-import pt_poster
-import pcc_poster
-import utility as util
-import environment_params as env
-from multiprocessing import Process
-from edge_sqs_utility_layer.sqs_utility import sqs_send_message
+try:
+    sys.path.insert(1, './lib')
+    from utility import get_logger, write_to_audit_table
+    import post
+    import pt_poster
+    import pcc_poster
+    import environment_params as env
+    from multiprocessing import Process
+    from edge_sqs_utility_layer import sqs_send_message
 
-from update_scheduler import update_scheduler_table, get_request_id_from_consumption_view
+    from update_scheduler import update_scheduler_table, get_request_id_from_consumption_view
 
-from edge_db_lambda_client import EdgeDbLambdaClient
+    from edge_db_lambda_client import EdgeDbLambdaClient
+except Exception as e:
+    traceback.print_exc()
+    raise e
 
-LOGGER = util.get_logger(__name__)
+LOGGER = get_logger(__name__)
 
 # Retrieve the environment variables
-edgeCommonAPIURL = os.environ['edgeCommonAPIURL']
 endpointFile = os.environ["EndpointFile"]
 CPPostBucket = os.environ["CPPostBucket"]
 EndpointBucket = os.environ["EndpointBucket"]
@@ -173,7 +175,7 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
             .replace("{FILE_METADATA_FILE_STAGE}", "FILE_RECEIVED")
         # fielsent and fildatetime
         LOGGER.debug(f"Sending Metadata message for HB with: {file_received_sqs_message}")
-        sqs_send_message(os.environ["metaWriteQueueUrl"], file_received_sqs_message, edgeCommonAPIURL)
+        sqs_send_message(os.environ["metaWriteQueueUrl"], file_received_sqs_message)
 
     if device_info:
         device_owner = device_info["device_owner"] if "device_owner" in device_info else None
@@ -247,13 +249,13 @@ def retrieve_and_process_file(s3_event_body, receipt_handle):
         else:
             error_message = f"The boxApplication value is not recorded in the EDGE DB for the device: {device_id}"
             LOGGER.error(error_message)
-            util.write_to_audit_table(j1939_data_type, error_message, device_id)
+            write_to_audit_table(j1939_data_type, error_message, device_id)
             return
 
     else:
         error_message = f"The device_info value is missing for the device: {device_id}"
         LOGGER.error(error_message)
-        util.write_to_audit_table(j1939_data_type, error_message, device_id)
+        write_to_audit_table(j1939_data_type, error_message, device_id)
         return
     delete_message_from_sqs_queue(receipt_handle)
 

@@ -1,4 +1,5 @@
 requests
 pypika
 boto3
-psycopg2-binary
+edge_simple_logging_layer==0.1.0
+edge_db_simple_layer==0.1.0

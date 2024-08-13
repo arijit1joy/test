@@ -13,8 +13,8 @@ Parameters:
     Type: String
   CdoEnvironmentTag:
     Type: String
-  EdgeCommonDBAPI:
-    Type: String
+  # EdgeCommonDBAPI:
+  #   Type: String
   TsbUrl:
     Type: String
   RequestsPythonLayer:
@@ -35,8 +35,8 @@ Resources:
     Properties:
       Layers:
         - !Ref RequestsPythonLayer
-        - !Ref PypikaPythonLayer
-        - !Ref EdgeCoreLayer
+        # - !Ref PypikaPythonLayer
+        # - !Ref EdgeCoreLayer
       Code:
         S3Bucket: !Ref ArtifactsBucket
         S3Key: !Sub "${VersionId}/da-edge-emission-data-processor.zip"
@@ -63,7 +63,9 @@ Resources:
           region: !Sub "${AWS::Region}"
           APPLICATION_ENVIRONMENT: !Ref ApplicationEnvironmentTag
           j1939_emission_end_bucket: !Ref EdgeJ1939EmissionDataFilesBucket
-          edgeCommonAPIURL: !Ref EdgeCommonDBAPI
+          EDGEDBReader_ARN: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-edge-common-lib-EDGEDBReader-${ApplicationEnvironmentTag}"
+          EDGEDBCommonAPI_ARN: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:EdgeCommonAPI-${ApplicationEnvironmentTag}"
+          # edgeCommonAPIURL: !Ref EdgeCommonDBAPI
           tsb_url: !Ref TsbUrl
           secret_name: !Sub "cda-data-hub-TSBERSXApiKeySecret-${ApplicationEnvironmentTag}"
           TimeFormat: '%Y-%m-%d %H:%M:%S'
@@ -110,6 +112,13 @@ Resources:
               - Action:
                   - secretsmanager:GetSecretValue
                 Resource: '*'
+                Effect: Allow
+              - Action:
+                  - "lambda:InvokeFunction"
+                  - "lambda:InvokeAsync"
+                Resource:
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:EdgeCommonAPI-${ApplicationEnvironmentTag}"
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-edge-common-lib-EDGEDBReader-${ApplicationEnvironmentTag}"
                 Effect: Allow
       Tags:
         - Key: "appid"

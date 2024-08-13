@@ -4,21 +4,19 @@ import utility as util
 from pypika import Query, Table,functions as fn
 import os
 
-from edge_core_layer.edge_core import api_request
-from edge_core_layer.edge_core import server_error
+from edge_db_simple_layer import send_payload_to_edge, server_error, form_query_to_db_payload
 
 time_format = os.getenv('TimeFormat')
 
 logger = util.get_logger(__name__)
 
 region = os.getenv('region')
-edgeCommonAPIURL = os.getenv("edgeCommonAPIURL")
 
 
 def insert_into_metadata_Table(device_id, message_id, esn, config_id, file_name, file_size):
     query = insert_to_metadata_table_query(device_id, message_id, esn, config_id, file_name, file_size)
     try:
-        response = api_request(edgeCommonAPIURL, "post", query)
+        response = send_payload_to_edge(form_query_to_db_payload(query, method='post'))
         logger.info(f"Record inserted into Metadata table successfully")
     except Exception as e:
         logger.info("Error inserting into metadata table")
@@ -47,7 +45,7 @@ def insert_to_metadata_table_query(device_id, message_id, esn, config_id, file_n
 def get_request_id_from_consumption_view(data_protocol, data_config_filename):
     query = _get_request_id_query(data_protocol, data_config_filename)
     try:
-        response = api_request(edgeCommonAPIURL, "GET", query)
+        response = send_payload_to_edge(form_query_to_db_payload(query, method='get'))
 
         if response and response[0]:
             logger.info(f" getting requestID - {response[0]['request_id']}")
@@ -83,7 +81,7 @@ def update_scheduler_table(req_id, device_id, config_status):
             current_scedhuler_status =get_current_scheduler_data_requester_status(req_id,device_id)
             query = get_update_scheduler_query(req_id, device_id)
             logger.debug(f"Update Scheduler Table Query: {query}")
-            response = api_request(edgeCommonAPIURL, "POST", query)
+            response = send_payload_to_edge(form_query_to_db_payload(query, method='post'))
             logger.info('Successfully updated scheduler table with Data Rx In Progress ')
             # inserting to audit_data_request_status table
             insert_into_audit_data_request_status_table(req_id, device_id, current_scedhuler_status, 'Data Rx In Progress')
@@ -128,7 +126,7 @@ def get_current_scheduler_data_requester_status(request_id, device_id):
     query = query.select(scheduler.request_id, scheduler.status).where(scheduler.request_id == request_id
                                  ).where(scheduler.device_id == device_id).get_sql(quote_char=None)
     try:
-        response = api_request(edgeCommonAPIURL, "GET", query)
+        response = response = send_payload_to_edge(form_query_to_db_payload(query, method='get'))
         if response:
             logger.info(f" getting current status of request - {response[0]['status']}")
             return response[0]['status']
@@ -146,7 +144,7 @@ def insert_into_audit_data_request_status_table(request_id, device_id, old_statu
     ).insert(request_id, device_id, old_status, new_status).get_sql(quote_char=None)
     logger.info(f"Insert audit_data_request_status Table Query: {query}")
     try:
-        response = api_request(edgeCommonAPIURL, "POST", query)
+        response = response = send_payload_to_edge(form_query_to_db_payload(query, method='post'))
         logger.info(f"successfully updated audit_data_request_status table : {response}")
     except Exception as exception:
         logger.error(f"Error updating audit_data_request_status table: {str(exception)}")

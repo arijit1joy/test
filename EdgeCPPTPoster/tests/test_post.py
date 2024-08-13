@@ -8,10 +8,9 @@ from unittest.mock import ANY, MagicMock, patch
 with CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.environ", {
     "CDPTJ1939PostURL": "post-url",
     "CDPTJ1939Header": "header",
-    "edgeCommonAPIURL": "api-url"
 }):
     cda_module_mock_context.mock_module("utility")
-    cda_module_mock_context.mock_module("edge_sqs_utility_layer.sqs_utility")
+    cda_module_mock_context.mock_module("edge_sqs_utility_layer")
     cda_module_mock_context.mock_module("boto3")
     cda_module_mock_context.mock_module("pt_poster")
 
@@ -44,14 +43,14 @@ class TestPost(unittest.TestCase):
     
     @patch.dict("os.environ", {"metaWriteQueueUrl": "queue-url"})
     @patch("post.sqs_send_message")
-    @patch("post.util")
+    @patch("post.write_to_audit_table")
     @patch("post.check_endpoint_file_exists")
     @patch("post.pt_poster")
     def test_send_to_cd_sdk_successful(
         self,
         mock_pt_poster,
         mock_check_endpoint_file_exists,
-        mock_util,
+        mock_write_to_audit_table,
         mock_sqs_send_message
     ):
         """
@@ -80,22 +79,22 @@ class TestPost(unittest.TestCase):
             Body=json.dumps({"telematicsDeviceId": "device-id", "componentSerialNumber": "esn"}).encode(),
             Metadata={"j1939type": "HB", "uuid": "uuid"}
         )
-        mock_sqs_send_message.assert_called_with("queue-url", "CD_PT_POSTED", "api-url")
-        mock_util.write_to_audit_table.assert_not_called()
+        mock_sqs_send_message.assert_called_with("queue-url", "CD_PT_POSTED")
+        mock_write_to_audit_table.assert_not_called()
         mock_check_endpoint_file_exists.assert_not_called()
         mock_pt_poster.send_to_pt.assert_not_called()
 
 
     @patch.dict("os.environ", {"metaWriteQueueUrl": "queue-url"})
     @patch("post.sqs_send_message")
-    @patch("post.util")
+    @patch("post.write_to_audit_table")
     @patch("post.check_endpoint_file_exists")
     @patch("post.pt_poster")
     def test_send_to_cd_sdk_on_error(
         self,
         mock_pt_poster,
         mock_check_endpoint_file_exists,
-        mock_util,
+        mock_write_to_audit_table,
         mock_sqs_send_message
     ):
         """
@@ -119,7 +118,7 @@ class TestPost(unittest.TestCase):
             "csv"
         )
 
-        mock_util.write_to_audit_table.assert_called_with("csv", ANY, "device-id")
+        mock_write_to_audit_table.assert_called_with("csv", ANY, "device-id")
         
         mock_sqs_send_message.assert_not_called()
         mock_check_endpoint_file_exists.assert_not_called()
@@ -128,14 +127,14 @@ class TestPost(unittest.TestCase):
     
     @patch.dict("os.environ", {"metaWriteQueueUrl": "queue-url"})
     @patch("post.sqs_send_message")
-    @patch("post.util")
+    @patch("post.write_to_audit_table")
     @patch("post.check_endpoint_file_exists")
     @patch("post.pt_poster")
     def test_send_to_cd_ngdi_successful(
         self,
         mock_pt_poster,
         mock_check_endpoint_file_exists,
-        mock_util,
+        mock_write_to_audit_table,
         mock_sqs_send_message
     ):
         """
@@ -162,20 +161,20 @@ class TestPost(unittest.TestCase):
 
         mock_client.put_object.assert_not_called()
         mock_sqs_send_message.assert_not_called()
-        mock_util.write_to_audit_table.assert_not_called()
+        mock_write_to_audit_table.assert_not_called()
         mock_pt_poster.send_to_pt.assert_not_called()
 
 
     @patch.dict("os.environ", {"metaWriteQueueUrl": "queue-url"})
     @patch("post.sqs_send_message")
-    @patch("post.util")
+    @patch("post.write_to_audit_table")
     @patch("post.check_endpoint_file_exists")
     @patch("post.pt_poster")
     def test_send_to_cd_ngdi_no_bucket_successful(
         self,
         mock_pt_poster,
         mock_check_endpoint_file_exists,
-        mock_util,
+        mock_write_to_audit_table,
         mock_sqs_send_message
     ):
         """
@@ -212,5 +211,5 @@ class TestPost(unittest.TestCase):
 
         mock_client.put_object.assert_not_called()
         mock_sqs_send_message.assert_not_called()
-        mock_util.write_to_audit_table.assert_not_called()
+        mock_write_to_audit_table.assert_not_called()
         mock_check_endpoint_file_exists.assert_not_called()

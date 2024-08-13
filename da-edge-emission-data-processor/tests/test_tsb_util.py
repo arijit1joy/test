@@ -14,7 +14,9 @@ with CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict('os.env
                  'region': 'us-east-1',
                  'secret_name': 'secret-name'
                  }):
-    cda_module_mock_context.mock_module("edge_core")
+    cda_module_mock_context.mock_module("edge_simple_logging_layer")
+    cda_module_mock_context.mock_module("requests")
+    cda_module_mock_context.mock_module("boto3")
     from tsb_util import push_to_tsb
 
 
