@@ -93,7 +93,6 @@ def send_to_pt(post_url, headers, json_body, sqs_message_template, j1939_data_ty
         get_secret_value_response = get_json_value_from_secrets_manager(secret_name)
         if 'SecretString' in get_secret_value_response:
             secret = get_secret_value_response['SecretString']
-            secret = json.loads(secret)
             api_key = secret['x-api-key']
             headers_json['x-api-key'] = api_key
         else:

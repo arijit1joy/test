@@ -15,7 +15,10 @@ with  CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.en
     "PTJ1939Header": '{"Content-Type": "application/json", "Prefer": "param=single-object", "x-api-key": ""}',
     "ptTopicInfo": '{"topicName": "nimbuspt_j1939-j1939-pt-topic", "bu":"PSBU","file_type":"JSON"}',
     "Latitude": "39.202938",
-    "Longitude": "-85.88672"
+    "Longitude": "-85.88672",
+    "mskSecretArn": "mskSecretArn",
+    "mskClusterArn": "mskClusterArn",
+    "KafkaApiVersionTuple": "(1, 2, 3)"
 
 }):
     cda_module_mock_context.mock_module("boto3")
@@ -24,9 +27,10 @@ with  CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.en
     cda_module_mock_context.mock_module("utility")
     cda_module_mock_context.mock_module("update_scheduler")
     cda_module_mock_context.mock_module("edge_sqs_utility_layer")
-    cda_module_mock_context.mock_module("kafka_producer")
+    cda_module_mock_context.mock_module("edge_kafka_utility_layer")
     cda_module_mock_context.mock_module("edge_gps_utility_layer")
     cda_module_mock_context.mock_module("edge_db_simple_layer")
+    cda_module_mock_context.mock_module("edge_secretsmanager_utility_layer")
 
     import pt_poster
 
@@ -209,10 +213,10 @@ class MyTestCase(unittest.TestCase):
     @patch("pt_poster.requests")
     @patch("pt_poster.LOGGER")
     @patch("pt_poster.publish_message")
-    @patch("pt_poster._create_kafka_message")
+    @patch("pt_poster.create_irs_message")
     @patch("pt_poster.store_device_health_params")
     @patch("pt_poster.handle_hb_params")
-    @patch("pt_poster.sec_client")
+    @patch("pt_poster.get_json_value_from_secrets_manager")
     def test_send_to_pt_given(self, mocK_sec_client: MagicMock,
                               hb_params: MagicMock(), health_params: MagicMock,
                               create_kafka: MagicMock, publish_message: MagicMock,
@@ -231,10 +235,10 @@ class MyTestCase(unittest.TestCase):
     @patch("pt_poster.LOGGER")
     @patch("pt_poster.requests")
     @patch("pt_poster.publish_message")
-    @patch("pt_poster._create_kafka_message")
+    @patch("pt_poster.create_irs_message")
     @patch("pt_poster.store_device_health_params")
     @patch("pt_poster.handle_hb_params")
-    @patch("pt_poster.sec_client")
+    @patch("pt_poster.get_json_value_from_secrets_manager")
     def test_send_to_pt_given_publish_kafka_then_publish_message(self, mocK_sec_client: MagicMock,
                                                                  hb_params: MagicMock(), health_params: MagicMock,
                                                                  create_kafka: MagicMock, publish_message: MagicMock,
