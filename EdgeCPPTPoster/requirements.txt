@@ -6,5 +6,6 @@ botocore
 redis-py-cluster
 edge_db_lambda_client
 edge_gps_utility_layer==0.1.0
-edge_sqs_utility_layer==1.57.0
-edge_db_simple_layer==0.1.0
+edge_sqs_utility_layer#==1.57.0
+edge_db_simple_layer#==0.1.0
+edge_secretsmanager_utility_layer
