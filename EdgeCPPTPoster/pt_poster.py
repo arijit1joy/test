@@ -91,9 +91,8 @@ def send_to_pt(post_url, headers, json_body, sqs_message_template, j1939_data_ty
     try:
         headers_json = json.loads(headers)
         get_secret_value_response = get_json_value_from_secrets_manager(secret_name)
-        if 'SecretString' in get_secret_value_response:
-            secret = get_secret_value_response['SecretString']
-            api_key = secret['x-api-key']
+        if get_secret_value_response:
+            api_key = get_secret_value_response['x-api-key']
             headers_json['x-api-key'] = api_key
         else:
             LOGGER.error(f"PT x-api-key not exist in secret manager")

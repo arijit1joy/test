@@ -132,7 +132,7 @@ class MyTestCase(unittest.TestCase):
         f"{'{FILE_METADATA_CURRENT_DATE_TIME}'},{j1939_data_type}," \
         f"{'{FILE_METADATA_FILE_STAGE}'},{esn},{config_spec_and_req_id}"
 
-    headers_json = {"SecretString": {"x-api-key": "12345"}}
+    headers_json = {"x-api-key": "12345"}
 
 
     def test_handle_fc_params_successful(self):
