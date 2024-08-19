@@ -6,3 +6,4 @@ edge_db_lambda_client==0.3.0
 edge_gps_utility_layer==0.1.0
 edge_simple_logging_layer
 edge_secretsmanager_utility_layer
+edge_kafka_utility_layer

@@ -9,3 +9,4 @@ edge_gps_utility_layer==0.1.0
 edge_sqs_utility_layer
 edge_db_simple_layer
 edge_secretsmanager_utility_layer
+edge_kafka_utility_layer
