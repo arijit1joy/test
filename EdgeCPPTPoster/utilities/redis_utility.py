@@ -9,6 +9,7 @@ LOGGER = util.get_logger(__name__)
 sys.path.insert(1, './lib')
 sys.path.insert(1, '../lib')
 from edge_db_lambda_client import EdgeDbLambdaClient
+from edge_secretsmanager_utility_layer import get_json_value_from_secrets_manager
 from rediscluster import RedisCluster
 
 REDIS_CLIENT = None
@@ -19,11 +20,7 @@ EDGE_DB_CLIENT = EdgeDbLambdaClient()
 
 def get_redis_connection():
     try:
-        session = boto3.session.Session()
-        client = session.client(service_name='secretsmanager', region_name=REGION)
-        get_secret_value_response = client.get_secret_value(SecretId=SECRET_NAME)
-        secret_string = get_secret_value_response['SecretString']
-        secret_params = json.loads(secret_string)
+        secret_params = get_json_value_from_secrets_manager(SECRET_NAME)
 
         redis_client = RedisCluster(startup_nodes=[{"host": secret_params['redis_host'],
                                                     "port": secret_params['redis_port']}],

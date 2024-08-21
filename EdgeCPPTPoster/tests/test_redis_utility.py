@@ -14,6 +14,8 @@ with  CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.en
     cda_module_mock_context.mock_module("utility"),
     cda_module_mock_context.mock_module("edge_db_lambda_client"),
     cda_module_mock_context.mock_module("rediscluster")
+    cda_module_mock_context.mock_module("boto3")
+    cda_module_mock_context.mock_module("edge_secretsmanager_utility_layer")
 
     from utilities.redis_utility import get_redis_connection, get_set_redis_value
 

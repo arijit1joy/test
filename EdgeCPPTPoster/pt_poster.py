@@ -6,8 +6,9 @@ import requests
 import traceback
 from utility import get_logger, write_to_audit_table
 from edge_sqs_utility_layer import sqs_send_message
-from kafka_producer import publish_message
-from kafka_producer import _create_kafka_message
+from edge_kafka_utility_layer import publish_message, create_irs_message
+from edge_secretsmanager_utility_layer import get_json_value_from_secrets_manager
+
 from edge_gps_utility_layer import handle_gps_coordinates
 from edge_db_simple_layer import write_health_parameter_to_database_v2
 
@@ -16,13 +17,9 @@ secret_name = os.environ['PTxAPIKey']
 region_name = os.environ['Region']
 
 PT_TOPIC_INFO = os.environ["ptTopicInfo"]
-
-# Create a Secrets Manager client
-session = boto3.session.Session()
-sec_client = session.client(
-    service_name='secretsmanager',
-    region_name=region_name
-)
+MSK_SECRET_ARN = os.environ['mskSecretArn']
+MSK_CLUSTER_ARN = os.environ['mskClusterArn']
+KAFKA_API_VERSION_TUPLE = os.environ["KafkaApiVersionTuple"]
 
 
 def handle_fc_params(converted_fc_params):
@@ -93,11 +90,9 @@ def send_to_pt(post_url, headers, json_body, sqs_message_template, j1939_data_ty
                esn):
     try:
         headers_json = json.loads(headers)
-        get_secret_value_response = sec_client.get_secret_value(SecretId=secret_name)
-        if 'SecretString' in get_secret_value_response:
-            secret = get_secret_value_response['SecretString']
-            secret = json.loads(secret)
-            api_key = secret['x-api-key']
+        get_secret_value_response = get_json_value_from_secrets_manager(secret_name)
+        if get_secret_value_response:
+            api_key = get_secret_value_response['x-api-key']
             headers_json['x-api-key'] = api_key
         else:
             LOGGER.error(f"PT x-api-key not exist in secret manager")
@@ -136,13 +131,17 @@ def send_to_pt(post_url, headers, json_body, sqs_message_template, j1939_data_ty
                 topic = topicInformation["topicName"].format(j1939_type=j1939_type)
                 file_type = topicInformation["file_type"]
                 bu = topicInformation["bu"]
-                kafka_message = _create_kafka_message(file_uuid, json_body, device_id, esn, topic, file_type, bu,
+                kafka_message = create_irs_message(file_uuid, json_body, device_id, esn, topic, file_type, bu,
                                                       file_sent_sqs_message)
                 LOGGER.debug(f"Data sent with IRS with kafka message :{kafka_message}, topic:{topic},fileType:{file_type},bu:{bu}")
 
 
-                publish_message(kafka_message, j1939_data_type, topic)
-
+                try:
+                    publish_message(MSK_SECRET_ARN, MSK_CLUSTER_ARN, topic, kafka_message, kafka_args={'api_version': eval(KAFKA_API_VERSION_TUPLE)})
+                except Exception as e:
+                    error_message = f"Error while publishing the message to cluster: {e}"
+                    LOGGER.error(error_message)
+                    write_to_audit_table(j1939_data_type, error_message, kafka_message["telematicsDeviceId"])
             else:
                 LOGGER.info("Data sent without IRS")
                 # file_sent with curdatetime
