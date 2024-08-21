@@ -12,6 +12,26 @@ logger = util.get_logger(__name__)
 
 region = os.getenv('region')
 
+def get_certification_family(device_id, esn):
+    query = get_certification_family_query(device_id, esn)
+    try:
+        response = send_payload_to_edge(form_query_to_db_payload(query, method='get'))
+        if len(response) == 0:
+            return ""
+        return response[0]["certification_family"]
+    except Exception as e:
+        logger.info("Error getting certificate family information from device_information table")
+        return server_error(str(e))
+
+
+def get_certification_family_query(device_id, esn):
+    device_information = Table('da_edge_olympus.device_information')
+    query = Query.from_(device_information)\
+                 .select(device_information.certification_family)\
+                 .where(device_information.engine_serial_number == esn)\
+                 .where(device_information.device_id == device_id)
+    logger.info(query.get_sql(quote_char=None))
+    return query.get_sql(quote_char=None)
 
 def insert_into_metadata_Table(device_id, message_id, esn, config_id, file_name, file_size):
     query = insert_to_metadata_table_query(device_id, message_id, esn, config_id, file_name, file_size)

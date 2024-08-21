@@ -22,6 +22,7 @@ def lambda_handler(event, context):
                 LOGGER.info(f"fileId: {key}")
                 # download file in s3 bucket
                 content, uuid = get_content(key)
+
                 content_json = json.loads(content)
                 # Get the Request ID
                 config_spec_name, req_id = get_cspec_req_id(content_json['dataSamplingConfigId'])

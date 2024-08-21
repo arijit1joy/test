@@ -4,6 +4,7 @@ import boto3
 
 sys.path.insert(1, './lib')
 import utility as util
+from db_util import get_certification_family
 
 LOGGER = util.get_logger(__name__)
 emission_bucket_name = os.environ["j1939_emission_end_bucket"]
@@ -16,6 +17,9 @@ def get_content(fileId):
         response = s3.get_object(Bucket=emission_bucket_name, Key=fileId)
         LOGGER.info(f"s3 response: {response}")
         content = response['Body'].read().decode('utf-8')
+
+        certificationFamily = get_certification_family(content["telematicsDeviceId"], content["componentSerialNumber"])
+        content["certificationFamily"] = certificationFamily
         uuid = response['Metadata']['message_id']
         LOGGER.info("file content retrieved from S3 bucket")
         return content, uuid
