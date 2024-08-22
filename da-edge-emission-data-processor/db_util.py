@@ -18,7 +18,9 @@ def get_certification_family(device_id, esn):
         response = send_payload_to_edge(form_query_to_db_payload(query, method='get'))
         if len(response) == 0:
             return ""
-        return response[0]["certification_family"]
+        certification_family = response[0]["certification_family"]
+        logger.info(f"Certification family retrieved from database is: {certification_family}")
+        return certification_family
     except Exception as e:
         logger.info("Error getting certificate family information from device_information table")
         return server_error(str(e))

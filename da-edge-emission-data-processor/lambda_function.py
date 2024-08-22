@@ -8,6 +8,8 @@ from db_util import update_scheduler_table, insert_into_metadata_Table, get_cspe
     get_request_id_from_consumption_view
 from tsb_util import push_to_tsb
 
+from db_util import get_certification_family
+
 LOGGER = util.get_logger(__name__)
 
 
@@ -24,6 +26,10 @@ def lambda_handler(event, context):
                 content, uuid = get_content(key)
 
                 content_json = json.loads(content)
+
+                LOGGER.info("Now retreiving ceritification family")
+                certificationFamily = get_certification_family(content_json["telematicsDeviceId"], content_json["componentSerialNumber"])
+                LOGGER.info(f"Content json is:{content_json}")
                 # Get the Request ID
                 config_spec_name, req_id = get_cspec_req_id(content_json['dataSamplingConfigId'])
                 data_config_filename = '_'.join(
@@ -31,6 +37,7 @@ def lambda_handler(event, context):
                      config_spec_name])
                 request_id, schedular_status = get_request_id_from_consumption_view('J1939_Emissions',
                                                                                     data_config_filename)
+                content_json["certificationFamily"] = certificationFamily
                 # Updating the scheduler table to data rx in progress
                 LOGGER.info(f"request ID : {request_id}")
                 if request_id:
