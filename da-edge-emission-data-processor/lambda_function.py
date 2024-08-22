@@ -29,7 +29,7 @@ def lambda_handler(event, context):
 
                 LOGGER.info("Now retreiving ceritification family")
                 certificationFamily = get_certification_family(content_json["telematicsDeviceId"], content_json["componentSerialNumber"])
-                LOGGER.info(f"Content json is:{content_json}")
+
                 # Get the Request ID
                 config_spec_name, req_id = get_cspec_req_id(content_json['dataSamplingConfigId'])
                 data_config_filename = '_'.join(
@@ -38,6 +38,7 @@ def lambda_handler(event, context):
                 request_id, schedular_status = get_request_id_from_consumption_view('J1939_Emissions',
                                                                                     data_config_filename)
                 content_json["certificationFamily"] = certificationFamily
+                LOGGER.info(f"Content json is:{content_json}")
                 # Updating the scheduler table to data rx in progress
                 LOGGER.info(f"request ID : {request_id}")
                 if request_id:
