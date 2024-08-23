@@ -21,13 +21,13 @@ def lambda_handler(event, context):
             LOGGER.info(f"s3_body: {s3_body}")
             for s3_record in s3_body['Records']:
                 key = s3_record['s3']['object']['key']
-                LOGGER.info(f"fileId: {key}")
+                LOGGER.debug(f"fileId: {key}")
                 # download file in s3 bucket
                 content, uuid = get_content(key)
 
                 content_json = json.loads(content)
 
-                LOGGER.info("Now retreiving ceritification family")
+                LOGGER.debug("Now retreiving ceritification family")
                 certificationFamily = get_certification_family(content_json["telematicsDeviceId"], content_json["componentSerialNumber"])
 
                 # Get the Request ID
@@ -38,7 +38,7 @@ def lambda_handler(event, context):
                 request_id, schedular_status = get_request_id_from_consumption_view('J1939_Emissions',
                                                                                     data_config_filename)
                 content_json["certificationFamily"] = certificationFamily
-                LOGGER.info(f"Content json is:{content_json}")
+                LOGGER.debug(f"Content json is:{content_json}")
                 # Updating the scheduler table to data rx in progress
                 LOGGER.info(f"request ID : {request_id}")
                 if request_id:
