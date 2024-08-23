@@ -1,4 +1,4 @@
 --extra-index-url https://jfrog.cummins.com/artifactory/api/pypi/da-dse-pypi-release-local/simple
-edge_db_lambda_client==0.11.0
-edge_simple_logging_layer==0.3.0
-edge_sqs_utility_layer==1.67.0
+edge_db_lambda_client==0.12.0
+edge_simple_logging_layer==0.4.0
+edge_sqs_utility_layer==1.68.0

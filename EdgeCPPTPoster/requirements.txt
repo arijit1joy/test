@@ -4,9 +4,9 @@ PyPika
 requests
 botocore
 redis-py-cluster
-edge_db_lambda_client==0.11.0
-edge_gps_utility_layer==0.1.0
-edge_sqs_utility_layer==1.67.0
-edge_db_simple_layer==0.3.0
-edge_secretsmanager_utility_layer==0.1.0
-edge_kafka_utility_layer==0.1.0
+edge_db_lambda_client==0.12.0
+edge_db_simple_layer==0.4.0
+edge_sqs_utility_layer==1.68.0
+edge_gps_utility_layer==0.4.0
+edge_secretsmanager_utility_layer==0.2.0
+edge_kafka_utility_layer==0.2.0
