@@ -16,6 +16,7 @@ def get_content(fileId):
         response = s3.get_object(Bucket=emission_bucket_name, Key=fileId)
         LOGGER.info(f"s3 response: {response}")
         content = response['Body'].read().decode('utf-8')
+        LOGGER.info(f"Retrieved file from S3.")
         uuid = response['Metadata']['message_id']
         LOGGER.info("file content retrieved from S3 bucket")
         return content, uuid

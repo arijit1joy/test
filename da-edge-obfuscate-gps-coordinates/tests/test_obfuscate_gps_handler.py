@@ -175,8 +175,7 @@ class TestObfuscateGPSHandler(unittest.TestCase):
 
     @patch.dict('os.environ', {'j1939_end_bucket': 'test_bucket', 'j1939_emission_end_bucket': 'test_emission_bucket', 'AuditTrailQueueUrl': 'https://testurl.com'})
     @patch('obfuscate_gps_handler.insert_into_metadata_Table')
-    @patch('obfuscate_gps_handler.get_certification_family')
-    def test_sendFileToS3_Emission(self, mock_get_certification_family, mock_insert_into_metadata_Table):
+    def test_sendFileToS3_Emission(self, mock_insert_into_metadata_Table):
         print("<-----test_sendFileToS3_givenErrorOccurredWhileStoringFile_thenRaiseException----->")
         body = {"componentSerialNumber": "10290001", "telematicsPartnerName": "Cummins",
                 "telematicsDeviceId": "102900000000001", "dataSamplingConfigId": "SC9004",
@@ -184,8 +183,6 @@ class TestObfuscateGPSHandler(unittest.TestCase):
                              "convertedDeviceParameters": {"messageID": "message_id", "Latitude": "-39.3456789",
                                                            "Longitude": "30.9876543"}}]}
         mock_insert_into_metadata_Table.return_value = None
-        mock_get_certification_family.return_value = "Cert"
         result = send_file_to_s3(body)
         mock_insert_into_metadata_Table.assert_called()
-        mock_get_certification_family.assert_called()
         print("Result: ", result)
