@@ -1,4 +1,4 @@
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, Mock
 import unittest
 import sys
 from requests.models import Response
@@ -53,9 +53,9 @@ class TestDbUtil(unittest.TestCase):
     def test_get_certification_family(self, mock_send_payload_to_edge):
         device_id = '357649072115903'
         esn = '64505184'
-        mock_response = Response()
-        mock_response.status_code = 200
-        mock_send_payload_to_edge.return_value = mock_response
+        mock_response = Mock(status_code=200)
+        mock_send_payload_to_edge.return_value= mock_response
         cert = get_certification_family(device_id, esn)
-        mock_send_payload_to_edge.assert_called()
+        mock_send_payload_to_edge.assert_called_once()
+        self.assertEqual(mock_response.status_code, 200)
 
