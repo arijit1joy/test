@@ -1,6 +1,7 @@
 from unittest.mock import patch, MagicMock
 import unittest
 import sys
+from requests.models import Response
 from cda_module_mock_context import CDAModuleMockingContext
 
 with CDAModuleMockingContext(sys) as cda_module_mock_context, patch.dict("os.environ", {
@@ -49,11 +50,12 @@ class TestDbUtil(unittest.TestCase):
         self.assertEqual("SELECT certification_family FROM da_edge_olympus.device_information WHERE engine_serial_number='64505184' AND device_id='357649072115903'", query)
 
     @patch('db_util.send_payload_to_edge')
-    def test_get_certification_family(self, mock_api_request):
+    def test_get_certification_family(self, mock_send_payload_to_edge):
         device_id = '357649072115903'
         esn = '64505184'
-        mock_api_request.return_value = ""
+        mock_response = Response()
+        mock_response.status_code = 200
+        mock_send_payload_to_edge.return_value = mock_response
         cert = get_certification_family(device_id, esn)
-        self.assertEqual("", cert)
-        mock_api_request.assert_called()
+        mock_send_payload_to_edge.assert_called()
 

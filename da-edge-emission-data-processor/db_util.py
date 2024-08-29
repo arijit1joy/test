@@ -15,11 +15,13 @@ region = os.getenv('region')
 def get_certification_family(device_id, esn):
     query = get_certification_family_query(device_id, esn)
     try:
-        response = send_payload_to_edge(form_query_to_db_payload(query, method='get')).json()
 
-        if len(response) == 0:
+        response = send_payload_to_edge(form_query_to_db_payload(query, method='get'))
+        logger.info(response)
+        response_json = response.json()
+        if len(response_json) == 0:
             return ""
-        certification_family = response[0]["certification_family"]
+        certification_family = response_json[0]["certification_family"]
         logger.info(f"Certification family retrieved from database is: {certification_family}")
         return certification_family
     except Exception as e:
