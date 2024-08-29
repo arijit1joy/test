@@ -71,7 +71,7 @@ def insert_to_metadata_table_query(device_id, message_id, esn, config_id, file_n
 def get_request_id_from_consumption_view(data_protocol, data_config_filename):
     query = _get_request_id_query(data_protocol, data_config_filename)
     try:
-        response = send_payload_to_edge(form_query_to_db_payload(query, method='get'))
+        response = send_payload_to_edge(form_query_to_db_payload(query, method='get')).json()
 
         if response and response[0]:
             logger.info(f" getting requestID - {response[0]['request_id']}")
@@ -152,7 +152,7 @@ def get_current_scheduler_data_requester_status(request_id, device_id):
     query = query.select(scheduler.request_id, scheduler.status).where(scheduler.request_id == request_id
                                  ).where(scheduler.device_id == device_id).get_sql(quote_char=None)
     try:
-        response = response = send_payload_to_edge(form_query_to_db_payload(query, method='get'))
+        response = send_payload_to_edge(form_query_to_db_payload(query, method='get')).json()
         if response:
             logger.info(f" getting current status of request - {response[0]['status']}")
             return response[0]['status']
