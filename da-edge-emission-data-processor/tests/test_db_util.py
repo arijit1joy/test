@@ -50,12 +50,24 @@ class TestDbUtil(unittest.TestCase):
         self.assertEqual("SELECT certification_family FROM da_edge_olympus.device_information WHERE engine_serial_number='64505184' AND device_id='357649072115903'", query)
 
     @patch('db_util.send_payload_to_edge')
-    def test_get_certification_family(self, mock_send_payload_to_edge):
+    @patch('db_util.form_query_to_db_payload')
+    def test_get_certification_family(self,mock_query_payload, mock_send_payload_to_edge):
         device_id = '357649072115903'
         esn = '64505184'
+        mock_query_payload.return_value=payload = {
+        'method': 'get',
+        'query': "SELECT certification_family FROM da_edge_olympus.device_information WHERE engine_serial_number='64505184' AND device_id='357649072115903'",
+        "input": {
+            "Params": [
+                {
+
+                }
+            ]
+        }
+    }
         mock_response = Mock(status_code=200)
         mock_send_payload_to_edge.return_value= mock_response
         cert = get_certification_family(device_id, esn)
-        mock_send_payload_to_edge.assert_called_once()
+        mock_send_payload_to_edge.assert_called_once_with(payload)
         self.assertEqual(mock_response.status_code, 200)
 
