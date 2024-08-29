@@ -17,9 +17,8 @@ def get_certification_family(device_id, esn):
     try:
 
         response = send_payload_to_edge(form_query_to_db_payload(query, method='get'))
-        logger.info(response)
         response_json = response.json()
-        logger.info(f"Response json is: {response_json}")
+        logger.debug(f"Response json is: {response_json}")
         if len(response_json) == 0:
             return ""
         certification_family = response_json[0]["certification_family"]
