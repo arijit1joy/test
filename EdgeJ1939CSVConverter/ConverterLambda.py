@@ -198,7 +198,7 @@ def get_tsp_and_cust_ref(device_id):
     while attempts < MAX_ATTEMPTS:
         try:
             attempts += 1
-            get_tsp_cust_ref_response = EDGE_DB_CLIENT.execute(get_tsp_cust_ref_payload, method='WRITE')
+            get_tsp_cust_ref_response = EDGE_DB_CLIENT.execute(get_tsp_cust_ref_payload)
             get_tsp_cust_ref_response_body = json.loads(get_tsp_cust_ref_response['body'])
             get_tsp_cust_ref_response_code = get_tsp_cust_ref_response['statusCode']
 
