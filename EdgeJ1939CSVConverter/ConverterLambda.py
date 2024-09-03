@@ -208,7 +208,7 @@ def get_tsp_and_cust_ref(device_id):
                 ("device_owner" in get_tsp_cust_ref_response[0] and get_tsp_cust_ref_response[0]["device_owner"]):
                 return get_tsp_cust_ref_response[0]
         except Exception as e:
-            pass
+            LOGGER.error(f"Error occurred while retrieving customer reference: {e}")
         time.sleep(2 * attempts / 10)  # Sleep for 200 ms exponentially
 
     return None
