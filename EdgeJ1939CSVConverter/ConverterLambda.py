@@ -198,8 +198,7 @@ def get_tsp_and_cust_ref(device_id):
     while attempts < MAX_ATTEMPTS:
         try:
             attempts += 1
-            get_tsp_cust_ref_response_raw = EDGE_DB_CLIENT.execute(get_tsp_cust_ref_payload)
-            get_tsp_cust_ref_response = json.loads(get_tsp_cust_ref_response_raw)
+            get_tsp_cust_ref_response = EDGE_DB_CLIENT.execute(get_tsp_cust_ref_payload)
 
             LOGGER.debug(f"Get TSP and Cust_Ref response: {get_tsp_cust_ref_response}")
 
