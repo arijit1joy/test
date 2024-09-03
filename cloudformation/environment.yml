@@ -424,10 +424,10 @@ Resources:
                   - "s3:List*"
                 Resource: !Sub "${EdgeJ1939ProcessingBucket.Arn}"
                 Effect: Allow
-              # - Action:
-              #     - "s3:Put*"
-              #   Resource: !Sub ${EmissionResourcesNestedStack.Outputs.EdgeJ1939EmissionBucketResourceArn}/*
-              #   Effect: Allow
+              - Action:
+                  - "s3:Put*"
+                Resource: !Sub "da-edge-j1939-emission-data-files-${ApplicationEnvironmentTag}"
+                Effect: Allow
               - Action:
                   - "sqs:SendMessage"
                 Resource: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
