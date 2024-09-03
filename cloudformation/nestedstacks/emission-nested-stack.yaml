@@ -151,6 +151,7 @@ Resources:
   #Emission Data Bucket
   EdgeJ1939EmissionDataFilesBucket:
     Type: "AWS::S3::Bucket"
+    DeletionPolicy: Retain
     Properties:
       AccessControl: BucketOwnerFullControl
       BucketEncryption:
