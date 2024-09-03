@@ -369,7 +369,7 @@ Resources:
           region: !Sub "${AWS::Region}"
           APPLICATION_ENVIRONMENT: !Ref ApplicationEnvironmentTag
           j1939_end_bucket: !Ref EdgeJ1939ProcessingBucket
-          j1939_emission_end_bucket: !GetAtt EmissionResourcesNestedStack.Outputs.EdgeJ1939EmissionBucketResource
+          # j1939_emission_end_bucket: !GetAtt EmissionResourcesNestedStack.Outputs.EdgeJ1939EmissionBucketResource
           TimeFormat: '%Y-%m-%d %H:%M:%S'
           AuditTrailQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
           EDGEDBReader_ARN: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-edge-common-lib-EDGEDBReader-${ApplicationEnvironmentTag}"
@@ -426,7 +426,7 @@ Resources:
                 Effect: Allow
               - Action:
                   - "s3:Put*"
-                Resource: !Sub ${EmissionResourcesNestedStack.Outputs.EdgeJ1939EmissionBucketResourceArn}/*
+                Resource: !Sub "da-edge-j1939-emission-data-files-${ApplicationEnvironmentTag}"
                 Effect: Allow
               - Action:
                   - "sqs:SendMessage"
