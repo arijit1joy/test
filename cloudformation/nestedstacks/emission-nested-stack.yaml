@@ -62,7 +62,7 @@ Resources:
           APPLICATION_NAME: !Ref ApplicationName
           region: !Sub "${AWS::Region}"
           APPLICATION_ENVIRONMENT: !Ref ApplicationEnvironmentTag
-          # j1939_emission_end_bucket: !Ref EdgeJ1939EmissionDataFilesBucket
+          j1939_emission_end_bucket: !Ref EdgeJ1939EmissionDataFilesBucket
           EDGEDBReader_ARN: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-edge-common-lib-EDGEDBReader-${ApplicationEnvironmentTag}"
           EDGEDBCommonAPI_ARN: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:EdgeCommonAPI-${ApplicationEnvironmentTag}"
           # edgeCommonAPIURL: !Ref EdgeCommonDBAPI
@@ -98,10 +98,10 @@ Resources:
                   - "logs:*"
                 Resource: "arn:aws:logs:*:*:*"
                 Effect: Allow
-              # - Action:
-              #     - "s3:Get*"
-              #   Resource: !Sub "${EdgeJ1939EmissionDataFilesBucket.Arn}/*"
-              #   Effect: Allow
+              - Action:
+                  - "s3:Get*"
+                Resource: !Sub "${EdgeJ1939EmissionDataFilesBucket.Arn}/*"
+                Effect: Allow
               - Action:
                   - sqs:ReceiveMessage
                   - sqs:DeleteMessage
@@ -149,35 +149,35 @@ Resources:
       FunctionName: !GetAtt EmissionDataProcessorLambda.Arn
 
   #Emission Data Bucket
-  # EdgeJ1939EmissionDataFilesBucket:
-  #   Type: "AWS::S3::Bucket"
-  #   DeletionPolicy: Retain
-  #   Properties:
-  #     AccessControl: BucketOwnerFullControl
-  #     BucketEncryption:
-  #       ServerSideEncryptionConfiguration:
-  #         - ServerSideEncryptionByDefault:
-  #             SSEAlgorithm: AES256
-  #     NotificationConfiguration:
-  #       QueueConfigurations:
-  #         - Queue: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${ApplicationName}-Emission-Data-FilesQueue-${ApplicationEnvironmentTag}"
-  #           Event: "s3:ObjectCreated:*"
-  #     BucketName: !Sub "da-edge-j1939-emission-data-files-${ApplicationEnvironmentTag}"
-  #     Tags:
-  #       - Key: Name
-  #         Value: Edge
-  #       - Key: "appid"
-  #         Value: "33439"
-  #       - Key: "environment"
-  #         Value: !Ref CdoEnvironmentTag
-  #       - Key: "bu"
-  #         Value: "CBS"
-  #       - Key: "bc"
-  #         Value: "007"
-  #       - Key: "rc"
-  #         Value: "A6Q"
-  #   DependsOn:
-  #     - EDGEJ1939EmissionDataFilesQueuePolicy
+  EdgeJ1939EmissionDataFilesBucket:
+    Type: "AWS::S3::Bucket"
+    DeletionPolicy: Retain
+    Properties:
+      AccessControl: BucketOwnerFullControl
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      NotificationConfiguration:
+        QueueConfigurations:
+          - Queue: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${ApplicationName}-Emission-Data-FilesQueue-${ApplicationEnvironmentTag}"
+            Event: "s3:ObjectCreated:*"
+      BucketName: !Sub "da-edge-j1939-emission-data-files-${ApplicationEnvironmentTag}"
+      Tags:
+        - Key: Name
+          Value: Edge
+        - Key: "appid"
+          Value: "33439"
+        - Key: "environment"
+          Value: !Ref CdoEnvironmentTag
+        - Key: "bu"
+          Value: "CBS"
+        - Key: "bc"
+          Value: "007"
+        - Key: "rc"
+          Value: "A6Q"
+    DependsOn:
+      - EDGEJ1939EmissionDataFilesQueuePolicy
 
   # Emission Data Queue
   EDGEJ1939EmissionDataFilesQueue:
@@ -243,10 +243,10 @@ Resources:
     DependsOn:
       - EDGEJ1939EmissionDataFilesQueue
 
-# Outputs:
-#   EdgeJ1939EmissionBucketResource:
-#     Description: The Emission data log bucket name
-#     Value: !Ref EdgeJ1939EmissionDataFilesBucket
-#   EdgeJ1939EmissionBucketResourceArn:
-#     Description: The Emission data log bucket arn
-#     Value: !Sub "${EdgeJ1939EmissionDataFilesBucket.Arn}"
+Outputs:
+  EdgeJ1939EmissionBucketResource:
+    Description: The Emission data log bucket name
+    Value: !Ref EdgeJ1939EmissionDataFilesBucket
+  EdgeJ1939EmissionBucketResourceArn:
+    Description: The Emission data log bucket arn
+    Value: !Sub "${EdgeJ1939EmissionDataFilesBucket.Arn}"
