@@ -99,29 +99,6 @@ Conditions:
 
 Resources:
 
-  EmissionResourcesNestedStack:
-    Type: "AWS::CloudFormation::Stack"
-    Properties:
-      TemplateURL: !Sub https://s3.amazonaws.com/${ArtifactsBucket}/${BranchName}/emission-nested-stack.yaml
-      Parameters:
-        ApplicationName: !Ref ApplicationName
-        ApplicationEnvironmentTag: !Ref ApplicationEnvironmentTag
-        ArtifactsBucket: !Ref ArtifactsBucket
-        VersionId: !Ref VersionId
-        CdoEnvironmentTag: !Ref CdoEnvironmentTag
-        TsbUrl: !Ref TsbUrl
-      Tags:
-        - Key: "appid"
-          Value: "33439"
-        - Key: "environment"
-          Value: !Ref CdoEnvironmentTag
-        - Key: "bu"
-          Value: "CBS"
-        - Key: "bc"
-          Value: "007"
-        - Key: "rc"
-          Value: "A6Q"
-
   EdgeJ1939ProcessingBucketSSM:
     Type: "AWS::SSM::Parameter"
     Properties:
