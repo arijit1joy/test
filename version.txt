@@ -1,6 +1,6 @@
-Product=Momentum
+Team=CDA
 Year=2024
 Quarter=Q3
-Major=3
+Major=2
 Minor=0
 Fixed=0
