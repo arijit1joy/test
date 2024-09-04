@@ -426,7 +426,7 @@ Resources:
                 Effect: Allow
               - Action:
                   - "s3:Put*"
-                Resource: !Sub "da-edge-j1939-emission-data-files-${ApplicationEnvironmentTag}"
+                Resource: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:da-edge-j1939-emission-data-files-${ApplicationEnvironmentTag}"
                 Effect: Allow
               - Action:
                   - "sqs:SendMessage"

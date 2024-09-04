@@ -430,16 +430,13 @@ class TestConverterLambda(unittest.TestCase):
         """
         Test for get_tsp_and_cust_ref() running successfully.
         """
-        mock_edge_db_client.execute.return_value = {
-            "statusCode": 200,
-            "body": json.dumps([{"cust_ref": "Cummins", "device_owner": "Cummins"}])
-        }
+        mock_edge_db_client.execute.return_value = [{"cust_ref": "Cummins", "device_owner": "Cummins"}]
 
         response = ConverterLambda.get_tsp_and_cust_ref("device-id")
 
         self.assertEqual(response, {"cust_ref": "Cummins", "device_owner": "Cummins"})
 
-    
+
     def test_get_cspec_req_id_successful(self):
         """
         Test for get_cspec_req_id() running successfully.
