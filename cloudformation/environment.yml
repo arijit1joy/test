@@ -422,11 +422,11 @@ Resources:
                   - "s3:Put*"
                   - "s3:Get*"
                   - "s3:List*"
-                Resource: !Sub "${EdgeJ1939ProcessingBucket.Arn}"
+                Resource: !Sub "${EdgeJ1939ProcessingBucket.Arn}/*"
                 Effect: Allow
               - Action:
                   - "s3:Put*"
-                Resource: !Sub "arn:aws:s3:::da-edge-j1939-emission-data-files-${ApplicationEnvironmentTag}"
+                Resource: !Sub "arn:aws:s3:::da-edge-j1939-emission-data-files-${ApplicationEnvironmentTag}/*"
                 Effect: Allow
               - Action:
                   - "sqs:SendMessage"
