@@ -7,6 +7,7 @@ env:
     num_repos: 0
   secrets-manager:
     SONAR_LOGIN: /da-sca-sonar/sonar/sonar-common-token:sonar_common_token
+    SONAR_USER_TOKEN: /da-sca-sonar/sonar/sonar-common-token:sonar_user_token
     SONAR_HOST: /da-sca-sonar/sonar/sonar-common-token:sonar_host_https_url
     ARTIFACTORY_API_KEY: /OPS/COMMON/INFRA/JFROG/ARTIFACTORY:ARTIFACTORY_TOKEN
     ARTIFACTORY_USER: /OPS/COMMON/INFRA/JFROG/ARTIFACTORY:ARTIFACTORY_USER
@@ -118,6 +119,8 @@ phases:
                 coverage_per_repo+="$mydir":`printf "%.1f" "$rounded_coverage"`:"$lines_covered":"$total_lines ";
                 num_repos=$(($num_repos + 1));
                 sonar-scanner -Dsonar.login=$SONAR_LOGIN -Dsonar.host.url=$SONAR_HOST -Dsonar.python.coverage.reportPaths="coverage.xml" -Dsonar.branch.name="dev_stg" > /dev/null;
+              sonar_project_key=$(grep -i 'sonar.projectKey' sonar-project.properties | cut -d '=' -f2)
+              curl -u "$SONAR_USER_TOKEN:" -X POST "$SONAR_HOST/api/qualitygates/select" -d "projectKey=$sonar_project_key" -d "gateName=Custom_CDO_DSE_QualityGate"
                 if [ -f "../SonarqubeQualityChecker.sh" ] && [ -f "sonar-project.properties" ]; then
                   cd ..;
                   tr -d '\r' < SonarqubeQualityChecker.sh > CleanSonarqubeQualityChecker.sh;
