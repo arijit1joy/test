@@ -1041,14 +1041,8 @@ Resources:
           AuditTrailQueueUrl: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/da-edge-common-lib-AuditTrailerQueue-${ApplicationEnvironmentTag}"
           ProcessDataQuality: !Ref ProcessDataQuality
           MaxAttempts: !Ref MaxAttempts
-          mskSecretArn: !If
-            - UseDevOrTestCondition
-            - !Ref MskClusterSecret 
-            - !Ref "AWS::NoValue"
-          mskClusterArn: !If
-            - UseDevOrTestCondition
-            - !Ref MskClusterArn 
-            - !Ref "AWS::NoValue"
+          mskSecretArn: !Ref MskClusterSecret
+          mskClusterArn: !Ref MskClusterArn
           topicName: "j1939-pt-topic"
           publishKafka: !If
             - UseDevOrTestCondition
