@@ -61,7 +61,7 @@ def valid_psbu_fc_message(context):
 @exception_handler
 @given(u'A valid PSBU FC message in CSV format containing a valid data and filename without ESN')
 def valid_psbu_fc_message_without_esn_in_filename(context):
-    context.j1939_fc_stages = ["FILE_RECEIVED", "UNCOMPRESSED", "CSV_JSON_CONVERTED", "FILE_SENT"]
+    context.j1939_fc_stages = ["FILE_RECEIVED", "UNCOMPRESSED", "CSV_JSON_CONVERTED"]
     context.file_name = context.file_name_for_psbu_scenario_2
     context.download_converted_file_name = \
         "data/j1939_fc/download/received_j1939_fc_psbu_converted_file_improper_esn.json"
@@ -83,7 +83,7 @@ def j1939_fc_file_uploaded_to_s3(context):
 @exception_handler
 @then(u'Stored J1939 FC metadata stages in EDGE DB')
 def assert_j1939_fc_stages_in_edge_db(context):
-    time.sleep(60)
+
     da_edge_metadata = Table(context.edge_metadata_table)
     query = Query.from_(da_edge_metadata).select(da_edge_metadata.data_pipeline_stage).where(
         da_edge_metadata.device_id == context.device_id).where(da_edge_metadata.data_protocol == "J1939_FC")  # noqa
@@ -96,7 +96,7 @@ def assert_j1939_fc_stages_in_edge_db(context):
 @exception_handler
 @then(u'Stored J1939 FC metadata stages in EDGE DB by ESN')
 def assert_j1939_fc_stages_in_edge_db(context):
-    time.sleep(60)
+
     da_edge_metadata = Table(context.edge_metadata_table)
     query = Query.from_(da_edge_metadata).select(da_edge_metadata.data_pipeline_stage).where(
         da_edge_metadata.esn == context.esn).where(da_edge_metadata.device_id == context.esn).where(da_edge_metadata.data_protocol == "J1939_FC")  # noqa
