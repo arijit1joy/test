@@ -27,6 +27,7 @@
         "PCCRegion": "us-east-1",
         "PCC2AccountId": "590183752454",
         "PCC2Region": "us-east-1",
+        "Pcc2EnvironmentTag": "poc",
         "CosmosJ1939RuleArn": "arn:aws:iot:us-east-1:024114236237:rule/da_cosmos_J1939HBData_TopicRule_stage",
         "CosmosAccountID": "024114236237",
         "CdoEnvironmentTag": "stg"

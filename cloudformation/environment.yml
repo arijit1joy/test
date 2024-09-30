@@ -81,6 +81,8 @@ Parameters:
     Type: String
   PCC2Region:
     Type: String
+  Pcc2EnvironmentTag:
+    Type: String
   CosmosAccountID:
     Type: String
   CosmosJ1939RuleArn:
@@ -1054,7 +1056,7 @@ Resources:
           pcc_region: !Ref PCCRegion
           KafkaApiVersionTuple: !Ref KafkaVersionTuple
           pcc2_role_arn: !Sub "arn:aws:iam::${PCC2AccountId}:role/PccInputStreamRole"
-          pcc2_j1939_stream_arn: !Sub "arn:aws:kinesis:${PCC2Region}:${PCC2AccountId}:stream/psbu-poc-acumen-j1939-telemetry-inputstream"
+          pcc2_j1939_stream_arn: !Sub "arn:aws:kinesis:${PCC2Region}:${PCC2AccountId}:stream/psbu-${Pcc2EnvironmentTag}-acumen-j1939-telemetry-inputstream"
           pcc2_region: !Ref PCC2Region
 
       Handler: PosterLambda.lambda_handler
