@@ -698,7 +698,7 @@ Resources:
                   - "sts:AssumeRole"
                 Resource:
                   - !Sub "arn:aws:iam::${PCCAccountId}:role/EdgeKinesisProducerRole"
-                  - !Sub "arn:aws:iam::${PCC2AccountId}:role/psbu-${Pcc2EnvironmentTag}-PccInputStreamRole
+                  - !Sub "arn:aws:iam::${PCC2AccountId}:role/psbu-${Pcc2EnvironmentTag}-PccInputStreamRole"
                 Effect: Allow
       Tags:
         - Key: "app_id"
