@@ -1055,7 +1055,7 @@ Resources:
           j1939_stream_arn: !Sub "arn:aws:kinesis:${PCCRegion}:${PCCAccountId}:stream/J1939Events"
           pcc_region: !Ref PCCRegion
           KafkaApiVersionTuple: !Ref KafkaVersionTuple
-          pcc2_role_arn: !Sub "arn:aws:iam::${PCC2AccountId}:role/PccInputStreamRole"
+          pcc2_role_arn: !Sub "arn:aws:iam::${PCC2AccountId}:role/psbu-${Pcc2EnvironmentTag}-PccInputStreamRole"
           pcc2_j1939_stream_arn: !Sub "arn:aws:kinesis:${PCC2Region}:${PCC2AccountId}:stream/psbu-${Pcc2EnvironmentTag}-acumen-j1939-telemetry-inputstream"
           pcc2_region: !Ref PCC2Region
 
