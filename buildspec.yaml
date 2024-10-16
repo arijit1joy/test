@@ -35,7 +35,7 @@ phases:
     - npm --version  
     - curr_dir=$(pwd) 
     - mkdir "$curr_dir/target" 
-    - sed -i -E 's|LoggingLevel\s*:\s*\"[dD][eE][bB][uU][gG]\"|LoggingLevel~~~~~~ \"info\"|gi' cloudformation/environment.yml
+    # - sed -i -E 's|LoggingLevel\s*:\s*\"[dD][eE][bB][uU][gG]\"|LoggingLevel~~~~~~ \"info\"|gi' cloudformation/environment.yml
     - sed -i -e 's|~~~~~~|:|g' cloudformation/environment.yml
     - cd cloudformation
     - versionId=$(date +"%m-%d-%Y-%H-%M-%S") 
