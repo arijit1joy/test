@@ -1,6 +1,6 @@
-Team=Momentum
+Team=CDA
 Year=2024
 Quarter=Q3
 Major=3
 Minor=0
-Fixed=0
+Fixed=1
