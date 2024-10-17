@@ -343,7 +343,7 @@ Resources:
       ReservedConcurrentExecutions: 275
       Environment:
         Variables:
-          LoggingLevel: "debug"
+          LoggingLevel: info
           APPLICATION_NAME: !Ref ApplicationName
           region: !Sub "${AWS::Region}"
           APPLICATION_ENVIRONMENT: !Ref ApplicationEnvironmentTag
@@ -1004,7 +1004,7 @@ Resources:
       ReservedConcurrentExecutions: 275
       Environment:
         Variables:
-          LoggingLevel: "debug"
+          LoggingLevel: info
           cd_device_owners: '{"EBU": "EBU", "TATA": "TATA", "TataMotors":"TataMotors", "Cosmos":"Cosmos"}'
           Environment: !Sub "${ApplicationEnvironmentTag}"
           RedisSecretName: !Ref EDGERedisSecretName
