@@ -1,6 +1,6 @@
 Team=Momentum
 Year=2024
 Quarter=Q3
-Major=1
+Major=3
 Minor=0
 Fixed=0
