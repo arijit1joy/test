@@ -4,6 +4,9 @@ import os
 import sys
 import time
 import traceback
+
+import uuid
+
 from multiprocessing import Process
 sys.path.insert(1, './lib')
 
@@ -115,6 +118,13 @@ def post_cd_message(data):
         LOGGER.info(f"Equipment ID is not in the file. Creating it in the format EDGE_<ESN> . . .")
         data["Equipment_ID"] = "EDGE_" + data["Engine_Serial_Number"]  # Setting the Equipment ID to EDGE_<ESN>
         LOGGER.debug(f"New Equipment ID: {data['Equipment_ID']}")
+
+    # SPAR-3952: Temporary address to add missing messageID for successful processing in CD
+    if "Telematics_Partner_Message_ID" not in data or not data["Telematics_Partner_Message_ID"]:
+        LOGGER.info(f"Telematics_Partner_Message_ID is not in the file. Auto-generating...")
+        message_id = str(uuid.uuid4())
+        data["Telematics_Partner_Message_ID"] = message_id
+        LOGGER.debug(f"Telematics_Partner_Message_ID: {data['Telematics_Partner_Message_ID']}")
 
     LOGGER.debug(f'File to send to CD: {data}')
 

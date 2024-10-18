@@ -336,7 +336,8 @@ class TestConversion(unittest.TestCase):
                 "Engine_Serial_Number": "esn",
                 "VIN": "",
                 "Equipment_ID": "EDGE_esn",
-                "Sent_Date_Time": ANY
+                "Sent_Date_Time": ANY,
+                "Telematics_Partner_Message_ID": ANY
             }
         )
 
